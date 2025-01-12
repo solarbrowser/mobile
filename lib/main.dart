@@ -153,6 +153,16 @@ class _BrowserPageState extends State<BrowserPage> with SingleTickerProviderStat
       'cancel': 'Cancel',
       'clear': 'Clear',
       'history_cleared': 'History cleared',
+      'general': 'General',
+      'downloads': 'Downloads',
+      'appearance': 'Appearance',
+      'help': 'Help',
+      'privacy_policy': 'Privacy Policy',
+      'terms_of_use': 'Terms of Use',
+      'about': 'About',
+      'customize_browser': 'Customize your browsing experience',
+      'learn_more': 'Learn more about Solar Browser',
+      'rate_us': 'Rate Us',
     },
     'tr': {
       'settings': 'Ayarlar',
@@ -187,6 +197,16 @@ class _BrowserPageState extends State<BrowserPage> with SingleTickerProviderStat
       'cancel': 'İptal',
       'clear': 'Temizle',
       'history_cleared': 'Geçmiş temizlendi',
+      'general': 'Genel',
+      'downloads': 'İndirilenler',
+      'appearance': 'Görünüm',
+      'help': 'Yardım',
+      'privacy_policy': 'Gizlilik Politikası',
+      'terms_of_use': 'Kullanım Koşulları',
+      'about': 'Hakkında',
+      'customize_browser': 'Tarayıcı deneyiminizi özelleştirin',
+      'learn_more': 'Solar Browser hakkında daha fazla bilgi edinin',
+      'rate_us': 'Bizi Değerlendirin',
     },
   };
 
@@ -1304,424 +1324,173 @@ class _BrowserPageState extends State<BrowserPage> with SingleTickerProviderStat
   }
 
   Widget _buildSettingsPanel() {
-    return SafeArea(
-      child: DefaultTabController(
-        length: 3,
-        child: Container(
-          color: isDarkMode ? Colors.black87 : Colors.white,
-          child: Column(
-            children: [
-              Container(
-                height: 56,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: isDarkMode ? Colors.black87 : Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 4,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.arrow_back,
-                        color: isDarkMode ? Colors.white : Colors.black),
-                      onPressed: () {
-                        setState(() {
-                          isSettingsVisible = false;
-                        });
-                      },
-                    ),
-                    Text(
-                      t('settings'),
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: isDarkMode ? Colors.white : Colors.black,
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.9,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          child: Container(
+            decoration: _getGlassmorphicDecoration(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: MediaQuery.of(context).padding.top),
+                Container(
+                  height: 56,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
                       ),
                     ),
-                  ],
+                  ),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          Icons.arrow_back,
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            isSettingsVisible = false;
+                          });
+                        },
+                      ),
+                      Text(
+                        t('settings'),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              TabBar(
-                tabs: [
-                  Tab(text: t('general')),
-                  Tab(text: t('appearance')),
-                  Tab(text: t('about')),
-                ],
-                labelColor: isDarkMode ? Colors.white : Colors.blue,
-                unselectedLabelColor: isDarkMode ? Colors.white60 : Colors.grey,
-              ),
-              Expanded(
-                child: TabBarView(
-                  children: [
-                    // General Settings
-                    ListView(
-                      children: [
-                        ListTile(
-                          title: Text(t('search_engine'),
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          subtitle: Text(
-                            currentSearchEngine.toUpperCase(),
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white70 : Colors.black54,
-                            ),
-                          ),
-                          onTap: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                backgroundColor: isDarkMode ? Colors.black87 : Colors.white,
-                                title: Text(
-                                  t('select_search_engine'),
-                                  style: TextStyle(
-                                    color: isDarkMode ? Colors.white : Colors.black,
-                                  ),
-                                ),
-                                content: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: searchEngines.keys.map((engine) => ListTile(
-                                    title: Text(
-                                      engine.toUpperCase(),
-                                      style: TextStyle(
-                                        color: isDarkMode ? Colors.white : Colors.black,
-                                      ),
-                                    ),
-                                    selected: currentSearchEngine == engine,
-                                    onTap: () {
-                                      setState(() {
-                                        currentSearchEngine = engine;
-                                      });
-                                      Navigator.pop(context);
-                                    },
-                                  )).toList(),
-                                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 24, bottom: 8),
+                            child: Text(
+                              t('customize_browser'),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDarkMode ? Colors.white70 : Colors.black54,
                               ),
-                            );
-                          },
-                        ),
-                        ListTile(
-                          title: Text(t('language'),
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
                             ),
                           ),
-                          subtitle: Text(currentLanguage.toUpperCase(),
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white70 : Colors.black54,
-                            ),
-                          ),
-                          onTap: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                backgroundColor: isDarkMode ? Colors.black87 : Colors.white,
-                                title: Text(
-                                  t('select_language'),
-                                  style: TextStyle(
-                                    color: isDarkMode ? Colors.white : Colors.black,
-                                  ),
-                                ),
-                                content: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    ListTile(
-                                      title: Text(
-                                        'English',
-                                        style: TextStyle(
-                                          color: isDarkMode ? Colors.white : Colors.black,
-                                        ),
-                                      ),
-                                      selected: currentLanguage == 'en',
-                                      onTap: () {
-                                        setState(() {
-                                          currentLanguage = 'en';
-                                        });
-                                        Navigator.pop(context);
-                                      },
-                                    ),
-                                    ListTile(
-                                      title: Text(
-                                        'Türkçe',
-                                        style: TextStyle(
-                                          color: isDarkMode ? Colors.white : Colors.black,
-                                        ),
-                                      ),
-                                      selected: currentLanguage == 'tr',
-                                      onTap: () {
-                                        setState(() {
-                                          currentLanguage = 'tr';
-                                        });
-                                        Navigator.pop(context);
-                                      },
-                                    ),
-                                  ],
-                                ),
+                          // Main Settings Group
+                          Container(
+                            decoration: BoxDecoration(
+                              color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(12),
+                                bottom: Radius.circular(12),
                               ),
-                            );
-                          },
-                        ),
-                        ListTile(
-                          title: Text(t('javascript'),
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
+                            ),
+                            child: Column(
+                              children: [
+                                _buildSettingsButton('general', () => _showGeneralSettings(), isFirst: true),
+                                _buildDivider(),
+                                _buildSettingsButton('downloads', () => _showDownloadsSettings()),
+                                _buildDivider(),
+                                _buildSettingsButton('appearance', () => _showAppearanceSettings(), isLast: true),
+                              ],
                             ),
                           ),
-                          trailing: Switch(
-                            value: true,
-                            onChanged: (value) {
-                              // Handle JavaScript toggle
-                            },
-                          ),
-                        ),
-                        ListTile(
-                          title: Text(t('clear_history'),
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          leading: Icon(Icons.delete_forever,
-                            color: isDarkMode ? Colors.white70 : Colors.black54),
-                          onTap: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                backgroundColor: isDarkMode ? Colors.black87 : Colors.white,
-                                title: Text(
-                                  t('clear_history_title'),
-                                  style: TextStyle(
-                                    color: isDarkMode ? Colors.white : Colors.black,
-                                  ),
-                                ),
-                                content: Text(
-                                  t('clear_history_message'),
-                                  style: TextStyle(
-                                    color: isDarkMode ? Colors.white70 : Colors.black54,
-                                  ),
-                                ),
-                                actions: [
-                                  TextButton(
-                                    onPressed: () => Navigator.pop(context),
-                                    child: Text(t('cancel')),
-                                  ),
-                                  TextButton(
-                                    onPressed: () {
-                                      _clearHistory();
-                                      Navigator.pop(context);
-                                      _showDownloadNotification(t('history_cleared'));
-                                    },
-                                    child: Text(t('clear'),
-                                      style: TextStyle(color: Colors.red)),
-                                  ),
-                                ],
+                          Padding(
+                            padding: const EdgeInsets.only(top: 24, bottom: 8),
+                            child: Text(
+                              t('learn_more'),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDarkMode ? Colors.white70 : Colors.black54,
                               ),
-                            );
-                          },
-                        ),
-                      ],
+                            ),
+                          ),
+                          // Additional Settings Group
+                          Container(
+                            decoration: BoxDecoration(
+                              color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(12),
+                                bottom: Radius.circular(12),
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                _buildSettingsButton('help', () => _showHelpPage(), isFirst: true),
+                                _buildDivider(),
+                                _buildSettingsButton('rate_us', () => _showRateUs()),
+                                _buildDivider(),
+                                _buildSettingsButton('privacy_policy', () => _showPrivacyPolicy()),
+                                _buildDivider(),
+                                _buildSettingsButton('terms_of_use', () => _showTermsOfUse()),
+                                _buildDivider(),
+                                _buildSettingsButton('about', () => _showAboutPage(), isLast: true),
+                              ],
+                            ),
+                          ),
+                          // Add bottom padding
+                          const SizedBox(height: 24),
+                        ],
+                      ),
                     ),
-                    // Appearance
-                    ListView(
-                      children: [
-                        ListTile(
-                          title: Text(t('dark_mode'),
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          trailing: Switch(
-                            value: isDarkMode,
-                            onChanged: (value) {
-                              setState(() {
-                                isDarkMode = value;
-                              });
-                            },
-                          ),
-                        ),
-                        ListTile(
-                          title: Text(t('text_size'),
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          subtitle: Slider(
-                            value: textScale,
-                            min: 0.8,
-                            max: 1.4,
-                            divisions: 6,
-                            label: '${(textScale * 100).round()}%',
-                            onChanged: (value) {
-                              setState(() {
-                                textScale = value;
-                                controller.runJavaScript(
-                                  'document.body.style.zoom = "$value"'
-                                );
-                              });
-                            },
-                          ),
-                        ),
-                        ListTile(
-                          title: Text(t('theme_color'),
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          subtitle: Row(
-                            children: [
-                              for (final color in [
-                                Colors.blue,
-                                Colors.red,
-                                Colors.green,
-                                Colors.purple,
-                                Colors.orange,
-                              ])
-                                Padding(
-                                  padding: const EdgeInsets.all(4.0),
-                                  child: InkWell(
-                                    onTap: () {
-                                      setState(() {
-                                        themeColor = color;
-                                      });
-                                    },
-                                    child: Container(
-                                      width: 32,
-                                      height: 32,
-                                      decoration: BoxDecoration(
-                                        color: color,
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: themeColor == color
-                                            ? Colors.white
-                                            : Colors.transparent,
-                                          width: 2,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        SwitchListTile(
-                          title: Text(t('show_images'),
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          value: showImages,
-                          onChanged: (value) {
-                            setState(() {
-                              showImages = value;
-                              controller.runJavaScript('''
-                                document.querySelectorAll('img').forEach(img => {
-                                  img.style.display = '${value ? 'block' : 'none'}';
-                                });
-                              ''');
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                    // About
-                    ListView(
-                      children: [
-                        ListTile(
-                          title: Text('Solar Browser Mobile',
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('${t('version')}: 0.0.1',
-                                style: TextStyle(
-                                  color: isDarkMode ? Colors.white70 : Colors.black54,
-                                ),
-                              ),
-                              Text('Flutter Edition',
-                                style: TextStyle(
-                                  color: isDarkMode ? Colors.white70 : Colors.black54,
-                                ),
-                              ),
-                              Text('${t('developed_by')}: Ata TÜRKÇÜ',
-                                style: TextStyle(
-                                  color: isDarkMode ? Colors.white70 : Colors.black54,
-                                ),
-                              ),
-                              Text('${t('licensed_under')}: GPL 3.0',
-                                style: TextStyle(
-                                  color: isDarkMode ? Colors.white70 : Colors.black54,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        ListTile(
-                          leading: Image.asset('assets/github24.png', width: 24, height: 24),
-                          title: Text('GitHub',
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          onTap: () {
-                            controller.loadRequest(Uri.parse('https://github.com/solarbrowser/mobile'));
-                            setState(() {
-                              isSettingsVisible = false;
-                            });
-                          },
-                        ),
-                        ListTile(
-                          leading: SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: SvgPicture.asset(
-                              'assets/patreon.svg',
-                              width: 24,
-                              height: 24,
-                              colorFilter: ColorFilter.mode(
-                                isDarkMode ? Colors.white : Colors.black,
-                                BlendMode.srcIn,
-                              ),
-                            ),
-                          ),
-                          title: Text(t('support_patreon'),
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          onTap: () {
-                            controller.loadRequest(Uri.parse('https://patreon.com/ataturkcu'));
-                            setState(() {
-                              isSettingsVisible = false;
-                            });
-                          },
-                        ),
-                        ListTile(
-                          title: Text(t('check_updates'),
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          onTap: () {
-                            // Handle update check
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSettingsButton(String label, VoidCallback onTap, {bool isFirst = false, bool isLast = false}) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.vertical(
+            top: isFirst ? Radius.circular(12) : Radius.zero,
+            bottom: isLast ? Radius.circular(12) : Radius.zero,
+          ),
+        ),
+        child: Row(
+          children: [
+            Text(
+              t(label),
+              style: TextStyle(
+                fontSize: 16,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
+            ),
+            const Spacer(),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: isDarkMode ? Colors.white.withOpacity(0.5) : Colors.black.withOpacity(0.5),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Container(
+      height: 1,
+      color: isDarkMode ? Colors.white12 : Colors.black12,
+      margin: const EdgeInsets.only(left: 16),
     );
   }
 
@@ -1825,6 +1594,497 @@ class _BrowserPageState extends State<BrowserPage> with SingleTickerProviderStat
                   ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  void _showGeneralSettings() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.9,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: Container(
+              decoration: _getGlassmorphicDecoration(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Container(
+                    height: 56,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            Icons.arrow_back,
+                            color: isDarkMode ? Colors.white : Colors.black,
+                          ),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                        Text(
+                          t('general'),
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: isDarkMode ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 16),
+                            _buildSettingsSection(
+                              title: t('search_engine'),
+                              subtitle: currentSearchEngine.toUpperCase(),
+                              onTap: () {
+                                Navigator.pop(context);
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.transparent,
+                                  builder: (context) => Container(
+                                    height: MediaQuery.of(context).size.height * 0.5,
+                                    child: ClipRRect(
+                                      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                                      child: BackdropFilter(
+                                        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                                        child: Container(
+                                          decoration: _getGlassmorphicDecoration(),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Container(
+                                                height: 56,
+                                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    bottom: BorderSide(
+                                                      color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                                                    ),
+                                                  ),
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    IconButton(
+                                                      icon: Icon(
+                                                        Icons.arrow_back,
+                                                        color: isDarkMode ? Colors.white : Colors.black,
+                                                      ),
+                                                      onPressed: () => Navigator.pop(context),
+                                                    ),
+                                                    Text(
+                                                      t('select_search_engine'),
+                                                      style: TextStyle(
+                                                        fontSize: 20,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: isDarkMode ? Colors.white : Colors.black,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: SingleChildScrollView(
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                                                    child: Column(
+                                                      children: searchEngines.keys.map((engine) => Container(
+                                                        decoration: BoxDecoration(
+                                                          color: currentSearchEngine == engine
+                                                              ? (isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05))
+                                                              : Colors.transparent,
+                                                          borderRadius: BorderRadius.circular(12),
+                                                        ),
+                                                        child: ListTile(
+                                                          title: Text(
+                                                            engine.toUpperCase(),
+                                                            style: TextStyle(
+                                                              color: isDarkMode ? Colors.white : Colors.black,
+                                                            ),
+                                                          ),
+                                                          trailing: currentSearchEngine == engine
+                                                              ? Icon(
+                                                                  Icons.check,
+                                                                  color: isDarkMode ? Colors.white : Colors.black,
+                                                                )
+                                                              : null,
+                                                          onTap: () {
+                                                            setState(() {
+                                                              currentSearchEngine = engine;
+                                                            });
+                                                            Navigator.pop(context);
+                                                            _showGeneralSettings();
+                                                          },
+                                                        ),
+                                                      )).toList(),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                            _buildSettingsSection(
+                              title: t('language'),
+                              subtitle: currentLanguage.toUpperCase(),
+                              onTap: () {
+                                Navigator.pop(context);
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.transparent,
+                                  builder: (context) => Container(
+                                    height: MediaQuery.of(context).size.height * 0.5,
+                                    child: ClipRRect(
+                                      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                                      child: BackdropFilter(
+                                        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                                        child: Container(
+                                          decoration: _getGlassmorphicDecoration(),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Container(
+                                                height: 56,
+                                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                                decoration: BoxDecoration(
+                                                  border: Border(
+                                                    bottom: BorderSide(
+                                                      color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                                                    ),
+                                                  ),
+                                                ),
+                                                child: Row(
+                                                  children: [
+                                                    IconButton(
+                                                      icon: Icon(
+                                                        Icons.arrow_back,
+                                                        color: isDarkMode ? Colors.white : Colors.black,
+                                                      ),
+                                                      onPressed: () => Navigator.pop(context),
+                                                    ),
+                                                    Text(
+                                                      t('select_language'),
+                                                      style: TextStyle(
+                                                        fontSize: 20,
+                                                        fontWeight: FontWeight.bold,
+                                                        color: isDarkMode ? Colors.white : Colors.black,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: SingleChildScrollView(
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                                                    child: Column(
+                                                      children: [
+                                                        Container(
+                                                          decoration: BoxDecoration(
+                                                            color: currentLanguage == 'en'
+                                                                ? (isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05))
+                                                                : Colors.transparent,
+                                                            borderRadius: BorderRadius.circular(12),
+                                                          ),
+                                                          child: ListTile(
+                                                            title: Text(
+                                                              'English',
+                                                              style: TextStyle(
+                                                                color: isDarkMode ? Colors.white : Colors.black,
+                                                              ),
+                                                            ),
+                                                            trailing: currentLanguage == 'en'
+                                                                ? Icon(
+                                                                    Icons.check,
+                                                                    color: isDarkMode ? Colors.white : Colors.black,
+                                                                  )
+                                                                : null,
+                                                            onTap: () {
+                                                              setState(() {
+                                                                currentLanguage = 'en';
+                                                              });
+                                                              Navigator.pop(context);
+                                                              _showGeneralSettings();
+                                                            },
+                                                          ),
+                                                        ),
+                                                        Container(
+                                                          decoration: BoxDecoration(
+                                                            color: currentLanguage == 'tr'
+                                                                ? (isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05))
+                                                                : Colors.transparent,
+                                                            borderRadius: BorderRadius.circular(12),
+                                                          ),
+                                                          child: ListTile(
+                                                            title: Text(
+                                                              'Türkçe',
+                                                              style: TextStyle(
+                                                                color: isDarkMode ? Colors.white : Colors.black,
+                                                              ),
+                                                            ),
+                                                            trailing: currentLanguage == 'tr'
+                                                                ? Icon(
+                                                                    Icons.check,
+                                                                    color: isDarkMode ? Colors.white : Colors.black,
+                                                                  )
+                                                                : null,
+                                                            onTap: () {
+                                                              setState(() {
+                                                                currentLanguage = 'tr';
+                                                              });
+                                                              Navigator.pop(context);
+                                                              _showGeneralSettings();
+                                                            },
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsSection({
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        title: Text(
+          title,
+          style: TextStyle(
+            color: isDarkMode ? Colors.white : Colors.black,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(
+            color: isDarkMode ? Colors.white70 : Colors.black54,
+          ),
+        ),
+        trailing: Icon(
+          Icons.arrow_forward_ios,
+          size: 16,
+          color: isDarkMode ? Colors.white.withOpacity(0.5) : Colors.black.withOpacity(0.5),
+        ),
+        onTap: onTap,
+      ),
+    );
+  }
+
+  void _showDownloadsSettings() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.9,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: Container(
+              decoration: _getGlassmorphicDecoration(),
+              child: _buildDownloadsPanel(),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAppearanceSettings() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.9,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: Container(
+              decoration: _getGlassmorphicDecoration(),
+              child: ListView(
+                children: [
+                  ListTile(
+                    title: Text(t('dark_mode'),
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    trailing: Switch(
+                      value: isDarkMode,
+                      onChanged: (value) {
+                        setState(() {
+                          isDarkMode = value;
+                        });
+                      },
+                    ),
+                  ),
+                  ListTile(
+                    title: Text(t('text_size'),
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    subtitle: Slider(
+                      value: textScale,
+                      min: 0.8,
+                      max: 1.4,
+                      divisions: 6,
+                      label: '${(textScale * 100).round()}%',
+                      onChanged: (value) {
+                        setState(() {
+                          textScale = value;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showHelpPage() {
+    controller.loadRequest(Uri.parse('https://github.com/solarbrowser/mobile/wiki'));
+    setState(() {
+      isSettingsVisible = false;
+    });
+  }
+
+  void _showRateUs() {
+    // Add your app store links here
+    if (Platform.isAndroid) {
+      controller.loadRequest(Uri.parse('market://details?id=com.solarbrowser.mobile'));
+    } else if (Platform.isIOS) {
+      controller.loadRequest(Uri.parse('itms-apps://itunes.apple.com/app/idYOUR_APP_ID'));
+    }
+    setState(() {
+      isSettingsVisible = false;
+    });
+  }
+
+  void _showPrivacyPolicy() {
+    controller.loadRequest(Uri.parse('https://github.com/solarbrowser/mobile/wiki/privacy-policy'));
+    setState(() {
+      isSettingsVisible = false;
+    });
+  }
+
+  void _showTermsOfUse() {
+    controller.loadRequest(Uri.parse('https://github.com/solarbrowser/mobile/wiki/terms-of-use'));
+    setState(() {
+      isSettingsVisible = false;
+    });
+  }
+
+  void _showAboutPage() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.9,
+        child: ClipRRect(
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: Container(
+              decoration: _getGlassmorphicDecoration(),
+              child: ListView(
+                children: [
+                  ListTile(
+                    title: Text('Solar Browser Mobile',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('${t('version')}: 0.0.1',
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white70 : Colors.black54,
+                          ),
+                        ),
+                        Text('Flutter Edition',
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white70 : Colors.black54,
+                          ),
+                        ),
+                        Text('${t('developed_by')}: Ata TÜRKÇÜ',
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white70 : Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
