@@ -64,5 +64,5 @@ For more detailed developer instructions, refer to the [Developer Guide](For%20D
 ---
 
 ### Thank You!
-Your support means everything! If you encounter issues or have suggestions, feel free to contribute or report them via the [GitHub Issues](https://github.com/Solar-Browser/desktop/issues) page.
+Your support means everything! If you encounter issues or have suggestions, feel free to contribute or report them via the [GitHub Issues](https://github.com/solarbrowser/mobile/issues) page.
 
