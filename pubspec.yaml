@@ -35,7 +35,12 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   webview_flutter: ^4.4.2
-  flutter_svg: ^2.0.10
+  webview_flutter_android: ^4.2.0
+  webview_flutter_wkwebview: ^3.17.0
+  flutter_svg: ^2.0.9
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.2
+  permission_handler: ^11.0.1
 
 dev_dependencies:
   flutter_test:
@@ -46,7 +51,8 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^2.0.0
+  flutter_launcher_icons: ^0.13.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -91,20 +97,42 @@ flutter:
   # see https://flutter.dev/to/font-from-package
 
   assets:
-    - assets/solar.png
+    - assets/icon.png
     - assets/secure24.png
+    - assets/secure24w.png
     - assets/unsecure24.png
+    - assets/unsecure24w.png
     - assets/reload24.png
+    - assets/reload24w.png
     - assets/search24.png
+    - assets/search24w.png
     - assets/share24.png
+    - assets/share24w.png
     - assets/settings24.png
+    - assets/settings24w.png
     - assets/downloads24.png
+    - assets/downloads24w.png
     - assets/history24.png
+    - assets/history24w.png
     - assets/bookmark24.png
+    - assets/bookmark24w.png
     - assets/back24.png
+    - assets/back24w.png
     - assets/forward24.png
+    - assets/forward24w.png
     - assets/tab24.png
+    - assets/tab24w.png
     - assets/up24.png
+    - assets/up24w.png
     - assets/down24.png
+    - assets/down24w.png
     - assets/github24.png
+    - assets/github24w.png
     - assets/patreon.svg
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/icon.png"

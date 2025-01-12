@@ -138,7 +138,6 @@ class _BrowserPageState extends State<BrowserPage> with SingleTickerProviderStat
       'check_updates': 'Check for Updates',
       'version': 'Version',
       'developed_by': 'Developed by',
-      'licensed_under': 'Licensed under',
       'support_patreon': 'Support on Patreon',
       'search_in_page': 'Search in page',
       'no_history': 'No history available',
@@ -172,7 +171,6 @@ class _BrowserPageState extends State<BrowserPage> with SingleTickerProviderStat
       'check_updates': 'Güncellemeleri Kontrol Et',
       'version': 'Sürüm',
       'developed_by': 'Geliştiren',
-      'licensed_under': 'Lisansı',
       'support_patreon': 'Patreon\'da Destekle',
       'search_in_page': 'Sayfada ara',
       'no_history': 'Geçmiş bulunamadı',
@@ -351,33 +349,6 @@ class _BrowserPageState extends State<BrowserPage> with SingleTickerProviderStat
           .map((d) => Map<String, dynamic>.from(json.decode(d)))
           .toList();
     });
-  }
-
-  // Add this method at the top of the class to reuse the decoration
-  BoxDecoration _getGlassmorphicDecoration() {
-    return BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: isDarkMode 
-          ? [Colors.black87.withOpacity(0.7), Colors.black87.withOpacity(0.5)]
-          : [Colors.white.withOpacity(0.7), Colors.grey.shade200.withOpacity(0.5)],
-      ),
-      borderRadius: BorderRadius.circular(20),
-      border: Border.all(
-        color: isDarkMode 
-          ? Colors.white.withOpacity(0.1) 
-          : Colors.white.withOpacity(0.3),
-        width: 1.5,
-      ),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.2),
-          blurRadius: 15,
-          spreadRadius: -8,
-        ),
-      ],
-    );
   }
 
   @override
@@ -722,9 +693,23 @@ class _BrowserPageState extends State<BrowserPage> with SingleTickerProviderStat
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
             child: Container(
-              decoration: _getGlassmorphicDecoration(),
+              decoration: BoxDecoration(
+                color: isDarkMode ? Colors.black87.withOpacity(0.8) : Colors.white.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    spreadRadius: -5,
+                  ),
+                ],
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -806,9 +791,16 @@ class _BrowserPageState extends State<BrowserPage> with SingleTickerProviderStat
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
             child: Container(
-              decoration: _getGlassmorphicDecoration(),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.2),
+                  width: 1.5,
+                ),
+              ),
               child: Row(
                 children: [
                   const SizedBox(width: 16),
@@ -843,9 +835,16 @@ class _BrowserPageState extends State<BrowserPage> with SingleTickerProviderStat
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
-            decoration: _getGlassmorphicDecoration(),
+            decoration: BoxDecoration(
+              color: isDarkMode ? Colors.black87.withOpacity(0.8) : Colors.white.withOpacity(0.8),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.2),
+                width: 1.5,
+              ),
+            ),
             child: Row(
               children: [
                 const SizedBox(width: 16),
@@ -897,13 +896,12 @@ class _BrowserPageState extends State<BrowserPage> with SingleTickerProviderStat
 
   Widget _buildUrlPanel() {
     return GestureDetector(
-      behavior: HitTestBehavior.translucent,
       onVerticalDragUpdate: (details) {
-        if (details.primaryDelta! < -10 && !isPanelExpanded) {
+        if (details.primaryDelta! < -20 && !isPanelExpanded) {
           setState(() {
             isPanelExpanded = true;
           });
-        } else if (details.primaryDelta! > 10 && isPanelExpanded) {
+        } else if (details.primaryDelta! > 20 && isPanelExpanded) {
           setState(() {
             isPanelExpanded = false;
           });
@@ -924,12 +922,29 @@ class _BrowserPageState extends State<BrowserPage> with SingleTickerProviderStat
       },
       child: Container(
         height: 50,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              spreadRadius: -5,
+            ),
+          ],
+        ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
             child: Container(
-              decoration: _getGlassmorphicDecoration(),
+              decoration: BoxDecoration(
+                color: isDarkMode ? Colors.black87.withOpacity(0.8) : Colors.white.withOpacity(0.8),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.2),
+                  width: 1.5,
+                ),
+              ),
               child: Row(
                 children: [
                   const SizedBox(width: 8),
@@ -998,9 +1013,23 @@ class _BrowserPageState extends State<BrowserPage> with SingleTickerProviderStat
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
           child: Container(
-            decoration: _getGlassmorphicDecoration(),
+            decoration: BoxDecoration(
+              color: isDarkMode ? Colors.black87.withOpacity(0.8) : Colors.white.withOpacity(0.8),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.2),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  spreadRadius: -5,
+                ),
+              ],
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -1655,11 +1684,6 @@ class _BrowserPageState extends State<BrowserPage> with SingleTickerProviderStat
                                   color: isDarkMode ? Colors.white70 : Colors.black54,
                                 ),
                               ),
-                              Text('${t('licensed_under')}: GPL 3.0',
-                                style: TextStyle(
-                                  color: isDarkMode ? Colors.white70 : Colors.black54,
-                                ),
-                              ),
                             ],
                           ),
                         ),
@@ -1860,7 +1884,7 @@ class _BrowserPageState extends State<BrowserPage> with SingleTickerProviderStat
               top: padding.top,
               left: 0,
               right: 0,
-              bottom: bottomPadding + 4,
+              bottom: bottomPadding + 16,
               child: NotificationListener<ScrollNotification>(
                 onNotification: (notification) {
                   if (notification is ScrollUpdateNotification) {
@@ -1931,15 +1955,14 @@ class _BrowserPageState extends State<BrowserPage> with SingleTickerProviderStat
                 curve: Curves.easeInOut,
                 left: _isUrlBarMinimized ? 16 : 16,
                 right: _isUrlBarMinimized ? null : 16,
-                bottom: _isUrlBarHidden ? -80 : bottomPadding + 8 + bottomSafeArea,
+                bottom: _isUrlBarHidden ? -80 : bottomPadding + 24 + bottomSafeArea,
                 child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onVerticalDragUpdate: (details) {
-                    if (details.primaryDelta! < -5) {
+                  onVerticalDragEnd: (details) {
+                    if (details.primaryVelocity! < -5) {
                       setState(() {
                         isPanelExpanded = true;
                       });
-                    } else if (details.primaryDelta! > 5) {
+                    } else if (details.primaryVelocity! > 5) {
                       setState(() {
                         isPanelExpanded = false;
                       });

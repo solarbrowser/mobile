@@ -45,5 +45,18 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access for taking photos and video calls in web content.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs microphone access for voice calls and audio recording in web content.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs photo library access for uploading images from your library.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+		<key>NSAllowsArbitraryLoadsInWebContent</key>
+		<true/>
+	</dict>
 </dict>
 </plist>
