@@ -100,9 +100,10 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   @override
   void initState() {
     super.initState();
-    _initializeWebView();
-    _loadPreferences();
     _initializeAnimations();
+    _initializeWebView().then((_) {
+      _loadPreferences();
+    });
   }
 
   void _initializeAnimations() {
@@ -134,14 +135,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       controller = WebViewController.fromPlatform(webKitController);
     }
 
-    await _setupWebViewCallbacks(controller);
-
-    if (tabs.isEmpty) {
-      await _createNewTab();
-    }
-  }
-
-  Future<void> _setupWebViewCallbacks(WebViewController controller) async {
     await controller.setNavigationDelegate(
       NavigationDelegate(
         onNavigationRequest: (request) async {
@@ -153,7 +146,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           }
           
           if (!allowHttp && request.url.startsWith('http://')) {
-            // Show warning dialog
             final allow = await showDialog<bool>(
               context: context,
               builder: (context) => AlertDialog(
@@ -182,7 +174,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         onPageStarted: (url) {
           setState(() {
             isLoading = true;
-            displayUrl = _getDisplayUrl(url);
+            displayUrl = url;
             isSecure = url.startsWith('https://');
           });
         },
@@ -192,104 +184,19 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           
           setState(() {
             isLoading = false;
-            displayUrl = _getDisplayUrl(url);
+            displayUrl = url;
             isSecure = url.startsWith('https://');
-            if (tabs.isNotEmpty) {
-              tabs[currentTabIndex] = TabInfo(
-                title: title,
-                url: url,
-                favicon: faviconUrl,
-                controller: controller,
-              );
-            }
           });
+          
+          controller.canGoBack().then((value) => setState(() => canGoBack = value));
+          controller.canGoForward().then((value) => setState(() => canGoForward = value));
           
           _saveToHistory(url, title);
         },
       ),
     );
-  }
 
-  String _getDisplayUrl(String url) {
-    try {
-      final uri = Uri.parse(url);
-      return uri.host + (uri.path == '/' ? '' : uri.path);
-    } catch (e) {
-      return url;
-    }
-  }
-
-  Future<void> _createNewTab() async {
-    final newController = Platform.isAndroid
-        ? WebViewController.fromPlatform(
-            await AndroidWebViewController(
-              AndroidWebViewControllerCreationParams(),
-            )..setJavaScriptMode(JavaScriptMode.unrestricted))
-        : WebViewController.fromPlatform(
-            await WebKitWebViewController(
-              WebKitWebViewControllerCreationParams(
-                allowsInlineMediaPlayback: true,
-              ),
-            )..setJavaScriptMode(JavaScriptMode.unrestricted));
-
-    await _setupWebViewCallbacks(newController);
-    await newController.loadRequest(Uri.parse('https://www.google.com'));
-
-    final newTab = TabInfo(
-      title: 'New Tab',
-      url: 'https://www.google.com',
-      favicon: await BrowserUtils.getFaviconUrl('https://www.google.com'),
-      controller: newController,
-    );
-
-    setState(() {
-      tabs.add(newTab);
-      currentTabIndex = tabs.length - 1;
-      controller = newController;
-    });
-  }
-
-  void _switchTab(int index) {
-    if (index >= 0 && index < tabs.length) {
-      setState(() {
-        currentTabIndex = index;
-        controller = tabs[index].controller;
-        displayUrl = _getDisplayUrl(tabs[index].url);
-        isSecure = tabs[index].url.startsWith('https://');
-      });
-    }
-  }
-
-  void _closeTab(int index) {
-    if (tabs.length > 1) {
-      setState(() {
-        tabs.removeAt(index);
-        if (currentTabIndex >= tabs.length) {
-          currentTabIndex = tabs.length - 1;
-        }
-        controller = tabs[currentTabIndex].controller;
-        displayUrl = _getDisplayUrl(tabs[currentTabIndex].url);
-        isSecure = tabs[currentTabIndex].url.startsWith('https://');
-      });
-    }
-  }
-
-  Future<void> _loadPreferences() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      isDarkMode = prefs.getBool('darkMode') ?? false;
-      textScale = prefs.getDouble('textScale') ?? 1.0;
-      showImages = prefs.getBool('showImages') ?? true;
-      currentSearchEngine = prefs.getString('searchEngine') ?? 'google';
-      allowHttp = prefs.getBool('allowHttp') ?? false;
-    });
-  }
-
-  Future<void> _savePreferences() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('darkMode', isDarkMode);
-    await prefs.setDouble('textScale', textScale);
-    await prefs.setBool('showImages', showImages);
+    await controller.loadRequest(Uri.parse('https://www.google.com'));
   }
 
   Future<void> _saveToHistory(String url, String title) async {
@@ -387,116 +294,103 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   void _showGeneralSettings() {
     final items = <Widget>[
-      ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        title: Text(
-          AppLocalizations.of(context)!.search_engine,
-          style: TextStyle(
-            color: isDarkMode ? Colors.white : Colors.black,
-            fontSize: 16,
-          ),
+      Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: _buildSettingsItem(
+          title: AppLocalizations.of(context)!.search_engine,
+          subtitle: currentSearchEngine.toUpperCase(),
+          onTap: () => _showSearchEngineSelection(context),
         ),
-        subtitle: Text(
-          currentSearchEngine.toUpperCase(),
-          style: TextStyle(
-            color: isDarkMode ? Colors.white70 : Colors.black54,
-          ),
-        ),
-        onTap: () => _showSearchEngineSelection(context),
       ),
-      const SizedBox(height: 8),
-      ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        title: Text(
-          AppLocalizations.of(context)!.language,
-          style: TextStyle(
-            color: isDarkMode ? Colors.white : Colors.black,
-            fontSize: 16,
-          ),
+      Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: _buildSettingsItem(
+          title: AppLocalizations.of(context)!.language,
+          subtitle: Localizations.localeOf(context).languageCode.toUpperCase(),
+          onTap: () => _showLanguageSelection(context),
         ),
-        subtitle: Text(
-          Localizations.localeOf(context).languageCode.toUpperCase(),
-          style: TextStyle(
-            color: isDarkMode ? Colors.white70 : Colors.black54,
-          ),
-        ),
-        onTap: () => _showLanguageSelection(context),
       ),
-      const SizedBox(height: 8),
-      SwitchListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        title: Text(
-          'Allow HTTP',
-          style: TextStyle(
-            color: isDarkMode ? Colors.white : Colors.black,
-            fontSize: 16,
+      Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: _buildSettingsItem(
+          title: 'Allow HTTP',
+          subtitle: 'Load unsecure websites',
+          trailing: Switch(
+            value: allowHttp,
+            onChanged: (value) async {
+              setState(() {
+                allowHttp = value;
+              });
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('allowHttp', value);
+            },
           ),
         ),
-        subtitle: Text(
-          'Load unsecure websites',
-          style: TextStyle(
-            color: isDarkMode ? Colors.white70 : Colors.black54,
-          ),
-        ),
-        value: allowHttp,
-        onChanged: (value) async {
-          setState(() {
-            allowHttp = value;
-          });
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setBool('allowHttp', value);
-          Navigator.pop(context);
-        },
       ),
     ];
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.5,
-        decoration: BoxDecoration(
-          color: isDarkMode ? Colors.black : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+    _showDynamicBottomSheet(
+      items: items,
+      title: AppLocalizations.of(context)!.general,
+    );
+  }
+
+  Widget _buildSettingsItem({
+    required String title,
+    String? subtitle,
+    Widget? trailing,
+    VoidCallback? onTap,
+    TextStyle? customTextStyle,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildPanelHeader(AppLocalizations.of(context)!.general, onBack: () => Navigator.pop(context)),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                children: items,
-              ),
-            ),
-          ],
+        title: Text(
+          title,
+          style: customTextStyle ?? TextStyle(
+            color: isDarkMode ? Colors.white : Colors.black,
+            fontSize: 16,
+          ),
         ),
+        subtitle: subtitle != null ? Text(
+          subtitle,
+          style: TextStyle(
+            color: isDarkMode ? Colors.white70 : Colors.black54,
+          ),
+        ) : null,
+        trailing: trailing ?? (onTap != null ? Icon(
+          Icons.arrow_forward_ios,
+          size: 16,
+          color: isDarkMode ? Colors.white54 : Colors.black45,
+        ) : null),
+        onTap: onTap,
       ),
     );
   }
 
   void _showDynamicBottomSheet({
-    required BuildContext context,
-    required String title,
     required List<Widget> items,
-    double maxHeight = 0.7,
-    double minHeight = 0.3,
+    required String title,
+    double? fixedHeight,
   }) {
     final itemHeight = 72.0;
     final headerHeight = 56.0;
+    final spacing = 16.0;
     final statusBarHeight = MediaQuery.of(context).padding.top;
+    
     final totalContentHeight = items.length * itemHeight;
     final screenHeight = MediaQuery.of(context).size.height;
-    final maxAllowedHeight = screenHeight * maxHeight;
-    final minAllowedHeight = screenHeight * minHeight;
-    
-    final actualContentHeight = totalContentHeight + headerHeight + statusBarHeight;
-    final height = actualContentHeight < minAllowedHeight 
-        ? minAllowedHeight 
-        : actualContentHeight > maxAllowedHeight 
-            ? maxAllowedHeight 
-            : actualContentHeight;
+    final calculatedHeight = spacing + totalContentHeight + headerHeight + statusBarHeight;
+    final maxHeight = screenHeight * 0.7;
+    final height = fixedHeight ?? (calculatedHeight > maxHeight ? maxHeight : calculatedHeight);
 
     showModalBottomSheet(
       context: context,
@@ -512,15 +406,13 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildPanelHeader(title, onBack: () => Navigator.pop(context)),
-            if (actualContentHeight > maxAllowedHeight)
-              Expanded(
-                child: ListView(
-                  padding: EdgeInsets.zero,
-                  children: items,
-                ),
-              )
-            else
-              ...items,
+            Expanded(
+              child: ListView.builder(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                itemCount: items.length,
+                itemBuilder: (context, index) => items[index],
+              ),
+            ),
           ],
         ),
       ),
@@ -528,194 +420,156 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   void _showSearchEngineSelection(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        final items = searchEngines.keys.map((engine) => ListTile(
-          title: Text(
-            engine.toUpperCase(),
-            style: TextStyle(
-              color: isDarkMode ? Colors.white : Colors.black,
-            ),
-          ),
-          trailing: currentSearchEngine == engine
+    final items = searchEngines.keys.map((engine) => Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: _buildSettingsItem(
+        title: engine.toUpperCase(),
+        trailing: currentSearchEngine == engine
+            ? Icon(
+                Icons.check,
+                color: isDarkMode ? Colors.white : Colors.black,
+              )
+            : null,
+        onTap: () async {
+          setState(() {
+            currentSearchEngine = engine;
+          });
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('searchEngine', engine);
+          Navigator.pop(context);
+        },
+      ),
+    )).toList();
+
+    _showDynamicBottomSheet(
+      items: items,
+      title: AppLocalizations.of(context)!.search_engine,
+    );
+  }
+
+  void _showLanguageSelection(BuildContext context) {
+    final items = [
+      Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: _buildSettingsItem(
+          title: 'English',
+          trailing: Localizations.localeOf(context).languageCode == 'en'
               ? Icon(
                   Icons.check,
                   color: isDarkMode ? Colors.white : Colors.black,
                 )
               : null,
           onTap: () async {
-            setState(() {
-              currentSearchEngine = engine;
-            });
             final prefs = await SharedPreferences.getInstance();
-            await prefs.setString('searchEngine', engine);
-            Navigator.pop(context);
+            await prefs.setString('language', 'en');
+            if (mounted) {
+              widget.onLocaleChange('en');
+              Navigator.pop(context);
+            }
           },
-        )).toList();
+        ),
+      ),
+      Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: _buildSettingsItem(
+          title: 'Türkçe',
+          trailing: Localizations.localeOf(context).languageCode == 'tr'
+              ? Icon(
+                  Icons.check,
+                  color: isDarkMode ? Colors.white : Colors.black,
+                )
+              : null,
+          onTap: () async {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('language', 'tr');
+            if (mounted) {
+              widget.onLocaleChange('tr');
+              Navigator.pop(context);
+            }
+          },
+        ),
+      ),
+    ];
 
-        return Container(
-          height: 56.0 * (items.length + 1) + MediaQuery.of(context).padding.top,
-          decoration: BoxDecoration(
-            color: isDarkMode ? Colors.black : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildPanelHeader(
-                AppLocalizations.of(context)!.search_engine,
-                onBack: () => Navigator.pop(context),
-              ),
-              ...items,
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showLanguageSelection(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        final items = [
-          ListTile(
-            title: const Text('English'),
-            trailing: Localizations.localeOf(context).languageCode == 'en'
-                ? Icon(
-                    Icons.check,
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  )
-                : null,
-            onTap: () async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setString('language', 'en');
-              if (mounted) {
-                widget.onLocaleChange('en');
-                Navigator.pop(context);
-              }
-            },
-          ),
-          ListTile(
-            title: const Text('Türkçe'),
-            trailing: Localizations.localeOf(context).languageCode == 'tr'
-                ? Icon(
-                    Icons.check,
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  )
-                : null,
-            onTap: () async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setString('language', 'tr');
-              if (mounted) {
-                widget.onLocaleChange('tr');
-                Navigator.pop(context);
-              }
-            },
-          ),
-        ];
-
-        return Container(
-          height: 56.0 * (items.length + 1) + MediaQuery.of(context).padding.top,
-          decoration: BoxDecoration(
-            color: isDarkMode ? Colors.black : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildPanelHeader(
-                AppLocalizations.of(context)!.language,
-                onBack: () => Navigator.pop(context),
-              ),
-              ...items,
-            ],
-          ),
-        );
-      },
+    _showDynamicBottomSheet(
+      items: items,
+      title: AppLocalizations.of(context)!.language,
     );
   }
 
   void _showDownloadsSettings() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.4,
-        child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-            child: Container(
-              decoration: _getGlassmorphicDecoration(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildPanelHeader('downloads', onBack: () => Navigator.pop(context)),
-                  Expanded(
-                    child: ListView(
-                      children: [
-                        // Downloads settings
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+    final items = <Widget>[
+      Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: _buildSettingsItem(
+          title: AppLocalizations.of(context)!.download_location,
+          subtitle: '/Downloads',
+          onTap: () {},
+        ),
+      ),
+      Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: _buildSettingsItem(
+          title: AppLocalizations.of(context)!.ask_download_location,
+          trailing: Switch(
+            value: true,
+            onChanged: (value) {},
           ),
         ),
       ),
+    ];
+
+    _showDynamicBottomSheet(
+      items: items,
+      title: AppLocalizations.of(context)!.downloads,
     );
   }
 
   void _showAppearanceSettings() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.4,
-        child: ClipRRect(
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-            child: Container(
-              decoration: _getGlassmorphicDecoration(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildPanelHeader('appearance', onBack: () => Navigator.pop(context)),
-                  Expanded(
-                    child: ListView(
-                      children: [
-                        SwitchListTile(
-                          title: Text(
-                            AppLocalizations.of(context)!.dark_mode,
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          value: isDarkMode,
-                          onChanged: (value) {
-                            setState(() {
-                              isDarkMode = value;
-                              _savePreferences();
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
+    final items = <Widget>[
+      Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: _buildSettingsItem(
+          title: AppLocalizations.of(context)!.dark_mode,
+          trailing: Switch(
+            value: isDarkMode,
+            onChanged: (value) {
+              setState(() {
+                isDarkMode = value;
+                _savePreferences();
+              });
+            },
           ),
         ),
       ),
+      Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: _buildSettingsItem(
+          title: AppLocalizations.of(context)!.text_size,
+          subtitle: 'Medium',
+          onTap: () {},
+        ),
+      ),
+      Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        child: _buildSettingsItem(
+          title: AppLocalizations.of(context)!.show_images,
+          trailing: Switch(
+            value: showImages,
+            onChanged: (value) {
+              setState(() {
+                showImages = value;
+                _savePreferences();
+              });
+            },
+          ),
+        ),
+      ),
+    ];
+
+    _showDynamicBottomSheet(
+      items: items,
+      title: AppLocalizations.of(context)!.appearance,
     );
   }
 
@@ -778,11 +632,30 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                               color: isDarkMode ? Colors.white : Colors.black,
                             ),
                           ),
-                          subtitle: Text(
-                            'Version 1.0.0',
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white70 : Colors.black54,
-                            ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Version 0.0.3',
+                                style: TextStyle(
+                                  color: isDarkMode ? Colors.white70 : Colors.black54,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Developed by Ata TÜRKÇÜ',
+                                style: TextStyle(
+                                  color: isDarkMode ? Colors.white70 : Colors.black54,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Licensed under GPL 3.0',
+                                style: TextStyle(
+                                  color: isDarkMode ? Colors.white70 : Colors.black54,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -859,8 +732,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   @override
   Widget build(BuildContext context) {
     final padding = MediaQuery.of(context).padding;
-    final bottomPadding = MediaQuery.of(context).viewInsets.bottom + padding.bottom;
-    final bottomSafeArea = Platform.isAndroid ? 24.0 : 0.0;
     
     return Scaffold(
       backgroundColor: isDarkMode ? Colors.black : Colors.white,
@@ -872,7 +743,24 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             left: 0,
             right: 0,
             bottom: 0,
-            child: WebViewWidget(controller: controller),
+            child: GestureDetector(
+              onHorizontalDragStart: (details) {
+                dragStartX = details.localPosition.dx;
+              },
+              onHorizontalDragUpdate: (details) {
+                final delta = details.localPosition.dx - dragStartX;
+                if (delta.abs() > 50) {
+                  if (delta > 0 && canGoBack) {
+                    controller.goBack();
+                    dragStartX = details.localPosition.dx;
+                  } else if (delta < 0 && canGoForward) {
+                    controller.goForward();
+                    dragStartX = details.localPosition.dx;
+                  }
+                }
+              },
+              child: WebViewWidget(controller: controller),
+            ),
           ),
           if (isLoading)
             Positioned(
@@ -885,7 +773,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             Positioned(
               left: 16,
               right: 16,
-              bottom: bottomPadding + bottomSafeArea + 16,
+              bottom: padding.bottom + 16,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -901,29 +789,34 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
               ),
             ),
           if (isTabsVisible || isHistoryVisible || isSettingsVisible)
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 300),
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                return SlideTransition(
-                  position: Tween<Offset>(
-                    begin: const Offset(0, 1),
-                    end: Offset.zero,
-                  ).animate(CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeOut,
-                  )),
-                  child: child,
-                );
+            GestureDetector(
+              onVerticalDragUpdate: (details) {
+                if (details.primaryDelta! > 10) {
+                  setState(() {
+                    isTabsVisible = false;
+                    isHistoryVisible = false;
+                    isSettingsVisible = false;
+                  });
+                }
               },
               child: Container(
-                key: ValueKey('${isTabsVisible ? 'tabs' : isHistoryVisible ? 'history' : 'settings'}'),
-                color: isDarkMode ? Colors.black : Colors.white,
-                padding: EdgeInsets.only(top: padding.top),
-                child: isTabsVisible 
-                  ? _buildTabsPanel() 
-                  : isHistoryVisible 
-                    ? _buildHistoryPanel() 
-                    : _buildSettingsPanel(),
+                margin: EdgeInsets.only(top: padding.top),
+                child: AnimatedSlide(
+                  duration: const Duration(milliseconds: 200),
+                  offset: isTabsVisible || isHistoryVisible || isSettingsVisible ? Offset.zero : const Offset(0, 1),
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 200),
+                    opacity: isTabsVisible || isHistoryVisible || isSettingsVisible ? 1.0 : 0.0,
+                    child: Container(
+                      color: isDarkMode ? Colors.black : Colors.white,
+                      child: isTabsVisible 
+                        ? _buildTabsPanel() 
+                        : isHistoryVisible 
+                          ? _buildHistoryPanel() 
+                          : _buildSettingsPanel(),
+                    ),
+                  ),
+                ),
               ),
             ),
         ],
@@ -932,13 +825,14 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   Widget _buildTabsPanel() {
+    final statusBarHeight = MediaQuery.of(context).padding.top;
     return Container(
       color: isDarkMode ? Colors.black : Colors.white,
       child: Column(
         children: [
           Container(
-            height: 56 + MediaQuery.of(context).padding.top,
-            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+            height: 56,
+            margin: EdgeInsets.only(top: statusBarHeight),
             decoration: BoxDecoration(
               color: isDarkMode ? Colors.black : Colors.white,
               border: Border(
@@ -1000,35 +894,60 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           ),
           Expanded(
             child: ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8),
               itemCount: tabs.length,
               itemBuilder: (context, index) {
                 final tab = tabs[index];
-                return ListTile(
-                  leading: tab.favicon != null
-                      ? Image.network(tab.favicon!, width: 16, height: 16)
-                      : const Icon(Icons.web),
-                  title: Text(
-                    tab.title,
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.black,
+                final isActive = index == currentTabIndex;
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isActive
+                        ? (isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05))
+                        : (isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03)),
+                    borderRadius: BorderRadius.circular(12),
+                    border: isActive
+                        ? Border.all(
+                            color: isDarkMode ? Colors.white.withOpacity(0.2) : Colors.black.withOpacity(0.1),
+                            width: 1,
+                          )
+                        : null,
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  ),
-                  subtitle: Text(
-                    _getDisplayUrl(tab.url),
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                    leading: tab.favicon != null
+                        ? Image.network(tab.favicon!, width: 16, height: 16)
+                        : Icon(Icons.web, color: isDarkMode ? Colors.white70 : Colors.black54),
+                    title: Text(
+                      tab.title,
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white : Colors.black,
+                        fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
+                      ),
                     ),
+                    subtitle: Text(
+                      _getDisplayUrl(tab.url),
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                    ),
+                    trailing: IconButton(
+                      icon: Icon(
+                        Icons.close,
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                      onPressed: () => _closeTab(index),
+                    ),
+                    onTap: () {
+                      _switchTab(index);
+                      setState(() {
+                        isTabsVisible = false;
+                      });
+                    },
                   ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => _closeTab(index),
-                  ),
-                  onTap: () {
-                    _switchTab(index);
-                    setState(() {
-                      isTabsVisible = false;
-                    });
-                  },
                 );
               },
             ),
@@ -1118,104 +1037,118 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            height: 56 + MediaQuery.of(context).padding.top,
-            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
-                ),
-              ),
-            ),
-            child: Row(
+          _buildPanelHeader(AppLocalizations.of(context)!.settings, onBack: () {
+            setState(() {
+              isSettingsVisible = false;
+            });
+          }),
+          Expanded(
+            child: Column(
               children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.arrow_back,
-                    color: isDarkMode ? Colors.white : Colors.black,
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(top: 24, bottom: 8),
+                            child: Text(
+                              AppLocalizations.of(context)!.customize_browser,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              children: [
+                                _buildSettingsButton('general', () => _showGeneralSettings(), isFirst: true),
+                                _buildDivider(),
+                                _buildSettingsButton('downloads', () => _showDownloadsSettings()),
+                                _buildDivider(),
+                                _buildSettingsButton('appearance', () => _showAppearanceSettings(), isLast: true),
+                              ],
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 24, bottom: 8),
+                            child: Text(
+                              AppLocalizations.of(context)!.learn_more,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                              ),
+                            ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              children: [
+                                _buildSettingsButton('help', () => _showHelpPage(), isFirst: true),
+                                _buildDivider(),
+                                _buildSettingsButton('rate_us', () => _showRateUs()),
+                                _buildDivider(),
+                                _buildSettingsButton('privacy_policy', () => _showPrivacyPolicy()),
+                                _buildDivider(),
+                                _buildSettingsButton('terms_of_use', () => _showTermsOfUse()),
+                                _buildDivider(),
+                                _buildSettingsButton('about', () => _showAboutPage(), isLast: true),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  onPressed: () {
-                    setState(() {
-                      isSettingsVisible = false;
-                    });
-                  },
                 ),
-                Text(
-                  AppLocalizations.of(context)!.settings,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: isDarkMode ? Colors.white : Colors.black,
+                Container(
+                  margin: EdgeInsets.only(
+                    left: 16, 
+                    right: 16,
+                    bottom: MediaQuery.of(context).padding.bottom + 16,
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: InkWell(
+                      onTap: () async {
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.remove('history');
+                        setState(() {
+                          downloads = [];
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        child: Row(
+                          children: [
+                            Text(
+                              'Clear History',
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ],
-            ),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 24, bottom: 8),
-                      child: Text(
-                        AppLocalizations.of(context)!.customize_browser,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isDarkMode ? Colors.white70 : Colors.black54,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        children: [
-                          _buildSettingsButton('general', () => _showGeneralSettings(), isFirst: true),
-                          _buildDivider(),
-                          _buildSettingsButton('downloads', () => _showDownloadsSettings()),
-                          _buildDivider(),
-                          _buildSettingsButton('appearance', () => _showAppearanceSettings(), isLast: true),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 24, bottom: 8),
-                      child: Text(
-                        AppLocalizations.of(context)!.learn_more,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isDarkMode ? Colors.white70 : Colors.black54,
-                        ),
-                      ),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        children: [
-                          _buildSettingsButton('help', () => _showHelpPage(), isFirst: true),
-                          _buildDivider(),
-                          _buildSettingsButton('rate_us', () => _showRateUs()),
-                          _buildDivider(),
-                          _buildSettingsButton('privacy_policy', () => _showPrivacyPolicy()),
-                          _buildDivider(),
-                          _buildSettingsButton('terms_of_use', () => _showTermsOfUse()),
-                          _buildDivider(),
-                          _buildSettingsButton('about', () => _showAboutPage(), isLast: true),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
           ),
         ],
@@ -1281,11 +1214,11 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onVerticalDragUpdate: (details) {
-        if (details.primaryDelta! < -10 && !isPanelExpanded) {
+        if (details.primaryDelta! < -5 && !isPanelExpanded) {
           setState(() {
             isPanelExpanded = true;
           });
-        } else if (details.primaryDelta! > 10 && isPanelExpanded) {
+        } else if (details.primaryDelta! > 5 && isPanelExpanded) {
           setState(() {
             isPanelExpanded = false;
           });
@@ -1295,12 +1228,15 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         dragStartX = details.localPosition.dx;
       },
       onHorizontalDragUpdate: (details) {
-        if (canGoBack && details.localPosition.dx - dragStartX > 100) {
-          controller.goBack();
-          dragStartX = details.localPosition.dx;
-        } else if (canGoForward && details.localPosition.dx - dragStartX < -100) {
-          controller.goForward();
-          dragStartX = details.localPosition.dx;
+        final delta = details.localPosition.dx - dragStartX;
+        if (delta.abs() > 50) {
+          if (delta > 0 && canGoBack) {
+            controller.goBack();
+            dragStartX = details.localPosition.dx;
+          } else if (delta < 0 && canGoForward) {
+            controller.goForward();
+            dragStartX = details.localPosition.dx;
+          }
         }
       },
       child: Container(
@@ -1314,27 +1250,12 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
               child: Row(
                 children: [
                   const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        isSecurityPanelVisible = true;
-                      });
-                      Future.delayed(const Duration(seconds: 2), () {
-                        if (mounted) {
-                          setState(() {
-                            isSecurityPanelVisible = false;
-                          });
-                        }
-                      });
-                    },
-                    child: Image.asset(
-                      isSecure ? 'assets/secure24.png' : 'assets/unsecure24.png',
-                      width: 24,
-                      height: 24,
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
-                    ),
+                  Image.asset(
+                    isSecure ? 'assets/secure24.png' : 'assets/unsecure24.png',
+                    width: 24,
+                    height: 24,
+                    color: isDarkMode ? Colors.white70 : Colors.black54,
                   ),
-                  const SizedBox(width: 8),
                   Expanded(
                     child: !isUrlBarExpanded
                       ? GestureDetector(
@@ -1345,14 +1266,12 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                               urlController.text = currentUrl;
                             });
                           },
-                          behavior: HitTestBehavior.opaque,
                           child: Center(
                             child: Text(
-                              displayUrl.isNotEmpty ? _getDisplayUrl(displayUrl) : 'Search or enter address',
+                              _getDisplayUrl(displayUrl),
                               style: TextStyle(
                                 color: isDarkMode ? Colors.white : Colors.black,
                                 fontSize: 16,
-                                fontWeight: FontWeight.w500,
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -1361,28 +1280,48 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                         )
                       : TextField(
                           controller: urlController,
+                          textAlign: TextAlign.center,
                           decoration: InputDecoration(
                             hintText: 'Search or enter address',
                             hintStyle: TextStyle(
-                              color: isDarkMode ? Colors.white70 : Colors.black54
+                              color: isDarkMode ? Colors.white70 : Colors.black54,
                             ),
                             border: InputBorder.none,
                           ),
                           style: TextStyle(
-                            color: isDarkMode ? Colors.white : Colors.black
+                            color: isDarkMode ? Colors.white : Colors.black,
+                            fontSize: 16,
                           ),
-                          onSubmitted: (_) => _loadUrl(),
+                          onSubmitted: (_) {
+                            _loadUrl();
+                            setState(() {
+                              isUrlBarExpanded = false;
+                            });
+                          },
                           autofocus: true,
                         ),
                   ),
                   IconButton(
-                    icon: Image.asset(
-                      'assets/reload24.png',
-                      width: 24,
-                      height: 24,
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
-                    ),
-                    onPressed: () => controller.reload(),
+                    icon: isUrlBarExpanded 
+                      ? Icon(
+                          Icons.close,
+                          color: isDarkMode ? Colors.white70 : Colors.black54,
+                        )
+                      : Image.asset(
+                          'assets/reload24.png',
+                          width: 24,
+                          height: 24,
+                          color: isDarkMode ? Colors.white70 : Colors.black54,
+                        ),
+                    onPressed: () {
+                      if (isUrlBarExpanded) {
+                        setState(() {
+                          isUrlBarExpanded = false;
+                        });
+                      } else {
+                        controller.reload();
+                      }
+                    },
                   ),
                 ],
               ),
@@ -1466,11 +1405,11 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   Widget _buildQuickActionsPanel() {
     return AnimatedSlide(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOut,
       offset: Offset(0, isPanelExpanded ? 0 : 1),
       child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 200),
         opacity: isPanelExpanded ? 1.0 : 0.0,
         child: Container(
           height: 100,
@@ -1622,5 +1561,104 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         ),
       ),
     );
+  }
+
+  Future<void> _loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isDarkMode = prefs.getBool('darkMode') ?? false;
+      textScale = prefs.getDouble('textScale') ?? 1.0;
+      showImages = prefs.getBool('showImages') ?? true;
+      currentSearchEngine = prefs.getString('searchEngine') ?? 'google';
+      allowHttp = prefs.getBool('allowHttp') ?? false;
+    });
+  }
+
+  Future<void> _savePreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('darkMode', isDarkMode);
+    await prefs.setDouble('textScale', textScale);
+    await prefs.setBool('showImages', showImages);
+  }
+
+  String _getDisplayUrl(String url) {
+    try {
+      final uri = Uri.parse(url);
+      String host = uri.host;
+      if (host.startsWith('www.')) {
+        return host;
+      } else {
+        return 'www.' + host;
+      }
+    } catch (e) {
+      return url;
+    }
+  }
+
+  Future<void> _createNewTab() async {
+    if (Platform.isAndroid) {
+      final androidParams = AndroidWebViewControllerCreationParams();
+      final androidController = AndroidWebViewController(androidParams);
+      await androidController.setJavaScriptMode(JavaScriptMode.unrestricted);
+      await androidController.setBackgroundColor(Colors.white);
+      controller = WebViewController.fromPlatform(androidController);
+    } else if (Platform.isIOS) {
+      final webKitParams = WebKitWebViewControllerCreationParams(
+        allowsInlineMediaPlayback: true,
+      );
+      final webKitController = WebKitWebViewController(webKitParams);
+      await webKitController.setJavaScriptMode(JavaScriptMode.unrestricted);
+      await webKitController.setBackgroundColor(Colors.white);
+      await webKitController.setAllowsBackForwardNavigationGestures(true);
+      controller = WebViewController.fromPlatform(webKitController);
+    }
+
+    await controller.setNavigationDelegate(
+      NavigationDelegate(
+        onPageStarted: (url) {
+          setState(() {
+            isLoading = true;
+            displayUrl = url;
+            isSecure = url.startsWith('https://');
+          });
+        },
+        onPageFinished: (url) async {
+          setState(() {
+            isLoading = false;
+            displayUrl = url;
+            isSecure = url.startsWith('https://');
+          });
+          controller.canGoBack().then((value) => setState(() => canGoBack = value));
+          controller.canGoForward().then((value) => setState(() => canGoForward = value));
+        },
+      ),
+    );
+
+    await controller.loadRequest(Uri.parse('https://www.google.com'));
+  }
+
+  void _switchTab(int index) {
+    if (index >= 0 && index < tabs.length) {
+      setState(() {
+        currentTabIndex = index;
+        controller = tabs[index].controller;
+        displayUrl = tabs[index].url;
+        isSecure = tabs[index].url.startsWith('https://');
+      });
+    }
+  }
+
+  void _closeTab(int index) {
+    if (tabs.length > 1) {
+      setState(() {
+        tabs.removeAt(index);
+        if (currentTabIndex >= tabs.length) {
+          currentTabIndex = tabs.length - 1;
+        }
+        controller = tabs[currentTabIndex].controller;
+        displayUrl = tabs[currentTabIndex].url;
+        isSecure = tabs[currentTabIndex].url.startsWith('https://');
+      });
+    }
   }
 } 
