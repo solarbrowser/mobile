@@ -1,0 +1,171 @@
+{
+  "@@locale": "tr",
+  "settings": "Ayarlar",
+  "@settings": {
+    "description": "Settings menu title"
+  },
+  "downloads": "İndirilenler",
+  "@downloads": {
+    "description": "Downloads menu title"
+  },
+  "tabs": "Sekmeler",
+  "@tabs": {
+    "description": "Tabs menu title"
+  },
+  "bookmarks": "Yer İmleri",
+  "@bookmarks": {
+    "description": "Bookmarks menu title"
+  },
+  "history": "Geçmiş",
+  "@history": {
+    "description": "History menu title"
+  },
+  "search_engine": "Arama Motoru",
+  "@search_engine": {
+    "description": "Search engine settings title"
+  },
+  "language": "Dil",
+  "@language": {
+    "description": "Language settings title"
+  },
+  "javascript": "JavaScript",
+  "@javascript": {
+    "description": "JavaScript settings title"
+  },
+  "dark_mode": "Karanlık Mod",
+  "@dark_mode": {
+    "description": "Dark mode settings title"
+  },
+  "general": "Genel",
+  "@general": {
+    "description": "General settings section title"
+  },
+  "appearance": "Görünüm",
+  "@appearance": {
+    "description": "Appearance settings section title"
+  },
+  "about": "Hakkında",
+  "@about": {
+    "description": "About section title"
+  },
+  "select_language": "Dil Seçin",
+  "@select_language": {
+    "description": "Language selection prompt"
+  },
+  "select_search_engine": "Arama Motoru Seçin",
+  "@select_search_engine": {
+    "description": "Search engine selection prompt"
+  },
+  "check_updates": "Güncellemeleri Kontrol Et",
+  "@check_updates": {
+    "description": "Check for updates button text"
+  },
+  "version": "Sürüm",
+  "@version": {
+    "description": "Version label"
+  },
+  "developed_by": "Geliştiren",
+  "@developed_by": {
+    "description": "Developer credit label"
+  },
+  "licensed_under": "Lisansı",
+  "@licensed_under": {
+    "description": "License information label"
+  },
+  "support_patreon": "Patreon'da Destekle",
+  "@support_patreon": {
+    "description": "Patreon support button text"
+  },
+  "search_in_page": "Sayfada ara",
+  "@search_in_page": {
+    "description": "In-page search prompt"
+  },
+  "no_history": "Geçmiş bulunamadı",
+  "@no_history": {
+    "description": "Empty history message"
+  },
+  "text_size": "Yazı Boyutu",
+  "@text_size": {
+    "description": "Text size settings title"
+  },
+  "theme_color": "Tema Rengi",
+  "@theme_color": {
+    "description": "Theme color settings title"
+  },
+  "show_images": "Resimleri Göster",
+  "@show_images": {
+    "description": "Show images settings title"
+  },
+  "downloads_title": "İndirilenler",
+  "@downloads_title": {
+    "description": "Downloads page title"
+  },
+  "no_downloads": "Henüz indirme yok",
+  "@no_downloads": {
+    "description": "Empty downloads message"
+  },
+  "clear_history": "Geçmişi Temizle",
+  "@clear_history": {
+    "description": "Clear history button text"
+  },
+  "clear_history_title": "Geçmişi Temizle",
+  "@clear_history_title": {
+    "description": "Clear history dialog title"
+  },
+  "clear_history_message": "Geçmişinizi silmek istediğinize emin misiniz?",
+  "@clear_history_message": {
+    "description": "Clear history confirmation message"
+  },
+  "cancel": "İptal",
+  "@cancel": {
+    "description": "Cancel button text"
+  },
+  "clear": "Temizle",
+  "@clear": {
+    "description": "Clear button text"
+  },
+  "history_cleared": "Geçmiş temizlendi",
+  "@history_cleared": {
+    "description": "History cleared confirmation message"
+  },
+  "help": "Yardım",
+  "@help": {
+    "description": "Help menu title"
+  },
+  "privacy_policy": "Gizlilik Politikası",
+  "@privacy_policy": {
+    "description": "Privacy policy link text"
+  },
+  "terms_of_use": "Kullanım Koşulları",
+  "@terms_of_use": {
+    "description": "Terms of use link text"
+  },
+  "customize_browser": "Tarayıcı deneyiminizi özelleştirin",
+  "@customize_browser": {
+    "description": "Customization section description"
+  },
+  "learn_more": "Solar Browser hakkında daha fazla bilgi edinin",
+  "@learn_more": {
+    "description": "Learn more link text"
+  },
+  "rate_us": "Bizi Değerlendirin",
+  "@rate_us": {
+    "description": "Rate app button text"
+  },
+  "download_location": "İndirme Konumu",
+  "@download_location": {
+    "description": "Download location settings title"
+  },
+  "ask_download_location": "İndirmeden Önce Sor",
+  "@ask_download_location": {
+    "description": "Ask before downloading setting title"
+  },
+  "enabled": "Açık",
+  "@enabled": {
+    "description": "Enabled state text"
+  },
+  "disabled": "Kapalı",
+  "@disabled": {
+    "description": "Disabled state text"
+  }
+} 
