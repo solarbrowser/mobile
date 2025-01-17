@@ -12,6 +12,11 @@ import 'dart:ui';
 import '../l10n/app_localizations.dart';
 import '../models/tab_info.dart';
 import '../utils/browser_utils.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:intl/intl.dart';
+import 'package:open_file/open_file.dart';
+import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
 class BrowserScreen extends StatefulWidget {
   final Function(String) onLocaleChange;
@@ -69,7 +74,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     'yahoo': 'https://search.yahoo.com/search?p=',
   };
   List<Map<String, dynamic>> downloads = [];
-  bool allowHttp = false;
+  bool allowHttp = true;
 
   BoxDecoration _getGlassmorphicDecoration() {
     return BoxDecoration(
@@ -135,8 +140,41 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       controller = WebViewController.fromPlatform(webKitController);
     }
 
+    await _setupWebViewCallbacks(controller);
+
+    await controller.loadRequest(Uri.parse('https://www.google.com'));
+  }
+
+  Future<void> _setupWebViewCallbacks(WebViewController controller) async {
     await controller.setNavigationDelegate(
       NavigationDelegate(
+        onPageStarted: (url) {
+          setState(() {
+            isLoading = true;
+            displayUrl = _getDisplayUrl(url);
+            isSecure = url.startsWith('https://');
+          });
+        },
+        onPageFinished: (url) async {
+          final title = await controller.getTitle() ?? 'New Tab';
+          final faviconUrl = await BrowserUtils.getFaviconUrl(url);
+          
+          setState(() {
+            isLoading = false;
+            displayUrl = url;
+            isSecure = url.startsWith('https://');
+            tabs[currentTabIndex].title = title;
+            tabs[currentTabIndex].url = url;
+            if (faviconUrl != null) {
+              tabs[currentTabIndex].favicon = faviconUrl;
+            }
+          });
+          
+          controller.canGoBack().then((value) => setState(() => canGoBack = value));
+          controller.canGoForward().then((value) => setState(() => canGoForward = value));
+          
+          _saveToHistory(url, title);
+        },
         onNavigationRequest: (request) async {
           if (request.url.startsWith('tel:') || request.url.startsWith('mailto:')) {
             if (await canLaunchUrl(Uri.parse(request.url))) {
@@ -169,34 +207,49 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             }
           }
           
+          // Handle file downloads
+          if (request.url.contains('/download/') || request.url.endsWith('.pdf') || request.url.endsWith('.doc') || request.url.endsWith('.docx')) {
+            final status = await Permission.storage.status;
+            if (!status.isGranted) {
+              await Permission.storage.request();
+            }
+            
+            if (await Permission.storage.isGranted) {
+              final directory = await getApplicationDocumentsDirectory();
+              final fileName = request.url.split('/').last;
+              final filePath = '${directory.path}/$fileName';
+              
+              try {
+                final response = await http.get(Uri.parse(request.url));
+                final file = File(filePath);
+                await file.writeAsBytes(response.bodyBytes);
+                
+                // Save download info to SharedPreferences
+                final prefs = await SharedPreferences.getInstance();
+                final downloads = prefs.getStringList('downloads') ?? [];
+                downloads.add(json.encode({
+                  'fileName': fileName,
+                  'url': request.url,
+                  'timestamp': DateTime.now().toIso8601String(),
+                }));
+                await prefs.setStringList('downloads', downloads);
+                
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Downloaded: $fileName')),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Download failed: ${e.toString()}')),
+                );
+              }
+              return NavigationDecision.prevent;
+            }
+          }
+          
           return NavigationDecision.navigate;
-        },
-        onPageStarted: (url) {
-          setState(() {
-            isLoading = true;
-            displayUrl = url;
-            isSecure = url.startsWith('https://');
-          });
-        },
-        onPageFinished: (url) async {
-          final title = await controller.getTitle() ?? 'New Tab';
-          final faviconUrl = await BrowserUtils.getFaviconUrl(url);
-          
-          setState(() {
-            isLoading = false;
-            displayUrl = url;
-            isSecure = url.startsWith('https://');
-          });
-          
-          controller.canGoBack().then((value) => setState(() => canGoBack = value));
-          controller.canGoForward().then((value) => setState(() => canGoForward = value));
-          
-          _saveToHistory(url, title);
         },
       ),
     );
-
-    await controller.loadRequest(Uri.parse('https://www.google.com'));
   }
 
   Future<void> _saveToHistory(String url, String title) async {
@@ -739,28 +792,11 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       body: Stack(
         children: [
           Positioned(
-            top: padding.top,
+            top: MediaQuery.of(context).padding.top,
             left: 0,
             right: 0,
             bottom: 0,
-            child: GestureDetector(
-              onHorizontalDragStart: (details) {
-                dragStartX = details.localPosition.dx;
-              },
-              onHorizontalDragUpdate: (details) {
-                final delta = details.localPosition.dx - dragStartX;
-                if (delta.abs() > 50) {
-                  if (delta > 0 && canGoBack) {
-                    controller.goBack();
-                    dragStartX = details.localPosition.dx;
-                  } else if (delta < 0 && canGoForward) {
-                    controller.goForward();
-                    dragStartX = details.localPosition.dx;
-                  }
-                }
-              },
-              child: WebViewWidget(controller: controller),
-            ),
+            child: WebViewWidget(controller: controller),
           ),
           if (isLoading)
             Positioned(
@@ -800,7 +836,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                 }
               },
               child: Container(
-                margin: EdgeInsets.only(top: padding.top),
+                margin: EdgeInsets.only(top: 0),
                 child: AnimatedSlide(
                   duration: const Duration(milliseconds: 200),
                   offset: isTabsVisible || isHistoryVisible || isSettingsVisible ? Offset.zero : const Offset(0, 1),
@@ -955,6 +991,64 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         ],
       ),
     );
+  }
+
+  Future<void> _createNewTab() async {
+    final newController = Platform.isAndroid
+        ? WebViewController.fromPlatform(
+            AndroidWebViewController(
+              AndroidWebViewControllerCreationParams(),
+            )..setJavaScriptMode(JavaScriptMode.unrestricted)
+            ..setBackgroundColor(Colors.white))
+        : WebViewController.fromPlatform(
+            WebKitWebViewController(
+              WebKitWebViewControllerCreationParams(
+                allowsInlineMediaPlayback: true,
+              ),
+            )..setJavaScriptMode(JavaScriptMode.unrestricted)
+            ..setBackgroundColor(Colors.white));
+
+    await newController.setNavigationDelegate(
+      NavigationDelegate(
+        onPageStarted: (url) {
+          setState(() {
+            isLoading = true;
+            displayUrl = url;
+            isSecure = url.startsWith('https://');
+          });
+        },
+        onPageFinished: (url) async {
+          final title = await newController.getTitle() ?? 'New Tab';
+          final faviconUrl = await BrowserUtils.getFaviconUrl(url);
+          
+          setState(() {
+            isLoading = false;
+            displayUrl = url;
+            isSecure = url.startsWith('https://');
+            tabs[currentTabIndex].title = title;
+            tabs[currentTabIndex].url = url;
+            if (faviconUrl != null) {
+              tabs[currentTabIndex].favicon = faviconUrl;
+            }
+          });
+          
+          newController.canGoBack().then((value) => setState(() => canGoBack = value));
+          newController.canGoForward().then((value) => setState(() => canGoForward = value));
+        },
+      ),
+    );
+
+    await newController.loadRequest(Uri.parse('https://www.google.com'));
+
+    setState(() {
+      tabs.add(TabInfo(
+        title: 'New Tab',
+        url: 'https://www.google.com',
+        controller: newController,
+      ));
+      currentTabIndex = tabs.length - 1;
+      controller = newController;
+    });
   }
 
   Widget _buildHistoryPanel() {
@@ -1595,48 +1689,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     }
   }
 
-  Future<void> _createNewTab() async {
-    if (Platform.isAndroid) {
-      final androidParams = AndroidWebViewControllerCreationParams();
-      final androidController = AndroidWebViewController(androidParams);
-      await androidController.setJavaScriptMode(JavaScriptMode.unrestricted);
-      await androidController.setBackgroundColor(Colors.white);
-      controller = WebViewController.fromPlatform(androidController);
-    } else if (Platform.isIOS) {
-      final webKitParams = WebKitWebViewControllerCreationParams(
-        allowsInlineMediaPlayback: true,
-      );
-      final webKitController = WebKitWebViewController(webKitParams);
-      await webKitController.setJavaScriptMode(JavaScriptMode.unrestricted);
-      await webKitController.setBackgroundColor(Colors.white);
-      await webKitController.setAllowsBackForwardNavigationGestures(true);
-      controller = WebViewController.fromPlatform(webKitController);
-    }
-
-    await controller.setNavigationDelegate(
-      NavigationDelegate(
-        onPageStarted: (url) {
-          setState(() {
-            isLoading = true;
-            displayUrl = url;
-            isSecure = url.startsWith('https://');
-          });
-        },
-        onPageFinished: (url) async {
-          setState(() {
-            isLoading = false;
-            displayUrl = url;
-            isSecure = url.startsWith('https://');
-          });
-          controller.canGoBack().then((value) => setState(() => canGoBack = value));
-          controller.canGoForward().then((value) => setState(() => canGoForward = value));
-        },
-      ),
-    );
-
-    await controller.loadRequest(Uri.parse('https://www.google.com'));
-  }
-
   void _switchTab(int index) {
     if (index >= 0 && index < tabs.length) {
       setState(() {
@@ -1660,5 +1712,192 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         isSecure = tabs[currentTabIndex].url.startsWith('https://');
       });
     }
+  }
+
+  Widget _buildAppearanceSettings() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: EdgeInsets.symmetric(vertical: 8),
+            padding: EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              children: [
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    'Dark Mode',
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                  value: isDarkMode,
+                  onChanged: (value) async {
+                    setState(() {
+                      isDarkMode = value;
+                    });
+                    await _savePreferences();
+                  },
+                ),
+                Slider(
+                  value: textScale,
+                  min: 0.8,
+                  max: 1.4,
+                  divisions: 6,
+                  label: '${(textScale * 100).round()}%',
+                  onChanged: (value) async {
+                    setState(() {
+                      textScale = value;
+                    });
+                    await _savePreferences();
+                  },
+                ),
+                Text(
+                  'Text Size: ${(textScale * 100).round()}%',
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white70 : Colors.black54,
+                  ),
+                ),
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    'Show Images',
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
+                  ),
+                  value: showImages,
+                  onChanged: (value) async {
+                    setState(() {
+                      showImages = value;
+                    });
+                    await _savePreferences();
+                    await controller.reload();
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDownloadsPanel() {
+    return Container(
+      color: isDarkMode ? Colors.black : Colors.white,
+      child: Column(
+        children: [
+          Container(
+            height: 56 + MediaQuery.of(context).padding.top,
+            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+            decoration: BoxDecoration(
+              color: isDarkMode ? Colors.black : Colors.white,
+              border: Border(
+                bottom: BorderSide(
+                  color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.arrow_back,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      isDownloadsVisible = false;
+                    });
+                  },
+                ),
+                Text(
+                  'Downloads',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: FutureBuilder<SharedPreferences>(
+              future: SharedPreferences.getInstance(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(child: CircularProgressIndicator());
+                }
+                
+                final downloads = snapshot.data!.getStringList('downloads') ?? [];
+                if (downloads.isEmpty) {
+                  return Center(
+                    child: Text(
+                      'No downloads yet',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                    ),
+                  );
+                }
+                
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  itemCount: downloads.length,
+                  itemBuilder: (context, index) {
+                    final download = json.decode(downloads[index]);
+                    final fileName = download['fileName'];
+                    final url = download['url'];
+                    final timestamp = DateTime.parse(download['timestamp']);
+                    
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        title: Text(
+                          fileName,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black,
+                          ),
+                        ),
+                        subtitle: Text(
+                          DateFormat.yMMMd().add_jm().format(timestamp),
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white70 : Colors.black54,
+                          ),
+                        ),
+                        trailing: IconButton(
+                          icon: Icon(
+                            Icons.file_open,
+                            color: isDarkMode ? Colors.white70 : Colors.black54,
+                          ),
+                          onPressed: () async {
+                            final directory = await getApplicationDocumentsDirectory();
+                            final filePath = '${directory.path}/$fileName';
+                            await OpenFile.open(filePath);
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
   }
 } 
