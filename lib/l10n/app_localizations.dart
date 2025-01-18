@@ -5,8 +5,18 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_ar.dart';
+import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
+import 'app_localizations_es.dart';
+import 'app_localizations_fr.dart';
+import 'app_localizations_hi.dart';
+import 'app_localizations_it.dart';
+import 'app_localizations_ja.dart';
+import 'app_localizations_pt.dart';
+import 'app_localizations_ru.dart';
 import 'app_localizations_tr.dart';
+import 'app_localizations_zh.dart';
 
 // ignore_for_file: type=lint
 
@@ -92,260 +102,228 @@ abstract class AppLocalizations {
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
-    Locale('tr')
+    Locale('tr'),
+    Locale('ar'),
+    Locale('de'),
+    Locale('es'),
+    Locale('fr'),
+    Locale('hi'),
+    Locale('it'),
+    Locale('ja'),
+    Locale('pt'),
+    Locale('ru'),
+    Locale('zh')
   ];
 
-  /// Settings menu title
+  /// No description provided for @welcome.
   ///
   /// In en, this message translates to:
-  /// **'Settings'**
-  String get settings;
+  /// **'Welcome to Solar'**
+  String get welcome;
 
-  /// Downloads menu title
+  /// No description provided for @welcomeSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Downloads'**
-  String get downloads;
+  /// **'A modern, fast, and secure browser'**
+  String get welcomeSubtitle;
 
-  /// Tabs menu title
+  /// No description provided for @chooseLanguage.
   ///
   /// In en, this message translates to:
-  /// **'Tabs'**
-  String get tabs;
+  /// **'Choose Your Language'**
+  String get chooseLanguage;
 
-  /// Bookmarks menu title
+  /// No description provided for @chooseTheme.
   ///
   /// In en, this message translates to:
-  /// **'Bookmarks'**
-  String get bookmarks;
+  /// **'Choose Your Theme'**
+  String get chooseTheme;
 
-  /// History menu title
+  /// No description provided for @chooseSearchEngine.
   ///
   /// In en, this message translates to:
-  /// **'History'**
-  String get history;
+  /// **'Choose Your Search Engine'**
+  String get chooseSearchEngine;
 
-  /// Search engine settings title
+  /// No description provided for @light.
   ///
   /// In en, this message translates to:
-  /// **'Search Engine'**
-  String get search_engine;
+  /// **'Light'**
+  String get light;
 
-  /// Language settings title
+  /// No description provided for @dark.
   ///
   /// In en, this message translates to:
-  /// **'Language'**
-  String get language;
+  /// **'Dark'**
+  String get dark;
 
-  /// JavaScript settings title
+  /// No description provided for @next.
   ///
   /// In en, this message translates to:
-  /// **'JavaScript'**
-  String get javascript;
+  /// **'Next'**
+  String get next;
 
-  /// Dark mode settings title
+  /// No description provided for @back.
   ///
   /// In en, this message translates to:
-  /// **'Dark Mode'**
-  String get dark_mode;
+  /// **'Back'**
+  String get back;
 
-  /// General settings section title
+  /// No description provided for @getStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get getStarted;
+
+  /// Continue button text
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueText;
+
+  /// No description provided for @updated.
+  ///
+  /// In en, this message translates to:
+  /// **'Solar Browser Updated!'**
+  String get updated;
+
+  /// No description provided for @version.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String version(String version);
+
+  /// No description provided for @general.
   ///
   /// In en, this message translates to:
   /// **'General'**
   String get general;
 
-  /// Appearance settings section title
+  /// No description provided for @appearance.
   ///
   /// In en, this message translates to:
   /// **'Appearance'**
   String get appearance;
 
-  /// About section title
-  ///
-  /// In en, this message translates to:
-  /// **'About'**
-  String get about;
-
-  /// Language selection prompt
-  ///
-  /// In en, this message translates to:
-  /// **'Select Language'**
-  String get select_language;
-
-  /// Search engine selection prompt
-  ///
-  /// In en, this message translates to:
-  /// **'Select Search Engine'**
-  String get select_search_engine;
-
-  /// Check for updates button text
-  ///
-  /// In en, this message translates to:
-  /// **'Check for Updates'**
-  String get check_updates;
-
-  /// Version label
-  ///
-  /// In en, this message translates to:
-  /// **'Version'**
-  String get version;
-
-  /// Developer credit label
-  ///
-  /// In en, this message translates to:
-  /// **'Developed by'**
-  String get developed_by;
-
-  /// License information label
-  ///
-  /// In en, this message translates to:
-  /// **'Licensed under'**
-  String get licensed_under;
-
-  /// Patreon support button text
-  ///
-  /// In en, this message translates to:
-  /// **'Support on Patreon'**
-  String get support_patreon;
-
-  /// In-page search prompt
-  ///
-  /// In en, this message translates to:
-  /// **'Search in page'**
-  String get search_in_page;
-
-  /// Empty history message
-  ///
-  /// In en, this message translates to:
-  /// **'No history available'**
-  String get no_history;
-
-  /// Text size settings title
-  ///
-  /// In en, this message translates to:
-  /// **'Text Size'**
-  String get text_size;
-
-  /// Theme color settings title
-  ///
-  /// In en, this message translates to:
-  /// **'Theme Color'**
-  String get theme_color;
-
-  /// Show images settings title
-  ///
-  /// In en, this message translates to:
-  /// **'Show Images'**
-  String get show_images;
-
-  /// Downloads page title
+  /// No description provided for @downloads.
   ///
   /// In en, this message translates to:
   /// **'Downloads'**
-  String get downloads_title;
+  String get downloads;
 
-  /// Empty downloads message
+  /// No description provided for @settings.
   ///
   /// In en, this message translates to:
-  /// **'No downloads yet'**
-  String get no_downloads;
+  /// **'Settings'**
+  String get settings;
 
-  /// Clear history button text
-  ///
-  /// In en, this message translates to:
-  /// **'Clear History'**
-  String get clear_history;
-
-  /// Clear history dialog title
-  ///
-  /// In en, this message translates to:
-  /// **'Clear History'**
-  String get clear_history_title;
-
-  /// Clear history confirmation message
-  ///
-  /// In en, this message translates to:
-  /// **'Are you sure you want to clear your browsing history?'**
-  String get clear_history_message;
-
-  /// Cancel button text
-  ///
-  /// In en, this message translates to:
-  /// **'Cancel'**
-  String get cancel;
-
-  /// Clear button text
-  ///
-  /// In en, this message translates to:
-  /// **'Clear'**
-  String get clear;
-
-  /// History cleared confirmation message
-  ///
-  /// In en, this message translates to:
-  /// **'History cleared'**
-  String get history_cleared;
-
-  /// Help menu title
+  /// No description provided for @help.
   ///
   /// In en, this message translates to:
   /// **'Help'**
   String get help;
 
-  /// Privacy policy link text
+  /// No description provided for @about.
   ///
   /// In en, this message translates to:
-  /// **'Privacy Policy'**
-  String get privacy_policy;
+  /// **'About'**
+  String get about;
 
-  /// Terms of use link text
+  /// No description provided for @language.
   ///
   /// In en, this message translates to:
-  /// **'Terms of Use'**
-  String get terms_of_use;
+  /// **'Language'**
+  String get language;
 
-  /// Customization section description
+  /// No description provided for @search_engine.
   ///
   /// In en, this message translates to:
-  /// **'Customize your browsing experience'**
-  String get customize_browser;
+  /// **'Search Engine'**
+  String get search_engine;
 
-  /// Learn more link text
+  /// No description provided for @dark_mode.
   ///
   /// In en, this message translates to:
-  /// **'Learn more about Solar Browser'**
-  String get learn_more;
+  /// **'Dark Mode'**
+  String get dark_mode;
 
-  /// Rate app button text
+  /// No description provided for @text_size.
   ///
   /// In en, this message translates to:
-  /// **'Rate Us'**
-  String get rate_us;
+  /// **'Text Size'**
+  String get text_size;
 
-  /// Download location settings title
+  /// No description provided for @show_images.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Images'**
+  String get show_images;
+
+  /// No description provided for @download_location.
   ///
   /// In en, this message translates to:
   /// **'Download Location'**
   String get download_location;
 
-  /// Ask before downloading setting title
+  /// No description provided for @ask_download_location.
   ///
   /// In en, this message translates to:
-  /// **'Ask Before Downloading'**
+  /// **'Ask Download Location'**
   String get ask_download_location;
 
-  /// Enabled state text
+  /// No description provided for @rate_us.
   ///
   /// In en, this message translates to:
-  /// **'Enabled'**
-  String get enabled;
+  /// **'Rate Us'**
+  String get rate_us;
 
-  /// Disabled state text
+  /// No description provided for @privacy_policy.
   ///
   /// In en, this message translates to:
-  /// **'Disabled'**
-  String get disabled;
+  /// **'Privacy Policy'**
+  String get privacy_policy;
+
+  /// No description provided for @terms_of_use.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Use'**
+  String get terms_of_use;
+
+  /// No description provided for @customize_browser.
+  ///
+  /// In en, this message translates to:
+  /// **'Customize Browser'**
+  String get customize_browser;
+
+  /// No description provided for @learn_more.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn More'**
+  String get learn_more;
+
+  /// No description provided for @tabs.
+  ///
+  /// In en, this message translates to:
+  /// **'Tabs'**
+  String get tabs;
+
+  /// No description provided for @history.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get history;
+
+  /// No description provided for @bookmarks.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmarks'**
+  String get bookmarks;
+
+  /// No description provided for @search_in_page.
+  ///
+  /// In en, this message translates to:
+  /// **'Search in page'**
+  String get search_in_page;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
@@ -357,7 +335,7 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['en', 'tr'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['ar', 'de', 'en', 'es', 'fr', 'hi', 'it', 'ja', 'pt', 'ru', 'tr', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -368,8 +346,18 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
 
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+    case 'ar': return AppLocalizationsAr();
+    case 'de': return AppLocalizationsDe();
     case 'en': return AppLocalizationsEn();
+    case 'es': return AppLocalizationsEs();
+    case 'fr': return AppLocalizationsFr();
+    case 'hi': return AppLocalizationsHi();
+    case 'it': return AppLocalizationsIt();
+    case 'ja': return AppLocalizationsJa();
+    case 'pt': return AppLocalizationsPt();
+    case 'ru': return AppLocalizationsRu();
     case 'tr': return AppLocalizationsTr();
+    case 'zh': return AppLocalizationsZh();
   }
 
   throw FlutterError(

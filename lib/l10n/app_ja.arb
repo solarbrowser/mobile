@@ -1,0 +1,47 @@
+{
+  "@@locale": "ja",
+  
+  "welcome": "Solar へようこそ",
+  "welcomeSubtitle": "モダンで高速、安全なブラウザ",
+  "chooseLanguage": "言語を選択",
+  "chooseTheme": "テーマを選択",
+  "chooseSearchEngine": "検索エンジンを選択",
+  "light": "ライト",
+  "dark": "ダーク",
+  "next": "次へ",
+  "back": "戻る",
+  "getStarted": "始める",
+  "continueText": "続ける",
+  "updated": "Solar ブラウザが更新されました！",
+  "version": "バージョン {version}",
+  "@version": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+
+  "general": "一般",
+  "appearance": "外観",
+  "downloads": "ダウンロード",
+  "settings": "設定",
+  "help": "ヘルプ",
+  "about": "情報",
+  "language": "言語",
+  "search_engine": "検索エンジン",
+  "dark_mode": "ダークモード",
+  "text_size": "文字サイズ",
+  "show_images": "画像を表示",
+  "download_location": "ダウンロード先",
+  "ask_download_location": "保存先を確認",
+  "rate_us": "評価する",
+  "privacy_policy": "プライバシーポリシー",
+  "terms_of_use": "利用規約",
+  "customize_browser": "ブラウザをカスタマイズ",
+  "learn_more": "詳細を見る",
+  "tabs": "タブ",
+  "history": "履歴",
+  "bookmarks": "ブックマーク",
+  "search_in_page": "ページ内検索"
+} 

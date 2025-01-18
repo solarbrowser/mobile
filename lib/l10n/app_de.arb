@@ -1,0 +1,47 @@
+{
+  "@@locale": "de",
+  
+  "welcome": "Willkommen bei Solar",
+  "welcomeSubtitle": "Ein moderner, schneller und sicherer Browser",
+  "chooseLanguage": "Wählen Sie Ihre Sprache",
+  "chooseTheme": "Wählen Sie Ihr Design",
+  "chooseSearchEngine": "Wählen Sie Ihre Suchmaschine",
+  "light": "Hell",
+  "dark": "Dunkel",
+  "next": "Weiter",
+  "back": "Zurück",
+  "getStarted": "Loslegen",
+  "continueText": "Fortfahren",
+  "updated": "Solar Browser wurde aktualisiert!",
+  "version": "Version {version}",
+  "@version": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+
+  "general": "Allgemein",
+  "appearance": "Erscheinungsbild",
+  "downloads": "Downloads",
+  "settings": "Einstellungen",
+  "help": "Hilfe",
+  "about": "Über",
+  "language": "Sprache",
+  "search_engine": "Suchmaschine",
+  "dark_mode": "Dunkelmodus",
+  "text_size": "Textgröße",
+  "show_images": "Bilder anzeigen",
+  "download_location": "Download-Speicherort",
+  "ask_download_location": "Nach Speicherort fragen",
+  "rate_us": "Bewerten Sie uns",
+  "privacy_policy": "Datenschutzerklärung",
+  "terms_of_use": "Nutzungsbedingungen",
+  "customize_browser": "Browser anpassen",
+  "learn_more": "Mehr erfahren",
+  "tabs": "Tabs",
+  "history": "Verlauf",
+  "bookmarks": "Lesezeichen",
+  "search_in_page": "Auf Seite suchen"
+} 

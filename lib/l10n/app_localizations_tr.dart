@@ -7,31 +7,45 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
-  String get settings => 'Ayarlar';
+  String get welcome => 'Solar\'a Hoş Geldiniz';
 
   @override
-  String get downloads => 'İndirilenler';
+  String get welcomeSubtitle => 'Modern, hızlı ve güvenli bir tarayıcı';
 
   @override
-  String get tabs => 'Sekmeler';
+  String get chooseLanguage => 'Dilinizi Seçin';
 
   @override
-  String get bookmarks => 'Yer İmleri';
+  String get chooseTheme => 'Temanızı Seçin';
 
   @override
-  String get history => 'Geçmiş';
+  String get chooseSearchEngine => 'Arama Motorunuzu Seçin';
 
   @override
-  String get search_engine => 'Arama Motoru';
+  String get light => 'Açık';
 
   @override
-  String get language => 'Dil';
+  String get dark => 'Koyu';
 
   @override
-  String get javascript => 'JavaScript';
+  String get next => 'İleri';
 
   @override
-  String get dark_mode => 'Karanlık Mod';
+  String get back => 'Geri';
+
+  @override
+  String get getStarted => 'Başlayın';
+
+  @override
+  String get continueText => 'Devam';
+
+  @override
+  String get updated => 'Solar Tarayıcı Güncellendi!';
+
+  @override
+  String version(String version) {
+    return 'Sürüm $version';
+  }
 
   @override
   String get general => 'Genel';
@@ -40,70 +54,40 @@ class AppLocalizationsTr extends AppLocalizations {
   String get appearance => 'Görünüm';
 
   @override
+  String get downloads => 'İndirilenler';
+
+  @override
+  String get settings => 'Ayarlar';
+
+  @override
+  String get help => 'Yardım';
+
+  @override
   String get about => 'Hakkında';
 
   @override
-  String get select_language => 'Dil Seçin';
+  String get language => 'Dil';
 
   @override
-  String get select_search_engine => 'Arama Motoru Seçin';
+  String get search_engine => 'Arama Motoru';
 
   @override
-  String get check_updates => 'Güncellemeleri Kontrol Et';
-
-  @override
-  String get version => 'Sürüm';
-
-  @override
-  String get developed_by => 'Geliştiren';
-
-  @override
-  String get licensed_under => 'Lisansı';
-
-  @override
-  String get support_patreon => 'Patreon\'da Destekle';
-
-  @override
-  String get search_in_page => 'Sayfada ara';
-
-  @override
-  String get no_history => 'Geçmiş bulunamadı';
+  String get dark_mode => 'Koyu Mod';
 
   @override
   String get text_size => 'Yazı Boyutu';
 
   @override
-  String get theme_color => 'Tema Rengi';
-
-  @override
   String get show_images => 'Resimleri Göster';
 
   @override
-  String get downloads_title => 'İndirilenler';
+  String get download_location => 'İndirme Konumu';
 
   @override
-  String get no_downloads => 'Henüz indirme yok';
+  String get ask_download_location => 'İndirme Konumunu Sor';
 
   @override
-  String get clear_history => 'Geçmişi Temizle';
-
-  @override
-  String get clear_history_title => 'Geçmişi Temizle';
-
-  @override
-  String get clear_history_message => 'Geçmişinizi silmek istediğinize emin misiniz?';
-
-  @override
-  String get cancel => 'İptal';
-
-  @override
-  String get clear => 'Temizle';
-
-  @override
-  String get history_cleared => 'Geçmiş temizlendi';
-
-  @override
-  String get help => 'Yardım';
+  String get rate_us => 'Bizi Değerlendirin';
 
   @override
   String get privacy_policy => 'Gizlilik Politikası';
@@ -112,23 +96,20 @@ class AppLocalizationsTr extends AppLocalizations {
   String get terms_of_use => 'Kullanım Koşulları';
 
   @override
-  String get customize_browser => 'Tarayıcı deneyiminizi özelleştirin';
+  String get customize_browser => 'Tarayıcıyı Özelleştir';
 
   @override
-  String get learn_more => 'Solar Browser hakkında daha fazla bilgi edinin';
+  String get learn_more => 'Daha Fazla Bilgi';
 
   @override
-  String get rate_us => 'Bizi Değerlendirin';
+  String get tabs => 'Sekmeler';
 
   @override
-  String get download_location => 'İndirme Konumu';
+  String get history => 'Geçmiş';
 
   @override
-  String get ask_download_location => 'İndirmeden Önce Sor';
+  String get bookmarks => 'Yer İmleri';
 
   @override
-  String get enabled => 'Açık';
-
-  @override
-  String get disabled => 'Kapalı';
+  String get search_in_page => 'Sayfada ara';
 }

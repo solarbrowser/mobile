@@ -1,0 +1,47 @@
+{
+  "@@locale": "pt",
+  
+  "welcome": "Bem-vindo ao Solar",
+  "welcomeSubtitle": "Um navegador moderno, rápido e seguro",
+  "chooseLanguage": "Escolha seu Idioma",
+  "chooseTheme": "Escolha seu Tema",
+  "chooseSearchEngine": "Escolha seu Motor de Busca",
+  "light": "Claro",
+  "dark": "Escuro",
+  "next": "Próximo",
+  "back": "Voltar",
+  "getStarted": "Começar",
+  "continueText": "Continuar",
+  "updated": "Solar Browser Atualizado!",
+  "version": "Versão {version}",
+  "@version": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+
+  "general": "Geral",
+  "appearance": "Aparência",
+  "downloads": "Downloads",
+  "settings": "Configurações",
+  "help": "Ajuda",
+  "about": "Sobre",
+  "language": "Idioma",
+  "search_engine": "Motor de Busca",
+  "dark_mode": "Modo Escuro",
+  "text_size": "Tamanho do Texto",
+  "show_images": "Mostrar Imagens",
+  "download_location": "Local de Download",
+  "ask_download_location": "Perguntar Local",
+  "rate_us": "Avalie-nos",
+  "privacy_policy": "Política de Privacidade",
+  "terms_of_use": "Termos de Uso",
+  "customize_browser": "Personalizar Navegador",
+  "learn_more": "Saiba Mais",
+  "tabs": "Abas",
+  "history": "Histórico",
+  "bookmarks": "Favoritos",
+  "search_in_page": "Pesquisar na página"
+} 

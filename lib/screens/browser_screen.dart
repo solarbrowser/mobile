@@ -44,71 +44,99 @@ class BrowserScreen extends StatefulWidget {
   });
 
   @override
-  State<BrowserScreen> createState() => _BrowserScreenState();
+  _BrowserScreenState createState() => _BrowserScreenState();
 }
 
 class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateMixin {
+  // WebView and Navigation
+  final List<WebViewController> _controllers = [];
   late WebViewController controller;
-  final TextEditingController urlController = TextEditingController();
-  final TextEditingController searchController = TextEditingController();
-  bool isLoading = false;
-  bool isUrlBarExpanded = false;
-  bool isSearchMode = false;
-  String displayUrl = '';
+  int currentTabIndex = 0;
+  final Map<int, bool> _suspendedTabs = {};
+  final int maxTabs = 10;
+  List<TabInfo> tabs = [];
   bool canGoBack = false;
   bool canGoForward = false;
-  double dragStartX = 0;
-  bool isPanelVisible = true;
   bool isSecure = false;
-  late AnimationController _animationController;
-  late Animation<double> _animation;
+  bool allowHttp = true;
+  
+  // Download State
+  bool isDownloading = false;
+  String currentDownloadUrl = '';
+  double downloadProgress = 0.0;
+  
+  // Controllers
+  final TextEditingController urlController = TextEditingController();
+  final TextEditingController searchController = TextEditingController();
+  
+  // UI State
+  bool isDarkMode = false;
+  double textScale = 1.0;
+  bool showImages = true;
+  String currentSearchEngine = 'google';
+  bool isSearchMode = false;
+  bool isLoading = false;
+  String displayUrl = '';
+  bool isUrlBarExpanded = false;
+  bool isSecurityPanelVisible = false;
+  String securityMessage = '';
+  String currentLanguage = 'en';
   double lastScrollPosition = 0;
   bool isScrollingUp = false;
   DateTime lastScrollEvent = DateTime.now();
-  bool isSecurityPanelVisible = false;
-  String securityMessage = '';
-  bool isPanelExpanded = false;
   int currentSearchMatch = 0;
   int totalSearchMatches = 0;
-  bool isTabsVisible = false;
-  bool isHistoryVisible = false;
-  bool isDownloadsVisible = false;
-  List<TabInfo> tabs = [];
-  int currentTabIndex = 0;
   Timer? _hideTimer;
   bool _isUrlBarMinimized = false;
   bool _isUrlBarHidden = false;
+  int selectedSettingsTab = 0;
+  
+  // Panel Visibility
+  bool isTabsVisible = false;
+  bool isHistoryVisible = false;
   bool isSettingsVisible = false;
-  bool isDarkMode = false;
-  double textScale = 1.0;
-  Color themeColor = Colors.blue;
-  bool showImages = true;
-  String currentSearchEngine = 'google';
+  bool isBookmarksVisible = false;
+  bool isDownloadsVisible = false;
+  bool isPanelExpanded = false;
+  bool isPanelVisible = true;
+  
+  // URL Bar State
+  bool _isUrlBarCollapsed = false;
+  bool _isDragging = false;
+  Offset _urlBarPosition = Offset.zero;
+  Timer? _autoCollapseTimer;
+  double dragStartX = 0;
+  
+  // History Loading
+  final ScrollController _historyScrollController = ScrollController();
+  bool _isLoadingMore = false;
+  int _currentHistoryPage = 0;
+  final int _historyPageSize = 20;
+  List<Map<String, dynamic>> _loadedHistory = [];
+  
+  // Animation
+  late AnimationController _slideAnimationController;
+  late Animation<Offset> _slideAnimation;
+  late AnimationController _animationController;
+  late Animation<double> _animation;
+  
+  // Data
+  List<Map<String, dynamic>> bookmarks = [];
+  List<Map<String, dynamic>> downloads = [];
+  
+  // Search Engines
   final Map<String, String> searchEngines = {
     'google': 'https://www.google.com/search?q=',
-    'duckduckgo': 'https://duckduckgo.com/?q=',
     'bing': 'https://www.bing.com/search?q=',
+    'duckduckgo': 'https://duckduckgo.com/?q=',
     'yahoo': 'https://search.yahoo.com/search?p=',
   };
-  List<Map<String, dynamic>> downloads = [];
-  bool allowHttp = true;
-  final int maxTabs = 10; // Maximum number of tabs allowed
-  final Map<int, bool> _suspendedTabs = {};
+
+  // Memory Management
   final _debouncer = Debouncer(milliseconds: 300);
   bool _isLowMemory = false;
   int _lastMemoryCheck = 0;
-  static const int MEMORY_CHECK_INTERVAL = 30000; // 30 seconds
-  late AnimationController _slideAnimationController;
-  late Animation<Offset> _slideAnimation;
-  final int _historyPageSize = 20;
-  int _currentHistoryPage = 0;
-  List<Map<String, dynamic>> _loadedHistory = [];
-  bool _isLoadingMore = false;
-  final ScrollController _historyScrollController = ScrollController();
-  bool _isUrlBarCollapsed = false;
-  Offset _urlBarPosition = Offset.zero;
-  bool _isDragging = false;
-  Timer? _autoCollapseTimer;
+  static const int MEMORY_CHECK_INTERVAL = 30000;
 
   ThemeColors get _colors => isDarkMode ? _darkModeColors : _lightModeColors;
   
@@ -165,14 +193,33 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   @override
   void initState() {
     super.initState();
+    // Initialize all panel visibility states to false
+    isTabsVisible = false;
+    isHistoryVisible = false;
+    isSettingsVisible = false;
+    isBookmarksVisible = false;
+    isDownloadsVisible = false;
+    isPanelExpanded = false;
+    isSearchMode = false;
+    
     _initializeAnimations();
     _initializeWebView().then((_) {
       _loadPreferences();
+      _loadBookmarks();
+      _loadDownloads();
       _animationController.forward();
       _setupScrollHandling();
       _optimizeWebView();
       _initializeWebViewOptimizations();
       _setupHistoryScrollListener();
+    });
+  }
+
+  Future<void> _loadDownloads() async {
+    final prefs = await SharedPreferences.getInstance();
+    final downloadsList = prefs.getStringList('downloads') ?? [];
+    setState(() {
+      downloads = downloadsList.map((e) => Map<String, dynamic>.from(json.decode(e))).toList();
     });
   }
 
@@ -255,7 +302,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         final androidController = controller.platform as AndroidWebViewController;
         await androidController.setMediaPlaybackRequiresUserGesture(true);
         await androidController.setBackgroundColor(Colors.transparent);
-        await androidController.setGeolocationEnabled(false);
       }
       
       await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
@@ -325,30 +371,62 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       final androidController = controller.platform as AndroidWebViewController;
       await androidController.setMediaPlaybackRequiresUserGesture(true);
       await androidController.setBackgroundColor(Colors.transparent);
-      await androidController.setGeolocationEnabled(false);
-      
-      // Enable HTTP support
-      await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-      await controller.enableZoom(true);
-      await controller.loadRequest(Uri.parse('about:blank'));
-    } else if (Platform.isIOS && controller.platform is WebKitWebViewController) {
-      final webKitController = controller.platform as WebKitWebViewController;
-      await webKitController.setAllowsBackForwardNavigationGestures(true);
-      await webKitController.setBackgroundColor(Colors.transparent);
     }
 
     await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
     await controller.setNavigationDelegate(
       NavigationDelegate(
         onNavigationRequest: (request) async {
-          if (request.url.startsWith('http://')) {
-            // Always allow HTTP
-            return NavigationDecision.navigate;
+          final url = request.url;
+          
+          // Handle custom download scheme
+          if (url.startsWith('download://')) {
+            final downloadUrl = Uri.decodeComponent(url.substring('download://'.length));
+            _downloadFile(downloadUrl);
+            return NavigationDecision.prevent;
+          }
+          
+          // Handle direct file downloads
+          final lowerUrl = url.toLowerCase();
+          if (lowerUrl.endsWith('.pdf') || 
+              lowerUrl.endsWith('.doc') || 
+              lowerUrl.endsWith('.docx') || 
+              lowerUrl.endsWith('.xls') || 
+              lowerUrl.endsWith('.xlsx') || 
+              lowerUrl.endsWith('.zip') || 
+              lowerUrl.endsWith('.rar') || 
+              lowerUrl.endsWith('.apk') ||
+              lowerUrl.endsWith('.mp3') ||
+              lowerUrl.endsWith('.mp4') ||
+              lowerUrl.contains('download.') ||
+              lowerUrl.contains('/download/')) {
+            _downloadFile(url);
+            return NavigationDecision.prevent;
           }
           return NavigationDecision.navigate;
         },
+        onUrlChange: (change) async {
+          if (change.url != null) {
+            setState(() {
+              displayUrl = change.url!;
+              isSecure = change.url!.startsWith('https://');
+            });
+          }
+        },
       ),
     );
+
+    // Add JavaScript to intercept file downloads from links that don't trigger navigation
+    await controller.runJavaScript('''
+      document.addEventListener('click', function(e) {
+        var link = e.target.closest('a');
+        if (link && (link.hasAttribute('download') || link.href.match(/\\\\.(pdf|doc|docx|xls|xlsx|zip|rar|apk|mp3|mp4)\$/i))) {
+          e.preventDefault();
+          var href = link.href;
+          window.location.href = 'download://' + encodeURIComponent(href);
+        }
+      });
+    ''');
 
     await _setupWebViewCallbacks(controller);
     await controller.loadRequest(Uri.parse('https://www.google.com'));
@@ -358,6 +436,149 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       url: 'https://www.google.com',
       controller: controller,
     ));
+  }
+
+  Future<void> _downloadFile(String url) async {
+    try {
+      final status = await Permission.storage.request();
+      if (!status.isGranted) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Storage permission is required to download files')),
+          );
+        }
+        return;
+      }
+
+      setState(() {
+        isDownloading = true;
+        currentDownloadUrl = url;
+        downloadProgress = 0.0;
+      });
+
+      final fileName = url.split('/').last;
+      Directory? directory;
+      
+      if (Platform.isAndroid) {
+        directory = Directory('/storage/emulated/0/Download');
+        if (!await directory.exists()) {
+          await directory.create(recursive: true);
+        }
+      } else {
+        directory = await getApplicationDocumentsDirectory();
+      }
+      
+      final filePath = '${directory.path}/$fileName';
+
+      // Show download started notification
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Starting download: $fileName'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+
+      final response = await http.Client().send(http.Request('GET', Uri.parse(url)));
+      
+      if (response.statusCode != 200) {
+        throw Exception('Failed to download file: ${response.statusCode}');
+      }
+
+      final file = File(filePath);
+      final sink = file.openWrite();
+      
+      int received = 0;
+      final contentLength = response.contentLength ?? 0;
+
+      await for (var chunk in response.stream) {
+        if (!mounted) break; // Stop if widget is disposed
+        
+        sink.add(chunk);
+        received += chunk.length;
+        
+        final progress = contentLength > 0 ? received / contentLength : 0.0;
+        
+        setState(() {
+          downloadProgress = progress;
+        });
+        
+        // Show progress notification every 20%
+        if ((progress * 100) % 20 == 0) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Downloading $fileName'),
+                    const SizedBox(height: 4),
+                    LinearProgressIndicator(value: progress),
+                    Text('${(progress * 100).toInt()}%'),
+                  ],
+                ),
+                duration: const Duration(milliseconds: 500),
+              ),
+            );
+          }
+        }
+      }
+      
+      await sink.close();
+
+      // Save download info
+      final prefs = await SharedPreferences.getInstance();
+      final downloadsList = prefs.getStringList('downloads') ?? [];
+      final download = {
+        'fileName': fileName,
+        'url': url,
+        'path': filePath,
+        'timestamp': DateTime.now().toIso8601String(),
+        'size': contentLength,
+      };
+      downloadsList.insert(0, json.encode(download));
+      await prefs.setStringList('downloads', downloadsList);
+
+      if (mounted) {
+        setState(() {
+          downloads = downloadsList.map((e) => Map<String, dynamic>.from(json.decode(e))).toList();
+          isDownloading = false;
+          downloadProgress = 0.0;
+        });
+
+        // Show download completed notification
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Downloaded $fileName'),
+            action: SnackBarAction(
+              label: 'Open',
+              onPressed: () async {
+                final result = await OpenFile.open(filePath);
+                if (result.type != ResultType.done) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Could not open file: ${result.message}')),
+                  );
+                }
+              },
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Download error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to download file: $e')),
+        );
+      }
+    } finally {
+      setState(() {
+        isDownloading = false;
+        downloadProgress = 0.0;
+      });
+    }
   }
 
   Future<void> _setupWebViewCallbacks(WebViewController controller) async {
@@ -650,48 +871,44 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   void _showLanguageSelection(BuildContext context) {
-    final items = [
-      Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        child: _buildSettingsItem(
-          title: 'English',
-          trailing: Localizations.localeOf(context).languageCode == 'en'
-              ? Icon(
-                  Icons.check,
-                  color: isDarkMode ? Colors.white : Colors.black,
-                )
-              : null,
-          onTap: () async {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString('language', 'en');
-            if (mounted) {
-              widget.onLocaleChange('en');
-              Navigator.pop(context);
-            }
-          },
-        ),
+    final Map<String, String> languages = {
+      'en': 'English',
+      'tr': 'Türkçe',
+      'es': 'Español',
+      'fr': 'Français',
+      'de': 'Deutsch',
+      'it': 'Italiano',
+      'pt': 'Português',
+      'ru': 'Русский',
+      'zh': '中文',
+      'ja': '日本語',
+      'ar': 'العربية',
+      'hi': 'हिन्दी',
+    };
+
+    final items = languages.entries.map((entry) => Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: _buildSettingsItem(
+        title: entry.value,
+        trailing: currentLanguage == entry.key
+            ? Icon(
+                Icons.check,
+                color: isDarkMode ? Colors.white : Colors.black,
+              )
+            : null,
+        onTap: () async {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setString('language', entry.key);
+          setState(() {
+            currentLanguage = entry.key;
+          });
+          if (mounted) {
+            widget.onLocaleChange(entry.key);
+            Navigator.pop(context);
+          }
+        },
       ),
-      Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        child: _buildSettingsItem(
-          title: 'Türkçe',
-          trailing: Localizations.localeOf(context).languageCode == 'tr'
-              ? Icon(
-                  Icons.check,
-                  color: isDarkMode ? Colors.white : Colors.black,
-                )
-              : null,
-          onTap: () async {
-            final prefs = await SharedPreferences.getInstance();
-            await prefs.setString('language', 'tr');
-            if (mounted) {
-              widget.onLocaleChange('tr');
-              Navigator.pop(context);
-            }
-          },
-        ),
-      ),
-    ];
+    )).toList();
 
     _showDynamicBottomSheet(
       items: items,
@@ -808,7 +1025,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                 children: [
                   ListTile(
                     title: Text(
-                      'Solar Browser',
+                      'Solar Browser Mobile',
                       style: TextStyle(
                         color: isDarkMode ? Colors.white : Colors.black,
                       ),
@@ -817,7 +1034,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Version 0.0.3',
+                          'Version 0.0.39,5',
                           style: TextStyle(
                             color: isDarkMode ? Colors.white70 : Colors.black54,
                           ),
@@ -1043,13 +1260,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
               ],
             ),
           ),
-          if (isTabsVisible || isHistoryVisible || isSettingsVisible)
-            RepaintBoundary(
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 150),
-                child: _buildOverlayPanel(),
-              ),
-            ),
+          _buildOverlayPanel(),
         ],
       ),
     );
@@ -1182,12 +1393,12 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                 ),
                 IconButton(
                   icon: Image.asset(
-                    'assets/reload24.png',
+                    'assets/bookmark24.png',
                     width: 24,
                     height: 24,
                     color: isDarkMode ? Colors.white70 : Colors.black54,
                   ),
-                  onPressed: () => controller.reload(),
+                  onPressed: _addBookmark,
                 ),
                 IconButton(
                   icon: Image.asset(
@@ -1254,7 +1465,10 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                       });
                     }),
                     _buildQuickActionButton(AppLocalizations.of(context)!.bookmarks, 'assets/bookmark24.png', onPressed: () {
-                      // Handle bookmarks
+                      setState(() {
+                        isBookmarksVisible = true;
+                        isPanelExpanded = false;
+                      });
                     }),
                   ],
                 ),
@@ -1383,6 +1597,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       showImages = prefs.getBool('showImages') ?? true;
       currentSearchEngine = prefs.getString('searchEngine') ?? 'google';
       allowHttp = prefs.getBool('allowHttp') ?? false;
+      currentLanguage = prefs.getString('language') ?? 'en';
     });
   }
 
@@ -1635,7 +1850,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                   },
                 ),
                 Text(
-                  'Downloads',
+                  AppLocalizations.of(context)!.downloads,
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -1646,33 +1861,24 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             ),
           ),
           Expanded(
-            child: FutureBuilder<SharedPreferences>(
-              future: SharedPreferences.getInstance(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return Center(child: CircularProgressIndicator());
-                }
-                
-                final downloads = snapshot.data!.getStringList('downloads') ?? [];
-                if (downloads.isEmpty) {
-                  return Center(
-                    child: Text(
-                      'No downloads yet',
-                      style: TextStyle(
-                        color: isDarkMode ? Colors.white70 : Colors.black54,
-                      ),
+            child: downloads.isEmpty
+              ? Center(
+                  child: Text(
+                    'No downloads yet',
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white70 : Colors.black54,
                     ),
-                  );
-                }
-                
-                return ListView.builder(
+                  ),
+                )
+              : ListView.builder(
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   itemCount: downloads.length,
                   itemBuilder: (context, index) {
-                    final download = json.decode(downloads[index]);
+                    final download = downloads[index];
                     final fileName = download['fileName'];
-                    final url = download['url'];
                     final timestamp = DateTime.parse(download['timestamp']);
+                    final size = download['size'] ?? 0;
+                    final formattedSize = _formatFileSize(size);
                     
                     return Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -1682,35 +1888,203 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                       ),
                       child: ListTile(
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        leading: Icon(
+                          Icons.file_download_done,
+                          color: isDarkMode ? Colors.white70 : Colors.black54,
+                        ),
                         title: Text(
                           fileName,
                           style: TextStyle(
                             color: isDarkMode ? Colors.white : Colors.black,
                           ),
                         ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              DateFormat.yMMMd().add_jm().format(timestamp),
+                              style: TextStyle(
+                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                              ),
+                            ),
+                            Text(
+                              formattedSize,
+                              style: TextStyle(
+                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                Icons.file_open,
+                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                              ),
+                              onPressed: () async {
+                                final directory = await getApplicationDocumentsDirectory();
+                                final filePath = '${directory.path}/$fileName';
+                                await OpenFile.open(filePath);
+                              },
+                            ),
+                            IconButton(
+                              icon: Icon(
+                                Icons.delete,
+                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                              ),
+                              onPressed: () async {
+                                final prefs = await SharedPreferences.getInstance();
+                                final downloadsList = prefs.getStringList('downloads') ?? [];
+                                downloadsList.removeAt(index);
+                                await prefs.setStringList('downloads', downloadsList);
+                                
+                                final directory = await getApplicationDocumentsDirectory();
+                                final filePath = '${directory.path}/$fileName';
+                                final file = File(filePath);
+                                if (await file.exists()) {
+                                  await file.delete();
+                                }
+                                
+                                setState(() {
+                                  downloads.removeAt(index);
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatFileSize(int bytes) {
+    if (bytes <= 0) return '0 B';
+    const suffixes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    var i = (log(bytes) / log(1024)).floor();
+    return '${(bytes / pow(1024, i)).toStringAsFixed(2)} ${suffixes[i]}';
+  }
+
+  Widget _buildBookmarksPanel() {
+    return Container(
+      color: isDarkMode ? Colors.black : Colors.white,
+      child: Column(
+        children: [
+          Container(
+            height: 56 + MediaQuery.of(context).padding.top,
+            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+            decoration: BoxDecoration(
+              color: isDarkMode ? Colors.black : Colors.white,
+              border: Border(
+                bottom: BorderSide(
+                  color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.arrow_back,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      isBookmarksVisible = false;
+                    });
+                  },
+                ),
+                Text(
+                  AppLocalizations.of(context)!.bookmarks,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: bookmarks.isEmpty
+              ? Center(
+                  child: Text(
+                    'No bookmarks yet',
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                    ),
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  itemCount: bookmarks.length,
+                  itemBuilder: (context, index) {
+                    final bookmark = bookmarks[index];
+                    return Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        leading: bookmark['favicon'] != null
+                          ? Image.network(
+                              bookmark['favicon'],
+                              width: 24,
+                              height: 24,
+                              errorBuilder: (context, error, stackTrace) => Icon(
+                                Icons.web,
+                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                              ),
+                            )
+                          : Icon(
+                              Icons.web,
+                              color: isDarkMode ? Colors.white70 : Colors.black54,
+                            ),
+                        title: Text(
+                          bookmark['title'],
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black,
+                          ),
+                        ),
                         subtitle: Text(
-                          DateFormat.yMMMd().add_jm().format(timestamp),
+                          _getDisplayUrl(bookmark['url']),
                           style: TextStyle(
                             color: isDarkMode ? Colors.white70 : Colors.black54,
                           ),
                         ),
                         trailing: IconButton(
                           icon: Icon(
-                            Icons.file_open,
+                            Icons.delete,
                             color: isDarkMode ? Colors.white70 : Colors.black54,
                           ),
                           onPressed: () async {
-                            final directory = await getApplicationDocumentsDirectory();
-                            final filePath = '${directory.path}/$fileName';
-                            await OpenFile.open(filePath);
+                            final prefs = await SharedPreferences.getInstance();
+                            final bookmarksList = prefs.getStringList('bookmarks') ?? [];
+                            bookmarksList.removeAt(index);
+                            await prefs.setStringList('bookmarks', bookmarksList);
+                            setState(() {
+                              bookmarks.removeAt(index);
+                            });
                           },
                         ),
+                        onTap: () {
+                          controller.loadRequest(Uri.parse(bookmark['url']));
+                          setState(() {
+                            isBookmarksVisible = false;
+                          });
+                        },
                       ),
                     );
                   },
-                );
-              },
-            ),
+                ),
           ),
         ],
       ),
@@ -1718,8 +2092,8 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   Future<void> _optimizeWebView() async {
-    // Optimize memory usage
-    const duration = Duration(minutes: 10);
+    // Memory optimization
+    const duration = Duration(minutes: 5); // More frequent cleanup
     Timer.periodic(duration, (timer) async {
       if (!mounted) {
         timer.cancel();
@@ -1728,104 +2102,201 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       
       await _checkMemoryAndOptimize();
       
-      // Clear unnecessary caches
+      // Aggressive cache clearing for inactive tabs
       for (var i = 0; i < tabs.length; i++) {
         if (i != currentTabIndex) {
           await tabs[i].controller.clearCache();
+          await tabs[i].controller.clearLocalStorage();
         }
       }
     });
 
-    // Optimize for Android
+    // Advanced performance optimizations
+    await controller.runJavaScript('''
+      // Enable maximum performance mode
+      document.documentElement.style.setProperty('content-visibility', 'auto');
+      document.documentElement.style.setProperty('contain', 'content');
+      document.documentElement.style.setProperty('will-change', 'transform');
+      document.documentElement.style.setProperty('transform', 'translateZ(0)');
+      document.documentElement.style.setProperty('backface-visibility', 'hidden');
+      
+      // Optimize paint and layout
+      document.body.style.setProperty('paint-order', 'strict');
+      document.body.style.setProperty('content-visibility', 'auto');
+      document.body.style.setProperty('contain', 'layout style paint');
+      
+      // Advanced scroll optimization
+      let lastKnownScrollPosition = 0;
+      let ticking = false;
+      
+      function optimizeOnScroll(scrollPos) {
+        // Disable animations during scroll
+        document.body.style.setProperty('animation', 'none');
+        document.body.style.setProperty('transition', 'none');
+        
+        // Enable hardware acceleration
+        document.body.style.setProperty('transform', 'translate3d(0,0,0)');
+        
+        // Re-enable animations after scroll stops
+        clearTimeout(window._scrollTimeout);
+        window._scrollTimeout = setTimeout(() => {
+          document.body.style.removeProperty('animation');
+          document.body.style.removeProperty('transition');
+        }, 150);
+      }
+      
+      document.addEventListener('scroll', function(e) {
+        lastKnownScrollPosition = window.scrollY;
+        if (!ticking) {
+          window.requestAnimationFrame(function() {
+            optimizeOnScroll(lastKnownScrollPosition);
+            ticking = false;
+          });
+          ticking = true;
+        }
+      }, { passive: true });
+      
+      // Advanced image optimization
+      function optimizeImages() {
+        const images = document.getElementsByTagName('img');
+        for (let img of images) {
+          // Enable lazy loading
+          img.loading = 'lazy';
+          img.decoding = 'async';
+          
+          // Optimize image size
+          if (img.naturalWidth > window.innerWidth * 2) {
+            img.style.setProperty('max-width', '100%');
+            img.style.setProperty('height', 'auto');
+          }
+          
+          // Add hardware acceleration
+          img.style.setProperty('transform', 'translateZ(0)');
+          img.style.setProperty('backface-visibility', 'hidden');
+        }
+      }
+      
+      // Optimize DOM updates
+      const observer = new MutationObserver((mutations) => {
+        requestAnimationFrame(() => {
+          optimizeImages();
+        });
+      });
+      
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true
+      });
+      
+      // Optimize resource loading
+      function optimizeResources() {
+        // Preconnect to origins
+        const links = document.getElementsByTagName('a');
+        const origins = new Set();
+        for (let link of links) {
+          try {
+            const url = new URL(link.href);
+            origins.add(url.origin);
+          } catch (e) {}
+        }
+        
+        origins.forEach(origin => {
+          const link = document.createElement('link');
+          link.rel = 'preconnect';
+          link.href = origin;
+          document.head.appendChild(link);
+        });
+        
+        // Preload important resources
+        const resources = document.querySelectorAll('script[src], link[rel="stylesheet"]');
+        resources.forEach(resource => {
+          const preload = document.createElement('link');
+          preload.rel = 'preload';
+          preload.as = resource.tagName === 'SCRIPT' ? 'script' : 'style';
+          preload.href = resource.src || resource.href;
+          document.head.appendChild(preload);
+        });
+      }
+      
+      // Initialize optimizations
+      window.addEventListener('load', () => {
+        optimizeImages();
+        optimizeResources();
+        
+        // Remove unnecessary event listeners
+        const clone = document.body.cloneNode(true);
+        document.body.parentNode.replaceChild(clone, document.body);
+      });
+      
+      // Optimize font loading
+      document.fonts.ready.then(() => {
+        document.documentElement.style.setProperty('font-display', 'optional');
+      });
+      
+      // Clear unnecessary timers and intervals
+      for (let i = 1; i < 1000; i++) {
+        window.clearTimeout(i);
+        window.clearInterval(i);
+      }
+    ''');
+
+    // Platform-specific optimizations
     if (Platform.isAndroid) {
       final androidController = controller.platform as AndroidWebViewController;
-      await androidController.setGeolocationEnabled(false);
       await androidController.setMediaPlaybackRequiresUserGesture(true);
       
       // Enable hardware acceleration
       await controller.runJavaScript('''
-        document.body.style.setProperty('-webkit-transform', 'translate3d(0, 0, 0)');
-        document.body.style.setProperty('transform', 'translate3d(0, 0, 0)');
-        document.body.style.setProperty('backface-visibility', 'hidden');
+        document.documentElement.style.setProperty('-webkit-transform', 'translate3d(0,0,0)');
+        document.documentElement.style.setProperty('-webkit-backface-visibility', 'hidden');
       ''');
     }
-
-    // Add performance optimizations
-    await controller.runJavaScript('''
-      // Optimize scroll performance
-      document.addEventListener('scroll', (e) => {
-        if (!document.body.style.willChange) {
-          document.body.style.willChange = 'transform';
-        }
-        if (window._scrollTimeout) {
-          clearTimeout(window._scrollTimeout);
-        }
-        window._scrollTimeout = setTimeout(() => {
-          document.body.style.willChange = 'auto';
-        }, 100);
-      }, { passive: true });
-
-      // Optimize image loading
-      document.addEventListener('DOMContentLoaded', () => {
-        const observer = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              const img = entry.target;
-              if (img.dataset.src) {
-                img.src = img.dataset.src;
-                img.removeAttribute('data-src');
-                observer.unobserve(img);
-              }
-            }
-          });
-        }, {
-          rootMargin: '50px 0px',
-          threshold: 0.01
-        });
-
-        document.querySelectorAll('img').forEach(img => {
-          if (img.src && !img.loading) {
-            img.loading = 'lazy';
-            img.decoding = 'async';
-            observer.observe(img);
-          }
-        });
-      });
-
-      // Optimize animations
-      document.documentElement.style.setProperty('scroll-behavior', 'auto');
-      document.documentElement.style.setProperty('touch-action', 'manipulation');
-      
-      // Disable unnecessary features
-      if (navigator.battery) navigator.battery.addEventListener = null;
-      if (navigator.deviceMemory) navigator.deviceMemory = undefined;
-      if (navigator.hardwareConcurrency) navigator.hardwareConcurrency = undefined;
-    ''');
   }
 
   Future<void> _checkMemoryAndOptimize() async {
     try {
-      // Suspend inactive tabs
+      // Aggressive tab suspension
       for (var i = 0; i < tabs.length; i++) {
-        if (i != currentTabIndex && i != currentTabIndex - 1 && i != currentTabIndex + 1) {
+        if (i != currentTabIndex) {
           await _suspendTab(i);
+          
+          // Clear more resources
+          await tabs[i].controller.runJavaScript('''
+            // Clear timers and listeners
+            for (let i = 1; i < 1000; i++) {
+              window.clearTimeout(i);
+              window.clearInterval(i);
+            }
+            
+            // Clear event listeners
+            const clone = document.body.cloneNode(true);
+            document.body.parentNode.replaceChild(clone, document.body);
+            
+            // Clear memory
+            window.performance?.clearResourceTimings();
+            window.performance?.clearMarks();
+            window.performance?.clearMeasures();
+            
+            // Clear cache
+            if ('caches' in window) {
+              caches.keys().then(keys => {
+                keys.forEach(key => caches.delete(key));
+              });
+            }
+            
+            // Clear storage
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // Clear service workers
+            if (navigator.serviceWorker) {
+              navigator.serviceWorker.getRegistrations().then(registrations => {
+                registrations.forEach(registration => registration.unregister());
+              });
+            }
+          ''');
         }
       }
-
-      // Clear JavaScript garbage
-      await controller.runJavaScript('''
-        window.performance?.clearResourceTimings();
-        window.performance?.clearMarks();
-        window.performance?.clearMeasures();
-        
-        // Clear unused event listeners
-        const clearEvents = () => {
-          const clone = document.cloneNode(true);
-          document.replaceWith(clone);
-        };
-        if (document.readyState === 'complete') clearEvents();
-        else window.addEventListener('load', clearEvents);
-      ''');
     } catch (e) {
       print('Memory optimization error: $e');
     }
@@ -1892,45 +2363,66 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
     if (Platform.isAndroid) {
       final androidController = controller.platform as AndroidWebViewController;
-      await androidController.setGeolocationEnabled(false);
       await androidController.setMediaPlaybackRequiresUserGesture(true);
       
       // Enable hardware acceleration
       await controller.runJavaScript('''
-        document.documentElement.style.setProperty('-webkit-transform', 'translateZ(0)');
+        document.documentElement.style.setProperty('-webkit-transform', 'translate3d(0,0,0)');
         document.documentElement.style.setProperty('-webkit-backface-visibility', 'hidden');
       ''');
     }
   }
 
   Widget _buildOverlayPanel() {
-    return GestureDetector(
-      onVerticalDragUpdate: (details) {
-        if (details.primaryDelta! > 10) {
-          setState(() {
-            isTabsVisible = false;
-            isHistoryVisible = false;
-            isSettingsVisible = false;
-          });
-        }
-      },
-      child: Container(
-        margin: EdgeInsets.only(top: 0),
-        child: AnimatedSlide(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOutCubic,
-          offset: isTabsVisible || isHistoryVisible || isSettingsVisible ? Offset.zero : const Offset(0, 1),
-          child: AnimatedOpacity(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOutCubic,
-            opacity: isTabsVisible || isHistoryVisible || isSettingsVisible ? 1.0 : 0.0,
+    final bool isPanelVisible = isTabsVisible || isHistoryVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible;
+    
+    if (!isPanelVisible) {
+      return const SizedBox.shrink();
+    }
+
+    return Positioned.fill(
+      child: GestureDetector(
+        onVerticalDragUpdate: (details) {
+          if (details.primaryDelta! > 10) {
+            setState(() {
+              isTabsVisible = false;
+              isHistoryVisible = false;
+              isSettingsVisible = false;
+              isBookmarksVisible = false;
+              isDownloadsVisible = false;
+            });
+          }
+        },
+        child: Container(
+          color: isDarkMode ? Colors.black.withOpacity(0.5) : Colors.white.withOpacity(0.5),
+          child: SafeArea(
             child: Container(
-              color: isDarkMode ? Colors.black : Colors.white,
-              child: isTabsVisible 
-                ? _buildTabsPanel() 
-                : isHistoryVisible 
-                  ? _buildHistoryPanel() 
-                  : _buildSettingsPanel(),
+              margin: EdgeInsets.only(top: 0),
+              child: AnimatedSlide(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOutCubic,
+                offset: isPanelVisible ? Offset.zero : const Offset(0, 1),
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeInOutCubic,
+                  opacity: isPanelVisible ? 1.0 : 0.0,
+                  child: Container(
+                    height: MediaQuery.of(context).size.height,
+                    color: isDarkMode ? Colors.black : Colors.white,
+                    child: isTabsVisible 
+                      ? _buildTabsPanel() 
+                      : isHistoryVisible 
+                        ? _buildHistoryPanel() 
+                        : isSettingsVisible
+                          ? _buildSettingsPanel()
+                          : isBookmarksVisible
+                            ? _buildBookmarksPanel()
+                            : isDownloadsVisible
+                              ? _buildDownloadsPanel()
+                              : Container(),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -2011,60 +2503,74 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
               padding: const EdgeInsets.symmetric(vertical: 8),
               itemCount: tabs.length,
               itemBuilder: (context, index) {
-                final tab = tabs[index];
-                final isActive = index == currentTabIndex;
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: isActive
-                        ? (isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05))
-                        : (isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03)),
-                    borderRadius: BorderRadius.circular(12),
-                    border: isActive
-                        ? Border.all(
-                            color: isDarkMode ? Colors.white.withOpacity(0.2) : Colors.black.withOpacity(0.1),
-                            width: 1,
-                          )
-                        : null,
-                  ),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    leading: tab.favicon != null
-                        ? Image.network(tab.favicon!, width: 16, height: 16)
-                        : Icon(Icons.web, color: isDarkMode ? Colors.white70 : Colors.black54),
-                    title: Text(
-                      tab.title,
-                      style: TextStyle(
-                        color: isDarkMode ? Colors.white : Colors.black,
-                        fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
-                      ),
-                    ),
-                    subtitle: Text(
-                      _getDisplayUrl(tab.url),
-                      style: TextStyle(
-                        color: isDarkMode ? Colors.white70 : Colors.black54,
-                      ),
-                    ),
-                    trailing: IconButton(
-                      icon: Icon(
-                        Icons.close,
-                        color: isDarkMode ? Colors.white70 : Colors.black54,
-                      ),
-                      onPressed: () => _closeTab(index),
-                    ),
-                    onTap: () {
-                      _switchTab(index);
-                      setState(() {
-                        isTabsVisible = false;
-                      });
-                    },
-                  ),
-                );
+                return _buildTabListItem(index);
               },
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabListItem(int index) {
+    final currentTab = tabs[index];
+    final isActive = index == currentTabIndex;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isActive
+            ? (isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05))
+            : (isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03)),
+        borderRadius: BorderRadius.circular(12),
+        border: isActive
+            ? Border.all(
+                color: isDarkMode ? Colors.white.withOpacity(0.2) : Colors.black.withOpacity(0.1),
+              )
+            : null,
+      ),
+      child: Row(
+        children: [
+          if (currentTab.favicon != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Image.network(currentTab.favicon!, width: 16, height: 16),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Icon(Icons.web, color: isDarkMode ? Colors.white70 : Colors.black54),
+            ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  currentTab.title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                    fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
+                  ),
+                ),
+                if (currentTab.url != null)
+                  Text(
+                    _getDisplayUrl(currentTab.url!),
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.close,
+              color: isDarkMode ? Colors.white70 : Colors.black54,
+            ),
+            onPressed: () => _closeTab(index),
           ),
         ],
       ),
@@ -2186,12 +2692,108 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                     ),
                   ],
                 ),
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.withOpacity(0.1),
+                      foregroundColor: Colors.red,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    onPressed: () => _showResetConfirmation(),
+                    child: Text(
+                      'Reset Browser',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  void _showResetConfirmation() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDarkMode ? Colors.black : Colors.white,
+        title: Text(
+          'Reset Browser',
+          style: TextStyle(
+            color: isDarkMode ? Colors.white : Colors.black,
+          ),
+        ),
+        content: Text(
+          'This will clear all your data including history, bookmarks, and settings. This action cannot be undone.',
+          style: TextStyle(
+            color: isDarkMode ? Colors.white70 : Colors.black87,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Cancel',
+              style: TextStyle(
+                color: isDarkMode ? Colors.white70 : Colors.black54,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await _resetBrowser();
+            },
+            child: Text(
+              'Reset',
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _resetBrowser() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    
+    // Clear WebView data
+    await controller.clearCache();
+    await controller.clearLocalStorage();
+    
+    // Clear all tabs except the current one
+    setState(() {
+      final currentTab = tabs[currentTabIndex];
+      tabs.clear();
+      tabs.add(currentTab);
+      currentTabIndex = 0;
+    });
+    
+    // Load Google homepage
+    await controller.loadRequest(Uri.parse('https://www.google.com'));
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Browser has been reset')),
+    );
+    
+    setState(() {
+      isSettingsVisible = false;
+    });
   }
 
   Widget _buildSettingsSection({required String title, required List<Widget> children}) {
@@ -2318,6 +2920,50 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         });
       }
     });
+  }
+
+  Future<void> _loadBookmarks() async {
+    final prefs = await SharedPreferences.getInstance();
+    final bookmarksList = prefs.getStringList('bookmarks') ?? [];
+    setState(() {
+      bookmarks = bookmarksList.map((e) => Map<String, dynamic>.from(json.decode(e))).toList();
+    });
+  }
+
+  Future<void> _addBookmark() async {
+    final url = await controller.currentUrl();
+    final title = await controller.getTitle() ?? 'Untitled';
+    final favicon = await BrowserUtils.getFaviconUrl(url ?? '');
+    
+    final bookmark = {
+      'url': url,
+      'title': title,
+      'favicon': favicon,
+      'timestamp': DateTime.now().toIso8601String(),
+    };
+
+    final prefs = await SharedPreferences.getInstance();
+    final bookmarksList = prefs.getStringList('bookmarks') ?? [];
+    
+    // Check if URL already exists in bookmarks
+    if (!bookmarksList.any((item) => 
+      Map<String, dynamic>.from(json.decode(item))['url'] == url)) {
+      bookmarksList.insert(0, json.encode(bookmark));
+      await prefs.setStringList('bookmarks', bookmarksList);
+      
+      setState(() {
+        bookmarks = bookmarksList.map((e) => 
+          Map<String, dynamic>.from(json.decode(e))).toList();
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Bookmark added')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Already bookmarked')),
+      );
+    }
   }
 }
 

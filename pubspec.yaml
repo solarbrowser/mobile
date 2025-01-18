@@ -1,7 +1,6 @@
-name: solar
-description: Solar for mobile.
-publish_to: 'none'
-version: 0.0.3+1
+name: solar_browser
+description: A modern, fast, and secure browser
+version: 0.0.395
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -11,25 +10,34 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  webview_flutter: ^4.7.0
-  webview_flutter_android: ^4.3.0
-  webview_flutter_wkwebview: ^3.17.0
-  flutter_svg: ^2.0.9
-  http: ^1.1.0
+  webview_flutter: ^4.4.2
+  webview_flutter_android: ^3.12.1
+  webview_flutter_wkwebview: ^3.9.4
+  webview_flutter_platform_interface: ^2.6.0
   shared_preferences: ^2.2.2
-  url_launcher: ^6.2.4
-  path_provider: ^2.1.5
+  url_launcher: ^6.2.1
   permission_handler: ^11.0.1
-  open_file: ^3.5.10
+  intl: ^0.19.0
+  open_file: ^3.3.2
+  http: ^1.1.0
+  path_provider: ^2.1.1
+  package_info_plus: ^4.2.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_launcher_icons: ^0.14.2
-  flutter_lints: ^5.0.0
+  flutter_lints: ^2.0.0
 
 flutter:
   uses-material-design: true
   generate: true
   assets:
     - assets/
+
+flutter_intl:
+  enabled: true
+  class_name: AppLocalizations
+  main_locale: en
+  arb_dir: lib/l10n
+  output_dir: lib/l10n/generated
+  use_deferred_loading: false

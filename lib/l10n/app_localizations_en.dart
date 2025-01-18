@@ -7,31 +7,45 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get settings => 'Settings';
+  String get welcome => 'Welcome to Solar';
 
   @override
-  String get downloads => 'Downloads';
+  String get welcomeSubtitle => 'A modern, fast, and secure browser';
 
   @override
-  String get tabs => 'Tabs';
+  String get chooseLanguage => 'Choose Your Language';
 
   @override
-  String get bookmarks => 'Bookmarks';
+  String get chooseTheme => 'Choose Your Theme';
 
   @override
-  String get history => 'History';
+  String get chooseSearchEngine => 'Choose Your Search Engine';
 
   @override
-  String get search_engine => 'Search Engine';
+  String get light => 'Light';
 
   @override
-  String get language => 'Language';
+  String get dark => 'Dark';
 
   @override
-  String get javascript => 'JavaScript';
+  String get next => 'Next';
 
   @override
-  String get dark_mode => 'Dark Mode';
+  String get back => 'Back';
+
+  @override
+  String get getStarted => 'Get Started';
+
+  @override
+  String get continueText => 'Continue';
+
+  @override
+  String get updated => 'Solar Browser Updated!';
+
+  @override
+  String version(String version) {
+    return 'Version $version';
+  }
 
   @override
   String get general => 'General';
@@ -40,70 +54,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appearance => 'Appearance';
 
   @override
+  String get downloads => 'Downloads';
+
+  @override
+  String get settings => 'Settings';
+
+  @override
+  String get help => 'Help';
+
+  @override
   String get about => 'About';
 
   @override
-  String get select_language => 'Select Language';
+  String get language => 'Language';
 
   @override
-  String get select_search_engine => 'Select Search Engine';
+  String get search_engine => 'Search Engine';
 
   @override
-  String get check_updates => 'Check for Updates';
-
-  @override
-  String get version => 'Version';
-
-  @override
-  String get developed_by => 'Developed by';
-
-  @override
-  String get licensed_under => 'Licensed under';
-
-  @override
-  String get support_patreon => 'Support on Patreon';
-
-  @override
-  String get search_in_page => 'Search in page';
-
-  @override
-  String get no_history => 'No history available';
+  String get dark_mode => 'Dark Mode';
 
   @override
   String get text_size => 'Text Size';
 
   @override
-  String get theme_color => 'Theme Color';
-
-  @override
   String get show_images => 'Show Images';
 
   @override
-  String get downloads_title => 'Downloads';
+  String get download_location => 'Download Location';
 
   @override
-  String get no_downloads => 'No downloads yet';
+  String get ask_download_location => 'Ask Download Location';
 
   @override
-  String get clear_history => 'Clear History';
-
-  @override
-  String get clear_history_title => 'Clear History';
-
-  @override
-  String get clear_history_message => 'Are you sure you want to clear your browsing history?';
-
-  @override
-  String get cancel => 'Cancel';
-
-  @override
-  String get clear => 'Clear';
-
-  @override
-  String get history_cleared => 'History cleared';
-
-  @override
-  String get help => 'Help';
+  String get rate_us => 'Rate Us';
 
   @override
   String get privacy_policy => 'Privacy Policy';
@@ -112,23 +96,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get terms_of_use => 'Terms of Use';
 
   @override
-  String get customize_browser => 'Customize your browsing experience';
+  String get customize_browser => 'Customize Browser';
 
   @override
-  String get learn_more => 'Learn more about Solar Browser';
+  String get learn_more => 'Learn More';
 
   @override
-  String get rate_us => 'Rate Us';
+  String get tabs => 'Tabs';
 
   @override
-  String get download_location => 'Download Location';
+  String get history => 'History';
 
   @override
-  String get ask_download_location => 'Ask Before Downloading';
+  String get bookmarks => 'Bookmarks';
 
   @override
-  String get enabled => 'Enabled';
-
-  @override
-  String get disabled => 'Disabled';
+  String get search_in_page => 'Search in page';
 }

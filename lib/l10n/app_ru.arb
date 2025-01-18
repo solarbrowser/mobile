@@ -1,0 +1,47 @@
+{
+  "@@locale": "ru",
+  
+  "welcome": "Добро пожаловать в Solar",
+  "welcomeSubtitle": "Современный, быстрый и безопасный браузер",
+  "chooseLanguage": "Выберите язык",
+  "chooseTheme": "Выберите тему",
+  "chooseSearchEngine": "Выберите поисковую систему",
+  "light": "Светлая",
+  "dark": "Тёмная",
+  "next": "Далее",
+  "back": "Назад",
+  "getStarted": "Начать",
+  "continueText": "Продолжить",
+  "updated": "Solar Browser обновлён!",
+  "version": "Версия {version}",
+  "@version": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+
+  "general": "Общие",
+  "appearance": "Внешний вид",
+  "downloads": "Загрузки",
+  "settings": "Настройки",
+  "help": "Помощь",
+  "about": "О программе",
+  "language": "Язык",
+  "search_engine": "Поисковая система",
+  "dark_mode": "Тёмная тема",
+  "text_size": "Размер текста",
+  "show_images": "Показывать изображения",
+  "download_location": "Папка загрузки",
+  "ask_download_location": "Спрашивать путь",
+  "rate_us": "Оценить нас",
+  "privacy_policy": "Политика конфиденциальности",
+  "terms_of_use": "Условия использования",
+  "customize_browser": "Настроить браузер",
+  "learn_more": "Узнать больше",
+  "tabs": "Вкладки",
+  "history": "История",
+  "bookmarks": "Закладки",
+  "search_in_page": "Поиск на странице"
+} 
