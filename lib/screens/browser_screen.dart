@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
@@ -94,6 +95,20 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   final int maxTabs = 10; // Maximum number of tabs allowed
   final Map<int, bool> _suspendedTabs = {};
   final _debouncer = Debouncer(milliseconds: 300);
+  bool _isLowMemory = false;
+  int _lastMemoryCheck = 0;
+  static const int MEMORY_CHECK_INTERVAL = 30000; // 30 seconds
+  late AnimationController _slideAnimationController;
+  late Animation<Offset> _slideAnimation;
+  final int _historyPageSize = 20;
+  int _currentHistoryPage = 0;
+  List<Map<String, dynamic>> _loadedHistory = [];
+  bool _isLoadingMore = false;
+  final ScrollController _historyScrollController = ScrollController();
+  bool _isUrlBarCollapsed = false;
+  Offset _urlBarPosition = Offset.zero;
+  bool _isDragging = false;
+  Timer? _autoCollapseTimer;
 
   ThemeColors get _colors => isDarkMode ? _darkModeColors : _lightModeColors;
   
@@ -156,59 +171,77 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       _animationController.forward();
       _setupScrollHandling();
       _optimizeWebView();
+      _initializeWebViewOptimizations();
+      _setupHistoryScrollListener();
     });
   }
 
   void _initializeAnimations() {
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 300),
       vsync: this,
     );
     _animation = CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeInOut,
+      curve: Curves.easeInOutCubic,
     );
+
+    _slideAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.3),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _slideAnimationController,
+      curve: Curves.easeInOutCubic,
+    ));
   }
 
   Future<void> _setupScrollHandling() async {
     await controller.runJavaScript('''
       let lastScrollY = window.scrollY;
+      let ticking = false;
+      
+      function updateScroll() {
+        if (window.flutter_inappwebview) {
+          window.flutter_inappwebview.postMessage(JSON.stringify({
+            scrollY: window.scrollY,
+            isScrollingUp: window.scrollY < lastScrollY
+          }));
+        }
+        lastScrollY = window.scrollY;
+        ticking = false;
+      }
+
       window.addEventListener('scroll', function() {
-        const currentScrollY = window.scrollY;
-        const isScrollingUp = currentScrollY < lastScrollY;
-        window.flutter_inappwebview.postMessage(currentScrollY.toString());
-        lastScrollY = currentScrollY;
-      });
+        if (!ticking) {
+          window.requestAnimationFrame(function() {
+            updateScroll();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      }, { passive: true });
     ''');
 
-    if (Platform.isAndroid) {
-      await controller.addJavaScriptChannel(
-        'onScroll',
-        onMessageReceived: (JavaScriptMessage message) {
-          try {
-            final scrollY = double.parse(message.message);
-            final now = DateTime.now();
-            if (now.difference(lastScrollEvent) > const Duration(milliseconds: 100)) {
-              final isScrollingUpNow = scrollY < lastScrollPosition;
-              if (isScrollingUpNow != isScrollingUp) {
-                setState(() {
-                  isScrollingUp = isScrollingUpNow;
-                  if (isScrollingUp) {
-                    _animationController.forward();
-                  } else {
-                    _animationController.reverse();
-                  }
-                });
-              }
-              lastScrollPosition = scrollY;
-              lastScrollEvent = now;
-            }
-          } catch (e) {
-            print('Scroll error: $e');
+    await controller.addJavaScriptChannel(
+      'onScroll',
+      onMessageReceived: (JavaScriptMessage message) {
+        try {
+          if (!_isUrlBarCollapsed) {
+            setState(() {
+              _isUrlBarCollapsed = true;
+              _urlBarPosition = const Offset(16, 0);
+            });
+            _autoCollapseTimer?.cancel();
           }
-        },
-      );
-    }
+        } catch (e) {
+          print('Scroll error: $e');
+        }
+      },
+    );
   }
 
   Future<WebViewController> _createWebViewController() async {
@@ -293,6 +326,11 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       await androidController.setMediaPlaybackRequiresUserGesture(true);
       await androidController.setBackgroundColor(Colors.transparent);
       await androidController.setGeolocationEnabled(false);
+      
+      // Enable HTTP support
+      await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+      await controller.enableZoom(true);
+      await controller.loadRequest(Uri.parse('about:blank'));
     } else if (Platform.isIOS && controller.platform is WebKitWebViewController) {
       final webKitController = controller.platform as WebKitWebViewController;
       await webKitController.setAllowsBackForwardNavigationGestures(true);
@@ -303,7 +341,8 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     await controller.setNavigationDelegate(
       NavigationDelegate(
         onNavigationRequest: (request) async {
-          if (request.url.contains('data:')) {
+          if (request.url.startsWith('http://')) {
+            // Always allow HTTP
             return NavigationDecision.navigate;
           }
           return NavigationDecision.navigate;
@@ -329,7 +368,12 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             isLoading = true;
             displayUrl = _getDisplayUrl(url);
             isSecure = url.startsWith('https://');
+            // Start in normal state
+            _isUrlBarCollapsed = false;
+            _urlBarPosition = Offset.zero;
           });
+          // Start auto-collapse timer
+          _startAutoCollapseTimer();
         },
         onPageFinished: (url) async {
           final title = await controller.getTitle() ?? 'New Tab';
@@ -350,79 +394,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           controller.canGoForward().then((value) => setState(() => canGoForward = value));
           
           _saveToHistory(url, title);
-        },
-        onNavigationRequest: (request) async {
-          if (request.url.startsWith('tel:') || request.url.startsWith('mailto:')) {
-            if (await canLaunchUrl(Uri.parse(request.url))) {
-              await launchUrl(Uri.parse(request.url));
-            }
-            return NavigationDecision.prevent;
-          }
-          
-          if (!allowHttp && request.url.startsWith('http://')) {
-            final allow = await showDialog<bool>(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: Text('Unsecure Website'),
-                content: Text('This website is not secure. Do you want to proceed?'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, false),
-                    child: Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () => Navigator.pop(context, true),
-                    child: Text('Proceed'),
-                  ),
-                ],
-              ),
-            ) ?? false;
-            
-            if (!allow) {
-              return NavigationDecision.prevent;
-            }
-          }
-          
-          // Handle file downloads
-          if (request.url.contains('/download/') || request.url.endsWith('.pdf') || request.url.endsWith('.doc') || request.url.endsWith('.docx')) {
-            final status = await Permission.storage.status;
-            if (!status.isGranted) {
-              await Permission.storage.request();
-            }
-            
-            if (await Permission.storage.isGranted) {
-              final directory = await getApplicationDocumentsDirectory();
-              final fileName = request.url.split('/').last;
-              final filePath = '${directory.path}/$fileName';
-              
-              try {
-                final response = await http.get(Uri.parse(request.url));
-                final file = File(filePath);
-                await file.writeAsBytes(response.bodyBytes);
-                
-                // Save download info to SharedPreferences
-                final prefs = await SharedPreferences.getInstance();
-                final downloads = prefs.getStringList('downloads') ?? [];
-                downloads.add(json.encode({
-                  'fileName': fileName,
-                  'url': request.url,
-                  'timestamp': DateTime.now().toIso8601String(),
-                }));
-                await prefs.setStringList('downloads', downloads);
-                
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Downloaded: $fileName')),
-                );
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Download failed: ${e.toString()}')),
-                );
-              }
-              return NavigationDecision.prevent;
-            }
-          }
-          
-          return NavigationDecision.navigate;
         },
       ),
     );
@@ -567,13 +538,13 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     TextStyle? customTextStyle,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
+      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
       decoration: BoxDecoration(
         color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -620,6 +591,10 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      transitionAnimationController: AnimationController(
+        duration: const Duration(milliseconds: 200),
+        vsync: this,
+      ),
       builder: (context) => Container(
         height: height,
         decoration: BoxDecoration(
@@ -634,7 +609,10 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 itemCount: items.length,
-                itemBuilder: (context, index) => items[index],
+                itemBuilder: (context, index) => Padding(
+                  padding: const EdgeInsets.only(top: 8.0, right: 8.0),
+                  child: items[index],
+                ),
               ),
             ),
           ],
@@ -917,7 +895,9 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   @override
   void dispose() {
+    _autoCollapseTimer?.cancel();
     _animationController.dispose();
+    _slideAnimationController.dispose();
     _hideTimer?.cancel();
     // Clean up WebView controllers and clear suspended tabs
     for (var tab in tabs) {
@@ -932,107 +912,163 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    final statusBarHeight = MediaQuery.of(context).padding.top;
     return Scaffold(
       backgroundColor: isDarkMode ? Colors.black : Colors.white,
       body: Stack(
         children: [
-          RepaintBoundary(
-            child: WebViewWidget(
-              controller: controller,
+          Padding(
+            padding: EdgeInsets.only(top: statusBarHeight),
+            child: RepaintBoundary(
+              child: WebViewWidget(
+                controller: controller,
+              ),
             ),
           ),
           if (isLoading) 
-            const Positioned(
-              top: 0,
+            Positioned(
+              top: statusBarHeight,
               left: 0,
               right: 0,
               child: RepaintBoundary(
                 child: LinearProgressIndicator(),
               ),
             ),
-          Positioned(
-            left: 16,
-            right: 16,
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOutCubic,
+            left: _isUrlBarCollapsed ? _urlBarPosition.dx : 16,
+            right: _isUrlBarCollapsed ? null : 16,
             bottom: MediaQuery.of(context).padding.bottom + 16,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (isPanelExpanded) ...[
-                  RepaintBoundary(child: _buildQuickActionsPanel()),
-                  RepaintBoundary(child: _buildNavigationPanel()),
-                ],
+                if (isPanelExpanded) 
+                  SlideTransition(
+                    position: _slideAnimation,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        RepaintBoundary(child: _buildQuickActionsPanel()),
+                        const SizedBox(height: 8),
+                        RepaintBoundary(child: _buildNavigationPanel()),
+                        const SizedBox(height: 8),
+                      ],
+                    ),
+                  ),
                 if (isSearchMode)
                   RepaintBoundary(child: _buildSearchPanel())
                 else
-                  RepaintBoundary(child: _buildUrlPanel()),
+                  GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onVerticalDragUpdate: _isUrlBarCollapsed ? null : (details) {
+                      final delta = details.primaryDelta!;
+                      if (delta < -2 && !isPanelExpanded || delta > 2 && isPanelExpanded) {
+                        setState(() {
+                          isPanelExpanded = delta < 0;
+                          if (isPanelExpanded) {
+                            _slideAnimationController.forward();
+                          } else {
+                            _slideAnimationController.reverse();
+                          }
+                        });
+                      }
+                    },
+                    onHorizontalDragStart: (details) {
+                      if (_isUrlBarCollapsed) {
+                        setState(() => _isDragging = true);
+                      }
+                      dragStartX = details.localPosition.dx;
+                    },
+                    onHorizontalDragUpdate: (details) {
+                      if (_isUrlBarCollapsed && _isDragging) {
+                        setState(() {
+                          _urlBarPosition = Offset(
+                            _urlBarPosition.dx + details.delta.dx,
+                            _urlBarPosition.dy,
+                          );
+                        });
+                      } else if (!_isUrlBarCollapsed) {
+                        final delta = details.localPosition.dx - dragStartX;
+                        if (delta.abs() > 30) {
+                          if ((delta < 0 && canGoBack) || (delta > 0 && canGoForward)) {
+                            delta < 0 ? controller.goBack() : controller.goForward();
+                            dragStartX = details.localPosition.dx;
+                          }
+                        }
+                      }
+                    },
+                    onHorizontalDragEnd: (_) {
+                      setState(() => _isDragging = false);
+                    },
+                    onTap: () {
+                      if (_isUrlBarCollapsed) {
+                        setState(() {
+                          _isUrlBarCollapsed = false;
+                          _urlBarPosition = Offset.zero;
+                        });
+                        _startAutoCollapseTimer();
+                      }
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      curve: Curves.easeOutCubic,
+                      height: 50,
+                      width: _isUrlBarCollapsed ? 50 : null,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(_isUrlBarCollapsed ? 25 : 20),
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                          child: Container(
+                            decoration: _getGlassmorphicDecoration(),
+                            child: _isUrlBarCollapsed 
+                              ? _buildCollapsedSearchButton()
+                              : Row(
+                                  children: [
+                                    const SizedBox(width: 8),
+                                    _buildSecureIcon(),
+                                    Expanded(
+                                      child: !isUrlBarExpanded
+                                        ? _buildCollapsedUrlBar()
+                                        : _buildExpandedUrlBar(),
+                                    ),
+                                    _buildUrlBarAction(),
+                                  ],
+                                ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),
           if (isTabsVisible || isHistoryVisible || isSettingsVisible)
-            RepaintBoundary(child: _buildOverlayPanel()),
+            RepaintBoundary(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 150),
+                child: _buildOverlayPanel(),
+              ),
+            ),
         ],
       ),
     );
   }
 
-  Widget _buildUrlPanel() {
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onVerticalDragUpdate: (details) {
-        _debouncer.run(() {
-          if (details.primaryDelta! < -5 && !isPanelExpanded) {
-            setState(() {
-              isPanelExpanded = true;
-            });
-          } else if (details.primaryDelta! > 5 && isPanelExpanded) {
-            setState(() {
-              isPanelExpanded = false;
-            });
-          }
+  Widget _buildCollapsedSearchButton() {
+    return IconButton(
+      icon: Image.asset(
+        'assets/search24.png',
+        width: 24,
+        height: 24,
+        color: _colors.textSecondary,
+      ),
+      onPressed: () {
+        setState(() {
+          _isUrlBarCollapsed = false;
+          _urlBarPosition = Offset.zero;
         });
       },
-      onHorizontalDragStart: (details) {
-        dragStartX = details.localPosition.dx;
-      },
-      onHorizontalDragUpdate: (details) {
-        final delta = details.localPosition.dx - dragStartX;
-        if (delta.abs() > 50) {
-          _debouncer.run(() {
-            if (delta > 0 && canGoBack) {
-              controller.goBack();
-              dragStartX = details.localPosition.dx;
-            } else if (delta < 0 && canGoForward) {
-              controller.goForward();
-              dragStartX = details.localPosition.dx;
-            }
-          });
-        }
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        height: 50,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-            child: Container(
-              decoration: _getGlassmorphicDecoration(),
-              child: Row(
-                children: [
-                  const SizedBox(width: 8),
-                  _buildSecureIcon(),
-                  Expanded(
-                    child: !isUrlBarExpanded
-                      ? _buildCollapsedUrlBar()
-                      : _buildExpandedUrlBar(),
-                  ),
-                  _buildUrlBarAction(),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
     );
   }
 
@@ -1379,9 +1415,11 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       }
       
       setState(() {
-        // Suspend current tab if moving away from it
-        if (currentTabIndex != index && tabs.length > 3) {
-          _suspendTab(currentTabIndex);
+        // Suspend tabs that are not adjacent to the current tab
+        for (var i = 0; i < tabs.length; i++) {
+          if (i != index && i != index - 1 && i != index + 1) {
+            _suspendTab(i);
+          }
         }
         
         currentTabIndex = index;
@@ -1397,7 +1435,18 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       final tab = tabs[index];
       final url = await tab.controller.currentUrl() ?? '';
       tab.url = url;
+      
+      // Clear resources before suspension
       await tab.controller.clearCache();
+      await tab.controller.runJavaScript('''
+        // Clear unnecessary resources
+        window.performance.clearResourceTimings();
+        // Remove unused event listeners
+        window.onload = null;
+        window.onscroll = null;
+        window.onresize = null;
+      ''');
+      
       _suspendedTabs[index] = true;
     }
   }
@@ -1669,32 +1718,188 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   Future<void> _optimizeWebView() async {
-    // Clear old data periodically
-    const duration = Duration(minutes: 30);
+    // Optimize memory usage
+    const duration = Duration(minutes: 10);
     Timer.periodic(duration, (timer) async {
       if (!mounted) {
         timer.cancel();
         return;
       }
       
-      // Only clear cache if memory usage is high
-      try {
-        for (var tab in tabs) {
-          final currentUrl = await tab.controller.currentUrl();
-          if (currentUrl != null && tab.url != currentUrl) {
-            await tab.controller.clearCache();
-          }
+      await _checkMemoryAndOptimize();
+      
+      // Clear unnecessary caches
+      for (var i = 0; i < tabs.length; i++) {
+        if (i != currentTabIndex) {
+          await tabs[i].controller.clearCache();
         }
-      } catch (e) {
-        print('Cache clearing error: $e');
       }
     });
 
-    // Optimize memory usage
+    // Optimize for Android
     if (Platform.isAndroid) {
       final androidController = controller.platform as AndroidWebViewController;
       await androidController.setGeolocationEnabled(false);
       await androidController.setMediaPlaybackRequiresUserGesture(true);
+      
+      // Enable hardware acceleration
+      await controller.runJavaScript('''
+        document.body.style.setProperty('-webkit-transform', 'translate3d(0, 0, 0)');
+        document.body.style.setProperty('transform', 'translate3d(0, 0, 0)');
+        document.body.style.setProperty('backface-visibility', 'hidden');
+      ''');
+    }
+
+    // Add performance optimizations
+    await controller.runJavaScript('''
+      // Optimize scroll performance
+      document.addEventListener('scroll', (e) => {
+        if (!document.body.style.willChange) {
+          document.body.style.willChange = 'transform';
+        }
+        if (window._scrollTimeout) {
+          clearTimeout(window._scrollTimeout);
+        }
+        window._scrollTimeout = setTimeout(() => {
+          document.body.style.willChange = 'auto';
+        }, 100);
+      }, { passive: true });
+
+      // Optimize image loading
+      document.addEventListener('DOMContentLoaded', () => {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const img = entry.target;
+              if (img.dataset.src) {
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+                observer.unobserve(img);
+              }
+            }
+          });
+        }, {
+          rootMargin: '50px 0px',
+          threshold: 0.01
+        });
+
+        document.querySelectorAll('img').forEach(img => {
+          if (img.src && !img.loading) {
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            observer.observe(img);
+          }
+        });
+      });
+
+      // Optimize animations
+      document.documentElement.style.setProperty('scroll-behavior', 'auto');
+      document.documentElement.style.setProperty('touch-action', 'manipulation');
+      
+      // Disable unnecessary features
+      if (navigator.battery) navigator.battery.addEventListener = null;
+      if (navigator.deviceMemory) navigator.deviceMemory = undefined;
+      if (navigator.hardwareConcurrency) navigator.hardwareConcurrency = undefined;
+    ''');
+  }
+
+  Future<void> _checkMemoryAndOptimize() async {
+    try {
+      // Suspend inactive tabs
+      for (var i = 0; i < tabs.length; i++) {
+        if (i != currentTabIndex && i != currentTabIndex - 1 && i != currentTabIndex + 1) {
+          await _suspendTab(i);
+        }
+      }
+
+      // Clear JavaScript garbage
+      await controller.runJavaScript('''
+        window.performance?.clearResourceTimings();
+        window.performance?.clearMarks();
+        window.performance?.clearMeasures();
+        
+        // Clear unused event listeners
+        const clearEvents = () => {
+          const clone = document.cloneNode(true);
+          document.replaceWith(clone);
+        };
+        if (document.readyState === 'complete') clearEvents();
+        else window.addEventListener('load', clearEvents);
+      ''');
+    } catch (e) {
+      print('Memory optimization error: $e');
+    }
+  }
+
+  Future<void> _initializeWebViewOptimizations() async {
+    // Add advanced WebView optimizations
+    await controller.runJavaScript('''
+      // Optimize rendering performance
+      document.documentElement.style.setProperty('scroll-behavior', 'auto');
+      document.documentElement.style.setProperty('touch-action', 'manipulation');
+      
+      // Optimize scroll performance
+      let scrollTimeout;
+      document.addEventListener('scroll', (e) => {
+        if (!document.body.style.willChange) {
+          document.body.style.willChange = 'transform';
+        }
+        clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+          document.body.style.willChange = 'auto';
+        }, 100);
+      }, { passive: true });
+      
+      // Optimize image loading and rendering
+      document.addEventListener('DOMContentLoaded', () => {
+        // Add IntersectionObserver for lazy loading
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const img = entry.target;
+              if (img.dataset.src) {
+                img.src = img.dataset.src;
+                img.removeAttribute('data-src');
+                observer.unobserve(img);
+              }
+            }
+          });
+        }, {
+          rootMargin: '50px 0px',
+          threshold: 0.01
+        });
+        
+        // Optimize all images
+        document.querySelectorAll('img').forEach(img => {
+          if (img.src && !img.loading) {
+            img.loading = 'lazy';
+            img.decoding = 'async';
+            observer.observe(img);
+          }
+        });
+        
+        // Optimize iframes
+        document.querySelectorAll('iframe').forEach(iframe => {
+          iframe.loading = 'lazy';
+        });
+      });
+      
+      // Optimize animations and transitions
+      document.documentElement.style.setProperty('--webkit-transition', 'transform');
+      document.body.style.setProperty('backface-visibility', 'hidden');
+      document.body.style.setProperty('-webkit-backface-visibility', 'hidden');
+    ''');
+
+    if (Platform.isAndroid) {
+      final androidController = controller.platform as AndroidWebViewController;
+      await androidController.setGeolocationEnabled(false);
+      await androidController.setMediaPlaybackRequiresUserGesture(true);
+      
+      // Enable hardware acceleration
+      await controller.runJavaScript('''
+        document.documentElement.style.setProperty('-webkit-transform', 'translateZ(0)');
+        document.documentElement.style.setProperty('-webkit-backface-visibility', 'hidden');
+      ''');
     }
   }
 
@@ -1712,10 +1917,12 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       child: Container(
         margin: EdgeInsets.only(top: 0),
         child: AnimatedSlide(
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOutCubic,
           offset: isTabsVisible || isHistoryVisible || isSettingsVisible ? Offset.zero : const Offset(0, 1),
           child: AnimatedOpacity(
-            duration: const Duration(milliseconds: 200),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOutCubic,
             opacity: isTabsVisible || isHistoryVisible || isSettingsVisible ? 1.0 : 0.0,
             child: Container(
               color: isDarkMode ? Colors.black : Colors.white,
@@ -1869,67 +2076,63 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       color: isDarkMode ? Colors.black : Colors.white,
       child: Column(
         children: [
-          Container(
-            height: 56 + MediaQuery.of(context).padding.top,
-            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-            decoration: BoxDecoration(
-              color: isDarkMode ? Colors.black : Colors.white,
-              border: Border(
-                bottom: BorderSide(
-                  color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
-                ),
-              ),
-            ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.arrow_back,
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      isHistoryVisible = false;
-                    });
-                  },
-                ),
-                Text(
-                  AppLocalizations.of(context)!.history,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-                ),
-              ],
-            ),
+          _buildPanelHeader(AppLocalizations.of(context)!.history, 
+            onBack: () => setState(() => isHistoryVisible = false)
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: downloads.length,
-              itemBuilder: (context, index) {
-                final download = downloads[index];
-                return ListTile(
-                  title: Text(
-                    download['title'] as String? ?? download['url'] as String,
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.black,
-                    ),
-                  ),
-                  subtitle: Text(
-                    DateTime.parse(download['timestamp'] as String).toLocal().toString(),
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
-                    ),
-                  ),
-                  onTap: () {
-                    controller.loadRequest(Uri.parse(download['url'] as String));
-                    setState(() {
-                      isHistoryVisible = false;
-                    });
-                  },
-                );
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (ScrollNotification scrollInfo) {
+                if (scrollInfo is ScrollEndNotification) {
+                  if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 500) {
+                    _loadMoreHistory();
+                  }
+                }
+                return true;
               },
+              child: ListView.builder(
+                controller: _historyScrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                itemCount: _loadedHistory.length + 1,
+                itemBuilder: (context, index) {
+                  if (index == _loadedHistory.length) {
+                    return _isLoadingMore
+                      ? const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: CircularProgressIndicator(),
+                          ),
+                        )
+                      : const SizedBox.shrink();
+                  }
+
+                  final item = _loadedHistory[index];
+                  final timestamp = DateTime.parse(item['timestamp'] as String).toLocal();
+                  final formattedDate = DateFormat('MMM d, y - h:mm a').format(timestamp);
+                  
+                  return RepaintBoundary(
+                    child: ListTile(
+                      title: Text(
+                        item['title'] as String? ?? item['url'] as String,
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      subtitle: Text(
+                        formattedDate,
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white70 : Colors.black54,
+                        ),
+                      ),
+                      onTap: () {
+                        controller.loadRequest(Uri.parse(item['url'] as String));
+                        setState(() {
+                          isHistoryVisible = false;
+                        });
+                      },
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ],
@@ -1939,36 +2142,48 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   Widget _buildSettingsPanel() {
     return Container(
-      height: MediaQuery.of(context).size.height,
       color: isDarkMode ? Colors.black : Colors.white,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildPanelHeader(AppLocalizations.of(context)!.settings, onBack: () {
-            setState(() {
-              isSettingsVisible = false;
-            });
-          }),
+          _buildPanelHeader(AppLocalizations.of(context)!.settings, 
+            onBack: () => setState(() => isSettingsVisible = false)
+          ),
           Expanded(
             child: ListView(
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              physics: const AlwaysScrollableScrollPhysics(),
               children: [
                 _buildSettingsSection(
                   title: AppLocalizations.of(context)!.customize_browser,
                   children: [
-                    _buildSettingsButton('general', () => _showGeneralSettings()),
-                    _buildSettingsButton('downloads', () => _showDownloadsSettings()),
-                    _buildSettingsButton('appearance', () => _showAppearanceSettings()),
+                    RepaintBoundary(
+                      child: _buildSettingsButton('general', () => _showGeneralSettings()),
+                    ),
+                    RepaintBoundary(
+                      child: _buildSettingsButton('downloads', () => _showDownloadsSettings()),
+                    ),
+                    RepaintBoundary(
+                      child: _buildSettingsButton('appearance', () => _showAppearanceSettings()),
+                    ),
                   ],
                 ),
                 _buildSettingsSection(
                   title: AppLocalizations.of(context)!.learn_more,
                   children: [
-                    _buildSettingsButton('help', () => _showHelpPage()),
-                    _buildSettingsButton('rate_us', () => _showRateUs()),
-                    _buildSettingsButton('privacy_policy', () => _showPrivacyPolicy()),
-                    _buildSettingsButton('terms_of_use', () => _showTermsOfUse()),
-                    _buildSettingsButton('about', () => _showAboutPage()),
+                    RepaintBoundary(
+                      child: _buildSettingsButton('help', () => _showHelpPage()),
+                    ),
+                    RepaintBoundary(
+                      child: _buildSettingsButton('rate_us', () => _showRateUs()),
+                    ),
+                    RepaintBoundary(
+                      child: _buildSettingsButton('privacy_policy', () => _showPrivacyPolicy()),
+                    ),
+                    RepaintBoundary(
+                      child: _buildSettingsButton('terms_of_use', () => _showTermsOfUse()),
+                    ),
+                    RepaintBoundary(
+                      child: _buildSettingsButton('about', () => _showAboutPage()),
+                    ),
                   ],
                 ),
               ],
@@ -2051,6 +2266,58 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         ),
       ),
     );
+  }
+
+  void _setupHistoryScrollListener() {
+    _historyScrollController.addListener(() {
+      if (_historyScrollController.position.pixels >= 
+          _historyScrollController.position.maxScrollExtent - 500 && !_isLoadingMore) {
+        _loadMoreHistory();
+      }
+    });
+  }
+
+  Future<void> _loadMoreHistory() async {
+    if (_isLoadingMore) return;
+    
+    setState(() {
+      _isLoadingMore = true;
+    });
+
+    final prefs = await SharedPreferences.getInstance();
+    final history = prefs.getStringList('history') ?? [];
+    
+    final start = _currentHistoryPage * _historyPageSize;
+    if (start >= history.length) {
+      setState(() {
+        _isLoadingMore = false;
+      });
+      return;
+    }
+    
+    final end = min(start + _historyPageSize, history.length);
+    final newItems = history
+      .sublist(start, end)
+      .map((e) => Map<String, dynamic>.from(json.decode(e)))
+      .toList();
+    
+    setState(() {
+      _loadedHistory.addAll(newItems);
+      _currentHistoryPage++;
+      _isLoadingMore = false;
+    });
+  }
+
+  void _startAutoCollapseTimer() {
+    _autoCollapseTimer?.cancel();
+    _autoCollapseTimer = Timer(const Duration(seconds: 5), () {
+      if (mounted && !_isUrlBarCollapsed && !isUrlBarExpanded) {
+        setState(() {
+          _isUrlBarCollapsed = true;
+          _urlBarPosition = const Offset(16, 0);
+        });
+      }
+    });
   }
 }
 
