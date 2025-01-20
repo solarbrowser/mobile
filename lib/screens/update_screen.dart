@@ -49,24 +49,14 @@ class _UpdateScreenState extends State<UpdateScreen> {
     // Add update notes for each version
     return [
       {
-        'version': '0.0.39,5',
+        'version': '0.0.4',
         'changes': [
           'Added welcome screen for new users',
           'Added update log screen',
           'Added more language options',
-          'Improved performance and optimization',
-          'Enhanced UI with glassmorphism effects',
-          'Added automatic OS theme and language detection',
-        ],
-      },
-      {
-        'version': '0.0.3',
-        'changes': [
-          'Initial release',
-          'Basic browsing functionality',
-          'Tab management',
-          'History tracking',
-          'Basic settings',
+          'Photoncore',
+          'SVGs',
+          'Lots of bug fixed',
         ],
       },
     ];
@@ -183,13 +173,13 @@ class _UpdateScreenState extends State<UpdateScreen> {
           const SizedBox(height: 20),
           _buildChangelogItem(
             isDarkMode,
-            'Performance Improvements',
-            'Faster page loading and smoother scrolling',
+            'Photoncore',
+            'Photoncore is a new optimization engine that will improve the performance of the app',
           ),
           _buildChangelogItem(
             isDarkMode,
-            'New Features',
-            'Added bookmarks and improved downloads management',
+            'SVGs',
+            'We used SVG instead of PNG for icons',
           ),
           _buildChangelogItem(
             isDarkMode,

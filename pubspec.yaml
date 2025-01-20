@@ -1,6 +1,6 @@
 name: solar_browser
 description: A modern, fast, and secure browser
-version: 0.0.395
+version: 0.0.4
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -22,17 +22,29 @@ dependencies:
   http: ^1.1.0
   path_provider: ^2.1.1
   package_info_plus: ^4.2.0
+  image: ^4.1.3
+  flutter_phoenix: ^1.1.1
+  flutter_svg: ^2.0.17
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
+  flutter_launcher_icons: "^0.14.3"
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icon.png"
 
 flutter:
   uses-material-design: true
   generate: true
   assets:
     - assets/
+    - assets/main.html
+    - assets/icons/
+    - assets/svg/
 
 flutter_intl:
   enabled: true

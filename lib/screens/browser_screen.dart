@@ -18,6 +18,10 @@ import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart';
+import '../utils/optimization_engine.dart';
+import 'package:flutter_phoenix/flutter_phoenix.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class Debouncer {
   final int milliseconds;
@@ -47,18 +51,85 @@ class BrowserScreen extends StatefulWidget {
   _BrowserScreenState createState() => _BrowserScreenState();
 }
 
+class BrowserTab {
+  final String id;
+  String url;
+  String title;
+  String? favicon;
+  late WebViewController controller;
+
+  BrowserTab({
+    required this.id,
+    required this.url,
+    required this.title,
+    this.favicon,
+  });
+}
+
+// Top level class for the loading animation
+class LoadingBorderPainter extends CustomPainter {
+  final double progress;
+  final Color color;
+
+  LoadingBorderPainter({
+    required this.progress,
+    required this.color,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+
+    final rect = RRect.fromRectAndRadius(
+      Offset.zero & size,
+      const Radius.circular(28),
+    );
+
+    final path = Path()
+      ..addRRect(rect);
+
+    final pathMetrics = path.computeMetrics().first;
+    final length = pathMetrics.length;
+    
+    // Draw snake-like segment
+    final snakeLength = length * 0.3; // Snake takes up 30% of the border
+    final start = (progress * length * 2) % length;
+    final end = (start + snakeLength) % length;
+    
+    if (start < end) {
+      final extractPath = pathMetrics.extractPath(start, end);
+      canvas.drawPath(extractPath, paint);
+    } else {
+      // Handle wrap-around case
+      final extractPath1 = pathMetrics.extractPath(start, length);
+      final extractPath2 = pathMetrics.extractPath(0, end);
+      canvas.drawPath(extractPath1, paint);
+      canvas.drawPath(extractPath2, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(LoadingBorderPainter oldDelegate) {
+    return oldDelegate.progress != progress || oldDelegate.color != color;
+  }
+}
+
 class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateMixin {
   // WebView and Navigation
   final List<WebViewController> _controllers = [];
   late WebViewController controller;
   int currentTabIndex = 0;
-  final Map<int, bool> _suspendedTabs = {};
-  final int maxTabs = 10;
-  List<TabInfo> tabs = [];
+  final List<BrowserTab> _suspendedTabs = [];
+  static const int _maxActiveTabs = 5;
+  List<BrowserTab> tabs = [];
   bool canGoBack = false;
   bool canGoForward = false;
   bool isSecure = false;
   bool allowHttp = true;
+  bool isLoading = false;
   
   // Download State
   bool isDownloading = false;
@@ -66,8 +137,8 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   double downloadProgress = 0.0;
   
   // Controllers
-  final TextEditingController urlController = TextEditingController();
-  final TextEditingController searchController = TextEditingController();
+  late TextEditingController _urlController;
+  late FocusNode _urlFocusNode;
   
   // UI State
   bool isDarkMode = false;
@@ -75,9 +146,8 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   bool showImages = true;
   String currentSearchEngine = 'google';
   bool isSearchMode = false;
-  bool isLoading = false;
-  String displayUrl = '';
-  bool isUrlBarExpanded = false;
+  String _displayUrl = '';
+  bool _isUrlBarExpanded = false;
   bool isSecurityPanelVisible = false;
   String securityMessage = '';
   String currentLanguage = 'en';
@@ -93,7 +163,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   
   // Panel Visibility
   bool isTabsVisible = false;
-  bool isHistoryVisible = false;
   bool isSettingsVisible = false;
   bool isBookmarksVisible = false;
   bool isDownloadsVisible = false;
@@ -106,6 +175,14 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   Offset _urlBarPosition = Offset.zero;
   Timer? _autoCollapseTimer;
   double dragStartX = 0;
+  Timer? _loadingTimer;
+  
+  // Home Page Settings
+  String _homeUrl = 'file:///android_asset/main.html';
+  String _searchEngine = 'google';
+  bool _syncHomePageSearchEngine = true;
+  String _homePageSearchEngine = 'google';
+  List<Map<String, String>> _homePageShortcuts = [];
   
   // History Loading
   final ScrollController _historyScrollController = ScrollController();
@@ -115,8 +192,8 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   List<Map<String, dynamic>> _loadedHistory = [];
   
   // Animation
-  late AnimationController _slideAnimationController;
-  late Animation<Offset> _slideAnimation;
+  late final AnimationController _slideAnimationController;
+  late final Animation<Offset> _slideAnimation;
   late AnimationController _animationController;
   late Animation<double> _animation;
   
@@ -124,19 +201,13 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   List<Map<String, dynamic>> bookmarks = [];
   List<Map<String, dynamic>> downloads = [];
   
-  // Search Engines
-  final Map<String, String> searchEngines = {
-    'google': 'https://www.google.com/search?q=',
-    'bing': 'https://www.bing.com/search?q=',
-    'duckduckgo': 'https://duckduckgo.com/?q=',
-    'yahoo': 'https://search.yahoo.com/search?p=',
-  };
-
   // Memory Management
   final _debouncer = Debouncer(milliseconds: 300);
   bool _isLowMemory = false;
   int _lastMemoryCheck = 0;
   static const int MEMORY_CHECK_INTERVAL = 30000;
+
+  bool isInitialized = false;
 
   ThemeColors get _colors => isDarkMode ? _darkModeColors : _lightModeColors;
   
@@ -156,6 +227,25 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     border: Colors.black12,
   );
 
+  late OptimizationEngine _optimizationEngine;
+
+  // Search Engines
+  final Map<String, String> searchEngines = {
+    'google': 'https://www.google.com/search?q=',
+    'bing': 'https://www.bing.com/search?q=',
+    'duckduckgo': 'https://duckduckgo.com/?q=',
+    'yahoo': 'https://search.yahoo.com/search?p=',
+  };
+
+  // Add new state variables
+  bool _isUrlBarIconState = false;
+  Timer? _urlBarIdleTimer;
+  Offset _urlBarOffset = Offset.zero;
+  bool _isDraggingUrlBar = false;
+
+  // Add new state variable for fullscreen
+  bool _isFullscreen = false;
+
   void _updateState(VoidCallback update) {
     _debouncer.run(() {
       if (mounted) {
@@ -166,25 +256,15 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   BoxDecoration _getGlassmorphicDecoration() {
     return BoxDecoration(
-      gradient: LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: isDarkMode 
-          ? [Colors.black87.withOpacity(0.7), Colors.black87.withOpacity(0.5)]
-          : [Colors.white.withOpacity(0.7), Colors.grey.shade200.withOpacity(0.5)],
-      ),
-      borderRadius: BorderRadius.circular(20),
-      border: Border.all(
         color: isDarkMode 
-          ? Colors.white.withOpacity(0.1) 
+        ? Colors.black.withOpacity(0.3) 
           : Colors.white.withOpacity(0.3),
-        width: 1.5,
-      ),
+      borderRadius: BorderRadius.circular(28),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.2),
-          blurRadius: 15,
-          spreadRadius: -8,
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 20,
+          spreadRadius: 0,
         ),
       ],
     );
@@ -193,26 +273,97 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   @override
   void initState() {
     super.initState();
-    // Initialize all panel visibility states to false
-    isTabsVisible = false;
-    isHistoryVisible = false;
-    isSettingsVisible = false;
-    isBookmarksVisible = false;
-    isDownloadsVisible = false;
-    isPanelExpanded = false;
-    isSearchMode = false;
+    _initializeControllers();
+    _loadPreferences();
+    _homeUrl = 'file:///android_asset/main.html';
+    _addNewTab();
     
-    _initializeAnimations();
-    _initializeWebView().then((_) {
-      _loadPreferences();
-      _loadBookmarks();
-      _loadDownloads();
-      _animationController.forward();
-      _setupScrollHandling();
-      _optimizeWebView();
-      _initializeWebViewOptimizations();
-      _setupHistoryScrollListener();
+    _urlFocusNode.addListener(() {
+      if (!_urlFocusNode.hasFocus) {
+        setState(() {
+          _urlController.text = _formatUrl(_displayUrl);
+        });
+        _startUrlBarIdleTimer();
+      }
     });
+
+    // Start initial timer
+    _startUrlBarIdleTimer();
+
+    // Initialize system UI
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      systemNavigationBarColor: Colors.transparent,
+      statusBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
+      systemNavigationBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
+    ));
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  }
+
+  Future<void> _initializeControllers() async {
+    _slideAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _slideAnimationController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    _urlController = TextEditingController();
+    _urlFocusNode = FocusNode();
+    _urlFocusNode.addListener(() {
+      if (mounted) {
+        setState(() {
+          _isUrlBarExpanded = _urlFocusNode.hasFocus;
+        });
+      }
+    });
+
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _animation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOutCubic,
+    );
+
+    await _initializeWebView();
+  }
+
+  Future<void> _loadPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isDarkMode = prefs.getBool('darkMode') ?? false;
+      _searchEngine = prefs.getString('searchEngine') ?? 'google';
+    });
+  }
+
+  Future<void> _savePreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('darkMode', isDarkMode);
+    await prefs.setString('homeUrl', _homeUrl);
+    await prefs.setString('searchEngine', _searchEngine);
+  }
+
+  @override
+  void dispose() {
+    _autoCollapseTimer?.cancel();
+    _loadingTimer?.cancel();
+    _slideAnimationController.dispose();
+    _urlFocusNode.dispose();
+    _urlController.dispose();
+    _optimizationEngine.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initializeOptimizationEngine() async {
+    _optimizationEngine = OptimizationEngine(controller);
+    await _optimizationEngine.initialize();
   }
 
   Future<void> _loadDownloads() async {
@@ -276,348 +427,204 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     await controller.addJavaScriptChannel(
       'onScroll',
       onMessageReceived: (JavaScriptMessage message) {
-        try {
-          if (!_isUrlBarCollapsed) {
-            setState(() {
-              _isUrlBarCollapsed = true;
-              _urlBarPosition = const Offset(16, 0);
-            });
-            _autoCollapseTimer?.cancel();
-          }
-        } catch (e) {
-          print('Scroll error: $e');
+        if (!_urlFocusNode.hasFocus) {
+          setState(() {
+            _isUrlBarIconState = true;
+          });
         }
       },
     );
   }
 
-  Future<WebViewController> _createWebViewController() async {
-    late final PlatformWebViewControllerCreationParams params;
-    
-    if (Platform.isAndroid) {
-      params = const PlatformWebViewControllerCreationParams();
-      final controller = WebViewController.fromPlatformCreationParams(params);
-      
-      if (controller.platform is AndroidWebViewController) {
-        final androidController = controller.platform as AndroidWebViewController;
-        await androidController.setMediaPlaybackRequiresUserGesture(true);
-        await androidController.setBackgroundColor(Colors.transparent);
-      }
-      
-      await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-      await controller.addJavaScriptChannel(
-        'onScroll',
-        onMessageReceived: (JavaScriptMessage message) {
-          try {
-            final scrollY = double.parse(message.message);
-            final now = DateTime.now();
-            if (now.difference(lastScrollEvent) > const Duration(milliseconds: 100)) {
-              final isScrollingUpNow = scrollY < lastScrollPosition;
-              if (isScrollingUpNow != isScrollingUp) {
+  Future<WebViewController> _initializeWebViewController() async {
+    final webViewController = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(Colors.transparent)
+      ..enableZoom(true)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onPageStarted: (String url) async {
+            if (!mounted) return;
                 setState(() {
-                  isScrollingUp = isScrollingUpNow;
-                  if (isScrollingUp) {
-                    _animationController.forward();
-                  } else {
-                    _animationController.reverse();
-                  }
-                });
+              isLoading = true;
+              _displayUrl = url;
+            });
+            await _optimizationEngine.onPageStartLoad(url);
+          },
+          onPageFinished: (String url) async {
+            if (!mounted) return;
+            setState(() {
+              isLoading = false;
+              if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+                tabs[currentTabIndex].title = _displayUrl;
+                tabs[currentTabIndex].url = url;
               }
-              lastScrollPosition = scrollY;
-              lastScrollEvent = now;
-            }
-          } catch (e) {
-            print('Scroll error: $e');
-          }
-        },
+            });
+            await _optimizationEngine.onPageFinishLoad(url);
+          },
+          onWebResourceError: (WebResourceError error) {
+            if (!mounted) return;
+            setState(() {
+              isLoading = false;
+            });
+          },
+          onNavigationRequest: (NavigationRequest request) {
+            return NavigationDecision.navigate;
+          },
+        ),
       );
+
+    if (webViewController.platform is AndroidWebViewController) {
+      final androidController = webViewController.platform as AndroidWebViewController;
+      await androidController.setMediaPlaybackRequiresUserGesture(false);
+      await androidController.setBackgroundColor(Colors.transparent);
       
-      return controller;
-    } else if (Platform.isIOS) {
-      params = WebKitWebViewControllerCreationParams(
-        allowsInlineMediaPlayback: true,
-      );
-      final controller = WebViewController.fromPlatformCreationParams(params);
-      
-      if (controller.platform is WebKitWebViewController) {
-        final webKitController = controller.platform as WebKitWebViewController;
-        await webKitController.setAllowsBackForwardNavigationGestures(true);
-        await webKitController.setBackgroundColor(Colors.transparent);
-      }
-      
-      await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-      return controller;
-    } else {
-      throw UnsupportedError('Unsupported platform');
+      // Enable hardware acceleration
+      await webViewController.runJavaScript('''
+        document.body.style.setProperty('-webkit-transform', 'translate3d(0,0,0)');
+        document.body.style.setProperty('transform', 'translate3d(0,0,0)');
+        document.body.style.setProperty('will-change', 'transform, opacity');
+        document.body.style.setProperty('backface-visibility', 'hidden');
+        document.body.style.setProperty('-webkit-backface-visibility', 'hidden');
+      ''');
     }
+
+    return webViewController;
+  }
+
+  Future<void> _loadHomePageSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _syncHomePageSearchEngine = prefs.getBool('syncHomePageSearchEngine') ?? true;
+      _homePageSearchEngine = prefs.getString('homePageSearchEngine') ?? 'google';
+      final shortcutsList = prefs.getStringList('homePageShortcuts') ?? [];
+      _homePageShortcuts = shortcutsList.map((e) => Map<String, String>.from(json.decode(e))).toList();
+    });
   }
 
   Future<void> _initializeWebView() async {
-    late final PlatformWebViewControllerCreationParams params;
-    
-    if (Platform.isAndroid) {
-      params = const PlatformWebViewControllerCreationParams();
-    } else if (Platform.isIOS) {
-      params = WebKitWebViewControllerCreationParams(
-        allowsInlineMediaPlayback: true,
-      );
-    } else {
-      throw UnsupportedError('Unsupported platform');
-    }
-
-    controller = WebViewController.fromPlatformCreationParams(params);
-    
-    if (Platform.isAndroid && controller.platform is AndroidWebViewController) {
-      final androidController = controller.platform as AndroidWebViewController;
-      await androidController.setMediaPlaybackRequiresUserGesture(true);
-      await androidController.setBackgroundColor(Colors.transparent);
-    }
-
-    await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-    await controller.setNavigationDelegate(
-      NavigationDelegate(
-        onNavigationRequest: (request) async {
-          final url = request.url;
-          
-          // Handle custom download scheme
-          if (url.startsWith('download://')) {
-            final downloadUrl = Uri.decodeComponent(url.substring('download://'.length));
-            _downloadFile(downloadUrl);
-            return NavigationDecision.prevent;
-          }
-          
-          // Handle direct file downloads
-          final lowerUrl = url.toLowerCase();
-          if (lowerUrl.endsWith('.pdf') || 
-              lowerUrl.endsWith('.doc') || 
-              lowerUrl.endsWith('.docx') || 
-              lowerUrl.endsWith('.xls') || 
-              lowerUrl.endsWith('.xlsx') || 
-              lowerUrl.endsWith('.zip') || 
-              lowerUrl.endsWith('.rar') || 
-              lowerUrl.endsWith('.apk') ||
-              lowerUrl.endsWith('.mp3') ||
-              lowerUrl.endsWith('.mp4') ||
-              lowerUrl.contains('download.') ||
-              lowerUrl.contains('/download/')) {
-            _downloadFile(url);
-            return NavigationDecision.prevent;
-          }
-          return NavigationDecision.navigate;
-        },
-        onUrlChange: (change) async {
-          if (change.url != null) {
-            setState(() {
-              displayUrl = change.url!;
-              isSecure = change.url!.startsWith('https://');
-            });
-          }
-        },
-      ),
-    );
-
-    // Add JavaScript to intercept file downloads from links that don't trigger navigation
-    await controller.runJavaScript('''
-      document.addEventListener('click', function(e) {
-        var link = e.target.closest('a');
-        if (link && (link.hasAttribute('download') || link.href.match(/\\\\.(pdf|doc|docx|xls|xlsx|zip|rar|apk|mp3|mp4)\$/i))) {
-          e.preventDefault();
-          var href = link.href;
-          window.location.href = 'download://' + encodeURIComponent(href);
-        }
-      });
-    ''');
-
-    await _setupWebViewCallbacks(controller);
-    await controller.loadRequest(Uri.parse('https://www.google.com'));
-    
-    tabs.add(TabInfo(
-      title: 'New Tab',
-      url: 'https://www.google.com',
-      controller: controller,
-    ));
-  }
-
-  Future<void> _downloadFile(String url) async {
-    try {
-      final status = await Permission.storage.request();
-      if (!status.isGranted) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Storage permission is required to download files')),
-          );
-        }
-        return;
-      }
-
-      setState(() {
-        isDownloading = true;
-        currentDownloadUrl = url;
-        downloadProgress = 0.0;
-      });
-
-      final fileName = url.split('/').last;
-      Directory? directory;
-      
-      if (Platform.isAndroid) {
-        directory = Directory('/storage/emulated/0/Download');
-        if (!await directory.exists()) {
-          await directory.create(recursive: true);
-        }
-      } else {
-        directory = await getApplicationDocumentsDirectory();
-      }
-      
-      final filePath = '${directory.path}/$fileName';
-
-      // Show download started notification
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Starting download: $fileName'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-
-      final response = await http.Client().send(http.Request('GET', Uri.parse(url)));
-      
-      if (response.statusCode != 200) {
-        throw Exception('Failed to download file: ${response.statusCode}');
-      }
-
-      final file = File(filePath);
-      final sink = file.openWrite();
-      
-      int received = 0;
-      final contentLength = response.contentLength ?? 0;
-
-      await for (var chunk in response.stream) {
-        if (!mounted) break; // Stop if widget is disposed
-        
-        sink.add(chunk);
-        received += chunk.length;
-        
-        final progress = contentLength > 0 ? received / contentLength : 0.0;
-        
-        setState(() {
-          downloadProgress = progress;
-        });
-        
-        // Show progress notification every 20%
-        if ((progress * 100) % 20 == 0) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Downloading $fileName'),
-                    const SizedBox(height: 4),
-                    LinearProgressIndicator(value: progress),
-                    Text('${(progress * 100).toInt()}%'),
-                  ],
-                ),
-                duration: const Duration(milliseconds: 500),
-              ),
-            );
-          }
-        }
-      }
-      
-      await sink.close();
-
-      // Save download info
-      final prefs = await SharedPreferences.getInstance();
-      final downloadsList = prefs.getStringList('downloads') ?? [];
-      final download = {
-        'fileName': fileName,
-        'url': url,
-        'path': filePath,
-        'timestamp': DateTime.now().toIso8601String(),
-        'size': contentLength,
-      };
-      downloadsList.insert(0, json.encode(download));
-      await prefs.setStringList('downloads', downloadsList);
-
-      if (mounted) {
-        setState(() {
-          downloads = downloadsList.map((e) => Map<String, dynamic>.from(json.decode(e))).toList();
-          isDownloading = false;
-          downloadProgress = 0.0;
-        });
-
-        // Show download completed notification
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Downloaded $fileName'),
-            action: SnackBarAction(
-              label: 'Open',
-              onPressed: () async {
-                final result = await OpenFile.open(filePath);
-                if (result.type != ResultType.done) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Could not open file: ${result.message}')),
-                  );
-                }
-              },
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      print('Download error: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to download file: $e')),
-        );
-      }
-    } finally {
-      setState(() {
-        isDownloading = false;
-        downloadProgress = 0.0;
-      });
-    }
-  }
-
-  Future<void> _setupWebViewCallbacks(WebViewController controller) async {
-    await controller.setNavigationDelegate(
-      NavigationDelegate(
-        onPageStarted: (url) {
+    controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(Colors.transparent)
+      ..enableZoom(false)
+      ..setNavigationDelegate(NavigationDelegate(
+        onPageStarted: (String url) async {
+          if (!mounted) return;
           setState(() {
             isLoading = true;
-            displayUrl = _getDisplayUrl(url);
-            isSecure = url.startsWith('https://');
-            // Start in normal state
-            _isUrlBarCollapsed = false;
-            _urlBarPosition = Offset.zero;
+            _displayUrl = url;
           });
-          // Start auto-collapse timer
-          _startAutoCollapseTimer();
-        },
-        onPageFinished: (url) async {
-          final title = await controller.getTitle() ?? 'New Tab';
-          final faviconUrl = await BrowserUtils.getFaviconUrl(url);
           
+          try {
+            final uri = Uri.parse(url);
+            setState(() {
+              isSecure = uri.scheme == 'https';
+            });
+          } catch (e) {
+            setState(() {
+              isSecure = false;
+            });
+          }
+          
+          await _updateNavigationState();
+          await _optimizationEngine.onPageStartLoad(url);
+        },
+        onPageFinished: (String url) async {
+          if (!mounted) return;
           setState(() {
             isLoading = false;
-            displayUrl = url;
-            isSecure = url.startsWith('https://');
-            tabs[currentTabIndex].title = title;
-            tabs[currentTabIndex].url = url;
-            if (faviconUrl != null) {
-              tabs[currentTabIndex].favicon = faviconUrl;
+            if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+              tabs[currentTabIndex].title = _displayUrl;
+              tabs[currentTabIndex].url = url;
             }
           });
-          
-          controller.canGoBack().then((value) => setState(() => canGoBack = value));
-          controller.canGoForward().then((value) => setState(() => canGoForward = value));
-          
-          _saveToHistory(url, title);
+          await _updateNavigationState();
+          await _optimizationEngine.onPageFinishLoad(url);
+
+          // Add fullscreen change listener
+          await controller.runJavaScript('''
+            function updateFullscreen() {
+              const isFullscreen = document.fullscreenElement !== null || 
+                                 document.webkitFullscreenElement !== null ||
+                                 document.mozFullScreenElement !== null ||
+                                 document.msFullscreenElement !== null;
+              window.flutter_inappwebview?.callHandler('onFullscreenChange', isFullscreen);
+            }
+            
+            document.addEventListener('fullscreenchange', updateFullscreen);
+            document.addEventListener('webkitfullscreenchange', updateFullscreen);
+            document.addEventListener('mozfullscreenchange', updateFullscreen);
+            document.addEventListener('MSFullscreenChange', updateFullscreen);
+          ''');
+        },
+      ));
+
+    // Add JavaScript handler for fullscreen
+    await controller.addJavaScriptChannel(
+      'onFullscreenChange',
+      onMessageReceived: (JavaScriptMessage message) {
+        final isFullscreen = message.message == 'true';
+        _handleFullscreenChange(isFullscreen);
+      },
+    );
+
+    // Load main.html from assets
+    final mainHtmlString = await rootBundle.loadString('assets/main.html');
+    await controller.loadHtmlString(mainHtmlString, baseUrl: 'file:///android_asset/');
+    
+    // Initialize optimization engine
+    _optimizationEngine = OptimizationEngine(controller);
+    await _optimizationEngine.initialize();
+  }
+
+  Future<void> _updateNavigationState() async {
+    if (!mounted) return;
+    
+    final canGoBackValue = await controller.canGoBack();
+    final canGoForwardValue = await controller.canGoForward();
+    
+    setState(() {
+      canGoBack = canGoBackValue;
+      canGoForward = canGoForwardValue;
+    });
+  }
+
+  void _setupWebViewCallbacks() {
+    controller.setNavigationDelegate(
+      NavigationDelegate(
+        onPageStarted: (String url) async {
+          if (!mounted) return;
+          setState(() {
+            isLoading = true;
+            _displayUrl = url;
+          });
+          await _optimizationEngine.onPageStartLoad(url);
+        },
+        onPageFinished: (String url) async {
+          if (!mounted) return;
+          setState(() {
+            isLoading = false;
+            if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+              tabs[currentTabIndex].title = _displayUrl;
+            tabs[currentTabIndex].url = url;
+            }
+          });
+          await _optimizationEngine.onPageFinishLoad(url);
+        },
+        onWebResourceError: (WebResourceError error) {
+          if (!mounted) return;
+          setState(() {
+            isLoading = false;
+          });
+        },
+        onNavigationRequest: (NavigationRequest request) {
+          return NavigationDecision.navigate;
         },
       ),
     );
+
+    controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+    controller.enableZoom(true);
   }
 
   Future<void> _saveToHistory(String url, String title) async {
@@ -640,36 +647,27 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     });
   }
 
-  Future<void> _loadUrl() async {
-    final input = urlController.text.trim();
-    if (input.isEmpty) return;
-
-    final url = _formatUrl(input);
-    try {
-      await controller.loadRequest(Uri.parse(url));
-      setState(() {
-        isUrlBarExpanded = false;
-      });
-    } catch (e) {
-      print('URL loading error: $e');
-    }
-  }
-
-  String _formatUrl(String input) {
-    if (input.startsWith('http://') || input.startsWith('https://')) {
-      return input;
+  Future<void> _loadUrl(String url) async {
+    String formattedUrl = url.trim();
+    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+      if (formattedUrl.contains('.') && !formattedUrl.contains(' ')) {
+        formattedUrl = 'https://$formattedUrl';
+      } else {
+        formattedUrl = '${searchEngines[currentSearchEngine]}${Uri.encodeComponent(formattedUrl)}';
+      }
     }
     
-    if (input.contains('.') && !input.contains(' ')) {
-      return 'https://$input';
-    }
+    setState(() {
+      isLoading = true;
+      _displayUrl = formattedUrl;
+      _urlController.text = _formatUrl(formattedUrl);
+    });
     
-    final searchQuery = Uri.encodeComponent(input);
-    return '${searchEngines[currentSearchEngine]}$searchQuery';
+    await controller.loadRequest(Uri.parse(formattedUrl));
   }
 
   Future<void> _performSearch({bool searchUp = false}) async {
-    final query = searchController.text;
+    final query = _urlController.text;
     if (query.isEmpty) return;
 
     try {
@@ -891,20 +889,60 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       child: _buildSettingsItem(
         title: entry.value,
         trailing: currentLanguage == entry.key
-            ? Icon(
-                Icons.check,
-                color: isDarkMode ? Colors.white : Colors.black,
-              )
-            : null,
+          ? Icon(
+              Icons.check,
+              color: isDarkMode ? Colors.white : Colors.black,
+            )
+          : null,
         onTap: () async {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setString('language', entry.key);
-          setState(() {
-            currentLanguage = entry.key;
-          });
+          
           if (mounted) {
+            // Update state and close dialog
+            setState(() {
+              currentLanguage = entry.key;
+            });
+            
+            // Update locale
             widget.onLocaleChange(entry.key);
+            
+            // Close settings
             Navigator.pop(context);
+
+            // Show restart dialog
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => AlertDialog(
+                backgroundColor: isDarkMode ? Colors.black : Colors.white,
+                title: Text(
+                  'Restart Required',
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+                content: Text(
+                  'Please restart the app to apply language changes.',
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white70 : Colors.black87,
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      SystemNavigator.pop();  // Close the app
+                    },
+                    child: Text(
+                      'Restart Now',
+                      style: TextStyle(
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
         },
       ),
@@ -943,11 +981,18 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           title: AppLocalizations.of(context)!.dark_mode,
           trailing: Switch(
             value: isDarkMode,
-            onChanged: (value) {
+            onChanged: (value) async {
               setState(() {
                 isDarkMode = value;
-                _savePreferences();
               });
+              await _savePreferences();
+              // Force rebuild of all widgets that depend on theme
+              if (mounted) {
+                setState(() {});
+                // Rebuild the settings panel to update its appearance
+                Navigator.pop(context);
+                _showAppearanceSettings();
+              }
             },
           ),
         ),
@@ -960,11 +1005,14 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           title: AppLocalizations.of(context)!.show_images,
           trailing: Switch(
             value: showImages,
-            onChanged: (value) {
+            onChanged: (value) async {
               setState(() {
                 showImages = value;
-                _savePreferences();
               });
+              await _savePreferences();
+              if (mounted) {
+                setState(() {});
+              }
             },
           ),
         ),
@@ -1034,7 +1082,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Version 0.0.39,5',
+                          'Version 0.0.4',
                           style: TextStyle(
                             color: isDarkMode ? Colors.white70 : Colors.black54,
                           ),
@@ -1110,251 +1158,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     );
   }
 
-  @override
-  void dispose() {
-    _autoCollapseTimer?.cancel();
-    _animationController.dispose();
-    _slideAnimationController.dispose();
-    _hideTimer?.cancel();
-    // Clean up WebView controllers and clear suspended tabs
-    for (var tab in tabs) {
-      tab.controller.clearCache();
-      tab.controller.clearLocalStorage();
-    }
-    _suspendedTabs.clear();
-    urlController.dispose();
-    searchController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final statusBarHeight = MediaQuery.of(context).padding.top;
-    return Scaffold(
-      backgroundColor: isDarkMode ? Colors.black : Colors.white,
-      body: Stack(
-        children: [
-          Padding(
-            padding: EdgeInsets.only(top: statusBarHeight),
-            child: RepaintBoundary(
-              child: WebViewWidget(
-                controller: controller,
-              ),
-            ),
-          ),
-          if (isLoading) 
-            Positioned(
-              top: statusBarHeight,
-              left: 0,
-              right: 0,
-              child: RepaintBoundary(
-                child: LinearProgressIndicator(),
-              ),
-            ),
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeOutCubic,
-            left: _isUrlBarCollapsed ? _urlBarPosition.dx : 16,
-            right: _isUrlBarCollapsed ? null : 16,
-            bottom: MediaQuery.of(context).padding.bottom + 16,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (isPanelExpanded) 
-                  SlideTransition(
-                    position: _slideAnimation,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        RepaintBoundary(child: _buildQuickActionsPanel()),
-                        const SizedBox(height: 8),
-                        RepaintBoundary(child: _buildNavigationPanel()),
-                        const SizedBox(height: 8),
-                      ],
-                    ),
-                  ),
-                if (isSearchMode)
-                  RepaintBoundary(child: _buildSearchPanel())
-                else
-                  GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onVerticalDragUpdate: _isUrlBarCollapsed ? null : (details) {
-                      final delta = details.primaryDelta!;
-                      if (delta < -2 && !isPanelExpanded || delta > 2 && isPanelExpanded) {
-                        setState(() {
-                          isPanelExpanded = delta < 0;
-                          if (isPanelExpanded) {
-                            _slideAnimationController.forward();
-                          } else {
-                            _slideAnimationController.reverse();
-                          }
-                        });
-                      }
-                    },
-                    onHorizontalDragStart: (details) {
-                      if (_isUrlBarCollapsed) {
-                        setState(() => _isDragging = true);
-                      }
-                      dragStartX = details.localPosition.dx;
-                    },
-                    onHorizontalDragUpdate: (details) {
-                      if (_isUrlBarCollapsed && _isDragging) {
-                        setState(() {
-                          _urlBarPosition = Offset(
-                            _urlBarPosition.dx + details.delta.dx,
-                            _urlBarPosition.dy,
-                          );
-                        });
-                      } else if (!_isUrlBarCollapsed) {
-                        final delta = details.localPosition.dx - dragStartX;
-                        if (delta.abs() > 30) {
-                          if ((delta < 0 && canGoBack) || (delta > 0 && canGoForward)) {
-                            delta < 0 ? controller.goBack() : controller.goForward();
-                            dragStartX = details.localPosition.dx;
-                          }
-                        }
-                      }
-                    },
-                    onHorizontalDragEnd: (_) {
-                      setState(() => _isDragging = false);
-                    },
-                    onTap: () {
-                      if (_isUrlBarCollapsed) {
-                        setState(() {
-                          _isUrlBarCollapsed = false;
-                          _urlBarPosition = Offset.zero;
-                        });
-                        _startAutoCollapseTimer();
-                      }
-                    },
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.easeOutCubic,
-                      height: 50,
-                      width: _isUrlBarCollapsed ? 50 : null,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(_isUrlBarCollapsed ? 25 : 20),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                          child: Container(
-                            decoration: _getGlassmorphicDecoration(),
-                            child: _isUrlBarCollapsed 
-                              ? _buildCollapsedSearchButton()
-                              : Row(
-                                  children: [
-                                    const SizedBox(width: 8),
-                                    _buildSecureIcon(),
-                                    Expanded(
-                                      child: !isUrlBarExpanded
-                                        ? _buildCollapsedUrlBar()
-                                        : _buildExpandedUrlBar(),
-                                    ),
-                                    _buildUrlBarAction(),
-                                  ],
-                                ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          _buildOverlayPanel(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCollapsedSearchButton() {
-    return IconButton(
-      icon: Image.asset(
-        'assets/search24.png',
-        width: 24,
-        height: 24,
-        color: _colors.textSecondary,
-      ),
-      onPressed: () {
-        setState(() {
-          _isUrlBarCollapsed = false;
-          _urlBarPosition = Offset.zero;
-        });
-      },
-    );
-  }
-
-  Widget _buildSecureIcon() {
-    return Image.asset(
-      isSecure ? 'assets/secure24.png' : 'assets/unsecure24.png',
-      width: 24,
-      height: 24,
-      color: _colors.textSecondary,
-    );
-  }
-
-  Widget _buildCollapsedUrlBar() {
-    return GestureDetector(
-      onTap: () async {
-        final currentUrl = await controller.currentUrl() ?? displayUrl;
-        _updateState(() {
-          isUrlBarExpanded = true;
-          urlController.text = currentUrl;
-        });
-      },
-      child: Center(
-        child: Text(
-          _getDisplayUrl(displayUrl),
-          style: TextStyle(
-            color: _colors.text,
-            fontSize: 16,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildExpandedUrlBar() {
-    return TextField(
-      controller: urlController,
-      textAlign: TextAlign.center,
-      decoration: InputDecoration(
-        hintText: 'Search or enter address',
-        hintStyle: TextStyle(color: _colors.textSecondary),
-        border: InputBorder.none,
-      ),
-      style: TextStyle(
-        color: _colors.text,
-        fontSize: 16,
-      ),
-      onSubmitted: (_) => _loadUrl(),
-      autofocus: true,
-    );
-  }
-
-  Widget _buildUrlBarAction() {
-    return IconButton(
-      icon: isUrlBarExpanded 
-        ? Icon(Icons.close, color: _colors.textSecondary)
-        : Image.asset(
-            'assets/reload24.png',
-            width: 24,
-            height: 24,
-            color: _colors.textSecondary,
-          ),
-      onPressed: () {
-        if (isUrlBarExpanded) {
-          _updateState(() {
-            isUrlBarExpanded = false;
-          });
-        } else {
-          controller.reload();
-        }
-      },
-    );
-  }
-
   Widget _buildNavigationPanel() {
     return Container(
       height: 50,
@@ -1370,7 +1173,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
               children: [
                 IconButton(
                   icon: Image.asset(
-                    'assets/back24.png',
+                    _getAssetPath('assets/back24.png'),
                     width: 24,
                     height: 24,
                     color: isDarkMode ? Colors.white70 : Colors.black54,
@@ -1379,7 +1182,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                 ),
                 IconButton(
                   icon: Image.asset(
-                    'assets/search24.png',
+                    _getAssetPath('assets/search24.png'),
                     width: 24,
                     height: 24,
                     color: isDarkMode ? Colors.white70 : Colors.black54,
@@ -1393,7 +1196,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                 ),
                 IconButton(
                   icon: Image.asset(
-                    'assets/bookmark24.png',
+                    _getAssetPath('assets/bookmark24.png'),
                     width: 24,
                     height: 24,
                     color: isDarkMode ? Colors.white70 : Colors.black54,
@@ -1402,7 +1205,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                 ),
                 IconButton(
                   icon: Image.asset(
-                    'assets/share24.png',
+                    _getAssetPath('assets/share24.png'),
                     width: 24,
                     height: 24,
                     color: isDarkMode ? Colors.white70 : Colors.black54,
@@ -1411,7 +1214,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                 ),
                 IconButton(
                   icon: Image.asset(
-                    'assets/forward24.png',
+                    _getAssetPath('assets/forward24.png'),
                     width: 24,
                     height: 24,
                     color: isDarkMode ? Colors.white70 : Colors.black54,
@@ -1427,14 +1230,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   Widget _buildQuickActionsPanel() {
-    return AnimatedSlide(
-      duration: const Duration(milliseconds: 200),
-      curve: Curves.easeInOut,
-      offset: Offset(0, isPanelExpanded ? 0 : 1),
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 200),
-        opacity: isPanelExpanded ? 1.0 : 0.0,
-        child: Container(
+    return Container(
           height: 100,
           margin: const EdgeInsets.only(bottom: 8),
           child: ClipRRect(
@@ -1446,33 +1242,47 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildQuickActionButton(AppLocalizations.of(context)!.settings, 'assets/settings24.png', onPressed: () {
+                _buildQuickActionButton(
+                  AppLocalizations.of(context)!.settings,
+                  isDarkMode ? 'assets/settings24w.png' : 'assets/settings24.png',
+                  onPressed: () {
                       setState(() {
                         isSettingsVisible = true;
                         isPanelExpanded = false;
                       });
-                    }),
-                    _buildQuickActionButton(AppLocalizations.of(context)!.downloads, 'assets/downloads24.png', onPressed: () {
+                  },
+                ),
+                _buildQuickActionButton(
+                  AppLocalizations.of(context)!.downloads,
+                  isDarkMode ? 'assets/downloads24w.png' : 'assets/downloads24.png',
+                  onPressed: () {
                       setState(() {
                         isDownloadsVisible = true;
                         isPanelExpanded = false;
                       });
-                    }),
-                    _buildQuickActionButton(AppLocalizations.of(context)!.tabs, 'assets/tab24.png', onPressed: () {
+                  },
+                ),
+                _buildQuickActionButton(
+                  AppLocalizations.of(context)!.tabs,
+                  isDarkMode ? 'assets/tab24w.png' : 'assets/tab24.png',
+                  onPressed: () {
                       setState(() {
                         isTabsVisible = true;
                         isPanelExpanded = false;
                       });
-                    }),
-                    _buildQuickActionButton(AppLocalizations.of(context)!.bookmarks, 'assets/bookmark24.png', onPressed: () {
-                      setState(() {
-                        isBookmarksVisible = true;
-                        isPanelExpanded = false;
-                      });
-                    }),
-                  ],
+                  },
                 ),
-              ),
+                _buildQuickActionButton(
+                  AppLocalizations.of(context)!.bookmarks,
+                  isDarkMode ? 'assets/bookmark24w.png' : 'assets/bookmark24.png',
+                  onPressed: () {
+                    setState(() {
+                      isBookmarksVisible = true;
+                      isPanelExpanded = false;
+                    });
+                  },
+                ),
+              ],
             ),
           ),
         ),
@@ -1527,7 +1337,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                 const SizedBox(width: 16),
                 Expanded(
                   child: TextField(
-                    controller: searchController,
+                    controller: _urlController,
                     decoration: InputDecoration(
                       hintText: AppLocalizations.of(context)!.search_in_page,
                       hintStyle: TextStyle(
@@ -1545,7 +1355,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: Text(
-                      '$currentSearchMatch/$totalSearchMatches',
+                      '${currentSearchMatch + 1}/$totalSearchMatches',
                       style: TextStyle(
                         color: isDarkMode ? Colors.white : Colors.black,
                       ),
@@ -1553,7 +1363,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                   ),
                 IconButton(
                   icon: Image.asset(
-                    'assets/up24.png',
+                    _getAssetPath('assets/up24.png'),
                     width: 24,
                     height: 24,
                     color: isDarkMode ? Colors.white70 : Colors.black54,
@@ -1562,7 +1372,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                 ),
                 IconButton(
                   icon: Image.asset(
-                    'assets/down24.png',
+                    _getAssetPath('assets/down24.png'),
                     width: 24,
                     height: 24,
                     color: isDarkMode ? Colors.white70 : Colors.black54,
@@ -1577,7 +1387,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                   onPressed: () {
                     setState(() {
                       isSearchMode = false;
-                      searchController.clear();
+                      _urlController.clear();
                     });
                   },
                 ),
@@ -1589,158 +1399,25 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     );
   }
 
-  Future<void> _loadPreferences() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      isDarkMode = prefs.getBool('darkMode') ?? false;
-      textScale = prefs.getDouble('textScale') ?? 1.0;
-      showImages = prefs.getBool('showImages') ?? true;
-      currentSearchEngine = prefs.getString('searchEngine') ?? 'google';
-      allowHttp = prefs.getBool('allowHttp') ?? false;
-      currentLanguage = prefs.getString('language') ?? 'en';
-    });
-  }
-
-  Future<void> _savePreferences() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('darkMode', isDarkMode);
-    await prefs.setDouble('textScale', textScale);
-    await prefs.setBool('showImages', showImages);
-  }
-
   String _getDisplayUrl(String url) {
     try {
+      if (url == 'Home page') return url;
       final uri = Uri.parse(url);
       String host = uri.host;
-      if (host.startsWith('www.')) {
-        return host;
-      } else {
-        return 'www.' + host;
-      }
+      return host.startsWith('www.') ? host.substring(4) : host;
     } catch (e) {
       return url;
     }
   }
 
   void _switchTab(int index) {
-    if (index >= 0 && index < tabs.length) {
-      // Resume the target tab if it was suspended
-      if (_suspendedTabs[index] == true) {
-        _resumeTab(index);
-      }
+    if (index != currentTabIndex) {
+      // Resume the target tab
+      final targetTabId = tabs[index].controller.hashCode.toString();
+      _optimizationEngine.resumeTab(targetTabId);
       
       setState(() {
-        // Suspend tabs that are not adjacent to the current tab
-        for (var i = 0; i < tabs.length; i++) {
-          if (i != index && i != index - 1 && i != index + 1) {
-            _suspendTab(i);
-          }
-        }
-        
         currentTabIndex = index;
-        controller = tabs[index].controller;
-        displayUrl = tabs[index].url;
-        isSecure = tabs[index].url.startsWith('https://');
-      });
-    }
-  }
-
-  Future<void> _suspendTab(int index) async {
-    if (index != currentTabIndex && !_suspendedTabs[index]!) {
-      final tab = tabs[index];
-      final url = await tab.controller.currentUrl() ?? '';
-      tab.url = url;
-      
-      // Clear resources before suspension
-      await tab.controller.clearCache();
-      await tab.controller.runJavaScript('''
-        // Clear unnecessary resources
-        window.performance.clearResourceTimings();
-        // Remove unused event listeners
-        window.onload = null;
-        window.onscroll = null;
-        window.onresize = null;
-      ''');
-      
-      _suspendedTabs[index] = true;
-    }
-  }
-
-  Future<void> _resumeTab(int index) async {
-    if (_suspendedTabs[index] == true) {
-      final tab = tabs[index];
-      if (tab.url.isNotEmpty) {
-        await tab.controller.loadRequest(Uri.parse(tab.url));
-      }
-      _suspendedTabs[index] = false;
-    }
-  }
-
-  Future<void> _createNewTab() async {
-    // Check if we've reached the maximum number of tabs
-    if (tabs.length >= maxTabs) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Maximum number of tabs reached (${maxTabs})')),
-      );
-      return;
-    }
-
-    final newController = await _createWebViewController();
-    await _setupWebViewCallbacks(newController);
-    await newController.loadRequest(Uri.parse('https://www.google.com'));
-
-    setState(() {
-      // Suspend current tab if we have more than 3 tabs
-      if (tabs.length > 2) {
-        _suspendTab(currentTabIndex);
-      }
-      
-      final newIndex = tabs.length;
-      tabs.add(TabInfo(
-        title: 'New Tab',
-        url: 'https://www.google.com',
-        controller: newController,
-      ));
-      _suspendedTabs[newIndex] = false;
-      currentTabIndex = newIndex;
-      controller = newController;
-    });
-  }
-
-  void _closeTab(int index) {
-    if (tabs.length > 1) {
-      setState(() {
-        // Clean up the tab's resources
-        final tab = tabs[index];
-        tab.controller.clearCache();
-        tab.controller.clearLocalStorage();
-        
-        tabs.removeAt(index);
-        _suspendedTabs.remove(index);
-        
-        // Adjust indices in _suspendedTabs
-        final newSuspendedTabs = <int, bool>{};
-        _suspendedTabs.forEach((key, value) {
-          if (key > index) {
-            newSuspendedTabs[key - 1] = value;
-          } else if (key < index) {
-            newSuspendedTabs[key] = value;
-          }
-        });
-        _suspendedTabs.clear();
-        _suspendedTabs.addAll(newSuspendedTabs);
-        
-        if (currentTabIndex >= tabs.length) {
-          currentTabIndex = tabs.length - 1;
-        }
-        controller = tabs[currentTabIndex].controller;
-        displayUrl = tabs[currentTabIndex].url;
-        isSecure = tabs[currentTabIndex].url.startsWith('https://');
-        
-        // Resume the new current tab if it was suspended
-        if (_suspendedTabs[currentTabIndex] == true) {
-          _resumeTab(currentTabIndex);
-        }
       });
     }
   }
@@ -1863,12 +1540,12 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           Expanded(
             child: downloads.isEmpty
               ? Center(
-                  child: Text(
-                    'No downloads yet',
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                    child: Text(
+                      'No downloads yet',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
                     ),
-                  ),
                 )
               : ListView.builder(
                   padding: const EdgeInsets.symmetric(vertical: 8),
@@ -1902,11 +1579,11 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              DateFormat.yMMMd().add_jm().format(timestamp),
-                              style: TextStyle(
-                                color: isDarkMode ? Colors.white70 : Colors.black54,
-                              ),
-                            ),
+                          DateFormat.yMMMd().add_jm().format(timestamp),
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white70 : Colors.black54,
+                          ),
+                        ),
                             Text(
                               formattedSize,
                               style: TextStyle(
@@ -1919,15 +1596,15 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: Icon(
-                                Icons.file_open,
-                                color: isDarkMode ? Colors.white70 : Colors.black54,
-                              ),
-                              onPressed: () async {
-                                final directory = await getApplicationDocumentsDirectory();
-                                final filePath = '${directory.path}/$fileName';
-                                await OpenFile.open(filePath);
-                              },
+                          icon: Icon(
+                            Icons.file_open,
+                            color: isDarkMode ? Colors.white70 : Colors.black54,
+                          ),
+                          onPressed: () async {
+                            final directory = await getApplicationDocumentsDirectory();
+                            final filePath = '${directory.path}/$fileName';
+                            await OpenFile.open(filePath);
+                          },
                             ),
                             IconButton(
                               icon: Icon(
@@ -2112,7 +1789,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     });
 
     // Advanced performance optimizations
-    await controller.runJavaScript('''
+      await controller.runJavaScript('''
       // Enable maximum performance mode
       document.documentElement.style.setProperty('content-visibility', 'auto');
       document.documentElement.style.setProperty('contain', 'content');
@@ -2138,11 +1815,11 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         document.body.style.setProperty('transform', 'translate3d(0,0,0)');
         
         // Re-enable animations after scroll stops
-        clearTimeout(window._scrollTimeout);
-        window._scrollTimeout = setTimeout(() => {
+            clearTimeout(window._scrollTimeout);
+          window._scrollTimeout = setTimeout(() => {
           document.body.style.removeProperty('animation');
           document.body.style.removeProperty('transition');
-        }, 150);
+          }, 150);
       }
       
       document.addEventListener('scroll', function(e) {
@@ -2154,15 +1831,15 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           });
           ticking = true;
         }
-      }, { passive: true });
-      
+        }, { passive: true });
+        
       // Advanced image optimization
       function optimizeImages() {
-        const images = document.getElementsByTagName('img');
-        for (let img of images) {
+          const images = document.getElementsByTagName('img');
+          for (let img of images) {
           // Enable lazy loading
-          img.loading = 'lazy';
-          img.decoding = 'async';
+            img.loading = 'lazy';
+            img.decoding = 'async';
           
           // Optimize image size
           if (img.naturalWidth > window.innerWidth * 2) {
@@ -2256,9 +1933,9 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   Future<void> _checkMemoryAndOptimize() async {
     try {
       // Aggressive tab suspension
-      for (var i = 0; i < tabs.length; i++) {
-        if (i != currentTabIndex) {
-          await _suspendTab(i);
+        for (var i = 0; i < tabs.length; i++) {
+          if (i != currentTabIndex) {
+            await _suspendTab(tabs[i]);
           
           // Clear more resources
           await tabs[i].controller.runJavaScript('''
@@ -2374,7 +2051,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   Widget _buildOverlayPanel() {
-    final bool isPanelVisible = isTabsVisible || isHistoryVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible;
+    final bool isPanelVisible = isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible;
     
     if (!isPanelVisible) {
       return const SizedBox.shrink();
@@ -2382,44 +2059,41 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
     return Positioned.fill(
       child: GestureDetector(
-        onVerticalDragUpdate: (details) {
-          if (details.primaryDelta! > 10) {
-            setState(() {
-              isTabsVisible = false;
-              isHistoryVisible = false;
-              isSettingsVisible = false;
-              isBookmarksVisible = false;
-              isDownloadsVisible = false;
-            });
-          }
-        },
+      onVerticalDragUpdate: (details) {
+        if (details.primaryDelta! > 10) {
+          setState(() {
+            isTabsVisible = false;
+            isSettingsVisible = false;
+            isBookmarksVisible = false;
+            isDownloadsVisible = false;
+          });
+        }
+      },
         child: Container(
           color: isDarkMode ? Colors.black.withOpacity(0.5) : Colors.white.withOpacity(0.5),
           child: SafeArea(
-            child: Container(
-              margin: EdgeInsets.only(top: 0),
-              child: AnimatedSlide(
+      child: Container(
+        margin: EdgeInsets.only(top: 0),
+        child: AnimatedSlide(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOutCubic,
                 offset: isPanelVisible ? Offset.zero : const Offset(0, 1),
-                child: AnimatedOpacity(
+          child: AnimatedOpacity(
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.easeInOutCubic,
                   opacity: isPanelVisible ? 1.0 : 0.0,
-                  child: Container(
+            child: Container(
                     height: MediaQuery.of(context).size.height,
-                    color: isDarkMode ? Colors.black : Colors.white,
-                    child: isTabsVisible 
-                      ? _buildTabsPanel() 
-                      : isHistoryVisible 
-                        ? _buildHistoryPanel() 
-                        : isSettingsVisible
-                          ? _buildSettingsPanel()
-                          : isBookmarksVisible
-                            ? _buildBookmarksPanel()
-                            : isDownloadsVisible
-                              ? _buildDownloadsPanel()
-                              : Container(),
+              color: isDarkMode ? Colors.black : Colors.white,
+              child: isTabsVisible 
+                ? _buildTabsPanel() 
+                : isSettingsVisible
+                  ? _buildSettingsPanel()
+                  : isBookmarksVisible
+                    ? _buildBookmarksPanel()
+                    : isDownloadsVisible
+                      ? _buildDownloadsPanel()
+                      : Container(),
                   ),
                 ),
               ),
@@ -2431,22 +2105,14 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   Widget _buildTabsPanel() {
-    final statusBarHeight = MediaQuery.of(context).padding.top;
     return Container(
+      height: MediaQuery.of(context).size.height,
       color: isDarkMode ? Colors.black : Colors.white,
       child: Column(
         children: [
           Container(
-            height: 56,
-            margin: EdgeInsets.only(top: statusBarHeight),
-            decoration: BoxDecoration(
-              color: isDarkMode ? Colors.black : Colors.white,
-              border: Border(
-                bottom: BorderSide(
-                  color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
-                ),
-              ),
-            ),
+            height: 56 + MediaQuery.of(context).padding.top,
+            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
             child: Row(
               children: [
                 IconButton(
@@ -2460,26 +2126,25 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                     });
                   },
                 ),
-                Text(
-                  AppLocalizations.of(context)!.tabs,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: isDarkMode ? Colors.white : Colors.black,
+                Expanded(
+                  child: Text(
+                    'Tabs',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: isDarkMode ? Colors.white : Colors.black,
+                    ),
                   ),
                 ),
-                const Spacer(),
                 IconButton(
-                  icon: Image.asset(
-                    'assets/history24.png',
-                    width: 24,
-                    height: 24,
+                  icon: Icon(
+                    Icons.history,
                     color: isDarkMode ? Colors.white : Colors.black,
                   ),
                   onPressed: () {
                     setState(() {
-                      isHistoryVisible = true;
                       isTabsVisible = false;
+                      _showHistoryPanel();
                     });
                   },
                 ),
@@ -2488,8 +2153,8 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                     Icons.add,
                     color: isDarkMode ? Colors.white : Colors.black,
                   ),
-                  onPressed: () async {
-                    await _createNewTab();
+                  onPressed: () {
+                    _addNewTab();
                     setState(() {
                       isTabsVisible = false;
                     });
@@ -2500,148 +2165,160 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           ),
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(vertical: 8),
               itemCount: tabs.length,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               itemBuilder: (context, index) {
-                return _buildTabListItem(index);
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTabListItem(int index) {
-    final currentTab = tabs[index];
-    final isActive = index == currentTabIndex;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isActive
-            ? (isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05))
-            : (isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03)),
-        borderRadius: BorderRadius.circular(12),
-        border: isActive
-            ? Border.all(
-                color: isDarkMode ? Colors.white.withOpacity(0.2) : Colors.black.withOpacity(0.1),
-              )
-            : null,
-      ),
-      child: Row(
-        children: [
-          if (currentTab.favicon != null)
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: Image.network(currentTab.favicon!, width: 16, height: 16),
-            )
-          else
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: Icon(Icons.web, color: isDarkMode ? Colors.white70 : Colors.black54),
-            ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  currentTab.title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: isDarkMode ? Colors.white : Colors.black,
-                    fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
-                  ),
-                ),
-                if (currentTab.url != null)
-                  Text(
-                    _getDisplayUrl(currentTab.url!),
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                final tab = tabs[index];
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: index == currentTabIndex
+                        ? (isDarkMode ? Colors.white24 : Colors.black12)
+                        : Colors.transparent,
+                      width: 2,
                     ),
                   ),
-              ],
-            ),
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.close,
-              color: isDarkMode ? Colors.white70 : Colors.black54,
-            ),
-            onPressed: () => _closeTab(index),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHistoryPanel() {
-    return Container(
-      color: isDarkMode ? Colors.black : Colors.white,
-      child: Column(
-        children: [
-          _buildPanelHeader(AppLocalizations.of(context)!.history, 
-            onBack: () => setState(() => isHistoryVisible = false)
-          ),
-          Expanded(
-            child: NotificationListener<ScrollNotification>(
-              onNotification: (ScrollNotification scrollInfo) {
-                if (scrollInfo is ScrollEndNotification) {
-                  if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 500) {
-                    _loadMoreHistory();
-                  }
-                }
-                return true;
-              },
-              child: ListView.builder(
-                controller: _historyScrollController,
-                physics: const AlwaysScrollableScrollPhysics(),
-                itemCount: _loadedHistory.length + 1,
-                itemBuilder: (context, index) {
-                  if (index == _loadedHistory.length) {
-                    return _isLoadingMore
-                      ? const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: CircularProgressIndicator(),
+                  child: Column(
+                    children: [
+                      // Tab Preview
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(10)),
+                        child: AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: Container(
+                            color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                            child: Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                if (tab.favicon != null)
+                                  Image.network(
+                                    tab.favicon!,
+                                    width: 32,
+                                    height: 32,
+                                    errorBuilder: (context, error, stackTrace) => Icon(
+                                      Icons.public,
+                                      size: 32,
+                                      color: isDarkMode ? Colors.white24 : Colors.black12,
+                                    ),
+                                  )
+                                else
+                                  Icon(
+                                    Icons.public,
+                                    size: 32,
+                                    color: isDarkMode ? Colors.white24 : Colors.black12,
+                                  ),
+                                Positioned(
+                                  bottom: 8,
+                                  left: 8,
+                                  right: 8,
+                                  child: Text(
+                                    _formatUrl(tab.url),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        )
-                      : const SizedBox.shrink();
-                  }
+                        ),
+                      ),
+                      // Tab Info
+                      ListTile(
+                        title: Text(
+                          tab.title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black,
+                            fontWeight: index == currentTabIndex ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                        subtitle: Text(
+                          _formatUrl(tab.url),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white70 : Colors.black54,
+                            fontSize: 12,
+                          ),
+                        ),
+                        trailing: IconButton(
+                          icon: Icon(
+                            Icons.close,
+                            size: 20,
+                            color: isDarkMode ? Colors.white70 : Colors.black54,
+                          ),
+                          onPressed: () => _closeTab(index),
+                        ),
+                        onTap: () {
+                          _switchTab(index);
+                          setState(() {
+                            isTabsVisible = false;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                  final item = _loadedHistory[index];
-                  final timestamp = DateTime.parse(item['timestamp'] as String).toLocal();
-                  final formattedDate = DateFormat('MMM d, y - h:mm a').format(timestamp);
-                  
-                  return RepaintBoundary(
-                    child: ListTile(
-                      title: Text(
-                        item['title'] as String? ?? item['url'] as String,
-                        style: TextStyle(
-                          color: isDarkMode ? Colors.white : Colors.black,
-                        ),
-                      ),
-                      subtitle: Text(
-                        formattedDate,
-                        style: TextStyle(
-                          color: isDarkMode ? Colors.white70 : Colors.black54,
-                        ),
-                      ),
-                      onTap: () {
-                        controller.loadRequest(Uri.parse(item['url'] as String));
-                        setState(() {
-                          isHistoryVisible = false;
-                        });
-                      },
+  void _showHistoryPanel() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: BoxDecoration(
+          color: isDarkMode ? Colors.black : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              height: 56 + MediaQuery.of(context).padding.top,
+              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: Icon(
+                      Icons.arrow_back,
+                      color: isDarkMode ? Colors.white : Colors.black,
                     ),
-                  );
-                },
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                  Expanded(
+                    child: Text(
+                      'History',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
+            Expanded(
+              child: _buildHistoryList(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -2912,14 +2589,33 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   void _startAutoCollapseTimer() {
     _autoCollapseTimer?.cancel();
-    _autoCollapseTimer = Timer(const Duration(seconds: 5), () {
-      if (mounted && !_isUrlBarCollapsed && !isUrlBarExpanded) {
+    _autoCollapseTimer = Timer(const Duration(seconds: 3), () {
+      if (mounted && !_isUrlBarExpanded && !_isDragging) {
         setState(() {
           _isUrlBarCollapsed = true;
-          _urlBarPosition = const Offset(16, 0);
         });
       }
     });
+  }
+
+  void _startLoadingTimer() {
+    _loadingTimer?.cancel();
+    _loadingTimer = Timer(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          isLoading = true;
+        });
+      }
+    });
+  }
+
+  void _stopLoadingTimer() {
+    _loadingTimer?.cancel();
+    if (mounted) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   Future<void> _loadBookmarks() async {
@@ -2963,6 +2659,531 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Already bookmarked')),
       );
+    }
+  }
+
+  Future<void> _suspendTab(BrowserTab tab) async {
+    await tab.controller.clearCache();
+    await tab.controller.clearLocalStorage();
+    _suspendedTabs.add(tab);
+    tabs.remove(tab);
+  }
+
+  void _resumeTab(BrowserTab tab) {
+    _suspendedTabs.remove(tab);
+    
+    if (tabs.length >= _maxActiveTabs) {
+      _suspendTab(tabs.first);
+    }
+
+    tabs.add(tab);
+    currentTabIndex = tabs.length - 1;
+    _initializeWebView();
+  }
+
+  void _updateTabInfo() {
+    if (currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+      controller.getTitle().then((title) {
+        if (mounted && title != null) {
+          setState(() {
+            tabs[currentTabIndex].title = title;
+          });
+        }
+      });
+
+      controller.currentUrl().then((url) {
+        if (mounted && url != null) {
+          setState(() {
+            tabs[currentTabIndex].url = url;
+            _displayUrl = url;
+          });
+        }
+      });
+    }
+  }
+
+  void _addNewTab({String? url}) {
+    if (tabs.length >= _maxActiveTabs) {
+      _suspendTab(tabs.first);
+    }
+
+    final newTab = BrowserTab(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      url: url ?? _homeUrl,
+      title: 'New Tab',
+      favicon: null,
+    );
+
+    setState(() {
+      tabs.add(newTab);
+      currentTabIndex = tabs.length - 1;
+    });
+
+    _initializeWebView();
+  }
+
+  void _closeTab(int index) {
+    if (tabs.isEmpty) return;
+
+    setState(() {
+      tabs.removeAt(index);
+      if (currentTabIndex >= tabs.length) {
+        currentTabIndex = tabs.length - 1;
+      }
+      if (tabs.isEmpty) {
+        _addNewTab();
+      } else {
+        _switchTab(currentTabIndex);
+      }
+    });
+  }
+
+  String _getAssetPath(String baseName) {
+    if (isDarkMode && baseName.endsWith('.png')) {
+      final darkVersion = baseName.replaceAll('.png', 'w.png');
+      return darkVersion;
+    }
+    return baseName;
+  }
+
+  Widget _buildLoadingBorder() {
+    return TweenAnimationBuilder(
+      tween: Tween<double>(begin: 0.0, end: 1.0),
+      duration: const Duration(seconds: 1),
+      builder: (context, double value, child) {
+        return CustomPaint(
+          painter: LoadingBorderPainter(
+            progress: value,
+            color: isDarkMode ? Colors.white70 : Colors.black54,
+          ),
+          child: Container(
+            height: 48,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Function to extract domain name from URL
+  String _extractDomain(String url) {
+    try {
+      final uri = Uri.parse(url);
+      String domain = uri.host;
+      if (domain.startsWith('www.')) {
+        domain = domain.substring(4);
+      }
+      return domain;
+    } catch (e) {
+      return url;
+    }
+  }
+
+  Widget _buildUrlBar() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final urlBarWidth = _isUrlBarIconState ? 56.0 : screenWidth - 32;
+    final maxDragOffset = screenWidth - urlBarWidth - 32;  // Maximum drag distance
+    
+    // Don't show URL bar in fullscreen mode
+    if (_isFullscreen) return const SizedBox.shrink();
+    
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      left: _isDraggingUrlBar 
+        ? _urlBarOffset.dx.clamp(0.0, maxDragOffset)  // Changed from 16.0 to 0.0
+        : (screenWidth - urlBarWidth) / 2,
+      bottom: MediaQuery.of(context).padding.bottom + 8,
+      child: GestureDetector(
+        onPanStart: (details) {
+          setState(() {
+            _isDraggingUrlBar = true;
+          });
+        },
+        onPanUpdate: (details) {
+          if (_isDraggingUrlBar) {
+            setState(() {
+              _urlBarOffset += details.delta;
+              // Clamp the offset to keep the URL bar on screen
+              _urlBarOffset = Offset(
+                _urlBarOffset.dx.clamp(0.0, maxDragOffset),
+                _urlBarOffset.dy
+              );
+            });
+          }
+        },
+        onPanEnd: (_) {
+          setState(() {
+            _isDraggingUrlBar = false;
+            // Animate back to center if not in icon state
+            if (!_isUrlBarIconState) {
+              _urlBarOffset = Offset.zero;
+            }
+          });
+        },
+        onTap: () {
+          setState(() {
+            _isUrlBarIconState = false;
+            _urlBarOffset = Offset.zero;  // Reset position when expanding
+            _urlFocusNode.requestFocus();
+          });
+        },
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(_isUrlBarIconState ? 24 : 28),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              width: urlBarWidth,
+              height: 48,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(_isUrlBarIconState ? 24 : 28),
+                color: isDarkMode 
+                  ? Colors.black.withOpacity(0.3) 
+                  : Colors.white.withOpacity(0.3),
+              ),
+              child: _isUrlBarIconState 
+                ? _buildUrlBarIconState()
+                : _buildUrlBarExpandedState(),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUrlBarIconState() {
+    return Center(
+      child: Container(
+        width: 48,
+        height: 48,
+        child: Icon(
+          Icons.search_rounded,
+          size: 24,
+          color: isDarkMode ? Colors.white70 : Colors.black54,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildUrlBarExpandedState() {
+    return Row(
+      children: [
+        const SizedBox(width: 16),
+        Icon(
+          isSecure ? Icons.shield : Icons.shield_outlined,
+          size: 20,
+          color: isDarkMode ? Colors.white70 : Colors.black54,
+        ),
+        Expanded(
+          child: TextField(
+            controller: _urlController,
+            focusNode: _urlFocusNode,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: isDarkMode ? Colors.white : Colors.black,
+              fontSize: 16,
+            ),
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              hintText: 'Search or enter address',
+              hintStyle: TextStyle(
+                color: isDarkMode ? Colors.white38 : Colors.black38,
+              ),
+            ),
+            onTap: () {
+              setState(() {
+                _urlController.text = _displayUrl;
+                _urlController.selection = TextSelection(
+                  baseOffset: 0,
+                  extentOffset: _urlController.text.length,
+                );
+              });
+            },
+            onSubmitted: (url) {
+              _loadUrl(url);
+              _urlFocusNode.unfocus();
+              setState(() {
+                _urlController.text = _formatUrl(url);
+              });
+              _startUrlBarIdleTimer();
+            },
+          ),
+        ),
+        IconButton(
+          icon: Image.asset(
+            'assets/reload24.png',
+            width: 20,
+            height: 20,
+            color: isDarkMode ? Colors.white70 : Colors.black54,
+          ),
+          onPressed: () => controller.reload(),
+        ),
+      ],
+    );
+  }
+
+  Future<WebViewController> _createWebViewController() async {
+    return await _initializeWebViewController();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final padding = MediaQuery.of(context).padding;
+    final bottomPadding = padding.bottom;
+    final bottomSafeArea = MediaQuery.of(context).viewPadding.bottom;
+    final topPadding = padding.top + 8.0;
+
+    return Scaffold(
+      backgroundColor: isDarkMode ? Colors.black : Colors.white,
+      body: Stack(
+        children: [
+          Positioned(
+            top: topPadding,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (notification) {
+                if (notification is ScrollUpdateNotification) {
+                  if (notification.scrollDelta! < 0) {
+                    setState(() {
+                      _isUrlBarHidden = false;
+                    });
+                  } else if (notification.scrollDelta! > 0) {
+                    setState(() {
+                      _isUrlBarMinimized = true;
+                      _isUrlBarHidden = true;
+                    });
+                  }
+                }
+                return false;
+              },
+              child: WebViewWidget(controller: controller),
+            ),
+          ),
+          if (isLoading)
+            Positioned(
+              top: topPadding,
+              left: 0,
+              right: 0,
+              child: const LinearProgressIndicator(),
+            ),
+          if (isTabsVisible)
+            _buildTabsPanel()
+          else if (isSettingsVisible)
+            _buildSettingsPanel()
+          else if (isBookmarksVisible)
+            _buildBookmarksPanel()
+          else if (isDownloadsVisible)
+            _buildDownloadsPanel(),
+          if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              left: 16,
+              right: 16,
+              bottom: _isUrlBarHidden ? -80 : bottomPadding + 8 + bottomSafeArea,
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onVerticalDragUpdate: (details) {
+                  if (details.primaryDelta! < -5 && !isPanelExpanded) {
+                    setState(() {
+                      isPanelExpanded = true;
+                    });
+                  } else if (details.primaryDelta! > 5 && isPanelExpanded) {
+                    setState(() {
+                      isPanelExpanded = false;
+                    });
+                  }
+                },
+                onHorizontalDragStart: (details) {
+                  dragStartX = details.localPosition.dx;
+                },
+                onHorizontalDragUpdate: (details) {
+                  final delta = details.localPosition.dx - dragStartX;
+                  if (delta.abs() > 30) {
+                    if ((delta < 0 && canGoBack) || (delta > 0 && canGoForward)) {
+                      delta < 0 ? controller.goBack() : controller.goForward();
+                      dragStartX = details.localPosition.dx;
+                    }
+                  }
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isPanelExpanded) ...[
+                      _buildQuickActionsPanel(),
+                      _buildNavigationPanel(),
+                    ] else if (isSearchMode)
+                      _buildSearchPanel()
+                    else
+                      _buildUrlBar(),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  // Update URL when page changes
+  void _updateUrl(String url) {
+    if (_urlController.text != url) {
+      setState(() {
+        _displayUrl = url;
+        if (!_urlFocusNode.hasFocus) {
+          _urlController.text = _formatUrl(url);
+        }
+        isSecure = url.startsWith('https://');
+      });
+      _startUrlBarIdleTimer();
+    }
+  }
+
+  // Navigation delegate methods
+  NavigationDelegate get _navigationDelegate {
+    return NavigationDelegate(
+      onPageStarted: (String url) {
+        setState(() {
+          isLoading = true;
+          _updateUrl(url);
+        });
+      },
+      onPageFinished: (String url) {
+        setState(() {
+          isLoading = false;
+          _updateUrl(url);
+        });
+      },
+      onUrlChange: (UrlChange change) {
+        _updateUrl(change.url ?? '');
+      },
+    );
+  }
+
+  void _startUrlBarIdleTimer() {
+    _urlBarIdleTimer?.cancel();
+    _urlBarIdleTimer = Timer(const Duration(seconds: 10), () {
+      if (mounted && !_urlFocusNode.hasFocus) {
+        setState(() {
+          _isUrlBarIconState = true;
+        });
+      }
+    });
+  }
+
+  void _updateUrlBarState() {
+    if (!_urlFocusNode.hasFocus) {
+      _startUrlBarIdleTimer();
+    }
+  }
+
+  String _formatUrl(String url, {bool showFull = false}) {
+    if (showFull) return url;
+    try {
+      final uri = Uri.parse(url);
+      String domain = uri.host;
+      if (domain.startsWith('www.')) {
+        domain = domain.substring(4);
+      }
+      return domain;
+    } catch (e) {
+      return url;
+    }
+  }
+
+  Widget _buildHistoryList() {
+    return NotificationListener<ScrollNotification>(
+      onNotification: (ScrollNotification scrollInfo) {
+        if (scrollInfo is ScrollEndNotification) {
+          if (scrollInfo.metrics.pixels >= scrollInfo.metrics.maxScrollExtent - 500) {
+            _loadMoreHistory();
+          }
+        }
+        return true;
+      },
+      child: ListView.builder(
+        controller: _historyScrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        itemCount: _loadedHistory.length + 1,
+        itemBuilder: (context, index) {
+          if (index == _loadedHistory.length) {
+            return _isLoadingMore
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              : const SizedBox.shrink();
+          }
+
+          final item = _loadedHistory[index];
+          final timestamp = DateTime.parse(item['timestamp'] as String).toLocal();
+          final formattedDate = DateFormat('MMM d, y - h:mm a').format(timestamp);
+          
+          return Container(
+            margin: const EdgeInsets.symmetric(vertical: 4),
+            decoration: BoxDecoration(
+              color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ListTile(
+              title: Text(
+                item['title'] as String? ?? item['url'] as String,
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+              subtitle: Text(
+                formattedDate,
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white70 : Colors.black54,
+                  fontSize: 12,
+                ),
+              ),
+              trailing: Icon(
+                Icons.arrow_forward_ios,
+                size: 16,
+                color: isDarkMode ? Colors.white54 : Colors.black45,
+              ),
+              onTap: () {
+                controller.loadRequest(Uri.parse(item['url'] as String));
+                Navigator.pop(context);
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Future<void> _handleFullscreenChange(bool isFullscreen) async {
+    setState(() {
+      _isFullscreen = isFullscreen;
+    });
+    
+    if (isFullscreen) {
+      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+      SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        systemNavigationBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ));
+    } else {
+      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        systemNavigationBarColor: Colors.transparent,
+        statusBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
+        systemNavigationBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
+      ));
     }
   }
 }

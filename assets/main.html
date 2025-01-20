@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Home Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-image: url('background.jpeg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            position: relative;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(8px);
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 600px;
+            position: relative;
+            z-index: 1;
+            margin-top: 10vh;
+            margin-bottom: 24px;
+        }
+
+        .search-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 16px 24px;
+            padding-right: 60px;
+            border-radius: 24px;
+            border: none;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            color: white;
+            font-size: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .search-bar::placeholder {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .search-bar:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .shortcuts-container {
+            width: 100%;
+            max-width: 600px;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 0 20px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .shortcuts-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .shortcuts-grid {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .shortcut-item {
+            position: relative;
+            width: 100%;
+            height: 90px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+        }
+
+        .shortcut-item:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .shortcut-item.add-shortcut {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+        }
+
+        .shortcut-item.add-shortcut:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .shortcut-favicon {
+            width: 36px;
+            height: 36px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px;
+        }
+
+        .shortcut-title {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 13px;
+            text-align: center;
+            max-width: 90%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .plus-icon {
+            width: 24px;
+            height: 24px;
+            stroke: rgba(255, 255, 255, 0.7);
+            stroke-width: 2;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 24px;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .modal-button {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .modal-button.primary {
+            background: #4285f4;
+            color: white;
+        }
+
+        .modal-button.secondary {
+            background: #ddd;
+        }
+
+        .context-menu {
+            position: fixed;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            padding: 8px 0;
+            min-width: 150px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            display: none;
+            z-index: 1000;
+        }
+
+        .context-menu.active {
+            display: block;
+        }
+
+        .context-menu-item {
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .context-menu-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .hamburger {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 100;
+            transition: background 0.3s;
+        }
+
+        .hamburger:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .settings-page {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 90;
+            padding: 20px;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .settings-page.active {
+            right: 0;
+        }
+
+        @media (min-width: 768px) {
+            .settings-page {
+                width: 400px;
+            }
+        }
+
+        .settings-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .settings-header h2 {
+            margin: 0;
+            flex-grow: 1;
+        }
+
+        .settings-close {
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .settings-close:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .settings-section {
+            margin-bottom: 30px;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .settings-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 18px;
+        }
+
+        .settings-option {
+            margin-bottom: 15px;
+        }
+
+        .settings-option:last-child {
+            margin-bottom: 0;
+        }
+
+        .settings-option label {
+            display: block;
+            margin-bottom: 8px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .settings-option select,
+        .settings-option button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background: white;
+            font-size: 14px;
+        }
+
+        .settings-option button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: 500;
+        }
+
+        .settings-option button:hover {
+            background: #3367d6;
+        }
+
+        .settings-option button.danger {
+            background: #dc3545;
+        }
+
+        .settings-option button.danger:hover {
+            background: #c82333;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 80px;
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            .search-container {
+                margin-top: 25px;
+                margin-bottom: 16px;
+                padding: 0 16px;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 2;
+                background: linear-gradient(to bottom, rgba(0,0,0,0.3), transparent);
+                padding-top: 80px;
+            }
+
+            .hamburger {
+                top: 20px;
+                right: 16px;
+                width: 36px;
+                height: 36px;
+            }
+
+            .search-bar {
+                padding: 12px 20px;
+                font-size: 14px;
+                height: 46px;
+            }
+
+            .shortcuts-container {
+                padding: 0 16px;
+                margin-top: 140px;
+                height: calc(100vh - 140px);
+                overflow-y: auto;
+            }
+
+            .shortcuts-grid {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+                gap: 12px;
+                margin-bottom: 20px;
+                padding-bottom: env(safe-area-inset-bottom, 20px);
+            }
+
+            .shortcut-item {
+                height: 70px;
+            }
+
+            .shortcut-favicon {
+                width: 32px;
+                height: 32px;
+                margin-bottom: 6px;
+            }
+
+            .shortcut-title {
+                font-size: 11px;
+            }
+
+            .settings-page {
+                padding: 15px;
+            }
+
+            .modal-content {
+                width: 90%;
+                max-width: none;
+            }
+        }
+
+        /* Photo attribution */
+        .photo-attribution {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+            z-index: 50;
+            pointer-events: none;
+            max-width: 300px;
+            text-align: right;
+            line-height: 1.4;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="photo-attribution" id="photoAttribution"></div>
+    <div class="search-container">
+        <div class="search-wrapper">
+            <form id="searchForm" action="https://www.google.com/search" method="get">
+                <input type="text" name="q" class="search-bar" placeholder="Search on the web!">
+            </form>
+        </div>
+    </div>
+
+    <div class="shortcuts-container">
+        <div class="shortcuts-grid" id="shortcutsGrid">
+            <!-- Shortcuts will be added here dynamically -->
+        </div>
+    </div>
+
+    <!-- Modal for adding new shortcut -->
+    <div class="modal" id="addShortcutModal">
+        <div class="modal-content">
+            <h3>Add Shortcut</h3>
+            <input type="text" class="modal-input" id="urlInput" placeholder="Enter URL (e.g., https://www.google.com)">
+            <div class="modal-buttons">
+                <button class="modal-button secondary" id="cancelButton">Cancel</button>
+                <button class="modal-button primary" id="addButton">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hamburger Menu -->
+    <div class="hamburger" id="hamburgerMenu">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+    </div>
+
+    <!-- Settings Page -->
+    <div class="settings-page" id="settingsPage">
+        <div class="settings-header">
+            <button class="settings-close" id="settingsClose">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <h2>Settings</h2>
+        </div>
+
+        <div class="settings-section">
+            <h3>Search</h3>
+            <div class="settings-option">
+                <label>Default Search Engine</label>
+                <select id="searchEngine">
+                    <option value="google">Google</option>
+                    <option value="bing">Bing</option>
+                    <option value="duckduckgo">DuckDuckGo</option>
+                    <option value="yahoo">Yahoo</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3>Appearance</h3>
+            <div class="settings-option">
+                <label>Background</label>
+                <button id="randomWallpaper">Random Wallpaper</button>
+            </div>
+        </div>
+
+        <div class="settings-section">
+            <h3>Shortcuts</h3>
+            <div class="settings-option">
+                <button id="clearShortcuts" class="danger">Clear All Shortcuts</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" id="editShortcut">Edit Shortcut</div>
+        <div class="context-menu-item" id="removeShortcut">Remove Shortcut</div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const modal = document.getElementById('addShortcutModal');
+            const urlInput = document.getElementById('urlInput');
+            const addButton = document.getElementById('addButton');
+            const cancelButton = document.getElementById('cancelButton');
+            const shortcutsGrid = document.getElementById('shortcutsGrid');
+            const searchForm = document.getElementById('searchForm');
+            const hamburger = document.getElementById('hamburgerMenu');
+            const settingsPage = document.getElementById('settingsPage');
+            const searchEngineSelect = document.getElementById('searchEngine');
+            const clearShortcutsBtn = document.getElementById('clearShortcuts');
+            const contextMenu = document.getElementById('contextMenu');
+            const settingsClose = document.getElementById('settingsClose');
+            const randomWallpaperBtn = document.getElementById('randomWallpaper');
+            
+            // Load saved settings
+            const loadSettings = () => {
+                const settings = JSON.parse(localStorage.getItem('settings') || '{"searchEngine": "google"}');
+                searchEngineSelect.value = settings.searchEngine;
+                return settings;
+            };
+
+            let settings = loadSettings();
+
+            // Save settings
+            const saveSettings = () => {
+                localStorage.setItem('settings', JSON.stringify(settings));
+            };
+
+            // Search engine URLs
+            const searchEngineUrls = {
+                google: 'https://www.google.com/search?q=',
+                bing: 'https://www.bing.com/search?q=',
+                duckduckgo: 'https://duckduckgo.com/?q=',
+                yahoo: 'https://search.yahoo.com/search?p='
+            };
+
+            // Create add shortcut button
+            const createAddButton = () => {
+                const addShortcutBtn = document.createElement('div');
+                addShortcutBtn.className = 'shortcut-item add-shortcut';
+                addShortcutBtn.innerHTML = `
+                    <svg class="plus-icon" viewBox="0 0 24 24">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                `;
+                addShortcutBtn.addEventListener('click', () => {
+                    modal.classList.add('active');
+                    urlInput.focus();
+                });
+                return addShortcutBtn;
+            };
+
+            // Load existing shortcuts from localStorage
+            const loadShortcuts = () => {
+                const shortcuts = JSON.parse(localStorage.getItem('shortcuts') || '[]');
+                shortcutsGrid.innerHTML = '';
+                shortcuts.forEach(shortcut => {
+                    addShortcutToGrid(shortcut.url, shortcut.title, shortcut.favicon);
+                });
+                // Add the + button after loading shortcuts
+                shortcutsGrid.appendChild(createAddButton());
+            };
+
+            // Save shortcuts to localStorage
+            const saveShortcuts = () => {
+                const shortcuts = Array.from(shortcutsGrid.children)
+                    .filter(child => !child.classList.contains('add-shortcut'))
+                    .map(child => ({
+                        url: child.getAttribute('data-url'),
+                        title: child.querySelector('.shortcut-title').textContent,
+                        favicon: child.querySelector('.shortcut-favicon').src
+                    }));
+                localStorage.setItem('shortcuts', JSON.stringify(shortcuts));
+            };
+
+            // Update search form handler
+            searchForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const searchTerm = searchForm.querySelector('input[name="q"]').value.trim();
+                
+                if (searchTerm.includes('.') && !searchTerm.includes(' ')) {
+                    let url = searchTerm;
+                    if (!url.startsWith('http')) {
+                        url = 'https://' + url;
+                    }
+                    window.location.href = url;
+                } else {
+                    window.location.href = `${searchEngineUrls[settings.searchEngine]}${encodeURIComponent(searchTerm)}`;
+                }
+            });
+
+            // Add new shortcut
+            const addShortcutToGrid = (url, title, faviconUrl) => {
+                const shortcut = document.createElement('div');
+                shortcut.className = 'shortcut-item';
+                shortcut.setAttribute('data-url', url);
+                
+                const favicon = document.createElement('img');
+                favicon.className = 'shortcut-favicon';
+                favicon.src = faviconUrl || `https://www.google.com/s2/favicons?domain=${url}&sz=64`;
+                
+                const titleElem = document.createElement('div');
+                titleElem.className = 'shortcut-title';
+                titleElem.textContent = title || new URL(url).hostname;
+
+                shortcut.appendChild(favicon);
+                shortcut.appendChild(titleElem);
+
+                // Add the shortcut to the grid
+                shortcutsGrid.appendChild(shortcut);
+                saveShortcuts();
+            };
+
+            // Add button handler
+            addButton.addEventListener('click', async () => {
+                let url = urlInput.value.trim();
+                if (!url.startsWith('http')) {
+                    url = 'https://' + url;
+                }
+
+                try {
+                    const response = await fetch(url);
+                    const html = await response.text();
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
+                    const title = doc.title;
+                    
+                    addShortcutToGrid(url, title);
+                    modal.classList.remove('active');
+                    urlInput.value = '';
+                } catch (error) {
+                    console.error('Error adding shortcut:', error);
+                    // Add anyway with basic info
+                    addShortcutToGrid(url);
+                    modal.classList.remove('active');
+                    urlInput.value = '';
+                }
+            });
+
+            // Cancel button handler
+            cancelButton.addEventListener('click', () => {
+                modal.classList.remove('active');
+                urlInput.value = '';
+            });
+
+            // Close modal when clicking outside
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                    urlInput.value = '';
+                }
+            });
+
+            // Hamburger menu handler
+            hamburger.addEventListener('click', () => {
+                settingsPage.classList.toggle('active');
+            });
+
+            // Close settings when clicking outside
+            document.addEventListener('click', (e) => {
+                if (settingsPage.classList.contains('active') && 
+                    !settingsPage.contains(e.target) && 
+                    !hamburger.contains(e.target)) {
+                    settingsPage.classList.remove('active');
+                }
+            });
+
+            // Search engine change handler
+            searchEngineSelect.addEventListener('change', (e) => {
+                settings.searchEngine = e.target.value;
+                saveSettings();
+            });
+
+            // Clear shortcuts handler
+            clearShortcutsBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to remove all shortcuts?')) {
+                    localStorage.removeItem('shortcuts');
+                    loadShortcuts();
+                }
+            });
+
+            // Context menu functionality
+            let activeShortcut = null;
+
+            const showContextMenu = (x, y) => {
+                contextMenu.style.left = `${x}px`;
+                contextMenu.style.top = `${y}px`;
+                contextMenu.classList.add('active');
+            };
+
+            const hideContextMenu = () => {
+                contextMenu.classList.remove('active');
+            };
+
+            // Context menu items handlers
+            document.getElementById('editShortcut').addEventListener('click', () => {
+                if (activeShortcut) {
+                    const url = activeShortcut.getAttribute('data-url');
+                    const title = activeShortcut.querySelector('.shortcut-title').textContent;
+                    
+                    urlInput.value = url;
+                    modal.classList.add('active');
+                    
+                    // Remove the old shortcut when editing
+                    activeShortcut.remove();
+                    hideContextMenu();
+                }
+            });
+
+            document.getElementById('removeShortcut').addEventListener('click', () => {
+                if (activeShortcut) {
+                    activeShortcut.remove();
+                    saveShortcuts();
+                    hideContextMenu();
+                }
+            });
+
+            // Hide context menu when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!contextMenu.contains(e.target)) {
+                    hideContextMenu();
+                }
+            });
+
+            // Wallpaper functionality
+            const getRandomWallpaper = async () => {
+                try {
+                    // Using Unsplash API for better attribution
+                    const response = await fetch('https://api.unsplash.com/photos/random?orientation=landscape&query=nature,landscape', {
+                        headers: {
+                            'Authorization': 'Client-ID YOUR_UNSPLASH_API_KEY'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const imageUrl = data.urls.regular;
+                        const photographer = data.user.name;
+                        const photoLink = data.links.html;
+                        
+                        document.body.style.backgroundImage = `url('${imageUrl}')`;
+                        
+                        // Update attribution
+                        const attribution = document.getElementById('photoAttribution');
+                        attribution.innerHTML = `Photo by <a href="${data.user.links.html}" target="_blank" style="color: inherit; text-decoration: underline;">${photographer}</a> on <a href="${photoLink}" target="_blank" style="color: inherit; text-decoration: underline;">Unsplash</a>`;
+                        
+                        // Save wallpaper info
+                        localStorage.setItem('wallpaper', imageUrl);
+                        localStorage.setItem('wallpaperAttribution', JSON.stringify({
+                            photographer,
+                            photoLink,
+                            photographerLink: data.user.links.html
+                        }));
+                    } else {
+                        // Fallback to Picsum if Unsplash fails
+                        const picsumUrl = 'https://picsum.photos/500/1000';
+                        const response = await fetch(picsumUrl);
+                        if (response.ok) {
+                            document.body.style.backgroundImage = `url('${response.url}')`;
+                            localStorage.setItem('wallpaper', response.url);
+                            
+                            // Update attribution for Picsum
+                            const attribution = document.getElementById('photoAttribution');
+                            attribution.innerHTML = 'Photo from Picsum Photos';
+                            localStorage.setItem('wallpaperAttribution', JSON.stringify({
+                                photographer: 'Picsum Photos',
+                                photoLink: 'https://picsum.photos',
+                                photographerLink: 'https://picsum.photos'
+                            }));
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error fetching wallpaper:', error);
+                    // Set default gradient if all fails
+                    document.body.style.background = 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)';
+                    document.body.style.backgroundImage = 'none';
+                    const attribution = document.getElementById('photoAttribution');
+                    attribution.innerHTML = '';
+                }
+            };
+
+            // Load saved wallpaper and attribution
+            const savedWallpaper = localStorage.getItem('wallpaper');
+            const savedAttribution = localStorage.getItem('wallpaperAttribution');
+            
+            if (savedWallpaper) {
+                document.body.style.backgroundImage = `url('${savedWallpaper}')`;
+                if (savedAttribution) {
+                    const attribution = JSON.parse(savedAttribution);
+                    const attributionElement = document.getElementById('photoAttribution');
+                    attributionElement.innerHTML = attribution.photographer === 'Picsum Photos' 
+                        ? 'Photo from Picsum Photos'
+                        : `Photo by <a href="${attribution.photographerLink}" target="_blank" style="color: inherit; text-decoration: underline;">${attribution.photographer}</a> on <a href="${attribution.photoLink}" target="_blank" style="color: inherit; text-decoration: underline;">Unsplash</a>`;
+                }
+            } else {
+                // Set default gradient
+                document.body.style.background = 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)';
+            }
+
+            // Settings close button handler
+            settingsClose.addEventListener('click', () => {
+                settingsPage.classList.remove('active');
+            });
+
+            // Random wallpaper button handler
+            randomWallpaperBtn.addEventListener('click', getRandomWallpaper);
+
+            // Load initial shortcuts and settings
+            loadShortcuts();
+            loadSettings();
+        });
+    </script>
+</body>
+</html> 
