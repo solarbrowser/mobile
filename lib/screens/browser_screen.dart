@@ -2949,27 +2949,13 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       backgroundColor: isDarkMode ? Colors.black : Colors.white,
       body: Stack(
         children: [
-          // Add top spacing for WebView
+          // WebView - no gesture detector here
           Positioned(
             top: padding.top + 8,
             left: 0,
             right: 0,
             bottom: 0,
-            child: GestureDetector(
-              onHorizontalDragStart: (details) {
-                dragStartX = details.localPosition.dx;
-              },
-              onHorizontalDragUpdate: (details) {
-                final delta = details.localPosition.dx - dragStartX;
-                if (delta.abs() > 30) {
-                  if ((delta < 0 && canGoBack) || (delta > 0 && canGoForward)) {
-                    delta < 0 ? controller.goBack() : controller.goForward();
-                    dragStartX = details.localPosition.dx;
-                  }
-                }
-              },
-              child: WebViewWidget(controller: controller),
-            ),
+            child: WebViewWidget(controller: controller),
           ),
           
           // Loading indicator
@@ -2998,7 +2984,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                       : Container(),
             ),
 
-          // URL bar and controls
+          // URL bar and controls with gestures
           if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
             Positioned(
               left: _isDraggingUrlBar 
@@ -3020,10 +3006,24 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                     });
                   }
                 },
+                onHorizontalDragStart: (details) {
+                  dragStartX = details.localPosition.dx;
+                },
+                onHorizontalDragUpdate: (details) {
+                  final delta = details.localPosition.dx - dragStartX;
+                  if (delta.abs() > 30) {
+                    if ((delta < 0 && canGoBack) || (delta > 0 && canGoForward)) {
+                      delta < 0 ? controller.goBack() : controller.goForward();
+                      dragStartX = details.localPosition.dx;
+                    }
+                  }
+                },
                 onPanStart: (details) {
-                  setState(() {
-                    _isDraggingUrlBar = true;
-                  });
+                  if (_isUrlBarIconState) {
+                    setState(() {
+                      _isDraggingUrlBar = true;
+                    });
+                  }
                 },
                 onPanUpdate: (details) {
                   if (_isDraggingUrlBar) {
