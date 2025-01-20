@@ -2942,44 +2942,61 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     final padding = MediaQuery.of(context).padding;
     final bottomPadding = padding.bottom;
     final bottomSafeArea = MediaQuery.of(context).viewPadding.bottom;
-    final topPadding = padding.top + 8.0;
 
     return Scaffold(
       backgroundColor: isDarkMode ? Colors.black : Colors.white,
       body: Stack(
         children: [
-          Positioned(
-            top: topPadding,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: NotificationListener<ScrollNotification>(
-              onNotification: (notification) {
-                if (notification is ScrollUpdateNotification) {
-                  if (notification.scrollDelta! < 0) {
-                    setState(() {
-                      _isUrlBarHidden = false;
-                    });
-                  } else if (notification.scrollDelta! > 0) {
-                    setState(() {
-                      _isUrlBarMinimized = true;
-                      _isUrlBarHidden = true;
-                    });
-                  }
-                }
-                return false;
-              },
-              child: WebViewWidget(controller: controller),
-            ),
-          ),
+          // WebView - now fills the entire screen
+          WebViewWidget(controller: controller),
+          
+          // Loading indicator
           if (isLoading)
             Positioned(
-              top: topPadding,
+              top: padding.top,
               left: 0,
               right: 0,
               child: const LinearProgressIndicator(),
             ),
-          _buildOverlayPanel(),
+
+          // Overlay panel
+          if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible)
+            Positioned.fill(
+              child: GestureDetector(
+                onVerticalDragUpdate: (details) {
+                  if (details.primaryDelta! > 10) {
+                    setState(() {
+                      isTabsVisible = false;
+                      isSettingsVisible = false;
+                      isBookmarksVisible = false;
+                      isDownloadsVisible = false;
+                    });
+                  }
+                },
+                child: Container(
+                  color: Colors.transparent,
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      color: isDarkMode 
+                        ? Colors.black.withOpacity(0.3) 
+                        : Colors.white.withOpacity(0.3),
+                      child: isTabsVisible 
+                        ? _buildTabsPanel() 
+                        : isSettingsVisible
+                          ? _buildSettingsPanel()
+                          : isBookmarksVisible
+                            ? _buildBookmarksPanel()
+                            : isDownloadsVisible
+                              ? _buildDownloadsPanel()
+                              : Container(),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+          // URL bar and controls
           if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
             AnimatedPositioned(
               duration: const Duration(milliseconds: 300),
