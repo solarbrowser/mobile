@@ -2059,41 +2059,49 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
     return Positioned.fill(
       child: GestureDetector(
-      onVerticalDragUpdate: (details) {
-        if (details.primaryDelta! > 10) {
-          setState(() {
-            isTabsVisible = false;
-            isSettingsVisible = false;
-            isBookmarksVisible = false;
-            isDownloadsVisible = false;
-          });
-        }
-      },
+        onVerticalDragUpdate: (details) {
+          if (details.primaryDelta! > 10) {
+            setState(() {
+              isTabsVisible = false;
+              isSettingsVisible = false;
+              isBookmarksVisible = false;
+              isDownloadsVisible = false;
+            });
+          }
+        },
         child: Container(
-          color: isDarkMode ? Colors.black.withOpacity(0.5) : Colors.white.withOpacity(0.5),
-          child: SafeArea(
-      child: Container(
-        margin: EdgeInsets.only(top: 0),
-        child: AnimatedSlide(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOutCubic,
-                offset: isPanelVisible ? Offset.zero : const Offset(0, 1),
-          child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.easeInOutCubic,
-                  opacity: isPanelVisible ? 1.0 : 0.0,
+          color: Colors.transparent,
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
-                    height: MediaQuery.of(context).size.height,
-              color: isDarkMode ? Colors.black : Colors.white,
-              child: isTabsVisible 
-                ? _buildTabsPanel() 
-                : isSettingsVisible
-                  ? _buildSettingsPanel()
-                  : isBookmarksVisible
-                    ? _buildBookmarksPanel()
-                    : isDownloadsVisible
-                      ? _buildDownloadsPanel()
-                      : Container(),
+              color: isDarkMode 
+                ? Colors.black.withOpacity(0.3) 
+                : Colors.white.withOpacity(0.3),
+              child: SafeArea(
+                child: Container(
+                  margin: EdgeInsets.only(top: 0),
+                  child: AnimatedSlide(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOutCubic,
+                    offset: isPanelVisible ? Offset.zero : const Offset(0, 1),
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOutCubic,
+                      opacity: isPanelVisible ? 1.0 : 0.0,
+                      child: Container(
+                        height: MediaQuery.of(context).size.height,
+                        color: isDarkMode ? Colors.black : Colors.white,
+                        child: isTabsVisible 
+                          ? _buildTabsPanel() 
+                          : isSettingsVisible
+                            ? _buildSettingsPanel()
+                            : isBookmarksVisible
+                              ? _buildBookmarksPanel()
+                              : isDownloadsVisible
+                                ? _buildDownloadsPanel()
+                                : Container(),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -2971,14 +2979,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
               right: 0,
               child: const LinearProgressIndicator(),
             ),
-          if (isTabsVisible)
-            _buildTabsPanel()
-          else if (isSettingsVisible)
-            _buildSettingsPanel()
-          else if (isBookmarksVisible)
-            _buildBookmarksPanel()
-          else if (isDownloadsVisible)
-            _buildDownloadsPanel(),
+          _buildOverlayPanel(),
           if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
             AnimatedPositioned(
               duration: const Duration(milliseconds: 300),
