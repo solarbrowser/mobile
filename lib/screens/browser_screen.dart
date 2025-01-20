@@ -2942,13 +2942,35 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     final padding = MediaQuery.of(context).padding;
     final bottomPadding = padding.bottom;
     final bottomSafeArea = MediaQuery.of(context).viewPadding.bottom;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final urlBarWidth = _isUrlBarIconState ? 56.0 : screenWidth - 32;
 
     return Scaffold(
       backgroundColor: isDarkMode ? Colors.black : Colors.white,
       body: Stack(
         children: [
-          // WebView - now fills the entire screen
-          WebViewWidget(controller: controller),
+          // Add top spacing for WebView
+          Positioned(
+            top: padding.top + 8,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: GestureDetector(
+              onHorizontalDragStart: (details) {
+                dragStartX = details.localPosition.dx;
+              },
+              onHorizontalDragUpdate: (details) {
+                final delta = details.localPosition.dx - dragStartX;
+                if (delta.abs() > 30) {
+                  if ((delta < 0 && canGoBack) || (delta > 0 && canGoForward)) {
+                    delta < 0 ? controller.goBack() : controller.goForward();
+                    dragStartX = details.localPosition.dx;
+                  }
+                }
+              },
+              child: WebViewWidget(controller: controller),
+            ),
+          ),
           
           // Loading indicator
           if (isLoading)
@@ -2959,53 +2981,34 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
               child: const LinearProgressIndicator(),
             ),
 
-          // Overlay panel
+          // Panels (Settings, Tabs, etc)
           if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible)
-            Positioned.fill(
-              child: GestureDetector(
-                onVerticalDragUpdate: (details) {
-                  if (details.primaryDelta! > 10) {
-                    setState(() {
-                      isTabsVisible = false;
-                      isSettingsVisible = false;
-                      isBookmarksVisible = false;
-                      isDownloadsVisible = false;
-                    });
-                  }
-                },
-                child: Container(
-                  color: Colors.transparent,
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      color: isDarkMode 
-                        ? Colors.black.withOpacity(0.3) 
-                        : Colors.white.withOpacity(0.3),
-                      child: isTabsVisible 
-                        ? _buildTabsPanel() 
-                        : isSettingsVisible
-                          ? _buildSettingsPanel()
-                          : isBookmarksVisible
-                            ? _buildBookmarksPanel()
-                            : isDownloadsVisible
-                              ? _buildDownloadsPanel()
-                              : Container(),
-                    ),
-                  ),
-                ),
-              ),
+            Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              color: isDarkMode ? Colors.black : Colors.white,
+              child: isTabsVisible 
+                ? _buildTabsPanel() 
+                : isSettingsVisible
+                  ? _buildSettingsPanel()
+                  : isBookmarksVisible
+                    ? _buildBookmarksPanel()
+                    : isDownloadsVisible
+                      ? _buildDownloadsPanel()
+                      : Container(),
             ),
 
           // URL bar and controls
           if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOut,
-              left: 16,
-              right: 16,
-              bottom: _isUrlBarHidden ? -80 : bottomPadding + 8 + bottomSafeArea,
+            Positioned(
+              left: _isDraggingUrlBar 
+                ? _urlBarOffset.dx.clamp(0.0, screenWidth - urlBarWidth - 32)
+                : (screenWidth - urlBarWidth) / 2,
+              right: _isDraggingUrlBar 
+                ? screenWidth - (_urlBarOffset.dx.clamp(0.0, screenWidth - urlBarWidth - 32) + urlBarWidth)
+                : (screenWidth - urlBarWidth) / 2,
+              bottom: bottomPadding + 8 + bottomSafeArea,
               child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
                 onVerticalDragUpdate: (details) {
                   if (details.primaryDelta! < -5 && !isPanelExpanded) {
                     setState(() {
@@ -3017,16 +3020,33 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                     });
                   }
                 },
-                onHorizontalDragStart: (details) {
-                  dragStartX = details.localPosition.dx;
+                onPanStart: (details) {
+                  setState(() {
+                    _isDraggingUrlBar = true;
+                  });
                 },
-                onHorizontalDragUpdate: (details) {
-                  final delta = details.localPosition.dx - dragStartX;
-                  if (delta.abs() > 30) {
-                    if ((delta < 0 && canGoBack) || (delta > 0 && canGoForward)) {
-                      delta < 0 ? controller.goBack() : controller.goForward();
-                      dragStartX = details.localPosition.dx;
+                onPanUpdate: (details) {
+                  if (_isDraggingUrlBar) {
+                    setState(() {
+                      _urlBarOffset += details.delta;
+                    });
+                  }
+                },
+                onPanEnd: (_) {
+                  setState(() {
+                    _isDraggingUrlBar = false;
+                    if (!_isUrlBarIconState) {
+                      _urlBarOffset = Offset.zero;
                     }
+                  });
+                },
+                onTap: () {
+                  if (_isUrlBarIconState) {
+                    setState(() {
+                      _isUrlBarIconState = false;
+                      _urlBarOffset = Offset.zero;
+                      _urlFocusNode.requestFocus();
+                    });
                   }
                 },
                 child: Column(
@@ -3034,11 +3054,97 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                   children: [
                     if (isPanelExpanded) ...[
                       _buildQuickActionsPanel(),
+                      const SizedBox(height: 8),
                       _buildNavigationPanel(),
                     ] else if (isSearchMode)
                       _buildSearchPanel()
                     else
-                      _buildUrlBar(),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        width: urlBarWidth,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(_isUrlBarIconState ? 24 : 28),
+                          color: isDarkMode 
+                            ? Colors.black.withOpacity(0.8) 
+                            : Colors.white.withOpacity(0.8),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 10,
+                              spreadRadius: 0,
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(_isUrlBarIconState ? 24 : 28),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                            child: _isUrlBarIconState
+                              ? Center(
+                                  child: Icon(
+                                    Icons.search_rounded,
+                                    size: 24,
+                                    color: isDarkMode ? Colors.white70 : Colors.black54,
+                                  ),
+                                )
+                              : Row(
+                                  children: [
+                                    const SizedBox(width: 16),
+                                    Icon(
+                                      isSecure ? Icons.shield : Icons.shield_outlined,
+                                      size: 20,
+                                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                                    ),
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _urlController,
+                                        focusNode: _urlFocusNode,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          color: isDarkMode ? Colors.white : Colors.black,
+                                          fontSize: 16,
+                                        ),
+                                        decoration: InputDecoration(
+                                          border: InputBorder.none,
+                                          hintText: 'Search or enter address',
+                                          hintStyle: TextStyle(
+                                            color: isDarkMode ? Colors.white38 : Colors.black38,
+                                          ),
+                                        ),
+                                        onTap: () {
+                                          setState(() {
+                                            _urlController.text = _displayUrl;
+                                            _urlController.selection = TextSelection(
+                                              baseOffset: 0,
+                                              extentOffset: _urlController.text.length,
+                                            );
+                                          });
+                                        },
+                                        onSubmitted: (url) {
+                                          _loadUrl(url);
+                                          _urlFocusNode.unfocus();
+                                          setState(() {
+                                            _urlController.text = _formatUrl(url);
+                                          });
+                                          _startUrlBarIdleTimer();
+                                        },
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Image.asset(
+                                        'assets/reload24.png',
+                                        width: 20,
+                                        height: 20,
+                                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                                      ),
+                                      onPressed: () => controller.reload(),
+                                    ),
+                                  ],
+                                ),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
