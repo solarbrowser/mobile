@@ -1,6 +1,5 @@
 {
   "@@locale": "ja",
-  
   "welcome": "Solar へようこそ",
   "welcomeSubtitle": "モダンで高速、安全なブラウザ",
   "chooseLanguage": "言語を選択",
@@ -21,7 +20,6 @@
       }
     }
   },
-
   "general": "一般",
   "appearance": "外観",
   "downloads": "ダウンロード",
@@ -43,5 +41,130 @@
   "tabs": "タブ",
   "history": "履歴",
   "bookmarks": "ブックマーク",
-  "search_in_page": "ページ内検索"
+  "search_in_page": "ページ内検索",
+  "app_name": "Solar Browser",
+  "search_or_enter_address": "検索またはアドレスを入力",
+  "current_location": "現在の場所",
+  "change_location": "場所を変更",
+  "clear_browser_data": "ブラウザデータを消去",
+  "browsing_history": "閲覧履歴",
+  "cookies": "Cookie",
+  "cache": "キャッシュ",
+  "form_data": "フォームデータ",
+  "saved_passwords": "保存されたパスワード",
+  "cancel": "キャンセル",
+  "clear": "消去",
+  "close": "閉じる",
+  "browser_data_cleared": "ブラウザデータが消去されました",
+  "no_downloads": "ダウンロードはありません",
+  "no_bookmarks": "ブックマークはありません",
+  "download_started": "ダウンロードを開始しました",
+  "download_completed": "ダウンロードが完了しました",
+  "download_failed": "ダウンロードに失敗しました",
+  "open": "開く",
+  "delete": "削除",
+  "delete_download": "ダウンロードを削除",
+  "delete_bookmark": "ブックマークを削除",
+  "add_bookmark": "ブックマークを追加",
+  "bookmark_added": "ブックマークに追加しました",
+  "bookmark_exists": "既にブックマークに追加されています",
+  "share": "共有",
+  "copy_link": "リンクをコピー",
+  "paste_and_go": "貼り付けて移動",
+  "find_in_page": "ページ内を検索",
+  "desktop_site": "デスクトップサイト",
+  "new_tab": "新しいタブ",
+  "close_tab": "タブを閉じる",
+  "tab_overview": "タブの概要",
+  "home": "ホーム",
+  "reload": "再読み込み",
+  "stop": "停止",
+  "forward": "進む",
+  "more": "その他",
+  "reset_browser": "ブラウザをリセット",
+  "reset_browser_confirm": "履歴、ブックマーク、設定などのすべてのデータが消去されます。この操作は元に戻せません。",
+  "reset": "リセット",
+  "reset_complete": "ブラウザがリセットされました",
+  "print": "印刷",
+  "zoom_in": "拡大",
+  "zoom_out": "縮小",
+  "zoom_reset": "ズームをリセット",
+  "fullscreen": "全画面表示",
+  "reading_mode": "リーディングモード",
+  "save_page": "ページを保存",
+  "permission_denied": "ストレージのアクセス許可が拒否されました",
+  "download_location_changed": "ダウンロード先を変更しました",
+  "error_changing_location": "場所の変更中にエラーが発生しました",
+  "enable_cookies": "Cookie を有効にする",
+  "enable_javascript": "JavaScript を有効にする",
+  "hardware_acceleration": "ハードウェアアクセラレーション",
+  "save_form_data": "フォームデータを保存",
+  "do_not_track": "トラッキング拒否",
+  "download_location_description": "ダウンロードしたファイルの保存先を選択",
+  "text_size_description": "ウェブページの文字サイズを調整",
+  "text_size_small": "小",
+  "text_size_medium": "中",
+  "text_size_large": "大",
+  "text_size_very_large": "最大",
+  "cookies_description": "ウェブサイトによるCookieの保存と読み取りを許可",
+  "javascript_description": "ウェブサイトの機能を向上させるためにJavaScriptを有効化",
+  "hardware_acceleration_description": "GPUを使用してパフォーマンスを向上",
+  "form_data_description": "フォームに入力した情報を保存",
+  "do_not_track_description": "ウェブサイトにトラッキング拒否を要求",
+  "exit_app": "アプリを終了",
+  "exit_app_confirm": "本当に終了しますか？",
+  "exit": "終了",
+  "size": "サイズ",
+  "auto_open_downloads": "ダウンロード後に自動で開く",
+  "clear_downloads_history": "ダウンロード履歴を消去",
+  "downloads_history_cleared": "ダウンロード履歴を消去しました",
+  "delete_download_confirm": "{fileName}をダウンロード履歴から削除しますか？\nダウンロードしたファイルは削除されません。",
+  "@delete_download_confirm": {
+    "description": "ダウンロード履歴から削除する際の確認メッセージ",
+    "placeholders": {
+      "fileName": {
+        "type": "String",
+        "example": "document.pdf"
+      }
+    }
+  },
+  "download_removed": "ダウンロード履歴から削除しました",
+  "download_size": "サイズ: {size}",
+  "@download_size": {
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "clear_downloads_history_confirm": "これはダウンロード履歴のみを消去し、ダウンロードしたファイルは削除されません。",
+  "clear_downloads_history_title": "ダウンロード履歴を消去",
+  "slide_up_panel": "パネルを上にスライド",
+  "slide_down_panel": "パネルを下にスライド",
+  "move_url_bar": "URLバーを移動",
+  "url_bar_icon": "URLバーアイコン",
+  "url_bar_expanded": "URLバー展開",
+  "search_or_type_url": "URLを検索または入力",
+  "secure_connection": "安全な接続",
+  "insecure_connection": "安全でない接続",
+  "refresh_page": "ページを更新",
+  "close_search": "検索を閉じる",
+  "allow_popups": "ポップアップ",
+  "allow_popups_description": "ポップアップウィンドウを許可",
+  "popups_blocked": "ポップアップがブロックされました",
+  "allow_once": "一度だけ許可",
+  "allow_always": "常に許可",
+  "block": "ブロック",
+  "blocked_popups": "ブロックされたポップアップ",
+  "no_blocked_popups": "ブロックされたポップアップはありません",
+  "allow_popups_from": "{domain}からのポップアップを許可",
+  "@allow_popups_from": {
+    "description": "特定のドメインからのポップアップを許可する際のメッセージ",
+    "placeholders": {
+      "domain": {
+        "type": "String",
+        "example": "example.com"
+      }
+    }
+  }
 } 

@@ -22,6 +22,7 @@ import 'package:flutter/services.dart';
 import '../utils/optimization_engine.dart';
 import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:file_picker/file_picker.dart';
 
 class Debouncer {
   final int milliseconds;
@@ -84,7 +85,7 @@ class LoadingBorderPainter extends CustomPainter {
     final path = Path()
       ..addRRect(RRect.fromRectAndRadius(
         Rect.fromLTWH(0, 0, size.width, size.height),
-        const Radius.circular(28),
+      const Radius.circular(28),
       ));
 
     final pathMetrics = path.computeMetrics().first;
@@ -126,6 +127,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   bool isSecure = false;
   bool allowHttp = true;
   bool isLoading = false;
+  String? _currentFaviconUrl;
   
   // Download State
   bool isDownloading = false;
@@ -234,9 +236,9 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   };
 
   // Add new state variables
-  bool _isUrlBarIconState = false;
+  bool _isUrlBarIconState = true;
   Timer? _urlBarIdleTimer;
-  Offset _urlBarOffset = Offset.zero;
+  Offset _urlBarOffset = const Offset(16.0, 16.0);
   bool _isDraggingUrlBar = false;
 
   // Add new state variable for fullscreen
@@ -245,6 +247,17 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   // Add loading animation controller
   late AnimationController _loadingAnimationController;
   late Animation<double> _loadingAnimation;
+
+  // Add new variables for download size tracking
+  int? currentDownloadSize;
+  String? currentFileName;
+
+  String _formatFileSize(int bytes) {
+    if (bytes <= 0) return '0 B';
+    const suffixes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    var i = (log(bytes) / log(1024)).floor();
+    return '${(bytes / pow(1024, i)).toStringAsFixed(2)} ${suffixes[i]}';
+  }
 
   void _updateState(VoidCallback update) {
     _debouncer.run(() {
@@ -280,21 +293,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     _homeUrl = 'file:///android_asset/main.html';
     _addNewTab();
 
-    // Initialize loading animation controller with faster speed
-    _loadingAnimationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800), // Faster animation
-    );
-    _loadingAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _loadingAnimationController,
-      curve: Curves.linear, // Linear curve for smooth snake movement
-    ));
-    
-    _loadingAnimationController.repeat(); // Make it repeat continuously
-    
     _urlFocusNode.addListener(() {
       if (!_urlFocusNode.hasFocus) {
         setState(() {
@@ -321,6 +319,12 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   Future<void> _initializeControllers() async {
+    // Initialize all animation controllers
+    _slideUpController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
     _slideAnimationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 200),
@@ -333,15 +337,18 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       curve: Curves.easeOutCubic,
     ));
 
-    _urlController = TextEditingController();
-    _urlFocusNode = FocusNode();
-    _urlFocusNode.addListener(() {
-      if (mounted) {
-        setState(() {
-          _isUrlBarExpanded = _urlFocusNode.hasFocus;
-        });
-      }
-    });
+    _loadingAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _loadingAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _loadingAnimationController,
+      curve: Curves.linear,
+    ));
+    _loadingAnimationController.repeat();
 
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
@@ -351,6 +358,17 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       parent: _animationController,
       curve: Curves.easeInOutCubic,
     );
+
+    // Initialize other controllers
+    _urlController = TextEditingController();
+    _urlFocusNode = FocusNode();
+    _urlFocusNode.addListener(() {
+      if (mounted) {
+        setState(() {
+          _isUrlBarExpanded = _urlFocusNode.hasFocus;
+        });
+      }
+    });
 
     await _initializeWebView();
   }
@@ -373,9 +391,11 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   @override
   void dispose() {
     _loadingAnimationController.dispose();
+    _slideAnimationController.dispose();
+    _slideUpController.dispose();
+    _animationController.dispose();
     _autoCollapseTimer?.cancel();
     _loadingTimer?.cancel();
-    _slideAnimationController.dispose();
     _urlFocusNode.dispose();
     _urlController.dispose();
     _optimizationEngine.dispose();
@@ -391,7 +411,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     final prefs = await SharedPreferences.getInstance();
     final downloadsList = prefs.getStringList('downloads') ?? [];
     setState(() {
-      downloads = downloadsList.map((e) => Map<String, dynamic>.from(json.decode(e))).toList();
+      downloads = downloadsList.isEmpty ? [] : downloadsList.map((e) => Map<String, dynamic>.from(json.decode(e))).toList();
     });
   }
 
@@ -486,6 +506,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             });
             await _updateNavigationState();
             await _optimizationEngine.onPageFinishLoad(url);
+            await _updateFavicon(url);
           },
           onWebResourceError: (WebResourceError error) {
             if (!mounted) return;
@@ -570,6 +591,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           });
           await _updateNavigationState();
           await _optimizationEngine.onPageFinishLoad(url);
+          await _updateFavicon(url);
         },
         onUrlChange: (UrlChange change) {
           if (change.url != null) {
@@ -644,13 +666,14 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             isLoading = false;
             if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
               tabs[currentTabIndex].title = title;
-              tabs[currentTabIndex].url = url;
+            tabs[currentTabIndex].url = url;
             }
             _displayUrl = url;
             _urlController.text = _formatUrl(url);
           });
           await _updateNavigationState();
           await _optimizationEngine.onPageFinishLoad(url);
+          await _updateFavicon(url);
         },
         onWebResourceError: (WebResourceError error) {
           if (!mounted) return;
@@ -786,8 +809,214 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             },
           ),
         ),
+        _buildSettingsItem(
+          title: AppLocalizations.of(context)!.enable_javascript,
+          subtitle: AppLocalizations.of(context)!.javascript_description,
+          trailing: Switch(
+            value: true,
+            onChanged: (value) async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('enableJavaScript', value);
+              await controller.setJavaScriptMode(
+                value ? JavaScriptMode.unrestricted : JavaScriptMode.disabled
+              );
+            },
+          ),
+        ),
+        _buildSettingsItem(
+          title: AppLocalizations.of(context)!.enable_cookies,
+          subtitle: AppLocalizations.of(context)!.cookies_description,
+          trailing: Switch(
+            value: true,
+            onChanged: (value) async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('allowCookies', value);
+            },
+          ),
+        ),
+        _buildSettingsItem(
+          title: AppLocalizations.of(context)!.allow_popups,
+          subtitle: AppLocalizations.of(context)!.allow_popups_description,
+          trailing: Switch(
+            value: false,
+            onChanged: (value) async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('allowPopups', value);
+            },
+          ),
+        ),
+        _buildSettingsItem(
+          title: 'Hardware Acceleration',
+          subtitle: 'Use GPU for better performance',
+          trailing: Switch(
+            value: true,
+            onChanged: (value) async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('hardwareAcceleration', value);
+              // Apply hardware acceleration setting
+              if (controller.platform is AndroidWebViewController) {
+                final androidController = controller.platform as AndroidWebViewController;
+                await androidController.setBackgroundColor(Colors.transparent);
+                await controller.runJavaScript('''
+                  document.body.style.setProperty('transform', 
+                    '${value ? 'translate3d(0,0,0)' : 'none'}');
+                ''');
+              }
+            },
+          ),
+        ),
+        _buildSettingsItem(
+          title: 'Save Form Data',
+          subtitle: 'Remember form entries',
+          trailing: Switch(
+            value: false,
+            onChanged: (value) async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('saveFormData', value);
+            },
+          ),
+        ),
+        _buildSettingsItem(
+          title: 'Do Not Track',
+          subtitle: 'Request websites not to track you',
+          trailing: Switch(
+            value: true,
+            onChanged: (value) async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('doNotTrack', value);
+            },
+          ),
+        ),
+        _buildSettingsItem(
+          title: 'Clear Browser Data',
+          onTap: () => _showClearBrowserDataDialog(),
+        ),
       ],
       title: AppLocalizations.of(context)!.general,
+    );
+  }
+
+  void _showClearBrowserDataDialog() {
+    bool clearHistory = true;
+    bool clearCookies = true;
+    bool clearCache = true;
+    bool clearPasswords = false;
+    bool clearFormData = false;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+          title: Text(
+            AppLocalizations.of(context)!.clear_browser_data,
+            style: TextStyle(
+              color: isDarkMode ? Colors.white : Colors.black,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CheckboxListTile(
+                value: clearHistory,
+                onChanged: (value) => setState(() => clearHistory = value!),
+                title: Text(
+                  AppLocalizations.of(context)!.browsing_history,
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+              ),
+              CheckboxListTile(
+                value: clearCookies,
+                onChanged: (value) => setState(() => clearCookies = value!),
+                title: Text(
+                  AppLocalizations.of(context)!.cookies,
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+              ),
+              CheckboxListTile(
+                value: clearCache,
+                onChanged: (value) => setState(() => clearCache = value!),
+                title: Text(
+                  AppLocalizations.of(context)!.cache,
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+              ),
+              CheckboxListTile(
+                value: clearFormData,
+                onChanged: (value) => setState(() => clearFormData = value!),
+                title: Text(
+                  AppLocalizations.of(context)!.form_data,
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+              ),
+              CheckboxListTile(
+                value: clearPasswords,
+                onChanged: (value) => setState(() => clearPasswords = value!),
+                title: Text(
+                  AppLocalizations.of(context)!.saved_passwords,
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                AppLocalizations.of(context)!.cancel,
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white70 : Colors.black54,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                if (clearCache) await controller.clearCache();
+                if (clearCookies) await controller.clearLocalStorage();
+                if (clearHistory) {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.remove('history');
+                  setState(() {
+                    _loadedHistory.clear();
+                    _currentHistoryPage = 0;
+                  });
+                }
+                if (clearFormData) {
+                  await controller.runJavaScript('''
+                    localStorage.clear();
+                    sessionStorage.clear();
+                  ''');
+                }
+                if (clearPasswords) {
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.remove('savedPasswords');
+                }
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(AppLocalizations.of(context)!.browser_data_cleared)),
+                );
+              },
+              child: Text(
+                AppLocalizations.of(context)!.clear,
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -799,35 +1028,63 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     TextStyle? customTextStyle,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+      margin: const EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
         color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
         borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 5,
+            spreadRadius: 0,
+          ),
+        ],
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        shape: RoundedRectangleBorder(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
           borderRadius: BorderRadius.circular(12),
-        ),
-        title: Text(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
           title,
           style: customTextStyle ?? TextStyle(
             color: isDarkMode ? Colors.white : Colors.black,
             fontSize: 16,
           ),
         ),
-        subtitle: subtitle != null ? Text(
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
           subtitle,
           style: TextStyle(
             color: isDarkMode ? Colors.white70 : Colors.black54,
-          ),
-        ) : null,
-        trailing: trailing ?? (onTap != null ? Icon(
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                if (trailing != null)
+                  trailing
+                else if (onTap != null)
+                  Icon(
           Icons.arrow_forward_ios,
           size: 16,
           color: isDarkMode ? Colors.white54 : Colors.black45,
-        ) : null),
-        onTap: onTap,
+                  ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -852,15 +1109,32 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      barrierColor: isDarkMode ? Colors.white10 : Colors.black12,
       transitionAnimationController: AnimationController(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 300),
         vsync: this,
       ),
-      builder: (context) => Container(
+      builder: (context) => TweenAnimationBuilder<double>(
+        tween: Tween<double>(begin: 0, end: 1),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOutExpo,
+        builder: (context, value, child) {
+          return Transform.translate(
+            offset: Offset(0, (1 - value) * 100),
+            child: Opacity(
+              opacity: value,
+              child: Container(
         height: height,
         decoration: BoxDecoration(
           color: isDarkMode ? Colors.black : Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 20,
+                      spreadRadius: 5,
+                    ),
+                  ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -870,14 +1144,32 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
               child: ListView.builder(
                 padding: const EdgeInsets.symmetric(vertical: 8),
                 itemCount: items.length,
-                itemBuilder: (context, index) => Padding(
-                  padding: const EdgeInsets.only(top: 8.0, right: 8.0),
+                        physics: const BouncingScrollPhysics(),
+                        itemBuilder: (context, index) => TweenAnimationBuilder<double>(
+                          tween: Tween<double>(begin: 0, end: 1),
+                          duration: Duration(milliseconds: 200 + (index * 50)),
+                          curve: Curves.easeOutCubic,
+                          builder: (context, value, child) {
+                            return Transform.translate(
+                              offset: Offset(50 * (1 - value), 0),
+                              child: Opacity(
+                                opacity: value,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                   child: items[index],
+                                ),
+                              ),
+                            );
+                          },
                 ),
               ),
             ),
           ],
+                ),
         ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -997,19 +1289,96 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   void _showDownloadsSettings() {
+    final downloadLocation = getApplicationDocumentsDirectory().then((dir) => dir.path);
+    
     _showDynamicBottomSheet(
       items: [
-        _buildSettingsItem(
+        FutureBuilder<String>(
+          future: downloadLocation,
+          builder: (context, snapshot) {
+            return _buildSettingsItem(
           title: AppLocalizations.of(context)!.download_location,
-          subtitle: '/Downloads',
-          onTap: () {},
+              subtitle: snapshot.data ?? '/Downloads',
+              onTap: () async {
+                // Show directory picker when available
+              },
+            );
+          },
         ),
         _buildSettingsItem(
           title: AppLocalizations.of(context)!.ask_download_location,
           trailing: Switch(
             value: true,
-            onChanged: (value) {},
+            onChanged: (value) async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('askDownloadLocation', value);
+            },
           ),
+        ),
+        _buildSettingsItem(
+          title: 'Auto-open downloads',
+          trailing: Switch(
+            value: false,
+            onChanged: (value) async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('autoOpenDownloads', value);
+            },
+          ),
+        ),
+        _buildSettingsItem(
+          title: 'Clear downloads history',
+          onTap: () async {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                backgroundColor: isDarkMode ? Colors.black : Colors.white,
+                title: Text(
+                  'Clear Downloads History',
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+                content: Text(
+                  'This will only clear the downloads history, not the downloaded files.',
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white70 : Colors.black87,
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.remove('downloads');
+                      setState(() {
+                        downloads.clear();
+                      });
+                      Navigator.pop(context);
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Downloads history cleared')),
+                      );
+                    },
+                    child: Text(
+                      'Clear',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ],
       title: AppLocalizations.of(context)!.downloads,
@@ -1101,7 +1470,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.4,
+        height: MediaQuery.of(context).size.height * 0.5,
         decoration: BoxDecoration(
           color: isDarkMode ? Colors.black : Colors.white,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
@@ -1112,28 +1481,57 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             _buildPanelHeader('about', onBack: () => Navigator.pop(context)),
             Expanded(
               child: ListView(
+                padding: const EdgeInsets.all(24),
                 children: [
-                  ListTile(
-                    title: Text(
-                      'Solar Browser Mobile',
-                      style: TextStyle(
-                        color: isDarkMode ? Colors.white : Colors.black,
-                      ),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  Center(
+                    child: Column(
                       children: [
+                        Image.asset('assets/icon.png', width: 100, height: 100),
+                        const SizedBox(height: 16),
                         Text(
-                          'Version 0.0.4',
+                          'Solar Browser',
                           style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: isDarkMode ? Colors.white : Colors.black,
+                          ),
+                        ),
+                        Text(
+                          'Version 0.0.55',
+                          style: TextStyle(
+                            fontSize: 16,
                             color: isDarkMode ? Colors.white70 : Colors.black54,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 24),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const FlutterLogo(size: 24),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Flutter Edition',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: isDarkMode ? Colors.white : Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
                         Text(
-                          'Developed by Ata TÜRKÇÜ',
+                          'Developed by',
                           style: TextStyle(
+                            fontSize: 14,
                             color: isDarkMode ? Colors.white70 : Colors.black54,
+                          ),
+                        ),
+                        Text(
+                          'Ata TÜRKÇÜ',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: isDarkMode ? Colors.white : Colors.black,
                           ),
                         ),
                       ],
@@ -1200,143 +1598,75 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     );
   }
 
-  Widget _buildNavigationPanel() {
+  Widget _buildQuickActionsPanel() {
     final screenWidth = MediaQuery.of(context).size.width;
     final panelWidth = screenWidth - 32;
 
-    return Container(
-      width: panelWidth,
-      height: 50,
-      margin: const EdgeInsets.only(bottom: 8),
-      alignment: Alignment.center, // Add alignment
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-          child: Container(
-            width: panelWidth, // Ensure container takes full width
-            decoration: _getGlassmorphicDecoration(),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  icon: Image.asset(
-                    _getAssetPath('assets/back24.png'),
-                    width: 24,
-                    height: 24,
-                    color: isDarkMode ? Colors.white70 : Colors.black54,
-                  ),
-                  onPressed: canGoBack ? () => controller.goBack() : null,
+    return AnimatedSlide(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+      offset: Offset(0, isPanelExpanded ? 0 : -1),
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 200),
+        opacity: isPanelExpanded ? 1.0 : 0.0,
+        child: Container(
+          width: panelWidth,
+          height: 100,
+          margin: const EdgeInsets.only(bottom: 8),
+          alignment: Alignment.center,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              child: Container(
+                width: panelWidth,
+                decoration: _getGlassmorphicDecoration(),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildQuickActionButton(
+                      AppLocalizations.of(context)!.settings,
+                      isDarkMode ? 'assets/settings24w.png' : 'assets/settings24.png',
+                      onPressed: () {
+                        setState(() {
+                          isSettingsVisible = true;
+                          isPanelExpanded = false;
+                        });
+                      },
+                    ),
+                    _buildQuickActionButton(
+                      AppLocalizations.of(context)!.downloads,
+                      isDarkMode ? 'assets/downloads24w.png' : 'assets/downloads24.png',
+                      onPressed: () {
+                        setState(() {
+                          isDownloadsVisible = true;
+                          isPanelExpanded = false;
+                        });
+                      },
+                    ),
+                    _buildQuickActionButton(
+                      AppLocalizations.of(context)!.tabs,
+                      isDarkMode ? 'assets/tab24w.png' : 'assets/tab24.png',
+                      onPressed: () {
+                        setState(() {
+                          isTabsVisible = true;
+                          isPanelExpanded = false;
+                        });
+                      },
+                    ),
+                    _buildQuickActionButton(
+                      AppLocalizations.of(context)!.bookmarks,
+                      isDarkMode ? 'assets/bookmark24w.png' : 'assets/bookmark24.png',
+                      onPressed: () {
+                        setState(() {
+                          isBookmarksVisible = true;
+                          isPanelExpanded = false;
+                        });
+                      },
+                    ),
+                  ],
                 ),
-                IconButton(
-                  icon: Image.asset(
-                    _getAssetPath('assets/search24.png'),
-                    width: 24,
-                    height: 24,
-                    color: isDarkMode ? Colors.white70 : Colors.black54,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      isSearchMode = true;
-                      isPanelExpanded = false;
-                    });
-                  },
-                ),
-                IconButton(
-                  icon: Image.asset(
-                    _getAssetPath('assets/bookmark24.png'),
-                    width: 24,
-                    height: 24,
-                    color: isDarkMode ? Colors.white70 : Colors.black54,
-                  ),
-                  onPressed: _addBookmark,
-                ),
-                IconButton(
-                  icon: Image.asset(
-                    _getAssetPath('assets/share24.png'),
-                    width: 24,
-                    height: 24,
-                    color: isDarkMode ? Colors.white70 : Colors.black54,
-                  ),
-                  onPressed: _shareUrl,
-                ),
-                IconButton(
-                  icon: Image.asset(
-                    _getAssetPath('assets/forward24.png'),
-                    width: 24,
-                    height: 24,
-                    color: isDarkMode ? Colors.white70 : Colors.black54,
-                  ),
-                  onPressed: canGoForward ? () => controller.goForward() : null,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickActionsPanel() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final panelWidth = screenWidth - 32; // Same width as expanded URL bar
-
-    return Container(
-      width: panelWidth,
-      height: 100,
-      margin: const EdgeInsets.only(bottom: 8),
-      alignment: Alignment.center, // Add alignment
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-          child: Container(
-            width: panelWidth, // Ensure container takes full width
-            decoration: _getGlassmorphicDecoration(),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildQuickActionButton(
-                  AppLocalizations.of(context)!.settings,
-                  isDarkMode ? 'assets/settings24w.png' : 'assets/settings24.png',
-                  onPressed: () {
-                    setState(() {
-                      isSettingsVisible = true;
-                      isPanelExpanded = false;
-                    });
-                  },
-                ),
-                _buildQuickActionButton(
-                  AppLocalizations.of(context)!.downloads,
-                  isDarkMode ? 'assets/downloads24w.png' : 'assets/downloads24.png',
-                  onPressed: () {
-                    setState(() {
-                      isDownloadsVisible = true;
-                      isPanelExpanded = false;
-                    });
-                  },
-                ),
-                _buildQuickActionButton(
-                  AppLocalizations.of(context)!.tabs,
-                  isDarkMode ? 'assets/tab24w.png' : 'assets/tab24.png',
-                  onPressed: () {
-                    setState(() {
-                      isTabsVisible = true;
-                      isPanelExpanded = false;
-                    });
-                  },
-                ),
-                _buildQuickActionButton(
-                  AppLocalizations.of(context)!.bookmarks,
-                  isDarkMode ? 'assets/bookmark24w.png' : 'assets/bookmark24.png',
-                  onPressed: () {
-                    setState(() {
-                      isBookmarksVisible = true;
-                      isPanelExpanded = false;
-                    });
-                  },
-                ),
-              ],
+              ),
             ),
           ),
         ),
@@ -1494,7 +1824,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(
-                    'Dark Mode',
+                    AppLocalizations.of(context)!.dark_mode,
                     style: TextStyle(
                       color: isDarkMode ? Colors.white : Colors.black,
                     ),
@@ -1507,29 +1837,42 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                     await _savePreferences();
                   },
                 ),
-                Slider(
-                  value: textScale,
-                  min: 0.8,
-                  max: 1.4,
-                  divisions: 6,
-                  label: '${(textScale * 100).round()}%',
-                  onChanged: (value) async {
-                    setState(() {
-                      textScale = value;
-                    });
-                    await _savePreferences();
-                  },
-                ),
-                Text(
-                  'Text Size: ${(textScale * 100).round()}%',
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white70 : Colors.black54,
-                  ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(
+                        AppLocalizations.of(context)!.text_size,
+                        style: TextStyle(
+                          color: isDarkMode ? Colors.white : Colors.black,
+                        ),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Text('A', style: TextStyle(fontSize: 14)),
+                        Expanded(
+                          child: Slider(
+                            value: textScale,
+                            min: 0.8,
+                            max: 1.4,
+                            divisions: 6,
+                            label: '${((textScale - 0.8) * 100 / 0.6).round()}%',
+                            onChanged: (value) {
+                              _updateTextSize(value);
+                            },
+                          ),
+                        ),
+                        Text('A', style: TextStyle(fontSize: 24)),
+                      ],
+                    ),
+                  ],
                 ),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(
-                    'Show Images',
+                    AppLocalizations.of(context)!.show_images,
                     style: TextStyle(
                       color: isDarkMode ? Colors.white : Colors.black,
                     ),
@@ -1556,40 +1899,8 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       color: isDarkMode ? Colors.black : Colors.white,
       child: Column(
         children: [
-          Container(
-            height: 56 + MediaQuery.of(context).padding.top,
-            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-            decoration: BoxDecoration(
-              color: isDarkMode ? Colors.black : Colors.white,
-              border: Border(
-                bottom: BorderSide(
-                  color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
-                ),
-              ),
-            ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: Icon(
-                    Icons.arrow_back,
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      isDownloadsVisible = false;
-                    });
-                  },
-                ),
-                Text(
-                  AppLocalizations.of(context)!.downloads,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-                ),
-              ],
-            ),
+          _buildPanelHeader(AppLocalizations.of(context)!.downloads, 
+            onBack: () => setState(() => isDownloadsVisible = false)
           ),
           Expanded(
             child: downloads.isEmpty && !isDownloading
@@ -1605,8 +1916,12 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   itemCount: isDownloading ? downloads.length + 1 : downloads.length,
                   itemBuilder: (context, index) {
-                    // Show active download at the top
                     if (isDownloading && index == 0) {
+                      final downloadedSize = (downloadProgress * (currentDownloadSize ?? 0)).toInt();
+                      final totalSize = currentDownloadSize ?? 0;
+                      final downloadedSizeStr = _formatFileSize(downloadedSize);
+                      final totalSizeStr = _formatFileSize(totalSize);
+                      
                       return Container(
                         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                         decoration: BoxDecoration(
@@ -1627,7 +1942,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                             ),
                           ),
                           title: Text(
-                            'Downloading...',
+                            currentFileName ?? 'Downloading...',
                             style: TextStyle(
                               color: isDarkMode ? Colors.white : Colors.black,
                             ),
@@ -1651,7 +1966,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '${(downloadProgress * 100).toInt()}%',
+                                '$downloadedSizeStr / $totalSizeStr',
                                 style: TextStyle(
                                   color: isDarkMode ? Colors.white70 : Colors.black54,
                                 ),
@@ -1668,6 +1983,8 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                                 isDownloading = false;
                                 currentDownloadUrl = '';
                                 downloadProgress = 0.0;
+                                currentDownloadSize = null;
+                                currentFileName = null;
                               });
                             },
                           ),
@@ -1677,9 +1994,10 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
                     final downloadIndex = isDownloading ? index - 1 : index;
                     final download = downloads[downloadIndex];
-                    final fileName = download['fileName'];
-                    final timestamp = DateTime.parse(download['timestamp']);
-                    final size = download['size'] ?? 0;
+                    final fileName = download['fileName'] as String? ?? 'Unknown';
+                    final timestamp = DateTime.parse(download['timestamp'] as String? ?? DateTime.now().toIso8601String());
+                    final sizeStr = download['size'] as String? ?? '0';
+                    final size = int.tryParse(sizeStr) ?? 0;
                     final formattedSize = _formatFileSize(size);
                     
                     return Container(
@@ -1736,23 +2054,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                                 Icons.delete,
                                 color: isDarkMode ? Colors.white70 : Colors.black54,
                               ),
-                              onPressed: () async {
-                                final prefs = await SharedPreferences.getInstance();
-                                final downloadsList = prefs.getStringList('downloads') ?? [];
-                                downloadsList.removeAt(downloadIndex);
-                                await prefs.setStringList('downloads', downloadsList);
-                                
-                                final directory = await getApplicationDocumentsDirectory();
-                                final filePath = '${directory.path}/$fileName';
-                                final file = File(filePath);
-                                if (await file.exists()) {
-                                  await file.delete();
-                                }
-                                
-                                setState(() {
-                                  downloads.removeAt(downloadIndex);
-                                });
-                              },
+                              onPressed: () => _showDeleteDownloadDialog(downloadIndex),
                             ),
                           ],
                         ),
@@ -1764,13 +2066,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         ],
       ),
     );
-  }
-
-  String _formatFileSize(int bytes) {
-    if (bytes <= 0) return '0 B';
-    const suffixes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    var i = (log(bytes) / log(1024)).floor();
-    return '${(bytes / pow(1024, i)).toStringAsFixed(2)} ${suffixes[i]}';
   }
 
   Widget _buildBookmarksPanel() {
@@ -2178,11 +2473,15 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   Widget _buildOverlayPanel() {
     final bool isPanelVisible = isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible;
     
-    if (!isPanelVisible) {
-      return const SizedBox.shrink();
-    }
+    if (!isPanelVisible) return const SizedBox.shrink();
 
-    return Positioned.fill(
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+      top: isPanelVisible ? 0 : MediaQuery.of(context).size.height,
+      left: 0,
+      right: 0,
+      bottom: 0,
       child: GestureDetector(
         onVerticalDragUpdate: (details) {
           if (details.primaryDelta! > 10) {
@@ -2200,33 +2499,25 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: Container(
               color: isDarkMode 
-                ? Colors.black.withOpacity(0.3) 
-                : Colors.white.withOpacity(0.3),
+                ? Colors.black.withOpacity(0.95) 
+                : Colors.white.withOpacity(0.95),
               child: SafeArea(
-                child: Container(
-                  margin: EdgeInsets.only(top: 0),
-                  child: AnimatedSlide(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOutCubic,
-                    offset: isPanelVisible ? Offset.zero : const Offset(0, 1),
-                    child: AnimatedOpacity(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOutCubic,
-                      opacity: isPanelVisible ? 1.0 : 0.0,
-                      child: Container(
-                        height: MediaQuery.of(context).size.height,
-                        color: isDarkMode ? Colors.black : Colors.white,
-                        child: isTabsVisible 
-                          ? _buildTabsPanel() 
-                          : isSettingsVisible
-                            ? _buildSettingsPanel()
-                            : isBookmarksVisible
-                              ? _buildBookmarksPanel()
-                              : isDownloadsVisible
-                                ? _buildDownloadsPanel()
-                                : Container(),
-                      ),
-                    ),
+                child: AnimatedSlide(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutCubic,
+                  offset: isPanelVisible ? Offset.zero : const Offset(0, 1),
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 200),
+                    opacity: isPanelVisible ? 1.0 : 0.0,
+                    child: isTabsVisible 
+                      ? _buildTabsPanel() 
+                      : isSettingsVisible
+                        ? _buildSettingsPanel()
+                        : isBookmarksVisible
+                          ? _buildBookmarksPanel()
+                          : isDownloadsVisible
+                            ? _buildDownloadsPanel()
+                            : Container(),
                   ),
                 ),
               ),
@@ -2967,12 +3258,30 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           Map<String, dynamic>.from(json.decode(e))).toList();
       });
       
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Bookmark added')),
+      _showNotification(
+        Row(
+          children: [
+            const Icon(Icons.bookmark_added, color: Colors.green),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(AppLocalizations.of(context)!.bookmark_added),
+            ),
+          ],
+        ),
+        duration: const Duration(seconds: 4),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Already bookmarked')),
+      _showNotification(
+        Row(
+          children: [
+            const Icon(Icons.info, color: Colors.blue),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(AppLocalizations.of(context)!.bookmark_exists),
+            ),
+          ],
+        ),
+        duration: const Duration(seconds: 4),
       );
     }
   }
@@ -3098,82 +3407,93 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   Widget _buildUrlBar() {
     final screenWidth = MediaQuery.of(context).size.width;
-    final urlBarWidth = _isUrlBarIconState && !isPanelExpanded ? 56.0 : screenWidth - 32;
+    final urlBarWidth = _isUrlBarIconState ? 48.0 : screenWidth - 32;
     
-    if (_isFullscreen) return const SizedBox.shrink();
-    
-    // Force expanded state when any panel is open
-    if (isPanelExpanded || isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible) {
-      _isUrlBarIconState = false;
-      _urlBarOffset = Offset.zero;
-      _urlBarIdleTimer?.cancel();
-    }
-    
-    return AnimatedPositioned(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-      left: _isUrlBarIconState ? 32.0 : (screenWidth - urlBarWidth) / 2, // Fixed left position for icon state
-      bottom: MediaQuery.of(context).padding.bottom + 8,
-      child: Stack(
-        children: [
-          GestureDetector(
-            onTap: () {
+    return Positioned(
+      left: _isUrlBarIconState ? 16.0 : (screenWidth - urlBarWidth) / 2,
+      bottom: 16.0,
+      child: GestureDetector(
+        onPanUpdate: _isUrlBarIconState ? (details) {
+          // Only allow horizontal movement in icon state
+          if (!isPanelExpanded) {
+            final delta = details.delta;
+            // Only handle horizontal movement if it's greater than vertical
+            if (delta.dx.abs() > delta.dy.abs()) {
               setState(() {
-                _isUrlBarIconState = false;
-                _urlBarOffset = Offset.zero;
-                _urlFocusNode.requestFocus();
+                _urlBarOffset = Offset(
+                  (_urlBarOffset.dx + delta.dx).clamp(16.0, screenWidth - 64.0),
+                  _urlBarOffset.dy
+                );
               });
-            },
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(_isUrlBarIconState ? 24 : 28),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  width: urlBarWidth,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(_isUrlBarIconState ? 24 : 28),
-                    color: isDarkMode 
-                      ? Colors.black.withOpacity(0.3) 
-                      : Colors.white.withOpacity(0.3),
+            }
+          }
+        } : null,  // Disable movement when extended
+        onTap: () {
+          if (_isUrlBarIconState && !isPanelExpanded) {
+            // First click: Expand the URL bar
+            setState(() {
+              _isUrlBarIconState = false;
+              isPanelExpanded = true;
+              _urlBarOffset = Offset.zero;
+            });
+          } else if (!_isUrlBarIconState && isPanelExpanded) {
+            // Second click: Enter edit mode
+            _urlFocusNode.requestFocus();
+          }
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Panel content with animation
+            if (isPanelExpanded) ...[
+              AnimatedSlide(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
+                offset: Offset(0, isPanelExpanded ? 0 : -1),
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 200),
+                  opacity: isPanelExpanded ? 1.0 : 0.0,
+                  child: Column(
+                    children: [
+                      _buildQuickActionsPanel(),
+                      const SizedBox(height: 8),
+                      _buildNavigationPanel(),
+                    ],
                   ),
-                  child: _isUrlBarIconState
-                    ? _buildUrlBarIconState()
-                    : _buildUrlBarExpandedState(),
                 ),
               ),
-            ),
-          ),
-          if (isLoading)
-            Positioned.fill(
-              child: AnimatedBuilder(
-                animation: _loadingAnimation,
-                builder: (context, child) {
-                  return CustomPaint(
-                    painter: LoadingBorderPainter(
-                      progress: _loadingAnimation.value,
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
-                    ),
-                  );
-                },
+            ],
+            // URL bar
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeOutCubic,
+              width: urlBarWidth,
+              height: 48.0,
+              decoration: BoxDecoration(
+                color: isDarkMode ? Colors.grey[900] : Colors.white,
+                borderRadius: BorderRadius.circular(24.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
+              child: _isUrlBarIconState ? _buildUrlBarIconState() : _buildUrlBarExpandedState(),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildUrlBarIconState() {
     return Center(
-      child: Container(
-        width: 48,
-        height: 48,
-        child: Icon(
-          Icons.search_rounded,
-          size: 24,
-          color: isDarkMode ? Colors.white70 : Colors.black54,
-        ),
+      child: Icon(
+        Icons.search,
+        size: 24,
+        color: isDarkMode ? Colors.white70 : Colors.black54,
       ),
     );
   }
@@ -3186,6 +3506,9 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           isSecure ? Icons.shield : Icons.shield_outlined,
           size: 20,
           color: isDarkMode ? Colors.white70 : Colors.black54,
+          semanticLabel: isSecure ? 
+            AppLocalizations.of(context)!.secure_connection : 
+            AppLocalizations.of(context)!.insecure_connection,
         ),
         Expanded(
           child: TextField(
@@ -3198,7 +3521,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             ),
             decoration: InputDecoration(
               border: InputBorder.none,
-              hintText: 'Search or enter address',
+              hintText: AppLocalizations.of(context)!.search_or_type_url,
               hintStyle: TextStyle(
                 color: isDarkMode ? Colors.white38 : Colors.black38,
               ),
@@ -3230,6 +3553,9 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             size: 20,
             color: isDarkMode ? Colors.white70 : Colors.black54,
           ),
+          tooltip: _urlFocusNode.hasFocus ? 
+            AppLocalizations.of(context)!.close_search : 
+            AppLocalizations.of(context)!.refresh_page,
           onPressed: () {
             if (_urlFocusNode.hasFocus) {
               _urlFocusNode.unfocus();
@@ -3255,156 +3581,222 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     final bottomPadding = padding.bottom;
     final bottomSafeArea = MediaQuery.of(context).viewPadding.bottom;
     final screenWidth = MediaQuery.of(context).size.width;
-    final urlBarWidth = _isUrlBarIconState && !isPanelExpanded ? 56.0 : screenWidth - 32;
+    final urlBarWidth = _isUrlBarIconState ? 48.0 : screenWidth - 32;
 
-    return Scaffold(
-      backgroundColor: isDarkMode ? Colors.black : Colors.white,
-      body: Stack(
-        children: [
-          // WebView
-          Positioned(
-            top: padding.top + 8,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: WebViewWidget(controller: controller),
-          ),
-          
-          // Loading indicator
-          if (isLoading)
-            Positioned(
-              top: padding.top,
-              left: 0,
-              right: 0,
-              child: const LinearProgressIndicator(),
-            ),
-
-          // Panels (Settings, Tabs, etc)
-          if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible)
-            Container(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
-              color: isDarkMode ? Colors.black : Colors.white,
-              child: isTabsVisible 
-                ? _buildTabsPanel() 
-                : isSettingsVisible
-                  ? _buildSettingsPanel()
-                  : isBookmarksVisible
-                    ? _buildBookmarksPanel()
-                    : isDownloadsVisible
-                      ? _buildDownloadsPanel()
-                      : Container(),
-            ),
-
-          // URL bar and controls
-          if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
-            Positioned(
-              left: _isDraggingUrlBar 
-                ? _urlBarOffset.dx.clamp(0.0, screenWidth - urlBarWidth - 32)
-                : _isUrlBarIconState 
-                  ? _urlBarOffset.dx.clamp(0.0, screenWidth - urlBarWidth - 32)
-                  : (screenWidth - urlBarWidth) / 2,
-              bottom: bottomPadding + 8 + bottomSafeArea,
-              child: GestureDetector(
-                onPanStart: (details) {
-                  setState(() {
-                    _isDraggingUrlBar = true;
-                    dragStartX = details.localPosition.dx;
-                  });
-                },
-                onPanUpdate: (details) {
-                  if (_isDraggingUrlBar) {
-                    final delta = details.delta;
-                    
-                    // Handle vertical drag for panel expansion
-                    if (delta.dy.abs() > delta.dx.abs() && delta.dy.abs() > 5) {
-                      if (delta.dy < 0 && !isPanelExpanded) {
-                        setState(() {
-                          isPanelExpanded = true;
-                        });
-                      } else if (delta.dy > 0 && isPanelExpanded) {
-                        setState(() {
-                          isPanelExpanded = false;
-                        });
-                      }
-                      return;
-                    }
-                    
-                    // Handle horizontal drag for navigation
-                    if (delta.dx.abs() > 30) {
-                      final horizontalDelta = details.localPosition.dx - dragStartX;
-                      if ((horizontalDelta < 0 && canGoBack) || (horizontalDelta > 0 && canGoForward)) {
-                        horizontalDelta < 0 ? controller.goBack() : controller.goForward();
-                        dragStartX = details.localPosition.dx;
-                      }
-                      return;
-                    }
-                    
-                    // Handle URL bar movement when in icon state
-                    if (_isUrlBarIconState) {
-                      setState(() {
-                        _urlBarOffset += delta;
-                        _urlBarOffset = Offset(
-                          _urlBarOffset.dx.clamp(0.0, screenWidth - urlBarWidth - 32),
-                          _urlBarOffset.dy
-                        );
-                      });
-                    }
-                  }
-                },
-                onPanEnd: (_) {
-                  setState(() {
-                    _isDraggingUrlBar = false;
-                    if (!_isUrlBarIconState) {
-                      _urlBarOffset = Offset.zero;
-                    } else {
-                      _saveUrlBarPosition();
-                    }
-                  });
-                },
-                onTap: () {
-                  setState(() {
-                    _isUrlBarIconState = false;
-                    _urlBarOffset = Offset.zero;
-                    _urlFocusNode.requestFocus();
-                    _saveUrlBarPosition();
-                  });
-                },
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (isPanelExpanded) ...[
-                      _buildQuickActionsPanel(),
-                      const SizedBox(height: 8),
-                      _buildNavigationPanel(),
-                    ] else if (isSearchMode)
-                      _buildSearchPanel()
-                    else
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(_isUrlBarIconState ? 24 : 28),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            width: urlBarWidth,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(_isUrlBarIconState ? 24 : 28),
-                              color: isDarkMode 
-                                ? Colors.black.withOpacity(0.3) 
-                                : Colors.white.withOpacity(0.3),
-                            ),
-                            child: _isUrlBarIconState 
-                              ? _buildUrlBarIconState()
-                              : _buildUrlBarExpandedState(),
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+    return WillPopScope(
+      onWillPop: () async {
+        if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible) {
+          setState(() {
+            isTabsVisible = false;
+            isSettingsVisible = false;
+            isBookmarksVisible = false;
+            isDownloadsVisible = false;
+          });
+          return false;
+        }
+        
+        if (await controller.canGoBack()) {
+          await controller.goBack();
+          return false;
+        }
+        
+        // Show exit confirmation if on the last page
+        final shouldExit = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            title: Text(
+              AppLocalizations.of(context)!.exit_app,
+              style: TextStyle(
+                color: isDarkMode ? Colors.white : Colors.black,
               ),
             ),
-        ],
+            content: Text(
+              AppLocalizations.of(context)!.exit_app_confirm,
+              style: TextStyle(
+                color: isDarkMode ? Colors.white70 : Colors.black87,
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(
+                  AppLocalizations.of(context)!.cancel,
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white70 : Colors.black54,
+                  ),
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(
+                  AppLocalizations.of(context)!.exit,
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ) ?? false;
+        
+        return shouldExit;
+      },
+      child: Scaffold(
+        backgroundColor: isDarkMode ? Colors.black : Colors.white,
+        body: Stack(
+          children: [
+            // WebView
+            Positioned(
+              top: padding.top + 8,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: WebViewWidget(controller: controller),
+            ),
+            
+            // Loading indicator
+            if (isLoading)
+              Positioned(
+                top: padding.top,
+                left: 0,
+                right: 0,
+                child: const LinearProgressIndicator(),
+              ),
+
+            // Panels (Settings, Tabs, etc)
+            if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible)
+              Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                color: isDarkMode ? Colors.black : Colors.white,
+                child: isTabsVisible 
+                  ? _buildTabsPanel() 
+                  : isSettingsVisible
+                    ? _buildSettingsPanel()
+                    : isBookmarksVisible
+                      ? _buildBookmarksPanel()
+                      : isDownloadsVisible
+                        ? _buildDownloadsPanel()
+                        : Container(),
+              ),
+
+            // URL bar and controls
+            if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
+              Positioned(
+                left: _isDraggingUrlBar 
+                  ? _urlBarOffset.dx.clamp(0.0, screenWidth - urlBarWidth - 32)
+                  : _isUrlBarIconState 
+                  ? _urlBarOffset.dx.clamp(0.0, screenWidth - urlBarWidth - 32)
+                  : (screenWidth - urlBarWidth) / 2,
+                bottom: bottomPadding + 8 + bottomSafeArea,
+                child: GestureDetector(
+                  onPanStart: (details) {
+                    setState(() {
+                      _isDraggingUrlBar = true;
+                      dragStartX = details.localPosition.dx;
+                    });
+                  },
+                  onPanUpdate: (details) {
+                    if (_isDraggingUrlBar) {
+                      final delta = details.delta;
+                      
+                      // Only handle vertical drag for panel expansion when NOT in icon state
+                      if (!_isUrlBarIconState && delta.dy.abs() > delta.dx.abs() && delta.dy.abs() > 5) {
+                        if (delta.dy < 0 && !isPanelExpanded) {
+                          setState(() {
+                            isPanelExpanded = true;
+                          });
+                        } else if (delta.dy > 0 && isPanelExpanded) {
+                          setState(() {
+                            isPanelExpanded = false;
+                          });
+                        }
+                        return;
+                      }
+                      
+                      // Handle horizontal drag for navigation
+                      if (delta.dx.abs() > 30) {
+                        final horizontalDelta = details.localPosition.dx - dragStartX;
+                        if ((horizontalDelta < 0 && canGoBack) || (horizontalDelta > 0 && canGoForward)) {
+                          horizontalDelta < 0 ? controller.goBack() : controller.goForward();
+                          dragStartX = details.localPosition.dx;
+                        }
+                        return;
+                      }
+                      
+                      // Handle URL bar movement when in icon state
+                      if (_isUrlBarIconState) {
+                        setState(() {
+                          _urlBarOffset += delta;
+                          _urlBarOffset = Offset(
+                            _urlBarOffset.dx.clamp(0.0, screenWidth - urlBarWidth - 32),
+                            _urlBarOffset.dy
+                          );
+                        });
+                      }
+                    }
+                  },
+                  onPanEnd: (_) {
+                    setState(() {
+                      _isDraggingUrlBar = false;
+                      if (!_isUrlBarIconState) {
+                        _urlBarOffset = Offset.zero;
+                      } else {
+                        _saveUrlBarPosition();
+                      }
+                    });
+                  },
+                  onTap: () {
+                    if (_isUrlBarIconState) {
+                      // First click: Expand the URL bar
+                      setState(() {
+                        _isUrlBarIconState = false;
+                        _urlBarOffset = Offset.zero;
+                        isPanelExpanded = true;
+                      });
+                    } else {
+                      // Second click: Enter edit mode
+                      _urlFocusNode.requestFocus();
+                    }
+                  },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (isPanelExpanded) ...[
+                        _buildQuickActionsPanel(),
+                        const SizedBox(height: 8),
+                        _buildNavigationPanel(),
+                      ] else if (isSearchMode)
+                        _buildSearchPanel()
+                      else
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(_isUrlBarIconState ? 24 : 28),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                            child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          width: urlBarWidth,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(_isUrlBarIconState ? 24 : 28),
+                            color: isDarkMode 
+                                  ? Colors.black.withOpacity(0.3) 
+                                  : Colors.white.withOpacity(0.3),
+                              ),
+                              child: _isUrlBarIconState
+                                ? _buildUrlBarIconState()
+                                : _buildUrlBarExpandedState(),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -3481,6 +3873,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         });
         await _updateNavigationState();
         await _optimizationEngine.onPageFinishLoad(url);
+        await _updateFavicon(url);
       },
       onWebResourceError: (WebResourceError error) {
         if (!mounted) return;
@@ -3493,7 +3886,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   void _startUrlBarIdleTimer() {
     _urlBarIdleTimer?.cancel();
-    _urlBarIdleTimer = Timer(const Duration(seconds: 10), () {
+    _urlBarIdleTimer = Timer(const Duration(seconds: 3), () {
       if (mounted && 
           !_urlFocusNode.hasFocus && 
           !isPanelExpanded && 
@@ -3504,15 +3897,18 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           !isSearchMode) {
         setState(() {
           _isUrlBarIconState = true;
-          _saveUrlBarPosition();
+          _urlBarOffset = Offset(16.0, _urlBarOffset.dy);
         });
       }
     });
   }
 
   void _updateUrlBarState() {
-    if (!_urlFocusNode.hasFocus) {
-      _startUrlBarIdleTimer();
+    if (!_urlFocusNode.hasFocus && !isPanelExpanded) {
+      setState(() {
+        _isUrlBarIconState = true;
+        _urlBarOffset = Offset(16.0, _urlBarOffset.dy);  // Ensure left padding
+      });
     }
   }
 
@@ -3554,6 +3950,12 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     }
   }
 
+  Future<String> _getDownloadLocation() async {
+    final prefs = await SharedPreferences.getInstance();
+    final directory = await getApplicationDocumentsDirectory();
+    return prefs.getString('downloadLocation') ?? directory.path;
+  }
+
   Future<void> _handleDownload(String url) async {
     HttpClient? client;
     IOSink? sink;
@@ -3573,51 +3975,12 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         }
       }
 
-      // Show download started notification with cancel button
-      _showNotification(
-        Row(
-          children: [
-            const CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Starting download...'),
-                  Text(
-                    fileName,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-        duration: const Duration(seconds: 2),
-        action: SnackBarAction(
-          label: 'CANCEL',
-          onPressed: () {
-            client?.close(force: true);
-            sink?.close();
-            setState(() {
-              isDownloading = false;
-              currentDownloadUrl = '';
-              downloadProgress = 0.0;
-            });
-          },
-        ),
-      );
-
       setState(() {
         isDownloading = true;
         currentDownloadUrl = url;
         downloadProgress = 0.0;
+        currentDownloadSize = contentLength;
+        currentFileName = fileName;
       });
 
       final directory = await getApplicationDocumentsDirectory();
@@ -3627,18 +3990,19 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       
       int received = 0;
       await for (final chunk in response) {
-        if (!isDownloading) break; // Check if download was cancelled
+        if (!isDownloading) break;
         sink.add(chunk);
         received += chunk.length;
-        setState(() {
-          downloadProgress = contentLength > 0 ? received / contentLength : 0;
-        });
+        if (contentLength > 0) {  // Only update progress if we know the total size
+          setState(() {
+            downloadProgress = received / contentLength;
+          });
+        }
       }
       
       await sink.close();
       
       if (!isDownloading) {
-        // Download was cancelled, delete partial file
         if (await file.exists()) {
           await file.delete();
         }
@@ -3649,21 +4013,23 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         'fileName': fileName,
         'url': url,
         'timestamp': DateTime.now().toIso8601String(),
-        'size': contentLength,
+        'size': contentLength?.toString() ?? '0',  // Ensure size is stored as string
       };
-      
+
       final prefs = await SharedPreferences.getInstance();
       final downloadsList = prefs.getStringList('downloads') ?? [];
       downloadsList.insert(0, json.encode(download));
       await prefs.setStringList('downloads', downloadsList);
-      
+
       setState(() {
         downloads = downloadsList.map((e) => Map<String, dynamic>.from(json.decode(e))).toList();
         isDownloading = false;
         currentDownloadUrl = '';
         downloadProgress = 0.0;
+        currentDownloadSize = null;
+        currentFileName = null;
       });
-      
+
       // Show download complete notification
       _showNotification(
         Row(
@@ -3671,33 +4037,38 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             const Icon(Icons.check_circle, color: Colors.green),
             const SizedBox(width: 16),
             Expanded(
-              child: Text('Download complete: $fileName'),
+              child: Text(AppLocalizations.of(context)!.download_completed + ': $fileName'),
             ),
           ],
         ),
         duration: const Duration(seconds: 4),
         action: SnackBarAction(
-          label: 'OPEN',
+          label: AppLocalizations.of(context)!.open,
           onPressed: () async {
             await OpenFile.open(filePath);
           },
         ),
       );
     } catch (e) {
+      print('Download error: $e');
       client?.close();
       await sink?.close();
       setState(() {
         isDownloading = false;
         currentDownloadUrl = '';
         downloadProgress = 0.0;
+        currentDownloadSize = null;
+        currentFileName = null;
       });
+
+      // Show error notification
       _showNotification(
         Row(
           children: [
             const Icon(Icons.error, color: Colors.red),
             const SizedBox(width: 16),
             Expanded(
-              child: Text('Download failed: ${e.toString()}'),
+              child: Text(AppLocalizations.of(context)!.download_failed + ': ${e.toString()}'),
             ),
           ],
         ),
@@ -3748,7 +4119,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             child: Container(
               margin: const EdgeInsets.symmetric(vertical: 8),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
+            decoration: BoxDecoration(
                 color: isDarkMode ? Colors.grey[900] : Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
@@ -3793,6 +4164,384 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         overlayEntry.remove();
       }
     });
+  }
+
+  void _showClearDownloadsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDarkMode ? Colors.black : Colors.white,
+        title: Text(
+          AppLocalizations.of(context)!.clear_downloads_history_title,
+          style: TextStyle(
+            color: isDarkMode ? Colors.white : Colors.black,
+          ),
+        ),
+        content: Text(
+          AppLocalizations.of(context)!.clear_downloads_history_confirm,
+          style: TextStyle(
+            color: isDarkMode ? Colors.white70 : Colors.black87,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              AppLocalizations.of(context)!.cancel,
+              style: TextStyle(
+                color: isDarkMode ? Colors.white70 : Colors.black54,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.remove('downloads');
+              setState(() {
+                downloads.clear();
+              });
+              Navigator.pop(context);
+              _showNotification(
+                Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: Colors.green),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(AppLocalizations.of(context)!.downloads_history_cleared),
+                    ),
+                  ],
+                ),
+                duration: const Duration(seconds: 4),
+              );
+            },
+            child: Text(
+              AppLocalizations.of(context)!.clear,
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteDownloadDialog(int index) {
+    final download = downloads[index];
+    final fileName = download['fileName'];
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDarkMode ? Colors.black : Colors.white,
+        title: Text(
+          AppLocalizations.of(context)!.delete_download,
+          style: TextStyle(
+            color: isDarkMode ? Colors.white : Colors.black,
+          ),
+        ),
+        content: Text(
+          AppLocalizations.of(context)!.delete_download_confirm(fileName),
+          style: TextStyle(
+            color: isDarkMode ? Colors.white70 : Colors.black87,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              AppLocalizations.of(context)!.cancel,
+              style: TextStyle(
+                color: isDarkMode ? Colors.white70 : Colors.black54,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              final downloadsList = prefs.getStringList('downloads') ?? [];
+              downloadsList.removeAt(index);
+              await prefs.setStringList('downloads', downloadsList);
+              setState(() {
+                downloads.removeAt(index);
+              });
+              Navigator.pop(context);
+              _showNotification(
+                Row(
+                  children: [
+                    const Icon(Icons.check_circle, color: Colors.green),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(AppLocalizations.of(context)!.download_removed),
+                    ),
+                  ],
+                ),
+                duration: const Duration(seconds: 4),
+              );
+            },
+            child: Text(
+              AppLocalizations.of(context)!.delete,
+              style: TextStyle(
+                color: Colors.red,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Update text size functionality
+  void _updateTextSize(double scale) async {
+    setState(() {
+      textScale = scale;
+    });
+    
+    // Update text size for the WebView content
+    await controller.runJavaScript('''
+      document.documentElement.style.fontSize = '${(16 * scale).round()}px';
+      document.body.style.fontSize = '${(16 * scale).round()}px';
+      
+      // Update all text elements
+      const elements = document.querySelectorAll('p, span, div, h1, h2, h3, h4, h5, h6, a, li, td, th, input, button, textarea');
+      elements.forEach(el => {
+        const computedStyle = window.getComputedStyle(el);
+        const currentSize = parseFloat(computedStyle.fontSize);
+        el.style.fontSize = (currentSize * $scale) + 'px';
+      });
+    ''');
+
+    // Save the text size preference
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('textScale', scale);
+  }
+
+  Future<void> _showDownloadLocationPicker() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final prefs = await SharedPreferences.getInstance();
+    String currentPath = prefs.getString('downloadLocation') ?? directory.path;
+
+    // Request storage permission
+    final status = await Permission.storage.request();
+    if (!status.isGranted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.permission_denied)),
+      );
+      return;
+    }
+
+    try {
+      // Use FilePicker to select directory
+      String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+      
+      if (selectedDirectory != null) {
+        await prefs.setString('downloadLocation', selectedDirectory);
+        setState(() {});
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(AppLocalizations.of(context)!.download_location_changed)),
+        );
+      }
+    } catch (e) {
+      print('Error picking directory: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context)!.error_changing_location)),
+      );
+    }
+  }
+
+  // Update the URL bar position handling
+  void _updateUrlBarPosition(Offset position) {
+    if (_isUrlBarIconState && !isPanelExpanded) {
+      // Only allow horizontal movement in icon state and when panel is not expanded
+      setState(() {
+        _urlBarOffset = Offset(
+          position.dx.clamp(16.0, MediaQuery.of(context).size.width - 64.0),
+          _urlBarOffset.dy
+        );
+      });
+    }
+  }
+
+  ImageProvider _getFaviconImage() {
+    if (tabs.isNotEmpty && tabs[currentTabIndex].favicon != null) {
+      return NetworkImage(tabs[currentTabIndex].favicon!);
+    } else if (_currentFaviconUrl != null && _currentFaviconUrl!.isNotEmpty) {
+      return NetworkImage(_currentFaviconUrl!);
+    }
+    return const AssetImage('assets/icons/globe.png');
+  }
+
+  // Slide panel state
+  late AnimationController _slideUpController;
+  bool _isSlideUpPanelVisible = false;
+  double _slideUpPanelOffset = 0.0;
+  double _slideUpPanelOpacity = 0.0;
+
+  bool get isSlideUpPanelVisible => _isSlideUpPanelVisible;
+
+  void _handleSlideUpPanelVisibility(bool value) {
+    if (mounted) {
+      setState(() {
+        _isSlideUpPanelVisible = value;
+        if (value) {
+          _slideUpPanelOffset = 0.0;
+          _slideUpPanelOpacity = 0.0;
+          _slideUpController.forward();
+        } else {
+          _slideUpController.reverse();
+        }
+      });
+    }
+  }
+
+  void _updateSlideUpPanelOffset(double value) {
+    if (mounted) {
+      setState(() {
+        _slideUpPanelOffset = value;
+      });
+    }
+  }
+
+  void _updateSlideUpPanelOpacity(double value) {
+    if (mounted) {
+      setState(() {
+        _slideUpPanelOpacity = value;
+      });
+    }
+  }
+
+  void _toggleSlideUpPanel(bool show) {
+    if (mounted) {
+      setState(() {
+        _isSlideUpPanelVisible = show;
+        if (show) {
+          _slideUpController.forward();
+        } else {
+          _slideUpController.reverse();
+        }
+      });
+    }
+  }
+
+  // Update the onTap handler in the URL bar
+  void _handleUrlBarTap() {
+    if (_isUrlBarIconState && !isPanelExpanded) {
+      // First click: Expand the URL bar
+      setState(() {
+        _isUrlBarIconState = false;
+        isPanelExpanded = true;
+        _urlBarOffset = Offset.zero;
+      });
+    } else if (!_isUrlBarIconState && isPanelExpanded) {
+      // Second click: Enter edit mode
+      _urlFocusNode.requestFocus();
+    }
+  }
+
+  // Update favicon when page changes
+  Future<void> _updateFavicon(String url) async {
+    try {
+      final faviconUrl = await BrowserUtils.getFaviconUrl(url);
+      if (mounted) {
+        setState(() {
+          _currentFaviconUrl = faviconUrl;
+          if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+            tabs[currentTabIndex].favicon = faviconUrl;
+          }
+        });
+      }
+    } catch (e) {
+      print('Error updating favicon: $e');
+    }
+  }
+
+  Widget _buildNavigationPanel() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final panelWidth = screenWidth - 32;
+
+    return AnimatedSlide(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+      offset: Offset(0, isPanelExpanded ? 0 : -1),
+      child: AnimatedOpacity(
+        duration: const Duration(milliseconds: 200),
+        opacity: isPanelExpanded ? 1.0 : 0.0,
+        child: Container(
+          width: panelWidth,
+          height: 50,
+          margin: const EdgeInsets.only(bottom: 8),
+          alignment: Alignment.center,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              child: Container(
+                width: panelWidth,
+                decoration: _getGlassmorphicDecoration(),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                      icon: Image.asset(
+                        _getAssetPath('assets/back24.png'),
+                        width: 24,
+                        height: 24,
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                      onPressed: canGoBack ? () => controller.goBack() : null,
+                    ),
+                    IconButton(
+                      icon: Image.asset(
+                        _getAssetPath('assets/search24.png'),
+                        width: 24,
+                        height: 24,
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          isSearchMode = true;
+                          isPanelExpanded = false;
+                        });
+                      },
+                    ),
+                    IconButton(
+                      icon: Image.asset(
+                        _getAssetPath('assets/bookmark24.png'),
+                        width: 24,
+                        height: 24,
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                      onPressed: _addBookmark,
+                    ),
+                    IconButton(
+                      icon: Image.asset(
+                        _getAssetPath('assets/share24.png'),
+                        width: 24,
+                        height: 24,
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                      onPressed: _shareUrl,
+                    ),
+                    IconButton(
+                      icon: Image.asset(
+                        _getAssetPath('assets/forward24.png'),
+                        width: 24,
+                        height: 24,
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                      onPressed: canGoForward ? () => controller.goForward() : null,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 

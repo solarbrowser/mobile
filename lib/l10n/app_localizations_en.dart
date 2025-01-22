@@ -112,4 +112,289 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get search_in_page => 'Search in page';
+
+  @override
+  String get app_name => 'Solar Browser';
+
+  @override
+  String get search_or_enter_address => 'Search or enter address';
+
+  @override
+  String get current_location => 'Current Location';
+
+  @override
+  String get change_location => 'Change Location';
+
+  @override
+  String get clear_browser_data => 'Clear Browser Data';
+
+  @override
+  String get browsing_history => 'Browsing History';
+
+  @override
+  String get cookies => 'Cookies';
+
+  @override
+  String get cache => 'Cache';
+
+  @override
+  String get form_data => 'Form Data';
+
+  @override
+  String get saved_passwords => 'Saved Passwords';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get clear => 'Clear';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get browser_data_cleared => 'Browser data cleared';
+
+  @override
+  String get no_downloads => 'No downloads yet';
+
+  @override
+  String get no_bookmarks => 'No bookmarks yet';
+
+  @override
+  String get download_started => 'Download started';
+
+  @override
+  String get download_completed => 'Download completed';
+
+  @override
+  String get download_failed => 'Download failed';
+
+  @override
+  String get open => 'Open';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get delete_download => 'Delete Download';
+
+  @override
+  String get delete_bookmark => 'Delete Bookmark';
+
+  @override
+  String get add_bookmark => 'Add Bookmark';
+
+  @override
+  String get bookmark_added => 'Bookmark added';
+
+  @override
+  String get bookmark_exists => 'Already bookmarked';
+
+  @override
+  String get share => 'Share';
+
+  @override
+  String get copy_link => 'Copy Link';
+
+  @override
+  String get paste_and_go => 'Paste and Go';
+
+  @override
+  String get find_in_page => 'Find in Page';
+
+  @override
+  String get desktop_site => 'Desktop Site';
+
+  @override
+  String get new_tab => 'New Tab';
+
+  @override
+  String get close_tab => 'Close Tab';
+
+  @override
+  String get tab_overview => 'Tab Overview';
+
+  @override
+  String get home => 'Home';
+
+  @override
+  String get reload => 'Reload';
+
+  @override
+  String get stop => 'Stop';
+
+  @override
+  String get forward => 'Forward';
+
+  @override
+  String get more => 'More';
+
+  @override
+  String get reset_browser => 'Reset Browser';
+
+  @override
+  String get reset_browser_confirm => 'This will clear all your data including history, bookmarks, and settings. This action cannot be undone.';
+
+  @override
+  String get reset => 'Reset';
+
+  @override
+  String get reset_complete => 'Browser has been reset';
+
+  @override
+  String get permission_denied => 'Storage permission denied';
+
+  @override
+  String get download_location_changed => 'Download location changed successfully';
+
+  @override
+  String get error_changing_location => 'Error changing download location';
+
+  @override
+  String get enable_cookies => 'Enable Cookies';
+
+  @override
+  String get enable_javascript => 'Enable JavaScript';
+
+  @override
+  String get hardware_acceleration => 'Hardware Acceleration';
+
+  @override
+  String get save_form_data => 'Save Form Data';
+
+  @override
+  String get do_not_track => 'Do Not Track';
+
+  @override
+  String get download_location_description => 'Choose where to save your downloaded files';
+
+  @override
+  String get text_size_description => 'Adjust the size of text on web pages';
+
+  @override
+  String get text_size_small => 'Small';
+
+  @override
+  String get text_size_medium => 'Medium';
+
+  @override
+  String get text_size_large => 'Large';
+
+  @override
+  String get text_size_very_large => 'Very Large';
+
+  @override
+  String get cookies_description => 'Allow websites to save and read cookie data';
+
+  @override
+  String get javascript_description => 'Enable JavaScript for better website functionality';
+
+  @override
+  String get hardware_acceleration_description => 'Use GPU for better performance';
+
+  @override
+  String get form_data_description => 'Save information entered in forms';
+
+  @override
+  String get do_not_track_description => 'Request websites not to track your activity';
+
+  @override
+  String get exit_app => 'Exit App';
+
+  @override
+  String get exit_app_confirm => 'Are you sure you want to exit?';
+
+  @override
+  String get exit => 'Exit';
+
+  @override
+  String get size => 'Size';
+
+  @override
+  String get auto_open_downloads => 'Auto-open downloads';
+
+  @override
+  String get clear_downloads_history => 'Clear downloads history';
+
+  @override
+  String get downloads_history_cleared => 'Downloads history cleared';
+
+  @override
+  String delete_download_confirm(String fileName) {
+    return 'Do you want to delete $fileName from downloads history?\nThe downloaded file will not be deleted.';
+  }
+
+  @override
+  String get download_removed => 'Download removed from history';
+
+  @override
+  String download_size(String size) {
+    return 'Size: $size';
+  }
+
+  @override
+  String get clear_downloads_history_confirm => 'This will only clear the downloads history, not the downloaded files.';
+
+  @override
+  String get clear_downloads_history_title => 'Clear Downloads History';
+
+  @override
+  String get slide_up_panel => 'Slide up panel';
+
+  @override
+  String get slide_down_panel => 'Slide down panel';
+
+  @override
+  String get move_url_bar => 'Move URL bar';
+
+  @override
+  String get url_bar_icon => 'URL bar icon';
+
+  @override
+  String get url_bar_expanded => 'URL bar expanded';
+
+  @override
+  String get search_or_type_url => 'Search or type URL';
+
+  @override
+  String get secure_connection => 'Secure connection';
+
+  @override
+  String get insecure_connection => 'Insecure connection';
+
+  @override
+  String get refresh_page => 'Refresh page';
+
+  @override
+  String get close_search => 'Close search';
+
+  @override
+  String get allow_popups => 'Pop-ups';
+
+  @override
+  String get allow_popups_description => 'Allow pop-up windows';
+
+  @override
+  String get popups_blocked => 'Pop-up blocked';
+
+  @override
+  String get allow_once => 'Allow once';
+
+  @override
+  String get allow_always => 'Allow always';
+
+  @override
+  String get block => 'Block';
+
+  @override
+  String get blocked_popups => 'Blocked pop-ups';
+
+  @override
+  String get no_blocked_popups => 'No blocked pop-ups';
+
+  @override
+  String allow_popups_from(String domain) {
+    return 'Allow pop-ups from $domain';
+  }
 }

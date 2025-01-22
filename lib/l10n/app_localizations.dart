@@ -324,6 +324,564 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search in page'**
   String get search_in_page;
+
+  /// No description provided for @app_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Solar Browser'**
+  String get app_name;
+
+  /// No description provided for @search_or_enter_address.
+  ///
+  /// In en, this message translates to:
+  /// **'Search or enter address'**
+  String get search_or_enter_address;
+
+  /// No description provided for @current_location.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Location'**
+  String get current_location;
+
+  /// No description provided for @change_location.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Location'**
+  String get change_location;
+
+  /// No description provided for @clear_browser_data.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Browser Data'**
+  String get clear_browser_data;
+
+  /// No description provided for @browsing_history.
+  ///
+  /// In en, this message translates to:
+  /// **'Browsing History'**
+  String get browsing_history;
+
+  /// No description provided for @cookies.
+  ///
+  /// In en, this message translates to:
+  /// **'Cookies'**
+  String get cookies;
+
+  /// No description provided for @cache.
+  ///
+  /// In en, this message translates to:
+  /// **'Cache'**
+  String get cache;
+
+  /// No description provided for @form_data.
+  ///
+  /// In en, this message translates to:
+  /// **'Form Data'**
+  String get form_data;
+
+  /// No description provided for @saved_passwords.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved Passwords'**
+  String get saved_passwords;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clear;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @browser_data_cleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Browser data cleared'**
+  String get browser_data_cleared;
+
+  /// No description provided for @no_downloads.
+  ///
+  /// In en, this message translates to:
+  /// **'No downloads yet'**
+  String get no_downloads;
+
+  /// No description provided for @no_bookmarks.
+  ///
+  /// In en, this message translates to:
+  /// **'No bookmarks yet'**
+  String get no_bookmarks;
+
+  /// No description provided for @download_started.
+  ///
+  /// In en, this message translates to:
+  /// **'Download started'**
+  String get download_started;
+
+  /// No description provided for @download_completed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download completed'**
+  String get download_completed;
+
+  /// No description provided for @download_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download failed'**
+  String get download_failed;
+
+  /// No description provided for @open.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get open;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @delete_download.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Download'**
+  String get delete_download;
+
+  /// No description provided for @delete_bookmark.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Bookmark'**
+  String get delete_bookmark;
+
+  /// No description provided for @add_bookmark.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Bookmark'**
+  String get add_bookmark;
+
+  /// No description provided for @bookmark_added.
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmark added'**
+  String get bookmark_added;
+
+  /// No description provided for @bookmark_exists.
+  ///
+  /// In en, this message translates to:
+  /// **'Already bookmarked'**
+  String get bookmark_exists;
+
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get share;
+
+  /// No description provided for @copy_link.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Link'**
+  String get copy_link;
+
+  /// No description provided for @paste_and_go.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste and Go'**
+  String get paste_and_go;
+
+  /// No description provided for @find_in_page.
+  ///
+  /// In en, this message translates to:
+  /// **'Find in Page'**
+  String get find_in_page;
+
+  /// No description provided for @desktop_site.
+  ///
+  /// In en, this message translates to:
+  /// **'Desktop Site'**
+  String get desktop_site;
+
+  /// No description provided for @new_tab.
+  ///
+  /// In en, this message translates to:
+  /// **'New Tab'**
+  String get new_tab;
+
+  /// No description provided for @close_tab.
+  ///
+  /// In en, this message translates to:
+  /// **'Close Tab'**
+  String get close_tab;
+
+  /// No description provided for @tab_overview.
+  ///
+  /// In en, this message translates to:
+  /// **'Tab Overview'**
+  String get tab_overview;
+
+  /// No description provided for @home.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// No description provided for @reload.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload'**
+  String get reload;
+
+  /// No description provided for @stop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get stop;
+
+  /// No description provided for @forward.
+  ///
+  /// In en, this message translates to:
+  /// **'Forward'**
+  String get forward;
+
+  /// No description provided for @more.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get more;
+
+  /// No description provided for @reset_browser.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Browser'**
+  String get reset_browser;
+
+  /// No description provided for @reset_browser_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This will clear all your data including history, bookmarks, and settings. This action cannot be undone.'**
+  String get reset_browser_confirm;
+
+  /// No description provided for @reset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get reset;
+
+  /// No description provided for @reset_complete.
+  ///
+  /// In en, this message translates to:
+  /// **'Browser has been reset'**
+  String get reset_complete;
+
+  /// No description provided for @permission_denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage permission denied'**
+  String get permission_denied;
+
+  /// No description provided for @download_location_changed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download location changed successfully'**
+  String get download_location_changed;
+
+  /// No description provided for @error_changing_location.
+  ///
+  /// In en, this message translates to:
+  /// **'Error changing download location'**
+  String get error_changing_location;
+
+  /// No description provided for @enable_cookies.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Cookies'**
+  String get enable_cookies;
+
+  /// No description provided for @enable_javascript.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable JavaScript'**
+  String get enable_javascript;
+
+  /// No description provided for @hardware_acceleration.
+  ///
+  /// In en, this message translates to:
+  /// **'Hardware Acceleration'**
+  String get hardware_acceleration;
+
+  /// No description provided for @save_form_data.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Form Data'**
+  String get save_form_data;
+
+  /// No description provided for @do_not_track.
+  ///
+  /// In en, this message translates to:
+  /// **'Do Not Track'**
+  String get do_not_track;
+
+  /// No description provided for @download_location_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose where to save your downloaded files'**
+  String get download_location_description;
+
+  /// No description provided for @text_size_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust the size of text on web pages'**
+  String get text_size_description;
+
+  /// No description provided for @text_size_small.
+  ///
+  /// In en, this message translates to:
+  /// **'Small'**
+  String get text_size_small;
+
+  /// No description provided for @text_size_medium.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get text_size_medium;
+
+  /// No description provided for @text_size_large.
+  ///
+  /// In en, this message translates to:
+  /// **'Large'**
+  String get text_size_large;
+
+  /// No description provided for @text_size_very_large.
+  ///
+  /// In en, this message translates to:
+  /// **'Very Large'**
+  String get text_size_very_large;
+
+  /// No description provided for @cookies_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow websites to save and read cookie data'**
+  String get cookies_description;
+
+  /// No description provided for @javascript_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable JavaScript for better website functionality'**
+  String get javascript_description;
+
+  /// No description provided for @hardware_acceleration_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Use GPU for better performance'**
+  String get hardware_acceleration_description;
+
+  /// No description provided for @form_data_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Save information entered in forms'**
+  String get form_data_description;
+
+  /// No description provided for @do_not_track_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Request websites not to track your activity'**
+  String get do_not_track_description;
+
+  /// No description provided for @exit_app.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit App'**
+  String get exit_app;
+
+  /// No description provided for @exit_app_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to exit?'**
+  String get exit_app_confirm;
+
+  /// No description provided for @exit.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit'**
+  String get exit;
+
+  /// No description provided for @size.
+  ///
+  /// In en, this message translates to:
+  /// **'Size'**
+  String get size;
+
+  /// No description provided for @auto_open_downloads.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-open downloads'**
+  String get auto_open_downloads;
+
+  /// No description provided for @clear_downloads_history.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear downloads history'**
+  String get clear_downloads_history;
+
+  /// No description provided for @downloads_history_cleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads history cleared'**
+  String get downloads_history_cleared;
+
+  /// Confirmation message for deleting a download from history
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to delete {fileName} from downloads history?\nThe downloaded file will not be deleted.'**
+  String delete_download_confirm(String fileName);
+
+  /// No description provided for @download_removed.
+  ///
+  /// In en, this message translates to:
+  /// **'Download removed from history'**
+  String get download_removed;
+
+  /// No description provided for @download_size.
+  ///
+  /// In en, this message translates to:
+  /// **'Size: {size}'**
+  String download_size(String size);
+
+  /// No description provided for @clear_downloads_history_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'This will only clear the downloads history, not the downloaded files.'**
+  String get clear_downloads_history_confirm;
+
+  /// No description provided for @clear_downloads_history_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Downloads History'**
+  String get clear_downloads_history_title;
+
+  /// No description provided for @slide_up_panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Slide up panel'**
+  String get slide_up_panel;
+
+  /// No description provided for @slide_down_panel.
+  ///
+  /// In en, this message translates to:
+  /// **'Slide down panel'**
+  String get slide_down_panel;
+
+  /// No description provided for @move_url_bar.
+  ///
+  /// In en, this message translates to:
+  /// **'Move URL bar'**
+  String get move_url_bar;
+
+  /// No description provided for @url_bar_icon.
+  ///
+  /// In en, this message translates to:
+  /// **'URL bar icon'**
+  String get url_bar_icon;
+
+  /// No description provided for @url_bar_expanded.
+  ///
+  /// In en, this message translates to:
+  /// **'URL bar expanded'**
+  String get url_bar_expanded;
+
+  /// No description provided for @search_or_type_url.
+  ///
+  /// In en, this message translates to:
+  /// **'Search or type URL'**
+  String get search_or_type_url;
+
+  /// No description provided for @secure_connection.
+  ///
+  /// In en, this message translates to:
+  /// **'Secure connection'**
+  String get secure_connection;
+
+  /// No description provided for @insecure_connection.
+  ///
+  /// In en, this message translates to:
+  /// **'Insecure connection'**
+  String get insecure_connection;
+
+  /// No description provided for @refresh_page.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh page'**
+  String get refresh_page;
+
+  /// No description provided for @close_search.
+  ///
+  /// In en, this message translates to:
+  /// **'Close search'**
+  String get close_search;
+
+  /// No description provided for @allow_popups.
+  ///
+  /// In en, this message translates to:
+  /// **'Pop-ups'**
+  String get allow_popups;
+
+  /// No description provided for @allow_popups_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow pop-up windows'**
+  String get allow_popups_description;
+
+  /// No description provided for @popups_blocked.
+  ///
+  /// In en, this message translates to:
+  /// **'Pop-up blocked'**
+  String get popups_blocked;
+
+  /// No description provided for @allow_once.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow once'**
+  String get allow_once;
+
+  /// No description provided for @allow_always.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow always'**
+  String get allow_always;
+
+  /// No description provided for @block.
+  ///
+  /// In en, this message translates to:
+  /// **'Block'**
+  String get block;
+
+  /// No description provided for @blocked_popups.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked pop-ups'**
+  String get blocked_popups;
+
+  /// No description provided for @no_blocked_popups.
+  ///
+  /// In en, this message translates to:
+  /// **'No blocked pop-ups'**
+  String get no_blocked_popups;
+
+  /// Message shown when allowing popups from a specific domain
+  ///
+  /// In en, this message translates to:
+  /// **'Allow pop-ups from {domain}'**
+  String allow_popups_from(String domain);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
