@@ -7,10 +7,16 @@ class AppLocalizationsTr extends AppLocalizations {
   AppLocalizationsTr([String locale = 'tr']) : super(locale);
 
   @override
-  String get welcome => 'Solar\'a Hoş Geldiniz';
+  String get welcomeToSolar => 'Solar\'a Hoş Geldiniz';
 
   @override
-  String get welcomeSubtitle => 'Modern, hızlı ve güvenli bir tarayıcı';
+  String get welcomeDescription => 'Modern, hızlı ve güvenli bir tarayıcı';
+
+  @override
+  String get termsOfService => 'Devam ederek, Kullanım Koşullarımızı ve Gizlilik Politikamızı kabul etmiş olursunuz';
+
+  @override
+  String get whats_new => 'Yenilikler';
 
   @override
   String get chooseLanguage => 'Dilinizi Seçin';
@@ -22,10 +28,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get chooseSearchEngine => 'Arama Motorunuzu Seçin';
 
   @override
-  String get light => 'Açık';
+  String get lightTheme => 'Açık';
 
   @override
-  String get dark => 'Koyu';
+  String get darkTheme => 'Koyu';
 
   @override
   String get next => 'İleri';
@@ -46,6 +52,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String version(String version) {
     return 'Sürüm $version';
   }
+
+  @override
+  String get and => 've';
+
+  @override
+  String get data_collection => 'Veri Toplama';
+
+  @override
+  String get data_collection_details => '• Tarayıcı işlevselliği için gerekli minimum veriyi topluyoruz\n• Tarama geçmişiniz cihazınızda kalır\n• Çevrimiçi etkinliğinizi takip etmiyoruz\n• Tüm verileri istediğiniz zaman silebilirsiniz';
 
   @override
   String get general => 'Genel';
@@ -399,5 +414,11 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get exit_confirmation => 'Exit App';
+  String get exit_confirmation => 'Uygulamadan Çık';
+
+  @override
+  String get flutter_version => 'Flutter Sürümü';
+
+  @override
+  String get software_team => 'Yazılım Ekibi';
 }

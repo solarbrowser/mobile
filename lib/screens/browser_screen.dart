@@ -42,12 +42,16 @@ class Debouncer {
 }
 
 class BrowserScreen extends StatefulWidget {
-  final Function(String) onLocaleChange;
-  
+  final Function(String)? onLocaleChange;
+  final Function(bool)? onThemeChange;
+  final Function(String)? onSearchEngineChange;
+
   const BrowserScreen({
-    super.key,
-    required this.onLocaleChange,
-  });
+    Key? key,
+    this.onLocaleChange,
+    this.onThemeChange,
+    this.onSearchEngineChange,
+  }) : super(key: key);
 
   @override
   _BrowserScreenState createState() => _BrowserScreenState();
@@ -246,16 +250,18 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   // Search Engines
   final Map<String, String> searchEngines = {
-    'google': 'https://www.google.com/search?q=',
-    'bing': 'https://www.bing.com/search?q=',
-    'duckduckgo': 'https://duckduckgo.com/?q=',
-    'yahoo': 'https://search.yahoo.com/search?p=',
+    'Google': 'https://www.google.com/search?q={query}',
+    'Bing': 'https://www.bing.com/search?q={query}',
+    'DuckDuckGo': 'https://duckduckgo.com/?q={query}',
+    'Yahoo': 'https://search.yahoo.com/search?p={query}',
+    'Yandex': 'https://yandex.com/search/?text={query}',
   };
 
   // Add new state variables
   Timer? _urlBarIdleTimer;
   Offset _urlBarOffset = const Offset(16.0, 16.0);
   bool _isDraggingUrlBar = false;
+  bool _askDownloadLocation = true;
 
   // Add new state variable for fullscreen
   bool _isFullscreen = false;
@@ -862,7 +868,8 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       if (formattedUrl.contains('.') && !formattedUrl.contains(' ')) {
         formattedUrl = 'https://$formattedUrl';
       } else {
-        formattedUrl = '${searchEngines[currentSearchEngine]}${Uri.encodeComponent(formattedUrl)}';
+        final engine = searchEngines[currentSearchEngine] ?? searchEngines['google']!;
+        formattedUrl = engine.replaceAll('{query}', formattedUrl);
       }
     }
     
@@ -875,41 +882,16 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     await controller.loadRequest(Uri.parse(formattedUrl));
   }
 
-  Future<void> _performSearch({bool searchUp = false}) async {
-    final query = _urlController.text;
+  void _performSearch({bool searchUp = false}) async {
+    final query = _urlController.text.trim();
     if (query.isEmpty) return;
 
-    try {
-      final js = '''
-        (function() {
-          const searchText = '${query.replaceAll("'", "\\'")}';
-          const found = window.find(searchText, false, ${searchUp}, true, false, true, false);
-          if (!found) {
-            window.find(searchText, false, ${searchUp}, true, false, false, false);
-          }
-          
-          let count = 0;
-          const element = document.body;
-          while (window.find(searchText, false, false, true, false, true, true)) {
-            count++;
-          }
-          window.getSelection().removeAllRanges();
-          return count;
-        })()
-      ''';
-
-      final countResult = await controller.runJavaScriptReturningResult(js);
-      
-      setState(() {
-        totalSearchMatches = int.tryParse(countResult.toString()) ?? 0;
-        if (searchUp && currentSearchMatch > 1) {
-          currentSearchMatch--;
-        } else if (!searchUp && currentSearchMatch < totalSearchMatches) {
-          currentSearchMatch++;
-        }
-      });
-    } catch (e) {
-      print('Search error: $e');
+    if (query.startsWith('http://') || query.startsWith('https://')) {
+      await controller.loadRequest(Uri.parse(query));
+    } else {
+      final engine = searchEngines[currentSearchEngine] ?? searchEngines['google']!;
+      final searchUrl = engine.replaceAll('{query}', query);
+      await controller.loadRequest(Uri.parse(searchUrl));
     }
   }
 
@@ -927,132 +909,54 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   void _showGeneralSettings() {
-    _showDynamicBottomSheet(
-      items: [
-        _buildSettingsItem(
-          title: AppLocalizations.of(context)!.search_engine,
-          subtitle: currentSearchEngine.toUpperCase(),
-          onTap: () => _showSearchEngineSelection(context),
-        ),
-        _buildSettingsItem(
-          title: AppLocalizations.of(context)!.language,
-          subtitle: Localizations.localeOf(context).languageCode.toUpperCase(),
-          onTap: () => _showLanguageSelection(context),
-        ),
-        _buildSettingsItem(
-          title: 'Allow HTTP',
-          subtitle: 'Load unsecure websites',
-          trailing: Switch(
-            value: allowHttp,
-            onChanged: (value) async {
-              setState(() {
-                allowHttp = value;
-              });
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('allowHttp', value);
-            },
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+          appBar: AppBar(
+            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              AppLocalizations.of(context)!.general,
+              style: TextStyle(
+                color: isDarkMode ? Colors.white : Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
-        ),
-        _buildSettingsItem(
-          title: AppLocalizations.of(context)!.enable_cookies,
-          subtitle: AppLocalizations.of(context)!.cookies_description,
-          trailing: Switch(
-            value: true,
-            onChanged: (value) async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('allowCookies', value);
-            },
-          ),
-        ),
-        _buildSettingsItem(
-          title: AppLocalizations.of(context)!.allow_popups,
-          subtitle: AppLocalizations.of(context)!.allow_popups_description,
-          trailing: Switch(
-            value: false,
-            onChanged: (value) async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('allowPopups', value);
-            },
-          ),
-        ),
-        _buildSettingsItem(
-          title: 'Hardware Acceleration',
-          subtitle: 'Use GPU for better performance',
-          trailing: Switch(
-            value: true,
-            onChanged: (value) async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('hardwareAcceleration', value);
-              // Apply hardware acceleration setting
-              if (controller.platform is AndroidWebViewController) {
-                final androidController = controller.platform as AndroidWebViewController;
-                await androidController.setBackgroundColor(Colors.transparent);
-                await controller.runJavaScript('''
-                  document.body.style.setProperty('transform', 
-                    '${value ? 'translate3d(0,0,0)' : 'none'}');
-                ''');
-              }
-            },
-          ),
-        ),
-        _buildSettingsItem(
-          title: 'Save Form Data',
-          subtitle: 'Remember form entries',
-          trailing: Switch(
-            value: false,
-            onChanged: (value) async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('saveFormData', value);
-            },
-          ),
-        ),
-        _buildSettingsItem(
-          title: 'Do Not Track',
-          subtitle: 'Request websites not to track you',
-          trailing: Switch(
-            value: true,
-            onChanged: (value) async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('doNotTrack', value);
-            },
-          ),
-        ),
-        _buildSettingsItem(
-          title: 'Developer Options',
-          subtitle: _showDeveloperOptions ? 'Developer mode is active' : 'Tap 3 times to enable developer mode',
-          onTap: () {
-            _developerModeTimer?.cancel();
-            _developerModeTimer = Timer(const Duration(seconds: 2), () {
-              _developerModeClickCount = 0;
-            });
-            
-            setState(() {
-              _developerModeClickCount++;
-              if (_developerModeClickCount >= 3) {
-                _showDeveloperOptions = true;
-                _developerModeClickCount = 0;
-                _developerModeTimer?.cancel();
-                
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      'Developer mode activated!',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    backgroundColor: Colors.green,
-                    duration: Duration(seconds: 2),
+          body: ListView(
+            padding: const EdgeInsets.only(top: 8),
+            children: [
+              _buildSettingsSection(
+                title: AppLocalizations.of(context)!.general,
+                children: [
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.language,
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showLanguageSelection(context),
+                    isFirst: true,
+                    isLast: false,
                   ),
-                );
-                
-                // Show developer panel immediately
-                Navigator.pop(context);
-                _showDeveloperPanel();
-              }
-            });
-          },
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.search_engine,
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showSearchEngineSelection(context),
+                    isFirst: false,
+                    isLast: true,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-      ],
-      title: AppLocalizations.of(context)!.general,
+      ),
     );
   }
 
@@ -1183,69 +1087,68 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   Widget _buildSettingsItem({
     required String title,
     String? subtitle,
-    Widget? trailing,
     VoidCallback? onTap,
-    TextStyle? customTextStyle,
+    bool isFirst = false,
+    bool isLast = false,
+    Widget? trailing,
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(
-        color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 5,
-            spreadRadius: 0,
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-          title,
-          style: customTextStyle ?? TextStyle(
-            color: isDarkMode ? Colors.white : Colors.black,
-            fontSize: 16,
-          ),
+    Widget? trailingWidget = trailing;
+    
+    // Handle switch widgets
+    if (trailing is Switch) {
+      trailingWidget = Transform.scale(
+        scale: 0.7,
+        child: trailing,
+      );
+    }
+    
+    // Only show arrow for main settings items
+    if (trailing == null && onTap != null) {
+      if (!searchEngines.keys.contains(title) && 
+          !title.contains('हिन्दी') && !title.contains('English') && 
+          !title.contains('Türkçe') && !title.contains('Español') && 
+          !title.contains('Français') && !title.contains('Deutsch') && 
+          !title.contains('Italiano') && !title.contains('Português') && 
+          !title.contains('Русский') && !title.contains('中文') && 
+          !title.contains('日本語') && !title.contains('العربية') &&
+          !title.contains('Language') && !title.contains('Search Engine')) {
+        trailingWidget = Icon(
+          Icons.chevron_right,
+          color: isDarkMode ? Colors.white70 : Colors.black45,
+          size: 18,
+        );
+      }
+    } else if (trailing is Icon && (trailing as Icon).icon == Icons.chevron_right) {
+      // Update existing arrow icons to use consistent colors
+      trailingWidget = Icon(
+        Icons.chevron_right,
+        color: isDarkMode ? Colors.white70 : Colors.black45,
+        size: 18,
+      );
+    }
+    
+    return ListTile(
+      dense: true,
+      visualDensity: VisualDensity.compact,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 15,
+          color: isDarkMode ? Colors.white : Colors.black,
         ),
-                      if (subtitle != null) ...[
-                        const SizedBox(height: 4),
-                        Text(
-          subtitle,
-          style: TextStyle(
-            color: isDarkMode ? Colors.white70 : Colors.black54,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-                if (trailing != null)
-                  trailing
-                else if (onTap != null)
-                  Icon(
-          Icons.arrow_forward_ios,
-          size: 16,
-          color: isDarkMode ? Colors.white54 : Colors.black45,
-                  ),
-              ],
+      ),
+      subtitle: subtitle != null
+        ? Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 13,
+              color: isDarkMode ? Colors.white70 : Colors.black54,
             ),
-          ),
-        ),
-      ),
+          )
+        : null,
+      trailing: trailingWidget,
+      onTap: onTap,
     );
   }
 
@@ -1334,261 +1237,317 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     );
   }
 
-  void _showSearchEngineSelection(BuildContext context) {
-    final items = searchEngines.keys.map((engine) => Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: _buildSettingsItem(
-        title: engine.toUpperCase(),
-        trailing: currentSearchEngine == engine
-            ? Icon(
-                Icons.check,
-                color: isDarkMode ? Colors.white : Colors.black,
-              )
-            : null,
-        onTap: () async {
-          setState(() {
-            currentSearchEngine = engine;
-          });
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('searchEngine', engine);
-          Navigator.pop(context);
-        },
-      ),
-    )).toList();
+  SystemUiOverlayStyle get _transparentNavBar => SystemUiOverlayStyle(
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarDividerColor: Colors.transparent,
+  );
 
-    _showDynamicBottomSheet(
-      items: items,
-      title: AppLocalizations.of(context)!.search_engine,
+  void _showLanguageSelection(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+          appBar: AppBar(
+            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            elevation: 0,
+            systemOverlayStyle: _transparentNavBar,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              AppLocalizations.of(context)!.language,
+              style: TextStyle(
+                color: isDarkMode ? Colors.white : Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          body: ListView(
+            padding: const EdgeInsets.only(top: 8, bottom: 24),
+            children: [
+              _buildSettingsSection(
+                title: AppLocalizations.of(context)!.chooseLanguage,
+                children: supportedLocales.map((locale) {
+                  final isSelected = Localizations.localeOf(context).languageCode == locale.languageCode;
+                  return _buildSettingsItem(
+                    title: _getLanguageName(locale.languageCode),
+                    trailing: isSelected ? Icon(Icons.check, color: Colors.blue) : null,
+                    onTap: () {
+                      setState(() => _currentLocale = locale.languageCode);
+                      widget.onLocaleChange?.call(locale.languageCode);
+                      Navigator.pop(context);
+                    },
+                    isFirst: locale == supportedLocales.first,
+                    isLast: locale == supportedLocales.last,
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  void _showLanguageSelection(BuildContext context) {
-    final Map<String, String> languages = {
-      'en': 'English',
-      'tr': 'Türkçe',
-      'es': 'Español',
-      'fr': 'Français',
-      'de': 'Deutsch',
-      'it': 'Italiano',
-      'pt': 'Português',
-      'ru': 'Русский',
-      'zh': '中文',
-      'ja': '日本語',
-      'ar': 'العربية',
-      'hi': 'हिन्दी',
-    };
-
-    final items = languages.entries.map((entry) => Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: _buildSettingsItem(
-        title: entry.value,
-        trailing: currentLanguage == entry.key
-          ? Icon(
-              Icons.check,
-              color: isDarkMode ? Colors.white : Colors.black,
-            )
-          : null,
-        onTap: () async {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setString('language', entry.key);
-          
-          if (mounted) {
-            // Update state and close dialog
-            setState(() {
-              currentLanguage = entry.key;
-            });
-            
-            // Update locale
-            widget.onLocaleChange(entry.key);
-            
-            // Close settings
-            Navigator.pop(context);
-
-            // Show restart dialog
-            showDialog(
-              context: context,
-              barrierDismissible: false,
-              builder: (context) => AlertDialog(
-                backgroundColor: isDarkMode ? Colors.black : Colors.white,
-                title: Text(
-                  'Restart Required',
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-                ),
-                content: Text(
-                  'Please restart the app to apply language changes.',
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white70 : Colors.black87,
-                  ),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      SystemNavigator.pop();  // Close the app
+  void _showSearchEngineSelection(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+          appBar: AppBar(
+            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              AppLocalizations.of(context)!.search_engine,
+              style: TextStyle(
+                color: isDarkMode ? Colors.white : Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          body: ListView(
+            padding: const EdgeInsets.only(top: 8, bottom: 24),
+            children: [
+              _buildSettingsSection(
+                title: AppLocalizations.of(context)!.chooseSearchEngine,
+                children: searchEngines.keys.map((engine) {
+                  final isSelected = currentSearchEngine == engine;
+                  return _buildSettingsItem(
+                    title: engine.toUpperCase(),
+                    trailing: isSelected ? Icon(Icons.check, color: Colors.blue) : null,
+                    onTap: () {
+                      setState(() {
+                        currentSearchEngine = engine;
+                        if (_syncHomePageSearchEngine) {
+                          _homePageSearchEngine = engine;
+                        }
+                      });
+                      widget.onSearchEngineChange?.call(engine);
+                      Navigator.pop(context);
                     },
-                    child: Text(
-                      'Restart Now',
-                      style: TextStyle(
-                        color: Theme.of(context).primaryColor,
+                    isFirst: engine == searchEngines.keys.first,
+                    isLast: engine == searchEngines.keys.last,
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _getSearchUrl(String query) {
+    final engine = searchEngines[currentSearchEngine] ?? searchEngines['google']!;
+    return engine.replaceAll('{query}', query);
+  }
+
+  void _showAppearanceSettings() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => StatefulBuilder(
+          builder: (context, setState) => Scaffold(
+            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            appBar: AppBar(
+              backgroundColor: isDarkMode ? Colors.black : Colors.white,
+              elevation: 0,
+              systemOverlayStyle: SystemUiOverlayStyle(
+                systemNavigationBarColor: Colors.transparent,
+                systemNavigationBarDividerColor: Colors.transparent,
+              ),
+              leading: IconButton(
+                icon: Icon(
+                  Icons.arrow_back,
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+                onPressed: () => Navigator.pop(context),
+              ),
+              title: Text(
+                AppLocalizations.of(context)!.appearance,
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            body: ListView(
+              padding: const EdgeInsets.only(top: 8),
+              children: [
+                _buildSettingsSection(
+                  title: AppLocalizations.of(context)!.chooseTheme,
+                  children: [
+                    _buildSettingsItem(
+                      title: AppLocalizations.of(context)!.dark_mode,
+                      trailing: Transform.scale(
+                        scale: 0.7,
+                        child: Switch(
+                          value: isDarkMode,
+                          onChanged: (value) {
+                            setState(() => isDarkMode = value);
+                            this.setState(() {});
+                            widget.onThemeChange?.call(value);
+                          },
+                        ),
                       ),
+                      isFirst: true,
+                      isLast: true,
                     ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _getTextSizeLabel() {
+    if (_textSize == 0.8) return AppLocalizations.of(context)!.text_size_small;
+    if (_textSize == 1.0) return AppLocalizations.of(context)!.text_size_medium;
+    if (_textSize == 1.2) return AppLocalizations.of(context)!.text_size_large;
+    return AppLocalizations.of(context)!.text_size_very_large;
+  }
+
+  Future<void> _showTextSizeSelection(BuildContext context) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+          appBar: AppBar(
+            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              AppLocalizations.of(context)!.text_size,
+              style: TextStyle(
+                color: isDarkMode ? Colors.white : Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          body: ListView(
+            padding: const EdgeInsets.only(top: 8),
+            children: [
+              _buildSettingsSection(
+                title: AppLocalizations.of(context)!.text_size_description,
+                children: [
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.text_size_small,
+                    trailing: _textSize == 0.8 ? Icon(Icons.check, color: Theme.of(context).primaryColor) : null,
+                    onTap: () {
+                      setState(() => _textSize = 0.8);
+                      Navigator.pop(context);
+                    },
+                    isFirst: true,
+                    isLast: false,
+                  ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.text_size_medium,
+                    trailing: _textSize == 1.0 ? Icon(Icons.check, color: Theme.of(context).primaryColor) : null,
+                    onTap: () {
+                      setState(() => _textSize = 1.0);
+                      Navigator.pop(context);
+                    },
+                    isFirst: false,
+                    isLast: false,
+                  ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.text_size_large,
+                    trailing: _textSize == 1.2 ? Icon(Icons.check, color: Theme.of(context).primaryColor) : null,
+                    onTap: () {
+                      setState(() => _textSize = 1.2);
+                      Navigator.pop(context);
+                    },
+                    isFirst: false,
+                    isLast: false,
+                  ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.text_size_very_large,
+                    trailing: _textSize == 1.4 ? Icon(Icons.check, color: Theme.of(context).primaryColor) : null,
+                    onTap: () {
+                      setState(() => _textSize = 1.4);
+                      Navigator.pop(context);
+                    },
+                    isFirst: false,
+                    isLast: true,
                   ),
                 ],
               ),
-            );
-          }
-        },
+            ],
+          ),
+        ),
       ),
-    )).toList();
-
-    _showDynamicBottomSheet(
-      items: items,
-      title: AppLocalizations.of(context)!.language,
     );
   }
 
   void _showDownloadsSettings() {
-    final downloadLocation = getApplicationDocumentsDirectory().then((dir) => dir.path);
-    
-    _showDynamicBottomSheet(
-      items: [
-        FutureBuilder<String>(
-          future: downloadLocation,
-          builder: (context, snapshot) {
-            return _buildSettingsItem(
-          title: AppLocalizations.of(context)!.download_location,
-              subtitle: snapshot.data ?? '/Downloads',
-              onTap: () async {
-                // Show directory picker when available
-              },
-            );
-          },
-        ),
-        _buildSettingsItem(
-          title: AppLocalizations.of(context)!.ask_download_location,
-          trailing: Switch(
-            value: true,
-            onChanged: (value) async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('askDownloadLocation', value);
-            },
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+          appBar: AppBar(
+            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            elevation: 0,
+            systemOverlayStyle: _transparentNavBar,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              AppLocalizations.of(context)!.downloads,
+              style: TextStyle(
+                color: isDarkMode ? Colors.white : Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
-        ),
-        _buildSettingsItem(
-          title: 'Auto-open downloads',
-          trailing: Switch(
-            value: false,
-            onChanged: (value) async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setBool('autoOpenDownloads', value);
-            },
-          ),
-        ),
-        _buildSettingsItem(
-          title: 'Clear downloads history',
-          onTap: () async {
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                backgroundColor: isDarkMode ? Colors.black : Colors.white,
-                title: Text(
-                  'Clear Downloads History',
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-                ),
-                content: Text(
-                  'This will only clear the downloads history, not the downloaded files.',
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white70 : Colors.black87,
-                  ),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      'Cancel',
-                      style: TextStyle(
-                        color: isDarkMode ? Colors.white70 : Colors.black54,
+          body: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              _buildSettingsSection(
+                title: AppLocalizations.of(context)!.downloads,
+                children: [
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.ask_download_location,
+                    trailing: Transform.scale(
+                      scale: 0.7,
+                      child: Switch(
+                        value: _askDownloadLocation,
+                        onChanged: (value) {
+                          setState(() => _askDownloadLocation = value);
+                        },
                       ),
                     ),
-                  ),
-                  TextButton(
-                    onPressed: () async {
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.remove('downloads');
-                      setState(() {
-                        downloads.clear();
-                      });
-                      Navigator.pop(context);
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Downloads history cleared')),
-                      );
-                    },
-                    child: Text(
-                      'Clear',
-                      style: TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    isFirst: true,
+                    isLast: true,
                   ),
                 ],
               ),
-            );
-          },
-        ),
-      ],
-      title: AppLocalizations.of(context)!.downloads,
-    );
-  }
-
-  void _showAppearanceSettings() {
-    _showDynamicBottomSheet(
-      items: [
-        _buildSettingsItem(
-          title: AppLocalizations.of(context)!.dark_mode,
-          trailing: Switch(
-            value: isDarkMode,
-            onChanged: (value) async {
-              setState(() {
-                isDarkMode = value;
-              });
-              await _savePreferences();
-              // Force rebuild of all widgets that depend on theme
-              if (mounted) {
-                setState(() {});
-                // Rebuild the settings panel to update its appearance
-                Navigator.pop(context);
-                _showAppearanceSettings();
-              }
-            },
+            ],
           ),
         ),
-        _buildSettingsItem(
-          title: AppLocalizations.of(context)!.text_size,
-          subtitle: 'Medium',
-          onTap: () {},
-        ),
-        _buildSettingsItem(
-          title: AppLocalizations.of(context)!.show_images,
-          trailing: Switch(
-            value: showImages,
-            onChanged: (value) async {
-              setState(() {
-                showImages = value;
-              });
-              await _savePreferences();
-              if (mounted) {
-                setState(() {});
-              }
-            },
-          ),
-        ),
-      ],
-      title: AppLocalizations.of(context)!.appearance,
+      ),
     );
   }
 
@@ -1625,82 +1584,56 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   void _showAboutPage() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.5,
-        decoration: BoxDecoration(
-          color: isDarkMode ? Colors.black : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildPanelHeader('about', onBack: () => Navigator.pop(context)),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(24),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+          appBar: AppBar(
+            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: isDarkMode ? Colors.white : Colors.black,
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              AppLocalizations.of(context)!.about,
+              style: TextStyle(
+                color: isDarkMode ? Colors.white : Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          body: ListView(
+            padding: const EdgeInsets.only(top: 8),
+            children: [
+              _buildSettingsSection(
+                title: AppLocalizations.of(context)!.about,
                 children: [
-                  Center(
-                    child: Column(
-                      children: [
-                        Image.asset('assets/icon.png', width: 100, height: 100),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Solar Browser',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: isDarkMode ? Colors.white : Colors.black,
-                          ),
-                        ),
-                        Text(
-                          'Version 0.0.6',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: isDarkMode ? Colors.white70 : Colors.black54,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const FlutterLogo(size: 24),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Flutter 3.27.3',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: isDarkMode ? Colors.white : Colors.black,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          'Developed by',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: isDarkMode ? Colors.white70 : Colors.black54,
-                          ),
-                        ),
-                        Text(
-                          'Ata TÜRKÇÜ',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: isDarkMode ? Colors.white : Colors.black,
-                          ),
-                        ),
-                      ],
-                    ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.app_name,
+                    subtitle: AppLocalizations.of(context)!.version('0.0.6'),
+                    isFirst: true,
+                    isLast: false,
+                  ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.flutter_version,
+                    subtitle: 'Flutter 3.27.3',
+                    isFirst: false,
+                    isLast: false,
+                  ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.software_team,
+                    subtitle: 'Ata TÜRKÇÜ',
+                    isFirst: false,
+                    isLast: true,
                   ),
                 ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -3361,7 +3294,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     });
     
     // Load Google homepage
-    await controller.loadRequest(Uri.parse('https://www.google.com'));
+    await controller.loadRequest(Uri.parse('file:///android_asset/main.html'));
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Browser has been reset')),
@@ -3382,6 +3315,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             title,
             style: TextStyle(
               fontSize: 14,
+              fontWeight: FontWeight.w500,
               color: isDarkMode ? Colors.white70 : Colors.black54,
             ),
           ),
@@ -3389,13 +3323,19 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+            color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.white,
             borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+              width: 0.5,
+            ),
           ),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: children,
           ),
         ),
+        const SizedBox(height: 8),
       ],
     );
   }
@@ -3415,34 +3355,23 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       }
     }
 
-    return InkWell(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.vertical(
-            top: isFirst ? const Radius.circular(12) : Radius.zero,
-            bottom: isLast ? const Radius.circular(12) : Radius.zero,
-          ),
-        ),
-        child: Row(
-          children: [
-            Text(
-              getLocalizedLabel(),
-              style: TextStyle(
-                fontSize: 16,
-                color: isDarkMode ? Colors.white : Colors.black,
-              ),
-            ),
-            const Spacer(),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: isDarkMode ? Colors.white.withOpacity(0.5) : Colors.black.withOpacity(0.5),
-            ),
-          ],
+    return ListTile(
+      dense: true,
+      visualDensity: VisualDensity.compact,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+      title: Text(
+        getLocalizedLabel(),
+        style: TextStyle(
+          fontSize: 14,
+          color: isDarkMode ? Colors.white : Colors.black,
         ),
       ),
+      trailing: Icon(
+        Icons.chevron_right,
+        color: isDarkMode ? Colors.white54 : Colors.black45,
+        size: 20,
+      ),
+      onTap: onTap,
     );
   }
 
@@ -5026,6 +4955,133 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       currentTabIndex = tabs.length - 1;
       controller = newTab.controller;
     });
+  }
+
+  // Add these variables
+  String _currentLocale = 'en';
+  String _currentSearchEngine = 'google';
+  bool _showImages = true;
+  double _textSize = 1.0;  // Add this line for text size
+  
+  final List<Locale> supportedLocales = [
+    const Locale('en'),
+    const Locale('tr'),
+    const Locale('es'),
+    const Locale('fr'),
+    const Locale('de'),
+    const Locale('it'),
+    const Locale('pt'),
+    const Locale('ru'),
+    const Locale('zh'),
+    const Locale('ja'),
+    const Locale('ar'),
+    const Locale('hi'),
+  ];
+
+  // Add this method
+  String _getLanguageName(String languageCode) {
+    final Map<String, String> languages = {
+      'en': 'English',
+      'tr': 'Türkçe',
+      'es': 'Español',
+      'fr': 'Français',
+      'de': 'Deutsch',
+      'it': 'Italiano',
+      'pt': 'Português',
+      'ru': 'Русский',
+      'zh': '中文',
+      'ja': '日本語',
+      'ar': 'العربية',
+      'hi': 'हिन्दी',
+    };
+    return languages[languageCode] ?? languageCode;
+  }
+
+  void _showSettings() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+          appBar: AppBar(
+            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            elevation: 0,
+            systemOverlayStyle: _transparentNavBar,
+            title: Text(
+              AppLocalizations.of(context)!.settings,
+              style: TextStyle(
+                color: isDarkMode ? Colors.white : Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          body: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              _buildSettingsSection(
+                title: AppLocalizations.of(context)!.settings,
+                children: [
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.general,
+                    onTap: () => _showGeneralSettings(),
+                    isFirst: true,
+                    isLast: false,
+                  ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.downloads,
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showDownloadsSettings(),
+                    isFirst: false,
+                    isLast: false,
+                  ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.appearance,
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showAppearanceSettings(),
+                    isFirst: false,
+                    isLast: false,
+                  ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.help,
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showHelpPage(),
+                    isFirst: false,
+                    isLast: false,
+                  ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.rate_us,
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showRateUs(),
+                    isFirst: false,
+                    isLast: false,
+                  ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.privacy_policy,
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showPrivacyPolicy(),
+                    isFirst: false,
+                    isLast: false,
+                  ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.terms_of_use,
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showTermsOfUse(),
+                    isFirst: false,
+                    isLast: false,
+                  ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.about,
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _showAboutPage(),
+                    isFirst: false,
+                    isLast: true,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

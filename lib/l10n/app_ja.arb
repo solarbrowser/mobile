@@ -1,17 +1,18 @@
 {
   "@@locale": "ja",
-  "welcome": "Solar へようこそ",
-  "welcomeSubtitle": "モダンで高速、安全なブラウザ",
+  "welcomeToSolar": "Solar へようこそ",
+  "welcomeDescription": "モダンで高速、安全なブラウザ",
+  "termsOfService": "続行すると、利用規約とプライバシーポリシーに同意したことになります",
   "chooseLanguage": "言語を選択",
   "chooseTheme": "テーマを選択",
   "chooseSearchEngine": "検索エンジンを選択",
-  "light": "ライト",
-  "dark": "ダーク",
+  "lightTheme": "ライト",
+  "darkTheme": "ダーク",
   "next": "次へ",
   "back": "戻る",
   "getStarted": "始める",
-  "continueText": "続ける",
-  "updated": "Solar ブラウザが更新されました！",
+  "continueText": "続行",
+  "updated": "Solar Browser がアップデートされました！",
   "version": "バージョン {version}",
   "@version": {
     "placeholders": {
@@ -20,6 +21,9 @@
       }
     }
   },
+  "and": "と",
+  "data_collection": "データ収集",
+  "data_collection_details": "• ブラウザの機能に必要な最小限のデータのみを収集します\n• 閲覧履歴はお使いのデバイスに保存されます\n• オンライン活動を追跡することはありません\n• データはいつでも消去できます",
   "general": "一般",
   "appearance": "外観",
   "downloads": "ダウンロード",
@@ -166,5 +170,9 @@
         "example": "example.com"
       }
     }
-  }
+  },
+  "whats_new": "新機能",
+  "exit_confirmation": "アプリを終了",
+  "flutter_version": "Flutter バージョン",
+  "software_team": "ソフトウェアチーム"
 } 

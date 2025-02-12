@@ -1,13 +1,15 @@
 {
   "@@locale": "en",
   
-  "welcome": "Welcome to Solar",
-  "welcomeSubtitle": "A modern, fast, and secure browser",
+  "welcomeToSolar": "Welcome to Solar",
+  "welcomeDescription": "A modern, fast, and secure browser",
+  "termsOfService": "By continuing, you agree to our Terms of Service and Privacy Policy",
+  "whats_new": "What's New",
   "chooseLanguage": "Choose Your Language",
   "chooseTheme": "Choose Your Theme",
   "chooseSearchEngine": "Choose Your Search Engine",
-  "light": "Light",
-  "dark": "Dark",
+  "lightTheme": "Light",
+  "darkTheme": "Dark",
   "next": "Next",
   "back": "Back",
   "getStarted": "Get Started",
@@ -22,8 +24,12 @@
       "version": {
         "type": "String"
       }
-    }
+    },
+    "description": "Version label"
   },
+  "and": "and",
+  "data_collection": "Data Collection",
+  "data_collection_details": "• We collect minimal data necessary for browser functionality\n• Your browsing history stays on your device\n• We don't track your online activity\n• You can clear all data at any time",
 
   "general": "General",
   "appearance": "Appearance",
@@ -48,6 +54,9 @@
   "bookmarks": "Bookmarks",
   "search_in_page": "Search in page",
   "app_name": "Solar Browser",
+  "@app_name": {
+    "description": "The name of the application"
+  },
   "search_or_enter_address": "Search or enter address",
   "current_location": "Current Location",
   "change_location": "Change Location",
@@ -165,5 +174,13 @@
       }
     }
   },
-  "exit_confirmation": "Exit App"
+  "exit_confirmation": "Exit App",
+  "flutter_version": "Flutter Version",
+  "@flutter_version": {
+    "description": "Flutter version label"
+  },
+  "software_team": "Software Team",
+  "@software_team": {
+    "description": "Software team label"
+  }
 } 

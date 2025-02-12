@@ -7,10 +7,16 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get welcome => 'Welcome to Solar';
+  String get welcomeToSolar => 'Welcome to Solar';
 
   @override
-  String get welcomeSubtitle => 'A modern, fast, and secure browser';
+  String get welcomeDescription => 'A modern, fast, and secure browser';
+
+  @override
+  String get termsOfService => 'By continuing, you agree to our Terms of Service and Privacy Policy';
+
+  @override
+  String get whats_new => 'What\'s New';
 
   @override
   String get chooseLanguage => 'Choose Your Language';
@@ -22,10 +28,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chooseSearchEngine => 'Choose Your Search Engine';
 
   @override
-  String get light => 'Light';
+  String get lightTheme => 'Light';
 
   @override
-  String get dark => 'Dark';
+  String get darkTheme => 'Dark';
 
   @override
   String get next => 'Next';
@@ -46,6 +52,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String version(String version) {
     return 'Version $version';
   }
+
+  @override
+  String get and => 'and';
+
+  @override
+  String get data_collection => 'Data Collection';
+
+  @override
+  String get data_collection_details => '• We collect minimal data necessary for browser functionality\n• Your browsing history stays on your device\n• We don\'t track your online activity\n• You can clear all data at any time';
 
   @override
   String get general => 'General';
@@ -400,4 +415,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exit_confirmation => 'Exit App';
+
+  @override
+  String get flutter_version => 'Flutter Version';
+
+  @override
+  String get software_team => 'Software Team';
 }

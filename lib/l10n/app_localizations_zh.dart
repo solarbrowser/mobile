@@ -7,10 +7,16 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get welcome => '欢迎使用 Solar';
+  String get welcomeToSolar => '欢迎使用 Solar';
 
   @override
-  String get welcomeSubtitle => '现代、快速、安全的浏览器';
+  String get welcomeDescription => '现代、快速、安全的浏览器';
+
+  @override
+  String get termsOfService => '继续即表示您同意我们的服务条款和隐私政策';
+
+  @override
+  String get whats_new => '新功能';
 
   @override
   String get chooseLanguage => '选择语言';
@@ -22,10 +28,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chooseSearchEngine => '选择搜索引擎';
 
   @override
-  String get light => '浅色';
+  String get lightTheme => '浅色';
 
   @override
-  String get dark => '深色';
+  String get darkTheme => '深色';
 
   @override
   String get next => '下一步';
@@ -46,6 +52,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String version(String version) {
     return '版本 $version';
   }
+
+  @override
+  String get and => '和';
+
+  @override
+  String get data_collection => '数据收集';
+
+  @override
+  String get data_collection_details => '• 我们仅收集浏览器功能所需的最少数据\n• 您的浏览历史保存在您的设备上\n• 我们不会跟踪您的在线活动\n• 您可以随时清除所有数据';
 
   @override
   String get general => '通用设置';
@@ -114,7 +129,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get search_in_page => '页内搜索';
 
   @override
-  String get app_name => 'Solar 浏览器';
+  String get app_name => 'Solar Browser';
 
   @override
   String get search_or_enter_address => '搜索或输入网址';
@@ -399,5 +414,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get exit_confirmation => 'Exit App';
+  String get exit_confirmation => '退出应用';
+
+  @override
+  String get flutter_version => 'Flutter 版本';
+
+  @override
+  String get software_team => '软件团队';
 }

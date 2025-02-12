@@ -7,10 +7,16 @@ class AppLocalizationsPt extends AppLocalizations {
   AppLocalizationsPt([String locale = 'pt']) : super(locale);
 
   @override
-  String get welcome => 'Bem-vindo ao Solar';
+  String get welcomeToSolar => 'Bem-vindo ao Solar';
 
   @override
-  String get welcomeSubtitle => 'Um navegador moderno, rápido e seguro para você';
+  String get welcomeDescription => 'Um navegador moderno, rápido e seguro';
+
+  @override
+  String get termsOfService => 'Ao continuar, você concorda com nossos Termos de Serviço e Política de Privacidade';
+
+  @override
+  String get whats_new => 'Novidades';
 
   @override
   String get chooseLanguage => 'Escolha seu idioma';
@@ -22,10 +28,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get chooseSearchEngine => 'Escolha seu mecanismo de busca';
 
   @override
-  String get light => 'Claro';
+  String get lightTheme => 'Claro';
 
   @override
-  String get dark => 'Escuro';
+  String get darkTheme => 'Escuro';
 
   @override
   String get next => 'Próximo';
@@ -46,6 +52,15 @@ class AppLocalizationsPt extends AppLocalizations {
   String version(String version) {
     return 'Versão $version';
   }
+
+  @override
+  String get and => 'e';
+
+  @override
+  String get data_collection => 'Coleta de dados';
+
+  @override
+  String get data_collection_details => '• Coletamos os dados mínimos necessários para a funcionalidade do navegador\n• Seu histórico de navegação permanece no seu dispositivo\n• Não rastreamos sua atividade online\n• Você pode limpar todos os dados a qualquer momento';
 
   @override
   String get general => 'Geral';
@@ -399,5 +414,11 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get exit_confirmation => 'Exit App';
+  String get exit_confirmation => 'Sair do aplicativo';
+
+  @override
+  String get flutter_version => 'Versão do Flutter';
+
+  @override
+  String get software_team => 'Equipe de Software';
 }

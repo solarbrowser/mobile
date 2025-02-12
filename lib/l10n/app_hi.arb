@@ -1,19 +1,22 @@
 {
   "@@locale": "hi",
   
-  "welcome": "Solar में आपका स्वागत है",
-  "welcomeSubtitle": "एक आधुनिक, तेज़ और सुरक्षित ब्राउज़र",
+  "welcomeToSolar": "Solar में आपका स्वागत है",
+  "welcomeDescription": "एक आधुनिक, तेज़ और सुरक्षित ब्राउज़र",
+  "termsOfService": "जारी रखकर, आप हमारी सेवा की शर्तों और गोपनीयता नीति से सहमत हैं",
   "chooseLanguage": "अपनी भाषा चुनें",
   "chooseTheme": "अपनी थीम चुनें",
   "chooseSearchEngine": "अपना सर्च इंजन चुनें",
-  "light": "लाइट",
-  "dark": "डार्क",
+  "lightTheme": "लाइट",
+  "darkTheme": "डार्क",
   "next": "अगला",
   "back": "वापस",
   "getStarted": "शुरू करें",
   "continueText": "जारी रखें",
-  "updated": "Solar Browser अपडेट हो गया!",
-  "version": "संस्करण {version}",
+  "updated": "Solar ब्राउज़र अपडेट हो गया!",
+  "version": "संस्करण",
+  "flutter_version": "Flutter संस्करण",
+  "software_team": "सॉफ्टवेयर टीम",
   "@version": {
     "placeholders": {
       "version": {
@@ -21,6 +24,9 @@
       }
     }
   },
+  "and": "और",
+  "data_collection": "डेटा संग्रह",
+  "data_collection_details": "• हम ब्राउज़र की कार्यक्षमता के लिए न्यूनतम आवश्यक डेटा एकत्र करते हैं\n• आपका ब्राउज़िंग इतिहास आपके डिवाइस पर रहता है\n• हम आपकी ऑनलाइन गतिविधि को ट्रैक नहीं करते\n• आप किसी भी समय सभी डेटा मिटा सकते हैं",
 
   "general": "सामान्य",
   "appearance": "दिखावट",
@@ -168,5 +174,7 @@
         "example": "example.com"
       }
     }
-  }
+  },
+  "whats_new": "नया क्या है",
+  "exit_confirmation": "ऐप से बाहर निकलें"
 } 

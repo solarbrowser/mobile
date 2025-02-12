@@ -1,13 +1,14 @@
 {
   "@@locale": "zh",
   
-  "welcome": "欢迎使用 Solar",
-  "welcomeSubtitle": "现代、快速、安全的浏览器",
+  "welcomeToSolar": "欢迎使用 Solar",
+  "welcomeDescription": "现代、快速、安全的浏览器",
+  "termsOfService": "继续即表示您同意我们的服务条款和隐私政策",
   "chooseLanguage": "选择语言",
   "chooseTheme": "选择主题",
   "chooseSearchEngine": "选择搜索引擎",
-  "light": "浅色",
-  "dark": "深色",
+  "lightTheme": "浅色",
+  "darkTheme": "深色",
   "next": "下一步",
   "back": "返回",
   "getStarted": "开始使用",
@@ -21,6 +22,9 @@
       }
     }
   },
+  "and": "和",
+  "data_collection": "数据收集",
+  "data_collection_details": "• 我们仅收集浏览器功能所需的最少数据\n• 您的浏览历史保存在您的设备上\n• 我们不会跟踪您的在线活动\n• 您可以随时清除所有数据",
 
   "general": "通用设置",
   "appearance": "外观设置",
@@ -46,7 +50,7 @@
   "history": "浏览历史",
   "bookmarks": "书签",
   "search_in_page": "页内搜索",
-  "app_name": "Solar 浏览器",
+  "app_name": "Solar Browser",
   "search_or_enter_address": "搜索或输入网址",
   "clear_browser_data": "清除浏览数据",
   "browsing_history": "浏览历史",
@@ -161,5 +165,9 @@
         "example": "example.com"
       }
     }
-  }
+  },
+  "whats_new": "新功能",
+  "exit_confirmation": "退出应用",
+  "flutter_version": "Flutter 版本",
+  "software_team": "软件团队"
 } 

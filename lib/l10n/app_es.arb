@@ -1,13 +1,14 @@
 {
   "@@locale": "es",
   
-  "welcome": "Bienvenido a Solar",
-  "welcomeSubtitle": "Un navegador moderno, rápido y seguro",
+  "welcomeToSolar": "Bienvenido a Solar",
+  "welcomeDescription": "Un navegador moderno, rápido y seguro",
+  "termsOfService": "Al continuar, aceptas nuestros Términos de servicio y Política de privacidad",
   "chooseLanguage": "Elige tu idioma",
   "chooseTheme": "Elige tu tema",
   "chooseSearchEngine": "Elige tu motor de búsqueda",
-  "light": "Claro",
-  "dark": "Oscuro",
+  "lightTheme": "Claro",
+  "darkTheme": "Oscuro",
   "next": "Siguiente",
   "back": "Atrás",
   "getStarted": "Comenzar",
@@ -21,6 +22,9 @@
       }
     }
   },
+  "and": "y",
+  "data_collection": "Recopilación de datos",
+  "data_collection_details": "• Recopilamos los datos mínimos necesarios para la funcionalidad del navegador\n• Tu historial de navegación permanece en tu dispositivo\n• No rastreamos tu actividad en línea\n• Puedes borrar todos los datos en cualquier momento",
 
   "general": "General",
   "appearance": "Apariencia",
@@ -161,5 +165,9 @@
         "example": "example.com"
       }
     }
-  }
+  },
+  "whats_new": "Novedades",
+  "exit_confirmation": "Salir de la aplicación",
+  "flutter_version": "Versión de Flutter",
+  "software_team": "Equipo de Software"
 } 

@@ -7,10 +7,16 @@ class AppLocalizationsHi extends AppLocalizations {
   AppLocalizationsHi([String locale = 'hi']) : super(locale);
 
   @override
-  String get welcome => 'Solar में आपका स्वागत है';
+  String get welcomeToSolar => 'Solar में आपका स्वागत है';
 
   @override
-  String get welcomeSubtitle => 'एक आधुनिक, तेज़ और सुरक्षित ब्राउज़र';
+  String get welcomeDescription => 'एक आधुनिक, तेज़ और सुरक्षित ब्राउज़र';
+
+  @override
+  String get termsOfService => 'जारी रखकर, आप हमारी सेवा की शर्तों और गोपनीयता नीति से सहमत हैं';
+
+  @override
+  String get whats_new => 'नया क्या है';
 
   @override
   String get chooseLanguage => 'अपनी भाषा चुनें';
@@ -22,10 +28,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get chooseSearchEngine => 'अपना सर्च इंजन चुनें';
 
   @override
-  String get light => 'लाइट';
+  String get lightTheme => 'लाइट';
 
   @override
-  String get dark => 'डार्क';
+  String get darkTheme => 'डार्क';
 
   @override
   String get next => 'अगला';
@@ -40,12 +46,21 @@ class AppLocalizationsHi extends AppLocalizations {
   String get continueText => 'जारी रखें';
 
   @override
-  String get updated => 'Solar Browser अपडेट हो गया!';
+  String get updated => 'Solar ब्राउज़र अपडेट हो गया!';
 
   @override
   String version(String version) {
-    return 'संस्करण $version';
+    return 'संस्करण';
   }
+
+  @override
+  String get and => 'और';
+
+  @override
+  String get data_collection => 'डेटा संग्रह';
+
+  @override
+  String get data_collection_details => '• हम ब्राउज़र की कार्यक्षमता के लिए न्यूनतम आवश्यक डेटा एकत्र करते हैं\n• आपका ब्राउज़िंग इतिहास आपके डिवाइस पर रहता है\n• हम आपकी ऑनलाइन गतिविधि को ट्रैक नहीं करते\n• आप किसी भी समय सभी डेटा मिटा सकते हैं';
 
   @override
   String get general => 'सामान्य';
@@ -399,5 +414,11 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get exit_confirmation => 'Exit App';
+  String get exit_confirmation => 'ऐप से बाहर निकलें';
+
+  @override
+  String get flutter_version => 'Flutter संस्करण';
+
+  @override
+  String get software_team => 'सॉफ्टवेयर टीम';
 }

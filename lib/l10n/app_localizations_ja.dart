@@ -7,10 +7,16 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
-  String get welcome => 'Solar へようこそ';
+  String get welcomeToSolar => 'Solar へようこそ';
 
   @override
-  String get welcomeSubtitle => 'モダンで高速、安全なブラウザ';
+  String get welcomeDescription => 'モダンで高速、安全なブラウザ';
+
+  @override
+  String get termsOfService => '続行すると、利用規約とプライバシーポリシーに同意したことになります';
+
+  @override
+  String get whats_new => '新機能';
 
   @override
   String get chooseLanguage => '言語を選択';
@@ -22,10 +28,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chooseSearchEngine => '検索エンジンを選択';
 
   @override
-  String get light => 'ライト';
+  String get lightTheme => 'ライト';
 
   @override
-  String get dark => 'ダーク';
+  String get darkTheme => 'ダーク';
 
   @override
   String get next => '次へ';
@@ -37,15 +43,24 @@ class AppLocalizationsJa extends AppLocalizations {
   String get getStarted => '始める';
 
   @override
-  String get continueText => '続ける';
+  String get continueText => '続行';
 
   @override
-  String get updated => 'Solar ブラウザが更新されました！';
+  String get updated => 'Solar Browser がアップデートされました！';
 
   @override
   String version(String version) {
     return 'バージョン $version';
   }
+
+  @override
+  String get and => 'と';
+
+  @override
+  String get data_collection => 'データ収集';
+
+  @override
+  String get data_collection_details => '• ブラウザの機能に必要な最小限のデータのみを収集します\n• 閲覧履歴はお使いのデバイスに保存されます\n• オンライン活動を追跡することはありません\n• データはいつでも消去できます';
 
   @override
   String get general => '一般';
@@ -399,5 +414,11 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get exit_confirmation => 'Exit App';
+  String get exit_confirmation => 'アプリを終了';
+
+  @override
+  String get flutter_version => 'Flutter バージョン';
+
+  @override
+  String get software_team => 'ソフトウェアチーム';
 }

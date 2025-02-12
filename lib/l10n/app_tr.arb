@@ -1,13 +1,14 @@
 {
   "@@locale": "tr",
   
-  "welcome": "Solar'a Hoş Geldiniz",
-  "welcomeSubtitle": "Modern, hızlı ve güvenli bir tarayıcı",
+  "welcomeToSolar": "Solar'a Hoş Geldiniz",
+  "welcomeDescription": "Modern, hızlı ve güvenli bir tarayıcı",
+  "termsOfService": "Devam ederek, Kullanım Koşullarımızı ve Gizlilik Politikamızı kabul etmiş olursunuz",
   "chooseLanguage": "Dilinizi Seçin",
   "chooseTheme": "Temanızı Seçin",
   "chooseSearchEngine": "Arama Motorunuzu Seçin",
-  "light": "Açık",
-  "dark": "Koyu",
+  "lightTheme": "Açık",
+  "darkTheme": "Koyu",
   "next": "İleri",
   "back": "Geri",
   "getStarted": "Başlayın",
@@ -21,6 +22,9 @@
       }
     }
   },
+  "and": "ve",
+  "data_collection": "Veri Toplama",
+  "data_collection_details": "• Tarayıcı işlevselliği için gerekli minimum veriyi topluyoruz\n• Tarama geçmişiniz cihazınızda kalır\n• Çevrimiçi etkinliğinizi takip etmiyoruz\n• Tüm verileri istediğiniz zaman silebilirsiniz",
 
   "general": "Genel",
   "appearance": "Görünüm",
@@ -36,7 +40,6 @@
   "download_location": "İndirme Konumu",
   "ask_download_location": "İndirme Konumunu Sor",
   "rate_us": "Bizi Değerlendirin",
-  "privacy_policy": "Gizlilik Politikası",
   "terms_of_use": "Kullanım Koşulları",
   "customize_browser": "Tarayıcıyı Özelleştir",
   "learn_more": "Daha Fazla Bilgi",
@@ -161,5 +164,10 @@
         "example": "example.com"
       }
     }
-  }
+  },
+  "privacy_policy": "Gizlilik Politikası",
+  "whats_new": "Yenilikler",
+  "exit_confirmation": "Uygulamadan Çık",
+  "flutter_version": "Flutter Sürümü",
+  "software_team": "Yazılım Ekibi"
 } 

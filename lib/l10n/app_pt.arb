@@ -1,16 +1,18 @@
 {
   "@@locale": "pt",
   
-  "welcome": "Bem-vindo ao Solar",
-  "welcomeSubtitle": "Um navegador moderno, rápido e seguro para você",
+  "welcomeToSolar": "Bem-vindo ao Solar",
+  "welcomeDescription": "Um navegador moderno, rápido e seguro",
+  "termsOfService": "Ao continuar, você concorda com nossos Termos de Serviço e Política de Privacidade",
   "chooseLanguage": "Escolha seu idioma",
   "chooseTheme": "Escolha seu tema",
   "chooseSearchEngine": "Escolha seu mecanismo de busca",
-  "light": "Claro",
-  "dark": "Escuro",
+  "lightTheme": "Claro",
+  "darkTheme": "Escuro",
   "next": "Próximo",
   "back": "Voltar",
   "getStarted": "Começar",
+  "welcomeSubtitle": "Um navegador moderno, rápido e seguro para você",
   "continueText": "Continuar",
   "updated": "Solar Browser atualizado!",
   "version": "Versão {version}",
@@ -160,5 +162,12 @@
         "example": "example.com"
       }
     }
-  }
+  },
+  "and": "e",
+  "data_collection": "Coleta de dados",
+  "data_collection_details": "• Coletamos os dados mínimos necessários para a funcionalidade do navegador\n• Seu histórico de navegação permanece no seu dispositivo\n• Não rastreamos sua atividade online\n• Você pode limpar todos os dados a qualquer momento",
+  "whats_new": "Novidades",
+  "exit_confirmation": "Sair do aplicativo",
+  "flutter_version": "Versão do Flutter",
+  "software_team": "Equipe de Software"
 } 

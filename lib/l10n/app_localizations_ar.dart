@@ -7,10 +7,16 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get welcome => 'مرحباً بك في Solar';
+  String get welcomeToSolar => 'مرحباً بك في Solar';
 
   @override
-  String get welcomeSubtitle => 'متصفح حديث وسريع وآمن';
+  String get welcomeDescription => 'متصفح حديث وسريع وآمن';
+
+  @override
+  String get termsOfService => 'بالمتابعة، فإنك توافق على شروط الخدمة وسياسة الخصوصية';
+
+  @override
+  String get whats_new => 'ما الجديد';
 
   @override
   String get chooseLanguage => 'اختر لغتك';
@@ -22,10 +28,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get chooseSearchEngine => 'اختر محرك البحث';
 
   @override
-  String get light => 'فاتح';
+  String get lightTheme => 'فاتح';
 
   @override
-  String get dark => 'داكن';
+  String get darkTheme => 'داكن';
 
   @override
   String get next => 'التالي';
@@ -40,12 +46,21 @@ class AppLocalizationsAr extends AppLocalizations {
   String get continueText => 'متابعة';
 
   @override
-  String get updated => 'تم تحديث Solar Browser!';
+  String get updated => 'تم تحديث متصفح Solar!';
 
   @override
   String version(String version) {
     return 'الإصدار $version';
   }
+
+  @override
+  String get and => 'و';
+
+  @override
+  String get data_collection => 'جمع البيانات';
+
+  @override
+  String get data_collection_details => '• نجمع الحد الأدنى من البيانات اللازمة لوظائف المتصفح\n• يبقى سجل التصفح على جهازك\n• لا نتتبع نشاطك عبر الإنترنت\n• يمكنك مسح جميع البيانات في أي وقت';
 
   @override
   String get general => 'عام';
@@ -399,5 +414,11 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get exit_confirmation => 'Exit App';
+  String get exit_confirmation => 'الخروج من التطبيق';
+
+  @override
+  String get flutter_version => 'إصدار Flutter';
+
+  @override
+  String get software_team => 'فريق البرمجة';
 }

@@ -115,17 +115,29 @@ abstract class AppLocalizations {
     Locale('zh')
   ];
 
-  /// No description provided for @welcome.
+  /// No description provided for @welcomeToSolar.
   ///
   /// In en, this message translates to:
   /// **'Welcome to Solar'**
-  String get welcome;
+  String get welcomeToSolar;
 
-  /// No description provided for @welcomeSubtitle.
+  /// No description provided for @welcomeDescription.
   ///
   /// In en, this message translates to:
   /// **'A modern, fast, and secure browser'**
-  String get welcomeSubtitle;
+  String get welcomeDescription;
+
+  /// No description provided for @termsOfService.
+  ///
+  /// In en, this message translates to:
+  /// **'By continuing, you agree to our Terms of Service and Privacy Policy'**
+  String get termsOfService;
+
+  /// No description provided for @whats_new.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s New'**
+  String get whats_new;
 
   /// No description provided for @chooseLanguage.
   ///
@@ -145,17 +157,17 @@ abstract class AppLocalizations {
   /// **'Choose Your Search Engine'**
   String get chooseSearchEngine;
 
-  /// No description provided for @light.
+  /// No description provided for @lightTheme.
   ///
   /// In en, this message translates to:
   /// **'Light'**
-  String get light;
+  String get lightTheme;
 
-  /// No description provided for @dark.
+  /// No description provided for @darkTheme.
   ///
   /// In en, this message translates to:
   /// **'Dark'**
-  String get dark;
+  String get darkTheme;
 
   /// No description provided for @next.
   ///
@@ -187,11 +199,29 @@ abstract class AppLocalizations {
   /// **'Solar Browser Updated!'**
   String get updated;
 
-  /// No description provided for @version.
+  /// Version label
   ///
   /// In en, this message translates to:
   /// **'Version {version}'**
   String version(String version);
+
+  /// No description provided for @and.
+  ///
+  /// In en, this message translates to:
+  /// **'and'**
+  String get and;
+
+  /// No description provided for @data_collection.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Collection'**
+  String get data_collection;
+
+  /// No description provided for @data_collection_details.
+  ///
+  /// In en, this message translates to:
+  /// **'• We collect minimal data necessary for browser functionality\n• Your browsing history stays on your device\n• We don\'t track your online activity\n• You can clear all data at any time'**
+  String get data_collection_details;
 
   /// No description provided for @general.
   ///
@@ -325,7 +355,7 @@ abstract class AppLocalizations {
   /// **'Search in page'**
   String get search_in_page;
 
-  /// No description provided for @app_name.
+  /// The name of the application
   ///
   /// In en, this message translates to:
   /// **'Solar Browser'**
@@ -888,6 +918,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Exit App'**
   String get exit_confirmation;
+
+  /// Flutter version label
+  ///
+  /// In en, this message translates to:
+  /// **'Flutter Version'**
+  String get flutter_version;
+
+  /// Software team label
+  ///
+  /// In en, this message translates to:
+  /// **'Software Team'**
+  String get software_team;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

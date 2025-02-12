@@ -1,18 +1,19 @@
 {
   "@@locale": "ar",
   
-  "welcome": "مرحباً بك في Solar",
-  "welcomeSubtitle": "متصفح حديث وسريع وآمن",
+  "welcomeToSolar": "مرحباً بك في Solar",
+  "welcomeDescription": "متصفح حديث وسريع وآمن",
+  "termsOfService": "بالمتابعة، فإنك توافق على شروط الخدمة وسياسة الخصوصية",
   "chooseLanguage": "اختر لغتك",
   "chooseTheme": "اختر المظهر",
   "chooseSearchEngine": "اختر محرك البحث",
-  "light": "فاتح",
-  "dark": "داكن",
+  "lightTheme": "فاتح",
+  "darkTheme": "داكن",
   "next": "التالي",
   "back": "رجوع",
   "getStarted": "ابدأ",
   "continueText": "متابعة",
-  "updated": "تم تحديث Solar Browser!",
+  "updated": "تم تحديث متصفح Solar!",
   "version": "الإصدار {version}",
   "@version": {
     "placeholders": {
@@ -21,6 +22,9 @@
       }
     }
   },
+  "and": "و",
+  "data_collection": "جمع البيانات",
+  "data_collection_details": "• نجمع الحد الأدنى من البيانات اللازمة لوظائف المتصفح\n• يبقى سجل التصفح على جهازك\n• لا نتتبع نشاطك عبر الإنترنت\n• يمكنك مسح جميع البيانات في أي وقت",
 
   "general": "عام",
   "appearance": "المظهر",
@@ -161,5 +165,9 @@
         "example": "example.com"
       }
     }
-  }
+  },
+  "whats_new": "ما الجديد",
+  "exit_confirmation": "الخروج من التطبيق",
+  "flutter_version": "إصدار Flutter",
+  "software_team": "فريق البرمجة"
 } 

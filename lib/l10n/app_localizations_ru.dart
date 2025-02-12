@@ -7,10 +7,16 @@ class AppLocalizationsRu extends AppLocalizations {
   AppLocalizationsRu([String locale = 'ru']) : super(locale);
 
   @override
-  String get welcome => 'Добро пожаловать в Solar';
+  String get welcomeToSolar => 'Добро пожаловать в Solar';
 
   @override
-  String get welcomeSubtitle => 'Современный, быстрый и безопасный браузер';
+  String get welcomeDescription => 'Современный, быстрый и безопасный браузер';
+
+  @override
+  String get termsOfService => 'Продолжая, вы соглашаетесь с нашими Условиями использования и Политикой конфиденциальности';
+
+  @override
+  String get whats_new => 'Что нового';
 
   @override
   String get chooseLanguage => 'Выберите язык';
@@ -22,10 +28,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get chooseSearchEngine => 'Выберите поисковую систему';
 
   @override
-  String get light => 'Светлая';
+  String get lightTheme => 'Светлая';
 
   @override
-  String get dark => 'Тёмная';
+  String get darkTheme => 'Тёмная';
 
   @override
   String get next => 'Далее';
@@ -46,6 +52,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String version(String version) {
     return 'Версия $version';
   }
+
+  @override
+  String get and => 'и';
+
+  @override
+  String get data_collection => 'Сбор данных';
+
+  @override
+  String get data_collection_details => '• Мы собираем минимум данных, необходимых для работы браузера\n• Ваша история просмотров остаётся на вашем устройстве\n• Мы не отслеживаем вашу онлайн-активность\n• Вы можете удалить все данные в любое время';
 
   @override
   String get general => 'Общие';
@@ -399,5 +414,11 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get exit_confirmation => 'Exit App';
+  String get exit_confirmation => 'Выйти из приложения';
+
+  @override
+  String get flutter_version => 'Версия Flutter';
+
+  @override
+  String get software_team => 'Команда Разработчиков';
 }
