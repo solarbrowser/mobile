@@ -62,6 +62,16 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
     );
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
     _animationController.forward();
+    
+    // Get system theme
+    final window = WidgetsBinding.instance.window;
+    _isDarkMode = window.platformBrightness == Brightness.dark;
+    
+    // Get system language
+    final locale = window.locale.languageCode;
+    if (_languages.containsKey(locale)) {
+      _selectedLanguage = locale;
+    }
   }
 
   @override
@@ -71,30 +81,23 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
     super.dispose();
   }
 
-  Future<void> _completeOnboarding() async {
+  void _handleContinue() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('first_start', false);
-    await prefs.setString('language', _selectedLanguage);
-    await prefs.setBool('darkMode', _isDarkMode);
-    await prefs.setString('searchEngine', _selectedSearchEngine);
     
-    widget.onLocaleChange(_selectedLanguage);
-    widget.onThemeChange(_isDarkMode);
-    widget.onSearchEngineChange(_selectedSearchEngine);
+    if (!mounted) return;
     
-    if (mounted) {
-      final packageInfo = await PackageInfo.fromPlatform();
-      final currentVersion = packageInfo.version;
-      
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (context) => UpdateScreen(
-            currentVersion: currentVersion,
-            oldVersion: '0.0.0',
-          ),
+    final packageInfo = await PackageInfo.fromPlatform();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => UpdateScreen(
+          currentVersion: packageInfo.version,
+          oldVersion: '0.0.0',
+          onLocaleChange: widget.onLocaleChange,
         ),
-      );
-    }
+      ),
+    );
   }
 
   Widget _buildGlassmorphicContainer({required Widget child}) {
@@ -145,7 +148,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      color: _isDarkMode ? Colors.white : Colors.black,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -154,7 +157,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 16,
-                      color: Colors.black87,
+                      color: _isDarkMode ? Colors.white70 : Colors.black87,
                     ),
                   ),
                 ],
@@ -175,7 +178,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: _isDarkMode ? Colors.white : Colors.black,
           ),
         ),
         const SizedBox(height: 30),
@@ -193,13 +196,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   title: Text(
                     name,
                     style: TextStyle(
-                      color: Colors.black,
+                      color: _isDarkMode ? Colors.white : Colors.black,
                       fontWeight: _selectedLanguage == language ? 
                         FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                   trailing: _selectedLanguage == language ? 
-                    Icon(Icons.check, color: Colors.black) : null,
+                    Icon(Icons.check, color: _isDarkMode ? Colors.white : Colors.black) : null,
                   onTap: () {
                     setState(() {
                       _selectedLanguage = language;
@@ -223,7 +226,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: _isDarkMode ? Colors.white : Colors.black,
           ),
         ),
         const SizedBox(height: 30),
@@ -239,7 +242,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     border: !_isDarkMode ? Border.all(
-                      color: Colors.black,
+                      color: _isDarkMode ? Colors.white : Colors.black,
                       width: 2,
                     ) : null,
                   ),
@@ -248,14 +251,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     children: [
                       Icon(
                         Icons.light_mode,
-                        color: Colors.black,
+                        color: _isDarkMode ? Colors.white : Colors.black,
                         size: 40,
                       ),
                       const SizedBox(height: 10),
                       Text(
                         'Light',
                         style: TextStyle(
-                          color: Colors.black,
+                          color: _isDarkMode ? Colors.white : Colors.black,
                           fontSize: 16,
                         ),
                       ),
@@ -274,7 +277,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     border: _isDarkMode ? Border.all(
-                      color: Colors.black,
+                      color: _isDarkMode ? Colors.white : Colors.black,
                       width: 2,
                     ) : null,
                   ),
@@ -283,14 +286,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     children: [
                       Icon(
                         Icons.dark_mode,
-                        color: Colors.black,
+                        color: _isDarkMode ? Colors.white : Colors.black,
                         size: 40,
                       ),
                       const SizedBox(height: 10),
                       Text(
                         'Dark',
                         style: TextStyle(
-                          color: Colors.black,
+                          color: _isDarkMode ? Colors.white : Colors.black,
                           fontSize: 16,
                         ),
                       ),
@@ -314,7 +317,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: _isDarkMode ? Colors.white : Colors.black,
           ),
         ),
         const SizedBox(height: 30),
@@ -332,13 +335,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   title: Text(
                     name,
                     style: TextStyle(
-                      color: Colors.black,
+                      color: _isDarkMode ? Colors.white : Colors.black,
                       fontWeight: _selectedSearchEngine == engine ? 
                         FontWeight.bold : FontWeight.normal,
                     ),
                   ),
                   trailing: _selectedSearchEngine == engine ? 
-                    Icon(Icons.check, color: Colors.black) : null,
+                    Icon(Icons.check, color: _isDarkMode ? Colors.white : Colors.black) : null,
                   onTap: () {
                     setState(() {
                       _selectedSearchEngine = engine;
@@ -438,7 +441,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   curve: Curves.easeInOut,
                 );
               } else {
-                _completeOnboarding();
+                _handleContinue();
               }
             },
             child: Text(

@@ -1,15 +1,44 @@
 import 'package:webview_flutter/webview_flutter.dart';
 
-class TabInfo {
-  String title;
-  String url;
-  WebViewController controller;
-  String? favicon;
+class BookmarkItem {
+  final String title;
+  final String url;
+  final String? favicon;
 
-  TabInfo({
+  BookmarkItem({
     required this.title,
     required this.url,
-    required this.controller,
+    this.favicon,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'title': title,
+      'url': url,
+      'favicon': favicon,
+    };
+  }
+
+  factory BookmarkItem.fromJson(Map<String, dynamic> json) {
+    return BookmarkItem(
+      title: json['title'] as String,
+      url: json['url'] as String,
+      favicon: json['favicon'] as String?,
+    );
+  }
+}
+
+class BrowserTab {
+  final String id;
+  String url;
+  String title;
+  String? favicon;
+  late WebViewController controller;
+
+  BrowserTab({
+    required this.id,
+    required this.url,
+    required this.title,
     this.favicon,
   });
 } 

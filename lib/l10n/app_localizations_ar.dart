@@ -397,4 +397,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String allow_popups_from(String domain) {
     return 'السماح بالنوافذ المنبثقة من $domain';
   }
+
+  @override
+  String get exit_confirmation => 'Exit App';
 }

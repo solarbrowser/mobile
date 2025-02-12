@@ -397,4 +397,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String allow_popups_from(String domain) {
     return 'Allow pop-ups from $domain';
   }
+
+  @override
+  String get exit_confirmation => 'Exit App';
 }

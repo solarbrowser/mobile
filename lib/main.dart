@@ -59,14 +59,14 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late String _locale;
+  late Locale _locale;
   late bool _isDarkMode;
   late String _searchEngine;
 
   @override
   void initState() {
     super.initState();
-    _locale = widget.initialLocale;
+    _locale = Locale(widget.initialLocale);
     _isDarkMode = widget.initialDarkMode;
     _loadPreferences();
   }
@@ -78,9 +78,10 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  void _handleLocaleChange(String locale) {
+  void _handleLocaleChange(String localeStr) {
+    final parts = localeStr.split('_');
     setState(() {
-      _locale = locale;
+      _locale = Locale(parts[0], parts.length > 1 ? parts[1] : null);
     });
   }
 
@@ -100,32 +101,24 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Solar Browser',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        brightness: _isDarkMode ? Brightness.dark : Brightness.light,
-        primarySwatch: Colors.blue,
         useMaterial3: true,
+        colorScheme: ColorScheme.light(
+          primary: Colors.blue,
+          secondary: Colors.blueAccent,
+        ),
       ),
-      locale: Locale(_locale),
-      supportedLocales: const [
-        Locale('en'),
-        Locale('tr'),
-        Locale('es'),
-        Locale('fr'),
-        Locale('de'),
-        Locale('it'),
-        Locale('pt'),
-        Locale('ru'),
-        Locale('zh'),
-        Locale('ja'),
-        Locale('ar'),
-        Locale('hi'),
-      ],
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.dark(
+          primary: Colors.blue,
+          secondary: Colors.blueAccent,
+        ),
+      ),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: _locale,
       home: Builder(
         builder: (context) {
           if (widget.isFirstStart) {
@@ -138,6 +131,7 @@ class _MyAppState extends State<MyApp> {
             return UpdateScreen(
               currentVersion: widget.currentVersion,
               oldVersion: widget.lastVersion,
+              onLocaleChange: _handleLocaleChange,
             );
           } else {
             return BrowserScreen(

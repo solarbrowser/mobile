@@ -397,4 +397,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String allow_popups_from(String domain) {
     return '$domain से पॉप-अप की अनुमति दें';
   }
+
+  @override
+  String get exit_confirmation => 'Exit App';
 }

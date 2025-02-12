@@ -164,5 +164,6 @@
         "example": "example.com"
       }
     }
-  }
+  },
+  "exit_confirmation": "Exit App"
 } 

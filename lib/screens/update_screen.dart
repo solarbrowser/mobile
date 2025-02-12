@@ -7,11 +7,13 @@ import 'browser_screen.dart';
 class UpdateScreen extends StatefulWidget {
   final String currentVersion;
   final String oldVersion;
+  final Function(String) onLocaleChange;
   
   const UpdateScreen({
     Key? key,
     required this.currentVersion,
     required this.oldVersion,
+    required this.onLocaleChange,
   }) : super(key: key);
 
   @override
@@ -125,17 +127,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: () {
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(
-                        builder: (context) => BrowserScreen(
-                          onLocaleChange: (String locale) {
-                            // Handle locale change
-                          },
-                        ),
-                      ),
-                    );
-                  },
+                  onPressed: _handleUpdateComplete,
                   child: Text(
                     AppLocalizations.of(context)!.continueText,
                     style: TextStyle(
@@ -147,6 +139,17 @@ class _UpdateScreenState extends State<UpdateScreen> {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  void _handleUpdateComplete() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => BrowserScreen(
+          onLocaleChange: widget.onLocaleChange,
         ),
       ),
     );

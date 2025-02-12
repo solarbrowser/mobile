@@ -397,4 +397,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String allow_popups_from(String domain) {
     return 'Разрешить всплывающие окна с $domain';
   }
+
+  @override
+  String get exit_confirmation => 'Exit App';
 }

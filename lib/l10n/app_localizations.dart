@@ -882,6 +882,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Allow pop-ups from {domain}'**
   String allow_popups_from(String domain);
+
+  /// No description provided for @exit_confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit App'**
+  String get exit_confirmation;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

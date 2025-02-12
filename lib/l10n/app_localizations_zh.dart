@@ -397,4 +397,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String allow_popups_from(String domain) {
     return '允许来自 $domain 的弹窗';
   }
+
+  @override
+  String get exit_confirmation => 'Exit App';
 }
