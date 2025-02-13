@@ -13,6 +13,7 @@ import 'app_localizations_fr.dart';
 import 'app_localizations_hi.dart';
 import 'app_localizations_it.dart';
 import 'app_localizations_ja.dart';
+import 'app_localizations_ko.dart';
 import 'app_localizations_pt.dart';
 import 'app_localizations_ru.dart';
 import 'app_localizations_tr.dart';
@@ -110,6 +111,7 @@ abstract class AppLocalizations {
     Locale('hi'),
     Locale('it'),
     Locale('ja'),
+    Locale('ko'),
     Locale('pt'),
     Locale('ru'),
     Locale('zh')
@@ -192,6 +194,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue'**
   String get continueText;
+
+  /// Time indicator for events that just happened
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get just_now;
 
   /// No description provided for @updated.
   ///
@@ -541,7 +549,7 @@ abstract class AppLocalizations {
   /// **'Desktop Site'**
   String get desktop_site;
 
-  /// No description provided for @new_tab.
+  /// Label for new tab button
   ///
   /// In en, this message translates to:
   /// **'New Tab'**
@@ -930,6 +938,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Software Team'**
   String get software_team;
+
+  /// Option to download an image
+  ///
+  /// In en, this message translates to:
+  /// **'Download Image'**
+  String get download_image;
+
+  /// Option to share an image
+  ///
+  /// In en, this message translates to:
+  /// **'Share Image'**
+  String get share_image;
+
+  /// Option to open something in a new tab
+  ///
+  /// In en, this message translates to:
+  /// **'Open in New Tab'**
+  String get open_in_new_tab;
+
+  /// Status message when a file is being downloaded
+  ///
+  /// In en, this message translates to:
+  /// **'Downloading...'**
+  String get downloading;
+
+  /// Message shown when there are no downloads
+  ///
+  /// In en, this message translates to:
+  /// **'No downloads yet'**
+  String get no_downloads_yet;
+
+  /// Used when a name or value is not known
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get unknown;
+
+  /// Message shown when user needs to press back again to exit the app
+  ///
+  /// In en, this message translates to:
+  /// **'Press back again to exit'**
+  String get press_back_to_exit;
+
+  /// Title for the storage permission request page
+  ///
+  /// In en, this message translates to:
+  /// **'Storage Permission Required'**
+  String get storage_permission_required;
+
+  /// Description explaining why storage permission is needed
+  ///
+  /// In en, this message translates to:
+  /// **'Solar Browser needs storage permission to download files and save them to your device. This allows you to access your downloads later.'**
+  String get storage_permission_description;
+
+  /// Button text to grant storage permission
+  ///
+  /// In en, this message translates to:
+  /// **'Grant Permission'**
+  String get grant_permission;
+
+  /// Message shown when storage permission is denied
+  ///
+  /// In en, this message translates to:
+  /// **'Storage permission is required for downloads'**
+  String get storage_permission_denied;
+
+  /// Label for new incognito tab button
+  ///
+  /// In en, this message translates to:
+  /// **'New Incognito Tab'**
+  String get new_incognito_tab;
+
+  /// Label for incognito mode
+  ///
+  /// In en, this message translates to:
+  /// **'Incognito Mode'**
+  String get incognito_mode;
+
+  /// Description of incognito mode features
+  ///
+  /// In en, this message translates to:
+  /// **'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally'**
+  String get incognito_description;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
@@ -941,7 +1033,7 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['ar', 'de', 'en', 'es', 'fr', 'hi', 'it', 'ja', 'pt', 'ru', 'tr', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['ar', 'de', 'en', 'es', 'fr', 'hi', 'it', 'ja', 'ko', 'pt', 'ru', 'tr', 'zh'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -960,6 +1052,7 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
     case 'hi': return AppLocalizationsHi();
     case 'it': return AppLocalizationsIt();
     case 'ja': return AppLocalizationsJa();
+    case 'ko': return AppLocalizationsKo();
     case 'pt': return AppLocalizationsPt();
     case 'ru': return AppLocalizationsRu();
     case 'tr': return AppLocalizationsTr();

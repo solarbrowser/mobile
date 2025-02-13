@@ -1,0 +1,121 @@
+{
+  "ar": [
+    "storage_permission_required",
+    "storage_permission_description",
+    "grant_permission",
+    "storage_permission_denied",
+    "new_incognito_tab",
+    "incognito_mode",
+    "incognito_description"
+  ],
+
+  "de": [
+    "storage_permission_required",
+    "storage_permission_description",
+    "grant_permission",
+    "storage_permission_denied",
+    "new_incognito_tab",
+    "incognito_mode",
+    "incognito_description"
+  ],
+
+  "es": [
+    "storage_permission_required",
+    "storage_permission_description",
+    "grant_permission",
+    "storage_permission_denied",
+    "new_incognito_tab",
+    "incognito_mode",
+    "incognito_description"
+  ],
+
+  "fr": [
+    "storage_permission_required",
+    "storage_permission_description",
+    "grant_permission",
+    "storage_permission_denied",
+    "new_incognito_tab",
+    "incognito_mode",
+    "incognito_description"
+  ],
+
+  "hi": [
+    "storage_permission_required",
+    "storage_permission_description",
+    "grant_permission",
+    "storage_permission_denied",
+    "new_incognito_tab",
+    "incognito_mode",
+    "incognito_description"
+  ],
+
+  "it": [
+    "storage_permission_required",
+    "storage_permission_description",
+    "grant_permission",
+    "storage_permission_denied",
+    "new_incognito_tab",
+    "incognito_mode",
+    "incognito_description"
+  ],
+
+  "ja": [
+    "storage_permission_required",
+    "storage_permission_description",
+    "grant_permission",
+    "storage_permission_denied",
+    "new_incognito_tab",
+    "incognito_mode",
+    "incognito_description"
+  ],
+
+  "ko": [
+    "storage_permission_required",
+    "storage_permission_description",
+    "grant_permission",
+    "storage_permission_denied",
+    "new_incognito_tab",
+    "incognito_mode",
+    "incognito_description"
+  ],
+
+  "pt": [
+    "storage_permission_required",
+    "storage_permission_description",
+    "grant_permission",
+    "storage_permission_denied",
+    "new_incognito_tab",
+    "incognito_mode",
+    "incognito_description"
+  ],
+
+  "ru": [
+    "storage_permission_required",
+    "storage_permission_description",
+    "grant_permission",
+    "storage_permission_denied",
+    "new_incognito_tab",
+    "incognito_mode",
+    "incognito_description"
+  ],
+
+  "tr": [
+    "storage_permission_required",
+    "storage_permission_description",
+    "grant_permission",
+    "storage_permission_denied",
+    "new_incognito_tab",
+    "incognito_mode",
+    "incognito_description"
+  ],
+
+  "zh": [
+    "storage_permission_required",
+    "storage_permission_description",
+    "grant_permission",
+    "storage_permission_denied",
+    "new_incognito_tab",
+    "incognito_mode",
+    "incognito_description"
+  ]
+}

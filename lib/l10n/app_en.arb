@@ -17,6 +17,10 @@
   "@continueText": {
     "description": "Continue button text"
   },
+  "just_now": "Just now",
+  "@just_now": {
+    "description": "Time indicator for events that just happened"
+  },
   "updated": "Solar Browser Updated!",
   "version": "Version {version}",
   "@version": {
@@ -88,6 +92,9 @@
   "find_in_page": "Find in Page",
   "desktop_site": "Desktop Site",
   "new_tab": "New Tab",
+  "@new_tab": {
+    "description": "Label for new tab button"
+  },
   "close_tab": "Close Tab",
   "tab_overview": "Tab Overview",
   "home": "Home",
@@ -182,5 +189,66 @@
   "software_team": "Software Team",
   "@software_team": {
     "description": "Software team label"
+  },
+  "download_image": "Download Image",
+  "@download_image": {
+    "description": "Option to download an image"
+  },
+  
+  "share_image": "Share Image",
+  "@share_image": {
+    "description": "Option to share an image"
+  },
+  
+  "open_in_new_tab": "Open in New Tab",
+  "@open_in_new_tab": {
+    "description": "Option to open something in a new tab"
+  },
+  
+  "downloading": "Downloading...",
+  "@downloading": {
+    "description": "Status message when a file is being downloaded"
+  },
+  
+  "no_downloads_yet": "No downloads yet",
+  "@no_downloads_yet": {
+    "description": "Message shown when there are no downloads"
+  },
+  
+  "unknown": "Unknown",
+  "@unknown": {
+    "description": "Used when a name or value is not known"
+  },
+  "press_back_to_exit": "Press back again to exit",
+  "@press_back_to_exit": {
+    "description": "Message shown when user needs to press back again to exit the app"
+  },
+  "storage_permission_required": "Storage Permission Required",
+  "@storage_permission_required": {
+    "description": "Title for the storage permission request page"
+  },
+  "storage_permission_description": "Solar Browser needs storage permission to download files and save them to your device. This allows you to access your downloads later.",
+  "@storage_permission_description": {
+    "description": "Description explaining why storage permission is needed"
+  },
+  "grant_permission": "Grant Permission",
+  "@grant_permission": {
+    "description": "Button text to grant storage permission"
+  },
+  "storage_permission_denied": "Storage permission is required for downloads",
+  "@storage_permission_denied": {
+    "description": "Message shown when storage permission is denied"
+  },
+  "new_incognito_tab": "New Incognito Tab",
+  "@new_incognito_tab": {
+    "description": "Label for new incognito tab button"
+  },
+  "incognito_mode": "Incognito Mode",
+  "@incognito_mode": {
+    "description": "Label for incognito mode"
+  },
+  "incognito_description": "In Incognito mode:\n• Browsing history isn't saved\n• Cookies are cleared when you close tabs\n• No data is stored locally",
+  "@incognito_description": {
+    "description": "Description of incognito mode features"
   }
 } 

@@ -46,6 +46,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get continueText => 'Continue';
 
   @override
+  String get just_now => 'Just now';
+
+  @override
   String get updated => 'Solar Browser Updated!';
 
   @override
@@ -421,4 +424,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get software_team => 'Software Team';
+
+  @override
+  String get download_image => 'Download Image';
+
+  @override
+  String get share_image => 'Share Image';
+
+  @override
+  String get open_in_new_tab => 'Open in New Tab';
+
+  @override
+  String get downloading => 'Downloading...';
+
+  @override
+  String get no_downloads_yet => 'No downloads yet';
+
+  @override
+  String get unknown => 'Unknown';
+
+  @override
+  String get press_back_to_exit => 'Press back again to exit';
+
+  @override
+  String get storage_permission_required => 'Storage Permission Required';
+
+  @override
+  String get storage_permission_description => 'Solar Browser needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
+
+  @override
+  String get grant_permission => 'Grant Permission';
+
+  @override
+  String get storage_permission_denied => 'Storage permission is required for downloads';
+
+  @override
+  String get new_incognito_tab => 'New Incognito Tab';
+
+  @override
+  String get incognito_mode => 'Incognito Mode';
+
+  @override
+  String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
 }

@@ -46,6 +46,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get continueText => '继续';
 
   @override
+  String get just_now => '刚刚';
+
+  @override
   String get updated => 'Solar 浏览器已更新！';
 
   @override
@@ -421,4 +424,46 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get software_team => '软件团队';
+
+  @override
+  String get download_image => '下载图片';
+
+  @override
+  String get share_image => '分享图片';
+
+  @override
+  String get open_in_new_tab => '在新标签页中打开';
+
+  @override
+  String get downloading => '下载中...';
+
+  @override
+  String get no_downloads_yet => '暂无下载';
+
+  @override
+  String get unknown => '未知';
+
+  @override
+  String get press_back_to_exit => '再按一次退出';
+
+  @override
+  String get storage_permission_required => 'Storage Permission Required';
+
+  @override
+  String get storage_permission_description => 'Solar Browser needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
+
+  @override
+  String get grant_permission => 'Grant Permission';
+
+  @override
+  String get storage_permission_denied => 'Storage permission is required for downloads';
+
+  @override
+  String get new_incognito_tab => 'New Incognito Tab';
+
+  @override
+  String get incognito_mode => 'Incognito Mode';
+
+  @override
+  String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
 }

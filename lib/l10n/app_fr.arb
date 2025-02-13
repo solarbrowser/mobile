@@ -169,5 +169,16 @@
   "whats_new": "Nouveautés",
   "exit_confirmation": "Quitter l'application",
   "flutter_version": "Version de Flutter",
-  "software_team": "Équipe Logicielle"
+  "software_team": "Équipe Logicielle",
+  "download_image": "Télécharger l'image",
+  "share_image": "Partager l'image",
+  "open_in_new_tab": "Ouvrir dans un nouvel onglet",
+  "downloading": "Téléchargement en cours...",
+  "no_downloads_yet": "Aucun téléchargement",
+  "unknown": "Inconnu",
+  "just_now": "à l'instant",
+  "press_back_to_exit": "Appuyez à nouveau pour quitter",
+  "@press_back_to_exit": {
+    "description": "Message shown when user needs to press back again to exit the app"
+  }
 } 

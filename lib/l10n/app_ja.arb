@@ -174,5 +174,16 @@
   "whats_new": "新機能",
   "exit_confirmation": "アプリを終了",
   "flutter_version": "Flutter バージョン",
-  "software_team": "ソフトウェアチーム"
+  "software_team": "ソフトウェアチーム",
+  "download_image": "画像をダウンロード",
+  "share_image": "画像を共有",
+  "open_in_new_tab": "新しいタブで開く",
+  "downloading": "ダウンロード中...",
+  "no_downloads_yet": "ダウンロードはありません",
+  "unknown": "不明",
+  "just_now": "たった今",
+  "press_back_to_exit": "もう一度押すと終了します",
+  "@press_back_to_exit": {
+    "description": "Message shown when user needs to press back again to exit the app"
+  }
 } 

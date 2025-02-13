@@ -24,6 +24,10 @@ import 'package:flutter_phoenix/flutter_phoenix.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
+import '../widgets/custom_dialog.dart';
+import '../widgets/custom_notification.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:flutter/services.dart';
 
 class Debouncer {
   final int milliseconds;
@@ -63,12 +67,14 @@ class BrowserTab {
   String title;
   String? favicon;
   late WebViewController controller;
+  bool isIncognito = false;
 
   BrowserTab({
     required this.id,
     required this.url,
     this.title = '',
     this.favicon,
+    this.isIncognito = false,
   }) {
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -156,7 +162,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   bool isDarkMode = false;
   double textScale = 1.0;
   bool showImages = true;
-  String currentSearchEngine = 'google';
+  String currentSearchEngine = 'Google';
   bool isSearchMode = false;
   String _displayUrl = '';
   bool _isUrlBarExpanded = false;
@@ -253,6 +259,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     'Google': 'https://www.google.com/search?q={query}',
     'Bing': 'https://www.bing.com/search?q={query}',
     'DuckDuckGo': 'https://duckduckgo.com/?q={query}',
+    'Brave': 'https://search.brave.com/search?q={query}',
     'Yahoo': 'https://search.yahoo.com/search?p={query}',
     'Yandex': 'https://yandex.com/search/?text={query}',
   };
@@ -314,42 +321,14 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   @override
   void initState() {
     super.initState();
-    
-    // Initialize animation controllers
-    _slideUpController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideUpController,
-      curve: Curves.easeOutCubic,
-      reverseCurve: Curves.easeInCubic,
-    ));
-
-    // Add animation status listener for slide animation
-    _slideUpController.addStatusListener((status) {
-      if (status == AnimationStatus.dismissed) {
-        setState(() {
-          _isSlideUpPanelVisible = false;
-        });
-      } else if (status == AnimationStatus.completed) {
-        setState(() {
-          _isSlideUpPanelVisible = true;
-        });
-      }
-    });
-
-    // Initialize other controllers
+    _initializeControllers();
     _urlController = TextEditingController();
     _urlFocusNode = FocusNode();
     _initializeWebView();
     _loadPreferences();
     _loadBookmarks();
-    _addNewTab();
+    _loadDownloads();
+    // Moved _addNewTab() to didChangeDependencies
 
     // Set up URL focus listener
     _urlFocusNode.addListener(() {
@@ -369,6 +348,14 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       systemNavigationBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
       statusBarBrightness: isDarkMode ? Brightness.dark : Brightness.light,
     ));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (tabs.isEmpty) {
+      _addNewTab();
+    }
   }
 
   @override
@@ -601,9 +588,76 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.transparent)
       ..enableZoom(false)
+      ..addJavaScriptChannel(
+        'ImageHandler',
+        onMessageReceived: (JavaScriptMessage message) {
+          try {
+            final data = json.decode(message.message);
+            _tapPosition = Offset(data['x'].toDouble(), data['y'].toDouble());
+            _showImageOptions(data['url']);
+          } catch (e) {
+            _showImageOptions(message.message);
+          }
+        },
+      )
       ..setNavigationDelegate(NavigationDelegate(
         onPageStarted: (String url) async {
           if (!mounted) return;
+          
+          // Inject JavaScript for handling image long-press
+          await controller.runJavaScript('''
+            document.addEventListener('DOMContentLoaded', function() {
+              // Prevent default context menu on all images
+              document.querySelectorAll('img').forEach(function(img) {
+                img.addEventListener('contextmenu', function(e) {
+                  e.preventDefault();
+                  window.ImageHandler.postMessage(JSON.stringify({
+                    url: e.target.src,
+                    x: e.clientX,
+                    y: e.clientY
+                  }));
+                });
+                
+                let touchStartTime;
+                let touchTimeout;
+                let touchStartX;
+                let touchStartY;
+                let isTouching = false;
+                
+                img.addEventListener('touchstart', function(e) {
+                  isTouching = true;
+                  touchStartTime = new Date().getTime();
+                  touchStartX = e.touches[0].clientX;
+                  touchStartY = e.touches[0].clientY;
+                  touchTimeout = setTimeout(function() {
+                    if (isTouching) {
+                      e.preventDefault();
+                      window.ImageHandler.postMessage(JSON.stringify({
+                        url: e.target.src,
+                        x: touchStartX,
+                        y: touchStartY
+                      }));
+                    }
+                  }, 500);
+                }, { passive: false });
+                
+                img.addEventListener('touchend', function() {
+                  isTouching = false;
+                  clearTimeout(touchTimeout);
+                });
+                
+                img.addEventListener('touchmove', function(e) {
+                  const moveX = Math.abs(e.touches[0].clientX - touchStartX);
+                  const moveY = Math.abs(e.touches[0].clientY - touchStartY);
+                  if (moveX > 10 || moveY > 10) {
+                    isTouching = false;
+                    clearTimeout(touchTimeout);
+                  }
+                });
+              });
+            });
+          ''');
+          
           setState(() {
             isLoading = true;
             _displayUrl = url;
@@ -822,53 +876,96 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   Future<void> _saveToHistory(String url, String title) async {
-    // Skip saving homepage URLs
-    if (url == _homeUrl || 
-        url.startsWith('file:///') || 
-        url.startsWith('about:blank') ||
-        url == 'about:blank' ||
-        title == 'Solar Home Page' ||
-        url.isEmpty) {
+    // Skip saving history in incognito mode
+    if (tabs[currentTabIndex].isIncognito) {
       return;
     }
 
-    final prefs = await SharedPreferences.getInstance();
-    final history = prefs.getStringList('history') ?? [];
-    
-    // Check if URL already exists in recent history to avoid duplicates
-    final entry = json.encode({
-      'url': url,
-      'title': title,
-      'timestamp': DateTime.now().toIso8601String(),
-    });
-    
-    // Remove older entries of the same URL
-    history.removeWhere((item) {
-      final decoded = json.decode(item);
-      return decoded['url'] == url;
-    });
-    
-    // Add new entry at the beginning
-    history.insert(0, entry);
-    
-    // Limit history size
-    if (history.length > 100) {
-      history.removeLast();
+    if (mounted) {
+      final prefs = await SharedPreferences.getInstance();
+      final String entry = json.encode({
+        'url': url,
+        'title': title,
+        'favicon': tabs[currentTabIndex].favicon,
+        'timestamp': DateTime.now().toIso8601String(),
+      });
+
+      final history = prefs.getStringList('history') ?? [];
+      
+      // Check if URL already exists in recent history to avoid duplicates
+      history.removeWhere((item) {
+        final Map<String, dynamic> decoded = json.decode(item);
+        return decoded['url'] == url;
+      });
+
+      history.insert(0, entry);
+
+      // Limit history size
+      if (history.length > 100) {
+        history.removeLast();
+      }
+
+      await prefs.setStringList('history', history);
+      setState(() {
+        _loadedHistory = history.map((e) => Map<String, dynamic>.from(json.decode(e))).toList();
+      });
     }
-    
-    await prefs.setStringList('history', history);
-    setState(() {
-      _loadedHistory = history.map((e) => Map<String, dynamic>.from(json.decode(e))).toList();
-    });
+  }
+
+  void _updateHistory(String url, String title) {
+    // Skip updating history for special cases
+    if (tabs[currentTabIndex].isIncognito ||  // Skip incognito
+        url.isEmpty || title.isEmpty ||        // Skip empty entries
+        url == 'about:blank' ||               // Skip blank pages
+        url.startsWith('file://') ||          // Skip file URLs
+        url.contains('file:///') ||           // Skip file URLs (alternate format)
+        url.endsWith('main.html') ||          // Skip main.html
+        title == 'New Tab' ||                 // Skip new tabs
+        title == 'Webpage not available' ||    // Skip error pages
+        title == 'Solar Home Page' ||         // Skip Solar home
+        title.toLowerCase().contains('not available') || // Skip all error variations
+        title.toLowerCase().contains('solar') ||        // Skip all Solar pages
+        title.toLowerCase().contains('webpage') ||      // Skip webpage messages
+        title == tabs[currentTabIndex].title) {        // Skip if title hasn't changed
+      return;
+    }
+
+    // Only save if it's a valid web URL
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        _loadedHistory.insert(0, {
+          'url': url,
+          'title': title,
+          'favicon': tabs[currentTabIndex].favicon,
+          'timestamp': DateTime.now().toIso8601String(),
+        });
+      });
+      _saveHistory();
+    }
   }
 
   Future<void> _loadUrl(String url) async {
+    if (currentSearchEngine.isEmpty) {
+      showCustomNotification(
+        context: context,
+        message: "Please select a search engine in settings first",
+        icon: Icons.warning,
+        iconColor: Colors.orange,
+        isDarkMode: isDarkMode,
+      );
+      return;
+    }
+
     String formattedUrl = url.trim();
     if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
       if (formattedUrl.contains('.') && !formattedUrl.contains(' ')) {
         formattedUrl = 'https://$formattedUrl';
       } else {
-        final engine = searchEngines[currentSearchEngine] ?? searchEngines['google']!;
+        final engine = searchEngines[currentSearchEngine] ?? searchEngines['Google']!;
         formattedUrl = engine.replaceAll('{query}', formattedUrl);
       }
     }
@@ -967,120 +1064,87 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     bool clearPasswords = false;
     bool clearFormData = false;
 
-    showDialog(
+    showCustomDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          title: Text(
-            AppLocalizations.of(context)!.clear_browser_data,
-            style: TextStyle(
-              color: isDarkMode ? Colors.white : Colors.black,
-            ),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              CheckboxListTile(
-                value: clearHistory,
-                onChanged: (value) => setState(() => clearHistory = value!),
-                title: Text(
-                  AppLocalizations.of(context)!.browsing_history,
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-                ),
-              ),
-              CheckboxListTile(
-                value: clearCookies,
-                onChanged: (value) => setState(() => clearCookies = value!),
-                title: Text(
-                  AppLocalizations.of(context)!.cookies,
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-                ),
-              ),
-              CheckboxListTile(
-                value: clearCache,
-                onChanged: (value) => setState(() => clearCache = value!),
-                title: Text(
-                  AppLocalizations.of(context)!.cache,
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-                ),
-              ),
-              CheckboxListTile(
-                value: clearFormData,
-                onChanged: (value) => setState(() => clearFormData = value!),
-                title: Text(
-                  AppLocalizations.of(context)!.form_data,
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-                ),
-              ),
-              CheckboxListTile(
-                value: clearPasswords,
-                onChanged: (value) => setState(() => clearPasswords = value!),
-                title: Text(
-                  AppLocalizations.of(context)!.saved_passwords,
-                  style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                AppLocalizations.of(context)!.cancel,
+      title: AppLocalizations.of(context)!.clear_browser_data,
+      isDarkMode: isDarkMode,
+      customContent: StatefulBuilder(
+        builder: (context, setState) => Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CheckboxListTile(
+              value: clearHistory,
+              onChanged: (value) => setState(() => clearHistory = value!),
+              title: Text(
+                AppLocalizations.of(context)!.browsing_history,
                 style: TextStyle(
-                  color: isDarkMode ? Colors.white70 : Colors.black54,
+                  color: isDarkMode ? Colors.white : Colors.black,
                 ),
               ),
             ),
-            TextButton(
-              onPressed: () async {
-                if (clearCache) await controller.clearCache();
-                if (clearCookies) await controller.clearLocalStorage();
-                if (clearHistory) {
-                  final prefs = await SharedPreferences.getInstance();
-                  await prefs.remove('history');
-                  setState(() {
-                    _loadedHistory.clear();
-                    _currentHistoryPage = 0;
-                  });
-                }
-                if (clearFormData) {
-                  await controller.runJavaScript('''
-                    localStorage.clear();
-                    sessionStorage.clear();
-                  ''');
-                }
-                if (clearPasswords) {
-                  final prefs = await SharedPreferences.getInstance();
-                  await prefs.remove('savedPasswords');
-                }
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(AppLocalizations.of(context)!.browser_data_cleared)),
-                );
-              },
-              child: Text(
-                AppLocalizations.of(context)!.clear,
+            CheckboxListTile(
+              value: clearCookies,
+              onChanged: (value) => setState(() => clearCookies = value!),
+              title: Text(
+                AppLocalizations.of(context)!.cookies,
                 style: TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.bold,
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+            ),
+            CheckboxListTile(
+              value: clearCache,
+              onChanged: (value) => setState(() => clearCache = value!),
+              title: Text(
+                AppLocalizations.of(context)!.cache,
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
                 ),
               ),
             ),
           ],
         ),
       ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            AppLocalizations.of(context)!.cancel,
+            style: TextStyle(
+              color: isDarkMode ? Colors.white70 : Colors.black54,
+            ),
+          ),
+        ),
+        TextButton(
+          onPressed: () async {
+            if (clearCache) await controller.clearCache();
+            if (clearCookies) await controller.clearLocalStorage();
+            if (clearHistory) {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.remove('history');
+              setState(() {
+                _loadedHistory.clear();
+                _currentHistoryPage = 0;
+              });
+            }
+            Navigator.pop(context);
+            showCustomNotification(
+              context: context,
+              message: AppLocalizations.of(context)!.browser_data_cleared,
+              icon: Icons.check_circle,
+              iconColor: Colors.green,
+              isDarkMode: isDarkMode,
+            );
+          },
+          child: Text(
+            AppLocalizations.of(context)!.clear,
+            style: const TextStyle(
+              color: Colors.red,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -1111,7 +1175,8 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           !title.contains('Italiano') && !title.contains('Português') && 
           !title.contains('Русский') && !title.contains('中文') && 
           !title.contains('日本語') && !title.contains('العربية') &&
-          !title.contains('Language') && !title.contains('Search Engine')) {
+          !title.contains('Language') && !title.contains('Search Engine') &&
+          !title.contains('한국어')) {
         trailingWidget = Icon(
           Icons.chevron_right,
           color: isDarkMode ? Colors.white70 : Colors.black45,
@@ -1321,31 +1386,57 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             children: [
               _buildSettingsSection(
                 title: AppLocalizations.of(context)!.chooseSearchEngine,
-                children: searchEngines.keys.map((engine) {
-                  final isSelected = currentSearchEngine == engine;
-                  return _buildSettingsItem(
-                    title: engine.toUpperCase(),
-                    trailing: isSelected ? Icon(Icons.check, color: Colors.blue) : null,
-                    onTap: () {
-                      setState(() {
-                        currentSearchEngine = engine;
-                        if (_syncHomePageSearchEngine) {
-                          _homePageSearchEngine = engine;
-                        }
-                      });
-                      widget.onSearchEngineChange?.call(engine);
-                      Navigator.pop(context);
-                    },
-                    isFirst: engine == searchEngines.keys.first,
-                    isLast: engine == searchEngines.keys.last,
-                  );
-                }).toList(),
+                children: [
+                  _buildSettingsItem(
+                    title: 'Google',
+                    onTap: () => _setSearchEngine('Google'),
+                    isFirst: true,
+                    trailing: currentSearchEngine == 'Google' ? Icon(Icons.check, color: Colors.blue) : null,
+                  ),
+                  _buildSettingsItem(
+                    title: 'Bing',
+                    onTap: () => _setSearchEngine('Bing'),
+                    trailing: currentSearchEngine == 'Bing' ? Icon(Icons.check, color: Colors.blue) : null,
+                  ),
+                  _buildSettingsItem(
+                    title: 'DuckDuckGo',
+                    onTap: () => _setSearchEngine('DuckDuckGo'),
+                    trailing: currentSearchEngine == 'DuckDuckGo' ? Icon(Icons.check, color: Colors.blue) : null,
+                  ),
+                  _buildSettingsItem(
+                    title: 'Brave',
+                    onTap: () => _setSearchEngine('Brave'),
+                    trailing: currentSearchEngine == 'Brave' ? Icon(Icons.check, color: Colors.blue) : null,
+                  ),
+                  _buildSettingsItem(
+                    title: 'Yahoo',
+                    onTap: () => _setSearchEngine('Yahoo'),
+                    trailing: currentSearchEngine == 'Yahoo' ? Icon(Icons.check, color: Colors.blue) : null,
+                  ),
+                  _buildSettingsItem(
+                    title: 'Yandex',
+                    onTap: () => _setSearchEngine('Yandex'),
+                    isLast: true,
+                    trailing: currentSearchEngine == 'Yandex' ? Icon(Icons.check, color: Colors.blue) : null,
+                  ),
+                ],
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void _setSearchEngine(String engine) {
+    setState(() {
+      currentSearchEngine = engine;
+      if (_syncHomePageSearchEngine) {
+        _homePageSearchEngine = engine;
+      }
+    });
+    widget.onSearchEngineChange?.call(engine);
+    Navigator.pop(context);
   }
 
   String _getSearchUrl(String query) {
@@ -1583,8 +1674,8 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     });
   }
 
-  void _showAboutPage() {
-    Navigator.of(context).push(
+  Future<dynamic> _showAboutPage() {
+    return Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => Scaffold(
           backgroundColor: isDarkMode ? Colors.black : Colors.white,
@@ -1593,7 +1684,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             elevation: 0,
             leading: IconButton(
               icon: Icon(
-                Icons.arrow_back,
+                Icons.chevron_left,
                 color: isDarkMode ? Colors.white : Colors.black,
               ),
               onPressed: () => Navigator.pop(context),
@@ -1639,9 +1730,9 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     );
   }
 
-  Widget _buildPanelHeader(String title, {VoidCallback? onBack}) {
+  Widget _buildPanelHeader(String title, {VoidCallback? onBack, Widget? trailing}) {
     final statusBarHeight = MediaQuery.of(context).padding.top;
-    
+
     String getLocalizedTitle() {
       switch (title) {
         case 'general': return AppLocalizations.of(context)!.general;
@@ -1649,45 +1740,43 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         case 'appearance': return AppLocalizations.of(context)!.appearance;
         case 'help': return AppLocalizations.of(context)!.help;
         case 'about': return AppLocalizations.of(context)!.about;
+        case 'quick actions': return 'Quick Actions';
         default: return title;
       }
     }
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        SizedBox(height: statusBarHeight),
-        Container(
-          height: 56,
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+    return Container(
+      padding: EdgeInsets.only(top: statusBarHeight, left: 8, right: 8),
+      height: 56 + statusBarHeight,
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          IconButton(
+            icon: Icon(
+              Icons.chevron_left,
+              color: isDarkMode ? Colors.white : Colors.black,
+            ),
+            onPressed: onBack,
+          ),
+          Expanded(
+            child: Text(
+              getLocalizedTitle(),
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: isDarkMode ? Colors.white : Colors.black,
               ),
             ),
           ),
-          child: Row(
-            children: [
-              IconButton(
-                icon: Icon(
-                  Icons.arrow_back,
-                  color: isDarkMode ? Colors.white : Colors.black,
-                ),
-                onPressed: onBack,
-              ),
-              Text(
-                getLocalizedTitle(),
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: isDarkMode ? Colors.white : Colors.black,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+          if (trailing != null) trailing,
+        ],
+      ),
     );
   }
 
@@ -1712,7 +1801,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                 children: [
                   _buildQuickActionButton(
                     AppLocalizations.of(context)!.settings,
-                    'assets/settings24.png',
+                    Icons.settings_rounded,
                     onPressed: () => setState(() {
                       isSettingsVisible = true;
                       _isSlideUpPanelVisible = false;
@@ -1721,7 +1810,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                   ),
                   _buildQuickActionButton(
                     AppLocalizations.of(context)!.downloads,
-                    'assets/downloads24.png',
+                    Icons.download_rounded,
                     onPressed: () => setState(() {
                       isDownloadsVisible = true;
                       _isSlideUpPanelVisible = false;
@@ -1730,7 +1819,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                   ),
                   _buildQuickActionButton(
                     AppLocalizations.of(context)!.tabs,
-                    'assets/tab24.png',
+                    Icons.tab_rounded,
                     onPressed: () => setState(() {
                       isTabsVisible = true;
                       _isSlideUpPanelVisible = false;
@@ -1739,7 +1828,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                   ),
                   _buildQuickActionButton(
                     AppLocalizations.of(context)!.bookmarks,
-                    'assets/bookmark24.png',
+                    Icons.bookmark_rounded,
                     onPressed: () => setState(() {
                       isBookmarksVisible = true;
                       _isSlideUpPanelVisible = false;
@@ -1755,7 +1844,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     );
   }
 
-  Widget _buildQuickActionButton(String label, String iconPath, {VoidCallback? onPressed}) {
+  Widget _buildQuickActionButton(String label, IconData icon, {VoidCallback? onPressed}) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -1780,7 +1869,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                 borderRadius: BorderRadius.circular(12),
               ),
               child: IconButton(
-                icon: _getQuickActionIcon(iconPath),
+                icon: Icon(icon),
                 onPressed: () {
                   if (onPressed != null) {
                     setState(() {
@@ -1807,26 +1896,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     );
   }
 
-  Widget _getQuickActionIcon(String iconPath) {
-    // Convert asset paths to Flutter icons
-    switch (iconPath) {
-      case 'assets/settings24.png':
-      case 'assets/settings24w.png':
-        return const Icon(Icons.settings_rounded, size: 24);
-      case 'assets/downloads24.png':
-      case 'assets/downloads24w.png':
-        return const Icon(Icons.download_rounded, size: 24);
-      case 'assets/tab24.png':
-      case 'assets/tab24w.png':
-        return const Icon(Icons.tab_rounded, size: 24);
-      case 'assets/bookmark24.png':
-      case 'assets/bookmark24w.png':
-        return const Icon(Icons.bookmark_rounded, size: 24);
-      default:
-        return const Icon(Icons.error, size: 24);
-    }
-  }
-
   Widget _buildSearchPanel() {
     return Container(
       height: 50,
@@ -1843,7 +1912,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                   child: TextField(
                     controller: _urlController,
                     decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context)!.search_in_page,
                       hintStyle: TextStyle(
                         color: isDarkMode ? Colors.white70 : Colors.black54,
                       ),
@@ -2028,176 +2096,241 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   Widget _buildDownloadsPanel() {
-    return Container(
-      color: isDarkMode ? Colors.black : Colors.white,
-      child: Column(
-        children: [
-          _buildPanelHeader(AppLocalizations.of(context)!.downloads, 
-            onBack: () => setState(() => isDownloadsVisible = false)
-          ),
-          Expanded(
-            child: downloads.isEmpty && !isDownloading
-              ? Center(
-                  child: Text(
-                    'No downloads yet',
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
-                    ),
-                  ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  itemCount: isDownloading ? downloads.length + 1 : downloads.length,
-                  itemBuilder: (context, index) {
-                    if (isDownloading && index == 0) {
-                      final downloadedSize = (downloadProgress * (currentDownloadSize ?? 0)).toInt();
-                      final totalSize = currentDownloadSize ?? 0;
-                      final downloadedSizeStr = _formatFileSize(downloadedSize);
-                      final totalSizeStr = _formatFileSize(totalSize);
-                      
-                      return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: ListTile(
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          leading: SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              value: downloadProgress,
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                isDarkMode ? Colors.white70 : Colors.black54,
-                              ),
-                            ),
-                          ),
-                          title: Text(
-                            currentFileName ?? 'Downloading...',
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+    return _buildPanel(
+      header: _buildPanelHeader(
+        AppLocalizations.of(context)!.downloads,
+        onBack: () => setState(() => isDownloadsVisible = false),
+      ),
+      body: downloads.isEmpty && !isDownloading
+          ? _buildEmptyState(
+              AppLocalizations.of(context)!.no_downloads_yet,
+              Icons.download_outlined,
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              itemCount: isDownloading ? downloads.length + 1 : downloads.length,
+              itemBuilder: (context, index) {
+                if (isDownloading && index == 0) {
+                  final downloadedSize = (downloadProgress * (currentDownloadSize ?? 0)).toInt();
+                  final totalSize = currentDownloadSize ?? 0;
+                  final downloadedSizeStr = _formatFileSize(downloadedSize);
+                  final totalSizeStr = _formatFileSize(totalSize);
+                  
+                  return Card(
+                    elevation: 0,
+                    color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
-                              Text(
-                                _extractDomain(currentDownloadUrl),
-                                style: TextStyle(
-                                  color: isDarkMode ? Colors.white70 : Colors.black54,
+                              Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  CircularProgressIndicator(
+                                    value: downloadProgress,
+                                    color: isDarkMode ? Colors.white70 : Colors.black54,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      currentFileName ?? AppLocalizations.of(context)!.downloading,
+                                      style: TextStyle(
+                                        color: isDarkMode ? Colors.white : Colors.black,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      _extractDomain(currentDownloadUrl),
+                                      style: TextStyle(
+                                        color: isDarkMode ? Colors.white54 : Colors.black45,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(height: 4),
-                              LinearProgressIndicator(
-                                value: downloadProgress,
-                                backgroundColor: isDarkMode ? Colors.white10 : Colors.black.withOpacity(0.1),
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  isDarkMode ? Colors.white70 : Colors.black54,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                '$downloadedSizeStr / $totalSizeStr',
-                                style: TextStyle(
-                                  color: isDarkMode ? Colors.white70 : Colors.black54,
-                                ),
+                              IconButton(
+                                icon: const Icon(Icons.close),
+                                onPressed: () {
+                                  setState(() {
+                                    isDownloading = false;
+                                    currentDownloadUrl = '';
+                                    downloadProgress = 0.0;
+                                    currentDownloadSize = null;
+                                  });
+                                },
                               ),
                             ],
                           ),
-                          trailing: IconButton(
-                            icon: Icon(
-                              Icons.close,
+                          const SizedBox(height: 8),
+                          LinearProgressIndicator(
+                            value: downloadProgress,
+                            backgroundColor: isDarkMode ? Colors.white12 : Colors.black12,
+                            valueColor: AlwaysStoppedAnimation(
+                              isDarkMode ? Colors.white70 : Colors.black54,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '$downloadedSizeStr / $totalSizeStr',
+                            style: TextStyle(
+                              color: isDarkMode ? Colors.white54 : Colors.black45,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+                
+                final downloadIndex = isDownloading ? index - 1 : index;
+                final download = downloads[downloadIndex];
+                final fileName = download['fileName'] as String? ?? AppLocalizations.of(context)!.unknown;
+                final timestamp = DateTime.parse(download['timestamp'] as String? ?? DateTime.now().toIso8601String());
+                final sizeStr = download['size'] as String? ?? '0';
+                final filePath = '/storage/emulated/0/Download/$fileName';
+                
+                return Card(
+                  elevation: 0,
+                  color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () async {
+                      await OpenFile.open(filePath);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              Icons.file_download_done,
                               color: isDarkMode ? Colors.white70 : Colors.black54,
                             ),
-                            onPressed: () {
-                              setState(() {
-                                isDownloading = false;
-                                currentDownloadUrl = '';
-                                downloadProgress = 0.0;
-                                currentDownloadSize = null;
-                                currentFileName = null;
-                              });
-                            },
                           ),
-                        ),
-                      );
-                    }
-
-                    final downloadIndex = isDownloading ? index - 1 : index;
-                    final download = downloads[downloadIndex];
-                    final fileName = download['fileName'] as String? ?? 'Unknown';
-                    final timestamp = DateTime.parse(download['timestamp'] as String? ?? DateTime.now().toIso8601String());
-                    final sizeStr = download['size'] as String? ?? '0';
-                    final size = int.tryParse(sizeStr) ?? 0;
-                    final formattedSize = _formatFileSize(size);
-                    
-                    return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        leading: Icon(
-                          Icons.file_download_done,
-                          color: isDarkMode ? Colors.white70 : Colors.black54,
-                        ),
-                        title: Text(
-                          fileName,
-                          style: TextStyle(
-                            color: isDarkMode ? Colors.white : Colors.black,
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  fileName,
+                                  style: TextStyle(
+                                    color: isDarkMode ? Colors.white : Colors.black,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '${_formatDate(timestamp)} • $sizeStr',
+                                  style: TextStyle(
+                                    color: isDarkMode ? Colors.white54 : Colors.black45,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              DateFormat.yMMMd().add_jm().format(timestamp),
-                              style: TextStyle(
-                                color: isDarkMode ? Colors.white70 : Colors.black54,
-                              ),
+                          PopupMenuButton(
+                            icon: Icon(
+                              Icons.more_vert,
+                              color: isDarkMode ? Colors.white70 : Colors.black54,
                             ),
-                            Text(
-                              formattedSize,
-                              style: TextStyle(
-                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                            color: isDarkMode ? Colors.grey[900] : Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            itemBuilder: (context) => [
+                              PopupMenuItem(
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.open_in_new,
+                                      size: 20,
+                                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      AppLocalizations.of(context)!.open,
+                                      style: TextStyle(
+                                        color: isDarkMode ? Colors.white : Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                onTap: () async {
+                                  await OpenFile.open(filePath);
+                                },
                               ),
-                            ),
-                          ],
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(
-                                Icons.file_open,
-                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                              PopupMenuItem(
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.history,
+                                      size: 20,
+                                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      'Remove from History',
+                                      style: TextStyle(
+                                        color: isDarkMode ? Colors.white : Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                onTap: () => _showDeleteDownloadDialog(downloadIndex),
                               ),
-                              onPressed: () async {
-                                final directory = await getApplicationDocumentsDirectory();
-                                final filePath = '${directory.path}/$fileName';
-                                await OpenFile.open(filePath);
-                              },
-                            ),
-                            IconButton(
-                              icon: Icon(
-                                Icons.delete,
-                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                              PopupMenuItem(
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.delete_forever,
+                                      size: 20,
+                                      color: Colors.red,
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      'Delete from Device',
+                                      style: const TextStyle(
+                                        color: Colors.red,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                onTap: () async {
+                                  final file = File(filePath);
+                                  if (await file.exists()) {
+                                    await file.delete();
+                                    _showDeleteDownloadDialog(downloadIndex);
+                                  }
+                                },
                               ),
-                              onPressed: () => _showDeleteDownloadDialog(downloadIndex),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                ),
-          ),
-        ],
-      ),
+                    ),
+                  ),
+                );
+              },
+            ),
     );
   }
 
@@ -2287,7 +2420,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                         subtitle: Text(
                           _getDisplayUrl(bookmark['url']),
                           style: TextStyle(
-                            color: isDarkMode ? Colors.white70 : Colors.black54,
+                            color: isDarkMode ? Colors.white70 : Colors.black45,
                           ),
                         ),
                         trailing: IconButton(
@@ -2635,37 +2768,32 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                 color: isDarkMode 
                   ? Colors.black.withOpacity(0.7) 
                   : Colors.white.withOpacity(0.7),
-                child: SafeArea(
-                  child: TweenAnimationBuilder<double>(
-                    tween: Tween<double>(begin: 0.0, end: 1.0),
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween<double>(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, value, child) {
+                    return Opacity(
+                      opacity: value,
+                      child: child,
+                    );
+                  },
+                  child: AnimatedSlide(
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOutCubic,
-                    builder: (context, value, child) {
-                      return Transform.translate(
-                        offset: Offset(0, (1 - value) * 100),
-                        child: Opacity(
-                          opacity: value,
-                          child: child,
-                        ),
-                      );
-                    },
-                    child: AnimatedSlide(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOutCubic,
-                      offset: isPanelVisible ? Offset.zero : const Offset(0, 1),
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 200),
-                        opacity: isPanelVisible ? 1.0 : 0.0,
-                        child: isTabsVisible 
-                          ? _buildTabsPanel() 
-                          : isSettingsVisible
-                            ? _buildSettingsPanel()
-                            : isBookmarksVisible
-                              ? _buildBookmarksPanel()
-                              : isDownloadsVisible
-                                ? _buildDownloadsPanel()
-                                : Container(),
-                      ),
+                    offset: isPanelVisible ? Offset.zero : const Offset(0, 1),
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 200),
+                      opacity: isPanelVisible ? 1.0 : 0.0,
+                      child: isTabsVisible 
+                        ? _buildTabsPanel() 
+                        : isSettingsVisible
+                          ? _buildSettingsPanel()
+                          : isBookmarksVisible
+                            ? _buildBookmarksPanel()
+                            : isDownloadsVisible
+                              ? _buildDownloadsPanel()
+                              : Container(),
                     ),
                   ),
                 ),
@@ -2735,17 +2863,43 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                     ],
                   ),
                 ),
-                IconButton(
+                PopupMenuButton<String>(
                   icon: Icon(
                     Icons.add,
                     color: isDarkMode ? Colors.white : Colors.black,
                   ),
-                  onPressed: () {
-                    _addNewTab();
+                  onSelected: (String value) {
+                    if (value == 'normal') {
+                      _addNewTab();
+                    } else if (value == 'incognito') {
+                      _addNewTab(isIncognito: true);
+                    }
                     setState(() {
                       isTabsVisible = false;
                     });
                   },
+                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                    PopupMenuItem<String>(
+                      value: 'normal',
+                      child: Row(
+                        children: [
+                          Icon(Icons.tab),
+                          SizedBox(width: 8),
+                          Text(AppLocalizations.of(context)!.new_tab),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'incognito',
+                      child: Row(
+                        children: [
+                          Icon(Icons.visibility_off),
+                          const SizedBox(width: 12),
+                          Text(AppLocalizations.of(context)!.new_incognito_tab),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -2776,7 +2930,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                   )
                 : GridView.builder(
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 4,  // Swapped 2 and 4
+                      crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 4,
                       childAspectRatio: 1.0,
                       crossAxisSpacing: 4,
                       mainAxisSpacing: 4,
@@ -2821,21 +2975,21 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                                   children: [
                                     Center(
                                       child: Container(
-                                        width: 16,  // Smaller icon size
-                                        height: 16, // Smaller icon size
-                                        child: tab.favicon != null
+                                        width: 16,
+                                        height: 16,
+                                        child: tab.favicon != null && !tab.isIncognito
                                           ? Image.network(
                                               tab.favicon!,
                                               fit: BoxFit.contain,
                                               errorBuilder: (context, error, stackTrace) => Icon(
-                                                Icons.public,
-                                                size: 14,  // Even smaller fallback icon
+                                                tab.isIncognito ? Icons.visibility_off : Icons.public,
+                                                size: 14,
                                                 color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
                                               ),
                                             )
                                           : Icon(
-                                              Icons.public,
-                                              size: 14,  // Smaller fallback icon
+                                              tab.isIncognito ? Icons.visibility_off : Icons.public,
+                                              size: 14,
                                               color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
                                             ),
                                       ),
@@ -2853,7 +3007,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                                           ),
                                           child: Icon(
                                             Icons.close,
-                                            size: 12,  // Smaller close button
+                                            size: 12,
                                             color: Colors.white,
                                           ),
                                         ),
@@ -2863,12 +3017,28 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                                 ),
                               ),
                               Padding(
-                                padding: EdgeInsets.all(2),  // Smaller padding
-                                child: Text(
-                                  tab.title.isEmpty ? tab.url : tab.title,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(fontSize: 10),  // Smaller text
+                                padding: EdgeInsets.all(2),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    if (tab.isIncognito)
+                                      Padding(
+                                        padding: EdgeInsets.only(right: 4),
+                                        child: Icon(
+                                          Icons.visibility_off,
+                                          size: 10,
+                                          color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
+                                        ),
+                                      ),
+                                    Expanded(
+                                      child: Text(
+                                        tab.title.isEmpty ? tab.url : tab.title,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(fontSize: 10),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
@@ -3233,47 +3403,35 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   void _showResetConfirmation() {
-    showDialog(
+    showCustomDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: isDarkMode ? Colors.black : Colors.white,
-        title: Text(
-          'Reset Browser',
-          style: TextStyle(
-            color: isDarkMode ? Colors.white : Colors.black,
-          ),
-        ),
-        content: Text(
-          'This will clear all your data including history, bookmarks, and settings. This action cannot be undone.',
-          style: TextStyle(
-            color: isDarkMode ? Colors.white70 : Colors.black87,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: TextStyle(
-                color: isDarkMode ? Colors.white70 : Colors.black54,
-              ),
+      title: AppLocalizations.of(context)!.reset_browser,
+      content: AppLocalizations.of(context)!.reset_browser_confirm,
+      isDarkMode: isDarkMode,
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            AppLocalizations.of(context)!.cancel,
+            style: TextStyle(
+              color: isDarkMode ? Colors.white70 : Colors.black54,
             ),
           ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await _resetBrowser();
-            },
-            child: Text(
-              'Reset',
-              style: TextStyle(
-                color: Colors.red,
-                fontWeight: FontWeight.bold,
-              ),
+        ),
+        TextButton(
+          onPressed: () async {
+            Navigator.pop(context);
+            await _resetBrowser();
+          },
+          child: Text(
+            AppLocalizations.of(context)!.reset,
+            style: const TextStyle(
+              color: Colors.red,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -3293,11 +3451,15 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       currentTabIndex = 0;
     });
     
-    // Load Google homepage
+    // Load homepage
     await controller.loadRequest(Uri.parse('file:///android_asset/main.html'));
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Browser has been reset')),
+    showCustomNotification(
+      context: context,
+      message: AppLocalizations.of(context)!.reset_complete,
+      icon: Icons.check_circle,
+      iconColor: Colors.green,
+      isDarkMode: isDarkMode,
     );
     
     setState(() {
@@ -3480,18 +3642,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           Map<String, dynamic>.from(json.decode(e))).toList();
       });
       
-      _showNotification(
-        Row(
-          children: [
-            const Icon(Icons.bookmark_added, color: Colors.green),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(AppLocalizations.of(context)!.bookmark_added),
-            ),
-          ],
-        ),
-        duration: const Duration(seconds: 4),
-      );
+      _showBookmarkAddedNotification();
     } else {
       _showNotification(
         Row(
@@ -3548,24 +3699,24 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     }
   }
 
-  void _addNewTab({String? url}) {
-    if (tabs.length >= _maxActiveTabs) {
-      _suspendTab(tabs.first);
-    }
-
+  void _addNewTab({String? url, bool isIncognito = false}) {
     final newTab = BrowserTab(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       url: url ?? _homeUrl,
-      title: 'New Tab',
+      title: isIncognito ? AppLocalizations.of(context)!.new_incognito_tab : AppLocalizations.of(context)!.new_tab,
       favicon: null,
+      isIncognito: isIncognito,
     );
-
+    
+    _initializeTab(newTab);
+    
     setState(() {
       tabs.add(newTab);
       currentTabIndex = tabs.length - 1;
+      controller = newTab.controller;            // Added to update the active controller
+      _displayUrl = newTab.url;                   // Added to update the display URL
+      _urlController.text = _formatUrl(newTab.url); // Added to update the URL text field
     });
-
-    _initializeWebView();
   }
 
   void _closeTab(int index) {
@@ -3761,52 +3912,36 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     return await _initializeWebViewController();
   }
 
+  DateTime? _lastBackPressTime;
+
+  Future<bool> _onWillPop() async {
+    if (await controller.canGoBack()) {
+      await _goBack();
+      return false;
+    }
+
+    if (_lastBackPressTime == null || 
+        DateTime.now().difference(_lastBackPressTime!) > const Duration(seconds: 2)) {
+      // Show modern notification using custom notification
+      showCustomNotification(
+        context: context,
+        message: AppLocalizations.of(context)!.press_back_to_exit,
+        icon: Icons.exit_to_app,
+        iconColor: isDarkMode ? Colors.white70 : Colors.black54,
+        isDarkMode: isDarkMode,
+        duration: const Duration(seconds: 2),
+      );
+      
+      _lastBackPressTime = DateTime.now();
+      return false;
+    }
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Add this at the start of build method to make system navigation bar transparent
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarDividerColor: Colors.transparent,
-      statusBarColor: Colors.transparent,
-      systemNavigationBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
-      statusBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
-      statusBarBrightness: isDarkMode ? Brightness.dark : Brightness.light,
-    ));
-
-    // Add WillPopScope at the start of the build method
     return WillPopScope(
-      onWillPop: () async {
-        if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible) {
-          setState(() {
-            isTabsVisible = false;
-            isSettingsVisible = false;
-            isBookmarksVisible = false;
-            isDownloadsVisible = false;
-          });
-          return false;
-        }
-
-        if (await controller.canGoBack()) {
-          controller.goBack();
-          return false;
-        }
-
-        if (tabs.length > 1) {
-          _closeTab(currentTabIndex);
-          return false;
-        }
-
-        // Double back to exit
-        if (_lastBackPress == null || 
-            DateTime.now().difference(_lastBackPress!) > Duration(seconds: 2)) {
-          _lastBackPress = DateTime.now();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Press back again to exit')),
-          );
-          return false;
-        }
-        return true;
-      },
+      onWillPop: _onWillPop,
       child: Scaffold(
         backgroundColor: Colors.transparent,
         extendBody: true,
@@ -4043,6 +4178,96 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   Future<void> _handleDownload(String url) async {
+    if (Platform.isAndroid) {
+      // Get Android version
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      final sdkInt = androidInfo.version.sdkInt;
+      
+      List<Permission> permissions = [];
+      
+      if (sdkInt >= 33) {
+        // Android 13 and above: Request media permissions
+        permissions.addAll([
+          Permission.photos,
+          Permission.videos,
+          Permission.audio,
+        ]);
+      } else {
+        // Android 12 and below: Request storage permission
+        permissions.add(Permission.storage);
+      }
+
+      Map<Permission, PermissionStatus> statuses = await permissions.request();
+      bool allGranted = statuses.values.every((status) => status.isGranted);
+      
+      if (!allGranted) {
+        bool anyPermanentlyDenied = statuses.values.any((status) => status.isPermanentlyDenied);
+        
+        if (anyPermanentlyDenied) {
+          // Show dialog to open settings
+          if (!mounted) return;
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
+              title: Text(
+                AppLocalizations.of(context)!.storage_permission_required,
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+              content: Text(
+                AppLocalizations.of(context)!.storage_permission_description,
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white70 : Colors.black87,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    AppLocalizations.of(context)!.cancel,
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    openAppSettings();
+                  },
+                  child: Text(
+                    AppLocalizations.of(context)!.settings,
+                    style: TextStyle(
+                      color: Theme.of(context).primaryColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          // Show notification that permission is required
+          if (!mounted) return;
+          _showNotification(
+            Row(
+              children: [
+                const Icon(Icons.error, color: Colors.red),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(AppLocalizations.of(context)!.storage_permission_denied),
+                ),
+              ],
+            ),
+            duration: const Duration(seconds: 4),
+          );
+        }
+        return;
+      }
+    }
+
     HttpClient? client;
     IOSink? sink;
     
@@ -4069,8 +4294,13 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         currentFileName = fileName;
       });
 
-      final directory = await getApplicationDocumentsDirectory();
-      final filePath = '${directory.path}/$fileName';
+      // Get the system's Downloads directory
+      final downloadsDirectory = Directory('/storage/emulated/0/Download');
+      if (!await downloadsDirectory.exists()) {
+        await downloadsDirectory.create(recursive: true);
+      }
+      
+      final filePath = '${downloadsDirectory.path}/$fileName';
       final file = File(filePath);
       sink = file.openWrite();
       
@@ -4131,10 +4361,25 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         action: SnackBarAction(
           label: AppLocalizations.of(context)!.open,
           onPressed: () async {
-            await OpenFile.open(filePath);
+            try {
+              await OpenFile.open(filePath);
+            } catch (e) {
+              _showNotification(
+                Text("Error opening file. Please install a suitable app to open this type of file."),
+                duration: const Duration(seconds: 4),
+              );
+            }
           },
         ),
       );
+
+      // Trigger media scanner
+      const platform = MethodChannel('com.vertex.solar/browser');
+      try {
+        await platform.invokeMethod('scanFile', {'path': filePath});
+      } catch (e) {
+        print('Error scanning file: $e');
+      }
     } catch (e) {
       print('Download error: $e');
       client?.close();
@@ -4566,16 +4811,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                   onPressed: canGoBack ? _goBack : null,
                 ),
                 IconButton(
-                  icon: const Icon(Icons.search_rounded, size: 24),
-                  color: isDarkMode ? Colors.white70 : Colors.black54,
-                  onPressed: () {
-                    setState(() {
-                      isSearchMode = true;
-                      _isSlideUpPanelVisible = false;
-                    });
-                  },
-                ),
-                IconButton(
                   icon: Icon(
                     isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
                     size: 24
@@ -4605,291 +4840,137 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     );
   }
 
-  void _showDeveloperPanel() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        decoration: BoxDecoration(
-          color: isDarkMode ? Colors.black : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              height: 56 + MediaQuery.of(context).padding.top,
-              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.arrow_back,
-                      color: isDarkMode ? Colors.white : Colors.black,
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  Text(
-                    'Developer Options',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: isDarkMode ? Colors.white : Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  _buildDevSection(
-                    title: 'Debug Console',
-                    child: Container(
-                      height: 200,
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: isDarkMode ? Colors.grey[900] : Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: SingleChildScrollView(
-                        child: Text(
-                          _debugLog.isEmpty ? 'No debug output yet' : _debugLog,
-                          style: TextStyle(
-                            color: isDarkMode ? Colors.green : Colors.green[900],
-                            fontFamily: 'monospace',
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildDevSection(
-                    title: 'WebView Settings',
-                    child: Column(
-                      children: [
-                        SwitchListTile(
-                          title: Text(
-                            'JavaScript Enabled',
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          subtitle: Text(
-                            AppLocalizations.of(context)!.javascript_description,
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white70 : Colors.black54,
-                            ),
-                          ),
-                          value: true,
-                          onChanged: (value) async {
-                            await controller.setJavaScriptMode(
-                              value ? JavaScriptMode.unrestricted : JavaScriptMode.disabled
-                            );
-                            setState(() {});
-                          },
-                        ),
-                        SwitchListTile(
-                          title: Text(
-                            'Load Images',
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          subtitle: Text(
-                            'Load images on web pages',
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white70 : Colors.black54,
-                            ),
-                          ),
-                          value: showImages,
-                          onChanged: (value) {
-                            setState(() {
-                              showImages = value;
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildDevSection(
-                    title: 'Performance & Data',
-                    child: Column(
-                      children: [
-                        ListTile(
-                          title: Text(
-                            'Clear Cache',
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          trailing: Icon(
-                            Icons.cleaning_services,
-                            color: isDarkMode ? Colors.white70 : Colors.black54,
-                          ),
-                          onTap: () async {
-                            await controller.clearCache();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Cache cleared')),
-                            );
-                          },
-                        ),
-                        ListTile(
-                          title: Text(
-                            'Clear Local Storage',
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          trailing: Icon(
-                            Icons.delete_outline,
-                            color: isDarkMode ? Colors.white70 : Colors.black54,
-                          ),
-                          onTap: () async {
-                            await controller.clearLocalStorage();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Local storage cleared')),
-                            );
-                          },
-                        ),
-                        ListTile(
-                          title: Text(
-                            'dev_reset_browser',
-                            style: TextStyle(
-                              color: Colors.red,
-                            ),
-                          ),
-                          trailing: Icon(
-                            Icons.restore,
-                            color: Colors.red,
-                          ),
-                          onTap: () => _showClearBrowserDataDialog(),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDevSection({required String title, required Widget child}) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              title,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: isDarkMode ? Colors.white : Colors.black,
-              ),
-            ),
-          ),
-          child,
-        ],
-      ),
-    );
-  }
-
   // Add new variables
   bool _isUrlBarVisible = true;
   double _urlBarSlideOffset = 0.0;
-  DateTime? _lastBackPress;
 
   void _showImageOptions(String imageUrl) {
-    showModalBottomSheet(
+    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    
+    showMenu(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).padding.bottom,
-        ),
-        decoration: BoxDecoration(
-          color: isDarkMode ? Colors.black : Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              margin: EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
-                color: isDarkMode ? Colors.white24 : Colors.black12,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            ListTile(
-              leading: Icon(
-                Icons.download,
-                color: isDarkMode ? Colors.white70 : Colors.black54,
-              ),
-              title: Text(
-                'Download Image',
-                style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _handleDownload(imageUrl);
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                Icons.share,
-                color: isDarkMode ? Colors.white70 : Colors.black54,
-              ),
-              title: Text(
-                'Share Image',
-                style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
-                ),
-              ),
-              onTap: () async {
-                Navigator.pop(context);
-                await Share.share(imageUrl);
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                Icons.open_in_new,
-                color: isDarkMode ? Colors.white70 : Colors.black54,
-              ),
-              title: Text(
-                'Open in New Tab',
-                style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _addNewTab(url: imageUrl);
-              },
-            ),
-          ],
-        ),
+      position: RelativeRect.fromRect(
+        _tapPosition & const Size(40, 40),
+        Offset.zero & overlay.size
       ),
+      color: isDarkMode ? Colors.grey[900] : Colors.white,
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      items: [
+        PopupMenuItem(
+          child: Row(
+            children: [
+              Icon(
+                Icons.download_rounded,
+                color: isDarkMode ? Colors.white70 : Colors.black54,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                AppLocalizations.of(context)!.download_image,
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+            ],
+          ),
+          onTap: () => _handleDownload(imageUrl),
+        ),
+        PopupMenuItem(
+          child: Row(
+            children: [
+              Icon(
+                Icons.ios_share_rounded,
+                color: isDarkMode ? Colors.white70 : Colors.black54,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                AppLocalizations.of(context)!.share_image,
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+            ],
+          ),
+          onTap: () async => await Share.share(imageUrl),
+        ),
+        PopupMenuItem(
+          child: Row(
+            children: [
+              Icon(
+                Icons.open_in_new_rounded,
+                color: isDarkMode ? Colors.white70 : Colors.black54,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                AppLocalizations.of(context)!.open_in_new_tab,
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black,
+                ),
+              ),
+            ],
+          ),
+          onTap: () async {
+            Navigator.pop(context);
+            
+            // Create a simple HTML page that displays the image
+            final imageHtml = '''
+              <html>
+                <head>
+                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                  <style>
+                    body {
+                      margin: 0;
+                      padding: 0;
+                      display: flex;
+                      justify-content: center;
+                      align-items: center;
+                      min-height: 100vh;
+                      background: ${isDarkMode ? '#1a1a1a' : '#ffffff'};
+                    }
+                    img {
+                      max-width: 100%;
+                      max-height: 100vh;
+                      object-fit: contain;
+                    }
+                  </style>
+                </head>
+                <body>
+                  <img src="$imageUrl" alt="Image">
+                </body>
+              </html>
+            ''';
+            
+            // Create a new WebView controller first
+            final newController = WebViewController()
+              ..setJavaScriptMode(JavaScriptMode.unrestricted)
+              ..setBackgroundColor(Colors.transparent)
+              ..enableZoom(true);
+            
+            // Add the new tab with the controller
+            setState(() {
+              tabs.add(BrowserTab(
+                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                url: imageUrl,
+                title: AppLocalizations.of(context)!.open_in_new_tab,
+                favicon: null,
+              ));
+              currentTabIndex = tabs.length - 1;
+              controller = tabs[currentTabIndex].controller;
+            });
+
+            // Load the HTML content
+            await controller.loadHtmlString(imageHtml);
+          },
+        ),
+      ],
     );
   }
+
+  // Add tap position tracking
+  Offset _tapPosition = Offset.zero;
 
   Future<void> _goBack() async {
     if (await controller.canGoBack()) {
@@ -4923,14 +5004,15 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   // In the method where you create new tabs
-  void _createNewTab(String url) {
+  void _createNewTab(String url) async {
     final newTab = BrowserTab(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       url: url,
       title: 'New Tab',
+      isIncognito: tabs.isNotEmpty ? tabs[currentTabIndex].isIncognito : false,
     );
-    
-    // Set up navigation delegate
+
+    // Set up navigation delegate before adding the tab
     newTab.controller.setNavigationDelegate(
       NavigationDelegate(
         onPageStarted: (String url) async {
@@ -4943,18 +5025,30 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         },
         onPageFinished: (String url) async {
           if (!mounted) return;
+          final title = await newTab.controller.getTitle() ?? 'New Tab';
           setState(() {
             isLoading = false;
+            newTab.title = title;
+            newTab.url = url;
           });
         },
       ),
     );
 
+    // Add the tab and switch to it
     setState(() {
       tabs.add(newTab);
       currentTabIndex = tabs.length - 1;
       controller = newTab.controller;
+      _displayUrl = url;
+      _urlController.text = _formatUrl(url);
     });
+
+    // Ensure the page is loaded
+    await Future.delayed(Duration(milliseconds: 100));
+    if (url.isNotEmpty) {
+      await newTab.controller.loadRequest(Uri.parse(url));
+    }
   }
 
   // Add these variables
@@ -4974,6 +5068,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     const Locale('ru'),
     const Locale('zh'),
     const Locale('ja'),
+    const Locale('ko'),
     const Locale('ar'),
     const Locale('hi'),
   ];
@@ -4991,6 +5086,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       'ru': 'Русский',
       'zh': '中文',
       'ja': '日本語',
+      'ko': '한국어',
       'ar': 'العربية',
       'hi': 'हिन्दी',
     };
@@ -5082,6 +5178,252 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         ),
       ),
     );
+  }
+
+  void _showCustomDialog({
+    required String title,
+    required String content,
+    required List<Widget> actions,
+    Widget? customContent,
+  }) {
+    showCustomDialog(
+      context: context,
+      title: title,
+      content: content,
+      isDarkMode: isDarkMode,
+      customContent: customContent,
+      actions: actions,
+    );
+  }
+
+  void _showCustomNotification(String message, {
+    IconData? icon,
+    Color? iconColor,
+    Duration? duration,
+    SnackBarAction? action,
+  }) {
+    showCustomNotification(
+      context: context,
+      message: message,
+      icon: icon,
+      iconColor: iconColor,
+      isDarkMode: isDarkMode,
+      duration: duration,
+      action: action,
+    );
+  }
+
+  void _showBookmarkAddedNotification() {
+    showCustomNotification(
+      context: context,
+      message: AppLocalizations.of(context)!.bookmark_added,
+      icon: Icons.bookmark_added,
+      iconColor: Colors.green,
+      isDarkMode: isDarkMode,
+    );
+  }
+
+  Widget _buildPanel({
+    required Widget header,
+    required Widget body,
+    double? height,
+  }) {
+    return MediaQuery.removePadding(
+      context: context,
+      removeTop: true,
+      removeBottom: true,
+      removeLeft: true,
+      removeRight: true,
+      child: Container(
+        height: height ?? MediaQuery.of(context).size.height,
+        decoration: BoxDecoration(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: BorderRadius.zero,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            header,
+            Expanded(child: body),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(String message, IconData icon) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            size: 48,
+            color: Theme.of(context).disabledColor,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            message,
+            style: TextStyle(
+              color: Theme.of(context).disabledColor,
+              fontSize: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      if (difference.inHours == 0) {
+        if (difference.inMinutes == 0) {
+          return '0m';
+        }
+        return '${difference.inMinutes}m';
+      }
+      return '${difference.inHours}h';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}d';
+    } else {
+      return DateFormat('MMM d').format(date);
+    }
+  }
+
+  void _saveHistory() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('history', jsonEncode(_loadedHistory));
+  }
+
+  
+  void _initializeTab(BrowserTab tab) {
+    tab.controller.setNavigationDelegate(
+      NavigationDelegate(
+        onPageFinished: (String url) async {
+          if (mounted) {
+            final title = await tab.controller.getTitle() ?? url;
+            setState(() {
+              tab.title = title;
+              tab.url = url;
+            });
+            // Only save to history if not incognito
+            if (!tab.isIncognito) {
+              await _saveToHistory(url, title);
+            }
+          }
+        },
+        onUrlChange: (UrlChange change) {
+          if (mounted) {
+            final url = change.url ?? '';
+            setState(() {
+              tab.url = url;
+            });
+          }
+        },
+      ),
+    );
+  }
+
+  Future<void> _downloadFile(String url, String? suggestedFilename) async {
+    try {
+      final status = await Permission.storage.status;
+      if (!status.isGranted) {
+        await Permission.storage.request();
+      }
+
+      if (await Permission.storage.isGranted) {
+        setState(() {
+          isLoading = true;
+        });
+
+        final response = await http.get(Uri.parse(url));
+        final contentDisposition = response.headers['content-disposition'];
+        String fileName = suggestedFilename ?? '';
+        
+        if (fileName.isEmpty && contentDisposition != null) {
+          final match = RegExp(r'filename[^;=\n]*=([\w\.]+)').firstMatch(contentDisposition);
+          if (match != null) {
+            fileName = match.group(1) ?? '';
+          }
+        }
+        
+        if (fileName.isEmpty) {
+          fileName = url.split('/').last;
+        }
+
+        final dir = await getExternalStorageDirectory();
+        if (dir != null) {
+          final downloadDir = Directory('${dir.path}/Download');
+          if (!await downloadDir.exists()) {
+            await downloadDir.create(recursive: true);
+          }
+
+          final filePath = '${downloadDir.path}/$fileName';
+          final file = File(filePath);
+          await file.writeAsBytes(response.bodyBytes);
+
+          // Show download complete notification
+          _showNotification(
+            Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.green),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(AppLocalizations.of(context)!.download_completed + ': $fileName'),
+                ),
+              ],
+            ),
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: AppLocalizations.of(context)!.open,
+              onPressed: () async {
+                try {
+                  await OpenFile.open(filePath);
+                } catch (e) {
+                  _showNotification(
+                    Text("Error opening file. Please install a suitable app to open this type of file."),
+                    duration: const Duration(seconds: 4),
+                  );
+                }
+              },
+            ),
+          );
+
+          // Make the file visible to other apps
+          const platform = MethodChannel('com.vertex.solar/browser');
+          try {
+            await platform.invokeMethod('scanFile', {'path': filePath});
+          } catch (e) {
+            print('Error scanning file: $e');
+          }
+
+          // Optionally refresh the media store
+          try {
+            await platform.invokeMethod('refreshMediaStore');
+          } catch (e) {
+            print('Error refreshing media store: $e');
+          }
+        }
+      } else {
+        _showNotification(
+          Text(AppLocalizations.of(context)!.permission_denied),
+          duration: const Duration(seconds: 4),
+        );
+      }
+    } catch (e) {
+      print('Download error: $e');
+      _showNotification(
+        Text("Download failed: ${e.toString()}"),
+        duration: const Duration(seconds: 4),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 }
 

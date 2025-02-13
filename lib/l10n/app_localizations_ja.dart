@@ -46,6 +46,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get continueText => '続行';
 
   @override
+  String get just_now => 'たった今';
+
+  @override
   String get updated => 'Solar Browser がアップデートされました！';
 
   @override
@@ -421,4 +424,46 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get software_team => 'ソフトウェアチーム';
+
+  @override
+  String get download_image => '画像をダウンロード';
+
+  @override
+  String get share_image => '画像を共有';
+
+  @override
+  String get open_in_new_tab => '新しいタブで開く';
+
+  @override
+  String get downloading => 'ダウンロード中...';
+
+  @override
+  String get no_downloads_yet => 'ダウンロードはありません';
+
+  @override
+  String get unknown => '不明';
+
+  @override
+  String get press_back_to_exit => 'もう一度押すと終了します';
+
+  @override
+  String get storage_permission_required => 'Storage Permission Required';
+
+  @override
+  String get storage_permission_description => 'Solar Browser needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
+
+  @override
+  String get grant_permission => 'Grant Permission';
+
+  @override
+  String get storage_permission_denied => 'Storage permission is required for downloads';
+
+  @override
+  String get new_incognito_tab => 'New Incognito Tab';
+
+  @override
+  String get incognito_mode => 'Incognito Mode';
+
+  @override
+  String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
 }

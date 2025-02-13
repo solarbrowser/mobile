@@ -169,5 +169,16 @@
   "whats_new": "Yenilikler",
   "exit_confirmation": "Uygulamadan Çık",
   "flutter_version": "Flutter Sürümü",
-  "software_team": "Yazılım Ekibi"
+  "software_team": "Yazılım Ekibi",
+  "download_image": "Resmi İndir",
+  "share_image": "Resmi Paylaş",
+  "open_in_new_tab": "Yeni Sekmede Aç",
+  "downloading": "İndiriliyor...",
+  "no_downloads_yet": "Henüz indirme yok",
+  "unknown": "Bilinmiyor",
+  "just_now": "az önce",
+  "press_back_to_exit": "Çıkmak için tekrar basın",
+  "@press_back_to_exit": {
+    "description": "Message shown when user needs to press back again to exit the app"
+  }
 } 

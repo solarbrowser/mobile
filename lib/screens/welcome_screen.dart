@@ -34,7 +34,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
   int _currentPage = 0;
   String _selectedLanguage = 'en';
   bool _isDarkMode = false;
-  String _selectedSearchEngine = 'google';
+  String _selectedSearchEngine = 'Google';
 
   final Map<String, String> _languages = {
     'en': 'English',
@@ -47,15 +47,18 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
     'ru': 'Русский',
     'zh': '中文',
     'ja': '日本語',
+    'ko': '한국어',
     'ar': 'العربية',
     'hi': 'हिन्दी',
   };
 
   final Map<String, String> _searchEngines = {
-    'google': 'Google',
-    'duckduckgo': 'DuckDuckGo',
-    'bing': 'Bing',
-    'yahoo': 'Yahoo',
+    'Google': 'Google',
+    'DuckDuckGo': 'DuckDuckGo',
+    'Bing': 'Bing',
+    'Yahoo': 'Yahoo',
+    'Yandex': 'Yandex',
+    'Brave': 'Brave',
   };
 
   @override
@@ -124,7 +127,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
     final packageInfo = await PackageInfo.fromPlatform();
     final lastShownVersion = prefs.getString('last_shown_version') ?? '0.0.0';
     
-    // Only show update screen if current version is different from last shown version
     if (packageInfo.version != lastShownVersion) {
       Navigator.pushReplacement(
         context,
@@ -137,7 +139,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
         ),
       );
     } else {
-      // Skip update screen and go directly to browser
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -200,11 +201,16 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
   }
 
   Widget _buildWelcomePage() {
+    final size = MediaQuery.of(context).size;
+    final isLargeScreen = size.width > 600;
+
     return Stack(
       children: [
         _buildParticleBackground(),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: EdgeInsets.symmetric(
+            horizontal: size.width * 0.08, // Adaptive padding
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -218,7 +224,10 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                         offset: Offset(0, _floatAnimation.value),
                         child: _buildGlassmorphicContainer(
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 25),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: size.width * 0.05,
+                              vertical: size.height * 0.03,
+                            ),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -226,32 +235,35 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                   tag: 'logo',
                                   child: Image.asset(
                                     'assets/icon.png',
-                                    width: 80,
-                                    height: 80,
+                                    width: isLargeScreen ? 120 : 80,
+                                    height: isLargeScreen ? 120 : 80,
                                   ),
                                 ),
-                                const SizedBox(height: 20),
+                                SizedBox(height: size.height * 0.02),
                                 ShaderMask(
                                   shaderCallback: (bounds) => LinearGradient(
                                     colors: _isDarkMode
                                         ? [Colors.white, Colors.white70]
                                         : [Colors.black, Colors.black87],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
                                   ).createShader(bounds),
                                   child: Text(
                                     AppLocalizations.of(context)!.welcomeToSolar,
-                                    style: const TextStyle(
-                                      fontSize: 24,
+                                    style: TextStyle(
+                                      fontSize: isLargeScreen ? 32 : 24,
                                       fontWeight: FontWeight.bold,
+                                      color: _isDarkMode ? Colors.white : Colors.black,
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
                                 ),
-                                const SizedBox(height: 12),
+                                SizedBox(height: size.height * 0.015),
                                 Text(
                                   AppLocalizations.of(context)!.welcomeDescription,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    fontSize: 14,
+                                    fontSize: isLargeScreen ? 18 : 14,
                                     color: _isDarkMode ? Colors.white70 : Colors.black87,
                                     letterSpacing: 0.3,
                                   ),
@@ -263,7 +275,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                       );
                     },
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: size.height * 0.03),
                   GestureDetector(
                     onTap: () => _showTermsDialog(),
                     child: Text.rich(
@@ -272,7 +284,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                           TextSpan(
                             text: AppLocalizations.of(context)!.termsOfService,
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: isLargeScreen ? 16 : 13,
                               color: _isDarkMode ? Colors.white60 : Colors.black54,
                               fontWeight: FontWeight.bold
                             ),
@@ -393,23 +405,26 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
   }
 
   Widget _buildLanguagePage() {
+    final size = MediaQuery.of(context).size;
+    final isLargeScreen = size.width > 600;
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           AppLocalizations.of(context)!.chooseLanguage,
           style: TextStyle(
-            fontSize: 24,
+            fontSize: isLargeScreen ? 32 : 24,
             fontWeight: FontWeight.bold,
             color: _isDarkMode ? Colors.white : Colors.black,
           ),
         ),
-        const SizedBox(height: 30),
+        SizedBox(height: size.height * 0.04),
         _buildGlassmorphicContainer(
           child: Container(
-            height: 250,
-            width: 280,
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            height: size.height * 0.4,
+            width: isLargeScreen ? 400 : 280,
+            padding: EdgeInsets.symmetric(vertical: size.height * 0.015),
             child: ListView.builder(
               itemCount: _languages.length,
               itemBuilder: (context, index) {
@@ -422,7 +437,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     name,
                     style: TextStyle(
                       color: _isDarkMode ? Colors.white : Colors.black,
-                      fontSize: 15,
+                      fontSize: isLargeScreen ? 18 : 15,
                       fontWeight: _selectedLanguage == language ? 
                         FontWeight.bold : FontWeight.normal,
                     ),
@@ -430,10 +445,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   trailing: _selectedLanguage == language ? 
                     Icon(Icons.check, 
                       color: _isDarkMode ? Colors.white : Colors.black,
-                      size: 20,
+                      size: isLargeScreen ? 24 : 20,
                     ) : null,
                   onTap: () {
-                    // First update the callback, then the state
                     widget.onLocaleChange(language);
                     setState(() {
                       _selectedLanguage = language;
@@ -449,25 +463,28 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
   }
 
   Widget _buildThemePage() {
+    final size = MediaQuery.of(context).size;
+    final isLargeScreen = size.width > 600;
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           AppLocalizations.of(context)!.chooseTheme,
           style: TextStyle(
-            fontSize: 24,
+            fontSize: isLargeScreen ? 32 : 24,
             fontWeight: FontWeight.bold,
             color: _isDarkMode ? Colors.white : Colors.black,
           ),
         ),
-        const SizedBox(height: 30),
+        SizedBox(height: size.height * 0.04),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _buildGlassmorphicContainer(
               child: Container(
-                width: 120,
-                height: 160,
+                width: isLargeScreen ? size.width * 0.25 : 120,
+                height: isLargeScreen ? size.height * 0.25 : 160,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(30),
                   border: !_isDarkMode ? Border.all(
@@ -489,14 +506,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                         Icon(
                           Icons.light_mode,
                           color: _isDarkMode ? Colors.white70 : Colors.black87,
-                          size: 32,
+                          size: isLargeScreen ? 48 : 32,
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: size.height * 0.02),
                         Text(
                           AppLocalizations.of(context)!.lightTheme,
                           style: TextStyle(
                             color: _isDarkMode ? Colors.white70 : Colors.black87,
-                            fontSize: 16,
+                            fontSize: isLargeScreen ? 20 : 16,
                             fontWeight: !_isDarkMode ? FontWeight.bold : FontWeight.normal,
                           ),
                         ),
@@ -506,11 +523,11 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                 ),
               ),
             ),
-            const SizedBox(width: 20),
+            SizedBox(width: size.width * 0.05),
             _buildGlassmorphicContainer(
               child: Container(
-                width: 120,
-                height: 160,
+                width: isLargeScreen ? size.width * 0.25 : 120,
+                height: isLargeScreen ? size.height * 0.25 : 160,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(30),
                   border: _isDarkMode ? Border.all(
@@ -532,14 +549,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                         Icon(
                           Icons.dark_mode,
                           color: _isDarkMode ? Colors.white70 : Colors.black87,
-                          size: 32,
+                          size: isLargeScreen ? 48 : 32,
                         ),
-                        const SizedBox(height: 12),
+                        SizedBox(height: size.height * 0.02),
                         Text(
                           AppLocalizations.of(context)!.darkTheme,
                           style: TextStyle(
                             color: _isDarkMode ? Colors.white70 : Colors.black87,
-                            fontSize: 16,
+                            fontSize: isLargeScreen ? 20 : 16,
                             fontWeight: _isDarkMode ? FontWeight.bold : FontWeight.normal,
                           ),
                         ),
@@ -556,23 +573,26 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
   }
 
   Widget _buildSearchEnginePage() {
+    final size = MediaQuery.of(context).size;
+    final isLargeScreen = size.width > 600;
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
           AppLocalizations.of(context)!.chooseSearchEngine,
           style: TextStyle(
-            fontSize: 24,
+            fontSize: isLargeScreen ? 32 : 24,
             fontWeight: FontWeight.bold,
             color: _isDarkMode ? Colors.white : Colors.black,
           ),
         ),
-        const SizedBox(height: 30),
+        SizedBox(height: size.height * 0.04),
         _buildGlassmorphicContainer(
           child: Container(
-            height: 250,
-            width: 280,
-            padding: const EdgeInsets.symmetric(vertical: 10),
+            height: size.height * 0.4,
+            width: isLargeScreen ? 400 : 280,
+            padding: EdgeInsets.symmetric(vertical: size.height * 0.015),
             child: ListView.builder(
               itemCount: _searchEngines.length,
               itemBuilder: (context, index) {
@@ -585,7 +605,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     name,
                     style: TextStyle(
                       color: _isDarkMode ? Colors.white : Colors.black,
-                      fontSize: 15,
+                      fontSize: isLargeScreen ? 18 : 15,
                       fontWeight: _selectedSearchEngine == engine ? 
                         FontWeight.bold : FontWeight.normal,
                     ),
@@ -593,7 +613,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   trailing: _selectedSearchEngine == engine ? 
                     Icon(Icons.check, 
                       color: _isDarkMode ? Colors.white : Colors.black,
-                      size: 20,
+                      size: isLargeScreen ? 24 : 20,
                     ) : null,
                   onTap: () {
                     setState(() {
@@ -661,12 +681,19 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
   }
 
   Widget _buildBottomBar() {
+    final size = MediaQuery.of(context).size;
+    final isLargeScreen = size.width > 600;
+
     return Padding(
-      padding: const EdgeInsets.only(left: 20, right: 20, bottom: 20),
+      padding: EdgeInsets.only(
+        left: size.width * 0.05,
+        right: size.width * 0.05,
+        bottom: size.height * 0.03,
+      ),
       child: _buildGlassmorphicContainer(
         child: Container(
-          height: 56,
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          height: isLargeScreen ? 72 : 56,
+          padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -680,27 +707,27 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
-                    minimumSize: const Size(60, 36),
+                    minimumSize: Size(isLargeScreen ? 80 : 60, isLargeScreen ? 48 : 36),
                   ),
                   child: Text(
                     AppLocalizations.of(context)!.back,
                     style: TextStyle(
                       color: _isDarkMode ? Colors.white70 : Colors.black54,
-                      fontSize: 15,
+                      fontSize: isLargeScreen ? 18 : 15,
                     ),
                   ),
                 )
               else
-                const SizedBox(width: 60),
+                SizedBox(width: isLargeScreen ? 80 : 60),
               Row(
                 children: List.generate(4, (index) => Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 2),
+                  padding: EdgeInsets.symmetric(horizontal: isLargeScreen ? 4 : 2),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
-                    width: _currentPage == index ? 16 : 6,
-                    height: 6,
+                    width: _currentPage == index ? (isLargeScreen ? 24 : 16) : (isLargeScreen ? 8 : 6),
+                    height: isLargeScreen ? 8 : 6,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(3),
+                      borderRadius: BorderRadius.circular(isLargeScreen ? 4 : 3),
                       color: _currentPage == index
                         ? (_isDarkMode ? Colors.white : Colors.black)
                         : (_isDarkMode ? Colors.white24 : Colors.black12),
@@ -721,16 +748,16 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                 },
                 style: TextButton.styleFrom(
                   padding: EdgeInsets.zero,
-                  minimumSize: const Size(60, 36),
+                  minimumSize: Size(isLargeScreen ? 80 : 60, isLargeScreen ? 48 : 36),
                 ),
                 child: Text(
-                  _currentPage < 3 
+                  _currentPage < 3
                     ? AppLocalizations.of(context)!.next
                     : AppLocalizations.of(context)!.getStarted,
                   style: TextStyle(
                     color: _isDarkMode ? Colors.white : Colors.black,
                     fontWeight: FontWeight.bold,
-                    fontSize: 15,
+                    fontSize: isLargeScreen ? 18 : 15,
                   ),
                 ),
               ),

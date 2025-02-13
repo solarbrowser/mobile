@@ -127,7 +127,7 @@ class _MyAppState extends State<MyApp> {
               onThemeChange: _handleThemeChange,
               onSearchEngineChange: _handleSearchEngineChange,
             );
-          } else if (widget.lastVersion != widget.currentVersion) {
+          } else if (widget.lastVersion == '0.0.0' || widget.lastVersion != widget.currentVersion) {
             return UpdateScreen(
               currentVersion: widget.currentVersion,
               oldVersion: widget.lastVersion,

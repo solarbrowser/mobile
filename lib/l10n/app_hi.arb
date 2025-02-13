@@ -176,5 +176,16 @@
     }
   },
   "whats_new": "नया क्या है",
-  "exit_confirmation": "ऐप से बाहर निकलें"
+  "exit_confirmation": "ऐप से बाहर निकलें",
+  "download_image": "छवि डाउनलोड करें",
+  "share_image": "छवि साझा करें",
+  "open_in_new_tab": "नए टैब में खोलें",
+  "downloading": "डाउनलोड हो रहा है...",
+  "no_downloads_yet": "कोई डाउनलोड नहीं",
+  "just_now": "अभी अभी",
+  "unknown": "अज्ञात",
+  "press_back_to_exit": "बाहर निकलने के लिए दोबारा दबाएं",
+  "@press_back_to_exit": {
+    "description": "Message shown when user needs to press back again to exit the app"
+  }
 } 

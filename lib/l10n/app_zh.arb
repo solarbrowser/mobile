@@ -169,5 +169,16 @@
   "whats_new": "新功能",
   "exit_confirmation": "退出应用",
   "flutter_version": "Flutter 版本",
-  "software_team": "软件团队"
+  "software_team": "软件团队",
+  "download_image": "下载图片",
+  "share_image": "分享图片",
+  "open_in_new_tab": "在新标签页中打开",
+  "downloading": "下载中...",
+  "no_downloads_yet": "暂无下载",
+  "unknown": "未知",
+  "just_now": "刚刚",
+  "press_back_to_exit": "再按一次退出",
+  "@press_back_to_exit": {
+    "description": "Message shown when user needs to press back again to exit the app"
+  }
 } 

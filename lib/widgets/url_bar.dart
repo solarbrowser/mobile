@@ -52,7 +52,6 @@ class UrlBar extends StatelessWidget {
               ),
               decoration: InputDecoration(
                 border: InputBorder.none,
-                hintText: AppLocalizations.of(context)!.search_in_page,
                 hintStyle: TextStyle(
                   color: isDarkMode ? Colors.white38 : Colors.black38,
                   fontSize: isMinimized ? 14 : 16,

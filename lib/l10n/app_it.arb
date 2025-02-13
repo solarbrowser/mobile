@@ -169,5 +169,16 @@
   "whats_new": "Novità",
   "exit_confirmation": "Esci dall'app",
   "flutter_version": "Versione Flutter",
-  "software_team": "Team di Sviluppo"
+  "software_team": "Team di Sviluppo",
+  "download_image": "Scarica immagine",
+  "share_image": "Condividi immagine",
+  "open_in_new_tab": "Apri in nuova scheda",
+  "downloading": "Download in corso...",
+  "no_downloads_yet": "Nessun download",
+  "unknown": "Sconosciuto",
+  "just_now": "proprio ora",
+  "press_back_to_exit": "Premi di nuovo per uscire",
+  "@press_back_to_exit": {
+    "description": "Message shown when user needs to press back again to exit the app"
+  }
 } 

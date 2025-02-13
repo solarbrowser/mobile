@@ -46,6 +46,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get continueText => 'Devam';
 
   @override
+  String get just_now => 'az önce';
+
+  @override
   String get updated => 'Solar Browser Güncellendi!';
 
   @override
@@ -421,4 +424,46 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get software_team => 'Yazılım Ekibi';
+
+  @override
+  String get download_image => 'Resmi İndir';
+
+  @override
+  String get share_image => 'Resmi Paylaş';
+
+  @override
+  String get open_in_new_tab => 'Yeni Sekmede Aç';
+
+  @override
+  String get downloading => 'İndiriliyor...';
+
+  @override
+  String get no_downloads_yet => 'Henüz indirme yok';
+
+  @override
+  String get unknown => 'Bilinmiyor';
+
+  @override
+  String get press_back_to_exit => 'Çıkmak için tekrar basın';
+
+  @override
+  String get storage_permission_required => 'Storage Permission Required';
+
+  @override
+  String get storage_permission_description => 'Solar Browser needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
+
+  @override
+  String get grant_permission => 'Grant Permission';
+
+  @override
+  String get storage_permission_denied => 'Storage permission is required for downloads';
+
+  @override
+  String get new_incognito_tab => 'New Incognito Tab';
+
+  @override
+  String get incognito_mode => 'Incognito Mode';
+
+  @override
+  String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
 }
