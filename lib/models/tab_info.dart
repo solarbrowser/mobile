@@ -1,6 +1,5 @@
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter/material.dart';
-import 'dart:typed_data';
 
 class BookmarkItem {
   final String title;
@@ -34,14 +33,17 @@ class BrowserTab {
   final String id;
   String url;
   String title;
-  Uint8List? favicon;
+  String? favicon;
+  bool isIncognito = false;
+  bool canGoBack = false;
+  bool canGoForward = false;
   late WebViewController controller;
-  final bool isIncognito;
 
   BrowserTab({
     required this.id,
     required this.url,
-    required this.title,
+    this.title = '',
+    this.favicon,
     this.isIncognito = false,
   }) {
     controller = WebViewController()

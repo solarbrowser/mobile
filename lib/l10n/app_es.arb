@@ -180,7 +180,5 @@
   "press_back_to_exit": "Presione atrás de nuevo para salir",
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
-  },
-  "file_not_found": "Archivo no encontrado",
-  "file_deleted": "Archivo eliminado"
+  }
 } 

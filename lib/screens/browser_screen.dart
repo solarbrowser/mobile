@@ -65,22 +65,28 @@ class BrowserTab {
   final String id;
   String url;
   String title;
-  bool isLoading;
-  bool isIncognito;
-  bool isSecure;
   String? favicon;
-  WebViewController? controller;
+  late WebViewController controller;
+  bool isIncognito = false;
+  bool canGoBack = false;
+  bool canGoForward = false;
 
   BrowserTab({
     required this.id,
     required this.url,
-    this.title = 'New Tab',
-    this.isLoading = false,
-    this.isIncognito = false,
-    this.isSecure = false,
+    this.title = '',
     this.favicon,
-    this.controller,
-  });
+    this.isIncognito = false,
+  }) {
+    controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(Colors.transparent)
+      ..enableZoom(false);
+    
+    if (url.isNotEmpty && url != 'about:blank') {
+      controller.loadRequest(Uri.parse(url));
+    }
+  }
 }
 
 // Top level class for the loading animation
@@ -130,241 +136,330 @@ class LoadingBorderPainter extends CustomPainter {
   }
 }
 
-class _BrowserScreenState extends State<BrowserScreen> {
+class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateMixin {
+  // WebView and Navigation
+  final List<WebViewController> _controllers = [];
   late WebViewController controller;
-  List<BrowserTab> tabs = [];
   int currentTabIndex = 0;
+  final List<BrowserTab> _suspendedTabs = [];
+  static const int _maxActiveTabs = 5;
+  List<BrowserTab> tabs = [];
+  bool canGoBack = false;
+  bool canGoForward = false;
+  bool isSecure = false;
+  bool allowHttp = true;
   bool isLoading = false;
+  String? _currentFaviconUrl;
+  
+  // Download State
+  bool isDownloading = false;
+  String currentDownloadUrl = '';
+  double downloadProgress = 0.0;
+  
+  // Controllers
   late TextEditingController _urlController;
   late FocusNode _urlFocusNode;
-  String _displayUrl = '';
+  
+  // UI State
   bool isDarkMode = false;
+  double textScale = 1.0;
+  bool showImages = true;
+  String currentSearchEngine = 'Google';
+  bool isSearchMode = false;
+  String _displayUrl = '';
+  bool _isUrlBarExpanded = false;
+  bool isSecurityPanelVisible = false;
+  String securityMessage = '';
+  String currentLanguage = 'en';
+  double lastScrollPosition = 0;
+  bool isScrollingUp = false;
+  DateTime lastScrollEvent = DateTime.now();
+  int currentSearchMatch = 0;
+  int totalSearchMatches = 0;
+  Timer? _hideTimer;
+  bool _isUrlBarMinimized = false;
+  bool _isUrlBarHidden = false;
+  int selectedSettingsTab = 0;
+  
+  // Panel Visibility
+  bool isTabsVisible = false;
+  bool isSettingsVisible = false;
+  bool isBookmarksVisible = false;
+  bool isDownloadsVisible = false;
+  bool isPanelExpanded = false;
+  bool isPanelVisible = true;
+  
+  // URL Bar State
+  bool _isUrlBarCollapsed = false;
+  bool _isDragging = false;
+  Offset _urlBarPosition = Offset.zero;
+  Timer? _autoCollapseTimer;
+  double dragStartX = 0;
+  Timer? _loadingTimer;
+  
+  // Developer Options
+  bool _isDeveloperMode = false;
+  int _developerModeClickCount = 0;
+  bool _showDeveloperOptions = false;
+  String _debugLog = '';
+  Timer? _developerModeTimer;
+  
+  // Home Page Settings
+  String _homeUrl = 'file:///android_asset/main.html';
+  String _searchEngine = 'google';
+  bool _syncHomePageSearchEngine = true;
+  String _homePageSearchEngine = 'google';
+  List<Map<String, String>> _homePageShortcuts = [];
+  
+  // History Loading
+  final ScrollController _historyScrollController = ScrollController();
+  bool _isLoadingMore = false;
+  int _currentHistoryPage = 0;
+  final int _historyPageSize = 20;
+  List<Map<String, dynamic>> _loadedHistory = [];
+  
+  // Animation
+  late final AnimationController _slideAnimationController;
+  late final Animation<Offset> _slideAnimation;
+  late AnimationController _animationController;
+  late Animation<double> _animation;
+  
+  // Data
+  List<Map<String, dynamic>> bookmarks = [];
+  List<Map<String, dynamic>> downloads = [];
+  
+  // Memory Management
+  final _debouncer = Debouncer(milliseconds: 300);
+  bool _isLowMemory = false;
+  int _lastMemoryCheck = 0;
+  static const int MEMORY_CHECK_INTERVAL = 30000;
+
+  bool isInitialized = false;
+
+  ThemeColors get _colors => isDarkMode ? _darkModeColors : _lightModeColors;
+  
+  final _darkModeColors = const ThemeColors(
+    background: Colors.black,
+    surface: Colors.white10,
+    text: Colors.white,
+    textSecondary: Colors.white70,
+    border: Colors.white24,
+  );
+
+  final _lightModeColors = const ThemeColors(
+    background: Colors.white,
+    surface: Colors.black12,
+    text: Colors.black,
+    textSecondary: Colors.black54,
+    border: Colors.black12,
+  );
+
   late OptimizationEngine _optimizationEngine;
+
+  // Search Engines
+  final Map<String, String> searchEngines = {
+    'Google': 'https://www.google.com/search?q={query}',
+    'Bing': 'https://www.bing.com/search?q={query}',
+    'DuckDuckGo': 'https://duckduckgo.com/?q={query}',
+    'Brave': 'https://search.brave.com/search?q={query}',
+    'Yahoo': 'https://search.yahoo.com/search?p={query}',
+    'Yandex': 'https://yandex.com/search/?text={query}',
+  };
+
+  // Add new state variables
+  Timer? _urlBarIdleTimer;
+  Offset _urlBarOffset = const Offset(16.0, 16.0);
+  bool _isDraggingUrlBar = false;
+  bool _askDownloadLocation = true;
+
+  // Add new state variable for fullscreen
+  bool _isFullscreen = false;
+
+  // Add loading animation controller
+  late AnimationController _loadingAnimationController;
+  late Animation<double> _loadingAnimation;
+
+  // Add new variables for download size tracking
+  int? currentDownloadSize;
+  String? currentFileName;
+
+  String _formatFileSize(int bytes) {
+    if (bytes <= 0) return '0 B';
+    const suffixes = ['B', 'KB', 'MB', 'GB', 'TB'];
+    var i = (log(bytes) / log(1024)).floor();
+    return '${(bytes / pow(1024, i)).toStringAsFixed(2)} ${suffixes[i]}';
+  }
+
+  void _updateState(VoidCallback update) {
+    _debouncer.run(() {
+      if (mounted) {
+        setState(update);
+      }
+    });
+  }
+
+  BoxDecoration _getGlassmorphicDecoration() {
+    return BoxDecoration(
+      color: isDarkMode 
+        ? Colors.black.withOpacity(0.7) 
+        : Colors.white.withOpacity(0.7),
+      borderRadius: BorderRadius.circular(28),
+      border: Border.all(
+        color: isDarkMode 
+          ? Colors.white.withOpacity(0.1) 
+          : Colors.black.withOpacity(0.1),
+        width: 1,
+      ),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.1),
+          blurRadius: 20,
+          spreadRadius: 0,
+        ),
+      ],
+    );
+  }
 
   @override
   void initState() {
     super.initState();
-    _initializeWebView();
+    _initializeControllers();
     _urlController = TextEditingController();
     _urlFocusNode = FocusNode();
-    _optimizationEngine = OptimizationEngine(controller);
+    _initializeWebView();
+    _loadPreferences();
+    _loadBookmarks();
+    _loadDownloads();
+    
+    // Set up URL focus listener
+    _urlFocusNode.addListener(() {
+      if (!_urlFocusNode.hasFocus) {
+        setState(() {
+          _urlController.text = _formatUrl(_displayUrl);
+        });
+      }
+    });
+
+    _updateSystemBars();
   }
 
-  Future<void> _initializeWebView() async {
-    controller = await _initializeWebViewController();
+  void _updateSystemBars() {
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarDividerColor: Colors.transparent,
+      statusBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
+      systemNavigationBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
+      statusBarBrightness: isDarkMode ? Brightness.dark : Brightness.light,
+    ));
+  }
+
+  void _toggleTheme(bool darkMode) async {
+    setState(() {
+      isDarkMode = darkMode;
+    });
+    
+    _updateSystemBars();
+    
+    // Save theme preference
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('darkMode', darkMode);
+    
+    if (widget.onThemeChange != null) {
+      widget.onThemeChange!(darkMode);
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     if (tabs.isEmpty) {
-      final newController = await _initializeWebViewController();
-      final newTab = BrowserTab(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        url: 'about:blank',
-        title: 'New Tab',
-        controller: newController,
-      );
-      setState(() {
-        tabs.add(newTab);
-        currentTabIndex = 0;
-        controller = newController;
-        _displayUrl = 'about:blank';
-        _urlController.text = _formatUrl('about:blank');
-      });
-    }
-  }
-
-  Future<WebViewController> _initializeWebViewController() async {
-    final webViewController = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.transparent)
-      ..enableZoom(true)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (String url) async {
-            if (!mounted) return;
-            setState(() {
-              isLoading = true;
-            });
-            _updateUrl(url);
-            await _optimizationEngine.onPageStartLoad(url);
-          },
-          onPageFinished: (String url) async {
-            if (!mounted) return;
-            final title = await webViewController.getTitle() ?? url;
-            setState(() {
-              isLoading = false;
-              if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-                tabs[currentTabIndex].title = title;
-                tabs[currentTabIndex].url = url;
-              }
-            });
-            _updateUrl(url);
-            await _updateNavigationState();
-            await _optimizationEngine.onPageFinishLoad(url);
-            await _updateFavicon(url);
-          },
-          onUrlChange: (UrlChange change) {
-            if (change.url != null) {
-              _updateUrl(change.url!);
-            }
-          },
-          onWebResourceError: (WebResourceError error) {
-            if (!mounted) return;
-            setState(() {
-              isLoading = false;
-            });
-          },
-        ),
-      );
-
-    return webViewController;
-  }
-
-  void _initializeTab(BrowserTab tab) {
-    if (tab.controller == null) {
-      _initializeWebViewController().then((webViewController) {
-        setState(() {
-          tab.controller = webViewController;
-        });
-        tab.controller?.setNavigationDelegate(
-          NavigationDelegate(
-            onPageStarted: (String url) async {
-              if (!mounted) return;
-              setState(() {
-                isLoading = true;
-              });
-              _updateUrl(url);
-              await _optimizationEngine.onPageStartLoad(url);
-            },
-            onPageFinished: (String url) async {
-              if (mounted) {
-                final title = await tab.controller?.getTitle() ?? url;
-                setState(() {
-                  isLoading = false;
-                  tab.title = title;
-                  tab.url = url;
-                });
-                if (!tab.isIncognito) {
-                  await _saveToHistory(url, title);
-                }
-                _updateUrl(url);
-                await _updateNavigationState();
-                await _updateFavicon(url);
-              }
-            },
-            onUrlChange: (UrlChange change) {
-              if (mounted && change.url != null) {
-                setState(() {
-                  tab.url = change.url!;
-                  _updateUrl(change.url!);
-                });
-              }
-            },
-          ),
-        );
-      });
-    }
-  }
-
-  Future<void> _switchToTab(int index) async {
-    if (index != currentTabIndex && index >= 0 && index < tabs.length) {
-      final tab = tabs[index];
-      
-      if (tab.controller == null) {
-        tab.controller = await _initializeWebViewController();
-      }
-
-      if (tab.controller != null) {
-        setState(() {
-          currentTabIndex = index;
-          controller = tab.controller!;
-          _displayUrl = tab.url;
-          _urlController.text = _formatUrl(tab.url);
-        });
-
-        // Force reload the page to prevent black screen
-        final targetUrl = await tab.controller?.currentUrl();
-        if (targetUrl != tab.url) {
-          await tab.controller?.loadRequest(Uri.parse(tab.url));
-        }
-      }
-    }
-  }
-
-  Future<void> _setupScrollHandling() async {
-    await controller.runJavaScript('''
-      let lastScrollY = window.scrollY;
-      let ticking = false;
-      
-      function updateScroll() {
-        if (window.flutter_inappwebview) {
-          window.onScroll.postMessage(JSON.stringify({
-            scrollY: window.scrollY,
-            isScrollingDown: window.scrollY > lastScrollY,
-            scrollDelta: window.scrollY - lastScrollY
-          }));
-        }
-        lastScrollY = window.scrollY;
-        ticking = false;
-      }
-
-      window.addEventListener('scroll', function(e) {
-        if (!ticking) {
-          window.requestAnimationFrame(function() {
-            updateScroll();
-            ticking = false;
-          });
-          ticking = true;
-        }
-      }, { passive: true });
-    ''');
-  }
-
-  void _updateUrl(String url) {
-    if (_urlController.text != url) {
-      setState(() {
-        _displayUrl = url;
-        if (!_urlFocusNode.hasFocus) {
-          _urlController.text = _formatUrl(url);
-        }
-        
-        // Update security status
-        try {
-          final uri = Uri.parse(url);
-          if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-            tabs[currentTabIndex].isSecure = uri.scheme == 'https' || uri.scheme == 'file';
-          }
-        } catch (e) {
-          if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-            tabs[currentTabIndex].isSecure = false;
-          }
-        }
-      });
-      _startUrlBarIdleTimer();
-    }
-  }
-
-  Future<void> _clearBrowsingData() async {
-    for (var i = 0; i < tabs.length; i++) {
-      await tabs[i].controller?.clearCache();
-      await tabs[i].controller?.clearLocalStorage();
+      _addNewTab();
     }
   }
 
   @override
   void dispose() {
-    _urlController.dispose();
+    _loadingAnimationController.dispose();
+    _slideAnimationController.dispose();
+    _slideUpController.dispose();
+    _animationController.dispose();
     _urlFocusNode.dispose();
+    _urlController.dispose();
+    _historyScrollController.dispose();
+    _optimizationEngine.dispose();
     super.dispose();
+  }
+
+  Future<void> _initializeControllers() async {
+    // Initialize all animation controllers
+    _slideUpController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
+    _slideAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0, 1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _slideAnimationController,
+      curve: Curves.easeOutCubic,
+    ));
+
+    _loadingAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _loadingAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _loadingAnimationController,
+      curve: Curves.linear,
+    ));
+    _loadingAnimationController.repeat();
+
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _animation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOutCubic,
+    );
+
+    // Initialize other controllers
+    _urlController = TextEditingController();
+    _urlFocusNode = FocusNode();
+    _urlFocusNode.addListener(() {
+      if (mounted) {
+        setState(() {
+          _isUrlBarExpanded = _urlFocusNode.hasFocus;
+        });
+      }
+    });
+
+    await _initializeWebView();
   }
 
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       isDarkMode = prefs.getBool('darkMode') ?? false;
+      _searchEngine = prefs.getString('searchEngine') ?? 'google';
     });
   }
 
   Future<void> _savePreferences() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('darkMode', isDarkMode);
+    await prefs.setString('homeUrl', _homeUrl);
+    await prefs.setString('searchEngine', _searchEngine);
   }
 
   Future<void> _initializeOptimizationEngine() async {
@@ -410,17 +505,16 @@ class _BrowserScreenState extends State<BrowserScreen> {
       
       function updateScroll() {
         if (window.flutter_inappwebview) {
-          window.onScroll.postMessage(JSON.stringify({
+          window.flutter_inappwebview.postMessage(JSON.stringify({
             scrollY: window.scrollY,
-            isScrollingDown: window.scrollY > lastScrollY,
-            scrollDelta: window.scrollY - lastScrollY
+            isScrollingUp: window.scrollY < lastScrollY
           }));
         }
         lastScrollY = window.scrollY;
         ticking = false;
       }
 
-      window.addEventListener('scroll', function(e) {
+      window.addEventListener('scroll', function() {
         if (!ticking) {
           window.requestAnimationFrame(function() {
             updateScroll();
@@ -434,38 +528,34 @@ class _BrowserScreenState extends State<BrowserScreen> {
     await controller.addJavaScriptChannel(
       'onScroll',
       onMessageReceived: (JavaScriptMessage message) {
-        if (!mounted) return;
-        final scrollData = json.decode(message.message) as Map<String, dynamic>;
-        final scrollY = scrollData['scrollY'] as double;
-        final scrollDelta = scrollData['scrollDelta'] as double;
-        
-        if (scrollDelta.abs() > 10) {  // Only trigger if scroll is significant
-          if (scrollDelta > 0 && !_isUrlBarHiddenByScroll) {  // Scrolling down
-            _hideUrlBar();
-          } else if (scrollDelta < 0 && _isUrlBarHiddenByScroll) {  // Scrolling up
-            _showUrlBar();
-          }
-        }
+        // No-op - removed icon state mode
       },
     );
   }
 
-  void _hideUrlBar() {
-    if (!_isUrlBarHiddenByScroll) {
-      setState(() {
-        _isUrlBarHiddenByScroll = true;
-      });
-      _urlBarAnimationController.forward();
+  Future<WebViewController> _initializeWebViewController() async {
+    final webViewController = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(Colors.transparent)
+      ..enableZoom(true);
+    webViewController.setNavigationDelegate(await _navigationDelegate);
+  
+    if (webViewController.platform is AndroidWebViewController) {
+      final androidController = webViewController.platform as AndroidWebViewController;
+      await androidController.setMediaPlaybackRequiresUserGesture(false);
+      await androidController.setBackgroundColor(Colors.transparent);
+      
+      // Enable hardware acceleration
+      await webViewController.runJavaScript('''
+        document.body.style.setProperty('-webkit-transform', 'translate3d(0,0,0)');
+        document.body.style.setProperty('transform', 'translate3d(0,0,0)');
+        document.body.style.setProperty('will-change', 'transform, opacity');
+        document.body.style.setProperty('backface-visibility', 'hidden');
+        document.body.style.setProperty('-webkit-backface-visibility', 'hidden');
+      ''');
     }
-  }
 
-  void _showUrlBar() {
-    if (_isUrlBarHiddenByScroll) {
-      setState(() {
-        _isUrlBarHiddenByScroll = false;
-      });
-      _urlBarAnimationController.reverse();
-    }
+    return webViewController;
   }
 
   Future<void> _loadHomePageSettings() async {
@@ -478,7 +568,102 @@ class _BrowserScreenState extends State<BrowserScreen> {
     });
   }
 
-   void _setupWebViewCallbacks() {
+  Future<void> _initializeWebView() async {
+    controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(Colors.transparent)
+      ..enableZoom(false)
+      ..addJavaScriptChannel(
+        'ImageHandler',
+        onMessageReceived: (JavaScriptMessage message) {
+          try {
+            final data = json.decode(message.message);
+            _tapPosition = Offset(data['x'].toDouble(), data['y'].toDouble());
+            _showImageOptions(data['url']);
+          } catch (e) {
+            _showImageOptions(message.message);
+          }
+        },
+      );
+
+    await _setupUrlMonitoring();
+    await _setupWebViewCallbacks();
+    
+    // Initialize navigation state
+    await _updateNavigationState();
+  }
+
+  Future<void> _setupUrlMonitoring() async {
+    await controller.runJavaScript('''
+      (function() {
+        let lastUrl = window.location.href;
+        
+        function notifyUrlChanged() {
+          const currentUrl = window.location.href;
+          if (currentUrl !== lastUrl) {
+            lastUrl = currentUrl;
+            if (window.UrlChanged && window.UrlChanged.postMessage) {
+              window.UrlChanged.postMessage(currentUrl);
+            }
+          }
+        }
+
+        // Monitor navigation events
+        window.addEventListener('popstate', notifyUrlChanged);
+        window.addEventListener('hashchange', notifyUrlChanged);
+        
+        // Monitor programmatic changes
+        const originalPushState = history.pushState;
+        const originalReplaceState = history.replaceState;
+        
+        history.pushState = function() {
+          originalPushState.apply(this, arguments);
+          notifyUrlChanged();
+        };
+        
+        history.replaceState = function() {
+          originalReplaceState.apply(this, arguments);
+          notifyUrlChanged();
+        };
+        
+        // Check periodically for URL changes
+        setInterval(notifyUrlChanged, 100);
+      })();
+    ''');
+
+    await controller.addJavaScriptChannel(
+      'UrlChanged',
+      onMessageReceived: (JavaScriptMessage message) {
+        _updateUrl(message.message);
+      },
+    );
+  }
+
+  Future<void> _updateNavigationState() async {
+    if (!mounted) return;
+    
+    try {
+      final canGoBackValue = await controller.canGoBack();
+      final canGoForwardValue = await controller.canGoForward();
+      
+      if (mounted) {
+        setState(() {
+          canGoBack = canGoBackValue;
+          canGoForward = canGoForwardValue;
+          
+          // Update the current tab's navigation state
+          if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+            tabs[currentTabIndex].canGoBack = canGoBackValue;
+            tabs[currentTabIndex].canGoForward = canGoForwardValue;
+          }
+        });
+      }
+    } catch (e) {
+      print('Error updating navigation state: $e');
+    }
+  }
+
+  Future<void> _setupWebViewCallbacks() async {
     controller.setNavigationDelegate(
       NavigationDelegate(
         onPageStarted: (String url) async {
@@ -486,55 +671,86 @@ class _BrowserScreenState extends State<BrowserScreen> {
           setState(() {
             isLoading = true;
             _displayUrl = url;
+            _urlController.text = _formatUrl(url);
+            
+            if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+              tabs[currentTabIndex].url = url;
+            }
           });
+          
+          // Update navigation state at the start of loading
+          await _updateNavigationState();
           await _optimizationEngine.onPageStartLoad(url);
         },
         onPageFinished: (String url) async {
           if (!mounted) return;
-          final title = await controller.getTitle() ?? _displayUrl;
-          setState(() {
-            isLoading = false;
-            if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-              tabs[currentTabIndex].title = title;
-            tabs[currentTabIndex].url = url;
+          
+          try {
+            final title = await controller.getTitle() ?? _displayUrl;
+            final currentUrl = await controller.currentUrl() ?? url;
+            
+            setState(() {
+              isLoading = false;
+              if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+                tabs[currentTabIndex].title = title;
+                tabs[currentTabIndex].url = currentUrl;
+              }
+              _displayUrl = currentUrl;
+              _urlController.text = _formatUrl(currentUrl);
+            });
+            
+            // Update navigation state after page load
+            await _updateNavigationState();
+            await _optimizationEngine.onPageFinishLoad(url);
+            await _updateFavicon(url);
+            
+            // Save to history if not in incognito mode
+            if (!tabs[currentTabIndex].isIncognito) {
+              await _saveToHistory(currentUrl, title);
             }
-            _displayUrl = url;
-            _urlController.text = _formatUrl(url);
-          });
+          } catch (e) {
+            print('Error in onPageFinished: $e');
+          }
+        },
+        onUrlChange: (UrlChange change) async {
+          if (!mounted) return;
+          final url = change.url;
+          if (url != null) {
+            _updateUrl(url);
+          }
+        },
+        onNavigationRequest: (NavigationRequest request) async {
+          // Update navigation state before new navigation
           await _updateNavigationState();
-          await _optimizationEngine.onPageFinishLoad(url);
-          await _updateFavicon(url);
+          return NavigationDecision.navigate;
         },
         onWebResourceError: (WebResourceError error) {
           if (!mounted) return;
           setState(() {
             isLoading = false;
           });
-        },
-        onNavigationRequest: (NavigationRequest request) {
-          return NavigationDecision.navigate;
+          _updateNavigationState();
         },
       ),
     );
-
-    controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-    controller.enableZoom(true);
   }
 
   Future<void> _saveToHistory(String url, String title) async {
     // Skip saving history in incognito mode
-    if (currentTab.isIncognito) return;
+    if (tabs[currentTabIndex].isIncognito) {
+      return;
+    }
 
     if (mounted) {
       final prefs = await SharedPreferences.getInstance();
       final String entry = json.encode({
         'url': url,
         'title': title,
-        'favicon': currentTab.favicon,
+        'favicon': tabs[currentTabIndex].favicon,
         'timestamp': DateTime.now().toIso8601String(),
       });
 
-      final List<String> history = prefs.getStringList('history') ?? [];
+      final history = prefs.getStringList('history') ?? [];
       
       // Check if URL already exists in recent history to avoid duplicates
       history.removeWhere((item) {
@@ -1128,11 +1344,7 @@ class _BrowserScreenState extends State<BrowserScreen> {
                         scale: 0.7,
                         child: Switch(
                           value: isDarkMode,
-                          onChanged: (value) {
-                            setState(() => isDarkMode = value);
-                            this.setState(() {});
-                            widget.onThemeChange?.call(value);
-                          },
+                          onChanged: _toggleTheme,
                         ),
                       ),
                       isFirst: true,
@@ -1355,13 +1567,13 @@ class _BrowserScreenState extends State<BrowserScreen> {
                   ),
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.flutter_version,
-                    subtitle: 'Flutter 3.27.3',
+                    subtitle: 'Flutter 3.29.0',
                     isFirst: false,
                     isLast: false,
                   ),
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.software_team,
-                    subtitle: 'Ata TÜRKÇÜ',
+                    subtitle: 'Vertex Software',
                     isFirst: false,
                     isLast: true,
                   ),
@@ -1622,33 +1834,20 @@ class _BrowserScreenState extends State<BrowserScreen> {
     }
   }
 
-  void _switchTab(int index) async {
-    if (index != currentTabIndex && index >= 0 && index < tabs.length) {
-      final tab = tabs[index];
-      
-      // Store the current tab's URL
-      final currentUrl = await controller.currentUrl();
-      if (currentUrl != null) {
-        tabs[currentTabIndex].url = currentUrl;
-      }
-      
-      setState(() {
-        currentTabIndex = index;
-        controller = tab.controller;
-        _displayUrl = tab.url;
-        _urlController.text = _formatUrl(tab.url);
-      });
-
-      // Load the URL in the WebView if needed
-      final targetUrl = await tab.controller.currentUrl();
-      if (targetUrl != tab.url) {
-        await controller.loadRequest(Uri.parse(tab.url));
-      }
-      
-      // Resume the target tab
-      final targetTabId = tab.controller.hashCode.toString();
-      await _optimizationEngine.resumeTab(targetTabId);
-    }
+  void _switchTab(int index) {
+    if (index < 0 || index >= tabs.length) return;
+    
+    setState(() {
+      currentTabIndex = index;
+      controller = tabs[index].controller;
+      _displayUrl = tabs[index].url;
+      _urlController.text = _formatUrl(tabs[index].url);
+      canGoBack = tabs[index].canGoBack;
+      canGoForward = tabs[index].canGoForward;
+    });
+    
+    // Update navigation state after switching tabs
+    _updateNavigationState();
   }
 
   Widget _buildAppearanceSettings() {
@@ -1675,12 +1874,7 @@ class _BrowserScreenState extends State<BrowserScreen> {
                     ),
                   ),
                   value: isDarkMode,
-                  onChanged: (value) async {
-                    setState(() {
-                      isDarkMode = value;
-                    });
-                    await _savePreferences();
-                  },
+                  onChanged: _toggleTheme,
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -2461,140 +2655,89 @@ class _BrowserScreenState extends State<BrowserScreen> {
       color: isDarkMode ? Colors.black : Colors.white,
       child: Column(
         children: [
-          _buildPanelHeader(
-            isHistoryVisible ? AppLocalizations.of(context)!.browsing_history : AppLocalizations.of(context)!.tabs,
-            onBack: () {
-              setState(() {
-                isTabsVisible = false;
-              });
-            },
-            trailing: isHistoryVisible ? IconButton(
-              icon: Icon(
-                Icons.delete_outline,
-                color: isDarkMode ? Colors.white70 : Colors.black54,
-              ),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    backgroundColor: isDarkMode ? Colors.black : Colors.white,
-                    title: Text(
-                      AppLocalizations.of(context)!.clear_browser_data,
-                      style: TextStyle(
-                        color: isDarkMode ? Colors.white : Colors.black,
-                      ),
-                    ),
-                    content: Text(
-                      AppLocalizations.of(context)!.clear_browsing_history_confirm,
-                      style: TextStyle(
-                        color: isDarkMode ? Colors.white70 : Colors.black87,
-                      ),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: Text(
-                          AppLocalizations.of(context)!.cancel,
-                          style: TextStyle(
-                            color: isDarkMode ? Colors.white70 : Colors.black54,
-                          ),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          _clearHistory();
-                        },
-                        child: Text(
-                          AppLocalizations.of(context)!.clear,
-                          style: const TextStyle(
-                            color: Colors.red,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ) : PopupMenuButton<String>(
-              icon: Icon(
-                Icons.add,
-                color: isDarkMode ? Colors.white70 : Colors.black54,
-              ),
+          Container(
+            height: 56 + MediaQuery.of(context).padding.top,
+            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+            decoration: BoxDecoration(
               color: isDarkMode ? Colors.black : Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'new_tab',
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.add,
-                        color: isDarkMode ? Colors.white70 : Colors.black54,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        AppLocalizations.of(context)!.new_tab,
-                        style: TextStyle(
-                          color: isDarkMode ? Colors.white : Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 'new_incognito_tab',
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.visibility_off,
-                        color: isDarkMode ? Colors.white70 : Colors.black54,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        AppLocalizations.of(context)!.new_incognito_tab,
-                        style: TextStyle(
-                          color: isDarkMode ? Colors.white : Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
+              boxShadow: [
+                BoxShadow(
+                  color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
                 ),
               ],
-              onSelected: (value) {
-                if (value == 'new_tab') {
-                  _addNewTab();
-                } else if (value == 'new_incognito_tab') {
-                  _addNewTab(isIncognito: true);
-                }
-                setState(() {
-                  isTabsVisible = false;
-                });
-              },
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildHeaderButton(
-                  title: AppLocalizations.of(context)!.tabs,
-                  count: displayTabs.length,
-                  isSelected: !isHistoryVisible,
-                  onTap: () => setState(() => isHistoryVisible = false),
+                IconButton(
+                  icon: Icon(
+                    Icons.arrow_back,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      isTabsVisible = false;
+                    });
+                  },
                 ),
-                const SizedBox(width: 16),
-                _buildHeaderButton(
-                  title: AppLocalizations.of(context)!.browsing_history,
-                  count: _loadedHistory.length,
-                  isSelected: isHistoryVisible,
-                  onTap: () => setState(() => isHistoryVisible = true),
+                Expanded(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildHeaderButton(
+                        title: 'Tabs',
+                        count: displayTabs.length,
+                        isSelected: !isHistoryVisible,
+                        onTap: () => setState(() => isHistoryVisible = false),
+                      ),
+                      SizedBox(width: 16),
+                      _buildHeaderButton(
+                        title: 'History',
+                        count: _loadedHistory.length,
+                        isSelected: isHistoryVisible,
+                        onTap: () => setState(() => isHistoryVisible = true),
+                      ),
+                    ],
+                  ),
+                ),
+                PopupMenuButton<String>(
+                  icon: Icon(
+                    Icons.add,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                  onSelected: (String value) {
+                    if (value == 'normal') {
+                      _addNewTab();
+                    } else if (value == 'incognito') {
+                      _addNewTab(isIncognito: true);
+                    }
+                    setState(() {
+                      isTabsVisible = false;
+                    });
+                  },
+                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                    PopupMenuItem<String>(
+                      value: 'normal',
+                      child: Row(
+                        children: [
+                          Icon(Icons.tab),
+                          SizedBox(width: 8),
+                          Text(AppLocalizations.of(context)!.new_tab),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'incognito',
+                      child: Row(
+                        children: [
+                          Icon(Icons.visibility_off),
+                          const SizedBox(width: 12),
+                          Text(AppLocalizations.of(context)!.new_incognito_tab),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -2612,9 +2755,9 @@ class _BrowserScreenState extends State<BrowserScreen> {
                           size: 48,
                           color: isDarkMode ? Colors.white38 : Colors.black38,
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         Text(
-                          AppLocalizations.of(context)!.no_active_tabs,
+                          'No tabs open',
                           style: TextStyle(
                             fontSize: 16,
                             color: isDarkMode ? Colors.white70 : Colors.black54,
@@ -2623,87 +2766,127 @@ class _BrowserScreenState extends State<BrowserScreen> {
                       ],
                     ),
                   )
-                : ListView.builder(
+                : GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 4,
+                      childAspectRatio: 1.0,
+                      crossAxisSpacing: 4,
+                      mainAxisSpacing: 4,
+                    ),
+                    padding: EdgeInsets.only(left: 4, right: 4, top: 4),
+                    physics: ClampingScrollPhysics(),
                     itemCount: displayTabs.length,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemBuilder: (context, index) => _buildTabListItem(displayTabs[index], index),
+                    itemBuilder: (context, index) {
+                      final tab = displayTabs[index];
+                      final isCurrentTab = tab == tabs[currentTabIndex];
+                      
+                      return GestureDetector(
+                        onTap: () async {
+                          final tabIndex = tabs.indexOf(tab);
+                          if (tabIndex != -1) {
+                            await _switchToTab(tabIndex);
+                            setState(() {
+                              isTabsVisible = false;
+                            });
+                          }
+                        },
+                        child: Container(
+                          margin: EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: isCurrentTab 
+                              ? Theme.of(context).primaryColor.withOpacity(0.1)
+                              : Theme.of(context).cardColor,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: isCurrentTab 
+                                ? Theme.of(context).primaryColor
+                                : Colors.transparent,
+                              width: 1,
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Expanded(
+                                child: Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    Center(
+                                      child: Container(
+                                        width: 16,
+                                        height: 16,
+                                        child: tab.favicon != null && !tab.isIncognito
+                                          ? Image.network(
+                                              tab.favicon!,
+                                              fit: BoxFit.contain,
+                                              errorBuilder: (context, error, stackTrace) => Icon(
+                                                tab.isIncognito ? Icons.visibility_off : Icons.public,
+                                                size: 14,
+                                                color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
+                                              ),
+                                            )
+                                          : Icon(
+                                              tab.isIncognito ? Icons.visibility_off : Icons.public,
+                                              size: 14,
+                                              color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
+                                            ),
+                                      ),
+                                    ),
+                                    Positioned(
+                                      top: 2,
+                                      right: 2,
+                                      child: GestureDetector(
+                                        onTap: () => _closeTab(tabs.indexOf(tab)),
+                                        child: Container(
+                                          padding: EdgeInsets.all(1),
+                                          decoration: BoxDecoration(
+                                            color: Colors.black54,
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                          child: Icon(
+                                            Icons.close,
+                                            size: 12,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.all(2),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    if (tab.isIncognito)
+                                      Padding(
+                                        padding: EdgeInsets.only(right: 4),
+                                        child: Icon(
+                                          Icons.visibility_off,
+                                          size: 10,
+                                          color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
+                                        ),
+                                      ),
+                                    Expanded(
+                                      child: Text(
+                                        tab.title.isEmpty ? tab.url : tab.title,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(fontSize: 10),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTabListItem(BrowserTab tab, int index) {
-    final isCurrentTab = tab == tabs[currentTabIndex];
-    
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      decoration: BoxDecoration(
-        color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.02),
-        borderRadius: BorderRadius.circular(12),
-        border: isCurrentTab ? Border.all(
-          color: Theme.of(context).primaryColor.withOpacity(0.5),
-          width: 1,
-        ) : null,
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: tab.favicon != null && !tab.isIncognito
-            ? Image.network(
-                tab.favicon!,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) => Icon(
-                  tab.isIncognito ? Icons.visibility_off : Icons.public,
-                  size: 20,
-                  color: isDarkMode ? Colors.white70 : Colors.black54,
-                ),
-              )
-            : Icon(
-                tab.isIncognito ? Icons.visibility_off : Icons.public,
-                size: 20,
-                color: isDarkMode ? Colors.white70 : Colors.black54,
-              ),
-        ),
-        title: Text(
-          tab.title.isEmpty ? tab.url : tab.title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 14,
-            color: isDarkMode ? Colors.white : Colors.black,
-          ),
-        ),
-        subtitle: Text(
-          _formatUrl(tab.url),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 12,
-            color: isDarkMode ? Colors.white70 : Colors.black54,
-          ),
-        ),
-        trailing: IconButton(
-          icon: Icon(
-            Icons.close,
-            size: 20,
-            color: isDarkMode ? Colors.white54 : Colors.black45,
-          ),
-          onPressed: () => _closeTab(tabs.indexOf(tab)),
-        ),
-        onTap: () async {
-          await _switchToTab(tabs.indexOf(tab));
-          setState(() {
-            isTabsVisible = false;
-          });
-        },
       ),
     );
   }
@@ -2896,89 +3079,54 @@ class _BrowserScreenState extends State<BrowserScreen> {
   }
 
   Widget _buildHistoryList() {
-    if (_loadedHistory.isEmpty) {
-      return _buildEmptyState(
-        AppLocalizations.of(context)!.no_browsing_history,
-        Icons.history_outlined,
-      );
-    }
-
-    // Group history items by date
-    final groupedHistory = <String, List<Map<String, dynamic>>>{};
-    for (var item in _loadedHistory) {
-      final date = DateTime.parse(item['timestamp']);
-      final key = _getFormattedDate(date);
-      groupedHistory.putIfAbsent(key, () => []).add(item);
-    }
-
-    return ListView.builder(
-      controller: _historyScrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      itemCount: groupedHistory.length,
-      itemBuilder: (context, index) {
-        final date = groupedHistory.keys.elementAt(index);
-        final items = groupedHistory[date]!;
-        
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Text(
-                date,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: isDarkMode ? Colors.white70 : Colors.black54,
+    return Column(
+      children: [
+        if (_loadedHistory.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton.icon(
+                  icon: Icon(Icons.delete_outline),
+                  label: Text('Clear All'),
+                  onPressed: _clearHistory,
+                  style: TextButton.styleFrom(
+                    foregroundColor: isDarkMode ? Colors.white70 : Colors.black54,
+                  ),
                 ),
-              ),
+              ],
             ),
-            ...items.map((item) => Dismissible(
-              key: Key(item['timestamp']),
-              background: Container(
-                decoration: BoxDecoration(
-                  color: Colors.red.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
+          ),
+        Expanded(
+          child: ListView.builder(
+            itemCount: _loadedHistory.length,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemBuilder: (context, index) {
+              final item = _loadedHistory[index];
+              return Dismissible(
+                key: Key(item['timestamp'] ?? DateTime.now().toIso8601String()),
+                background: Container(
+                  color: Colors.red.withOpacity(0.2),
+                  alignment: Alignment.centerRight,
+                  padding: EdgeInsets.only(right: 16),
+                  child: Icon(
+                    Icons.delete,
+                    color: Colors.red,
+                  ),
                 ),
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.only(right: 16),
-                child: const Icon(
-                  Icons.delete_outline,
-                  color: Colors.red,
-                ),
-              ),
-              direction: DismissDirection.endToStart,
-              onDismissed: (_) {
-                final index = _loadedHistory.indexOf(item);
-                _removeHistoryItem(index);
-              },
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                decoration: BoxDecoration(
-                  color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.02),
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                direction: DismissDirection.endToStart,
+                onDismissed: (direction) => _removeHistoryItem(index),
                 child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  leading: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.history,
-                      size: 20,
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
-                    ),
+                  leading: Icon(
+                    Icons.history,
+                    color: isDarkMode ? Colors.white54 : Colors.black45,
                   ),
                   title: Text(
                     item['title'] ?? item['url'],
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 14,
                       color: isDarkMode ? Colors.white : Colors.black,
                     ),
                   ),
@@ -2993,43 +3141,24 @@ class _BrowserScreenState extends State<BrowserScreen> {
                   ),
                   trailing: IconButton(
                     icon: Icon(
-                      Icons.open_in_new,
-                      size: 20,
-                      color: isDarkMode ? Colors.white54 : Colors.black45,
+                      Icons.delete_outline,
+                      color: isDarkMode ? Colors.white70 : Colors.black54,
                     ),
-                    onPressed: () {
-                      _addNewTab(initialUrl: item['url']);
-                      setState(() {
-                        isTabsVisible = false;
-                      });
-                    },
+                    onPressed: () => _removeHistoryItem(index),
                   ),
                   onTap: () {
-                    _addNewTab(initialUrl: item['url']);
+                    _addNewTab(url: item['url']);
                     setState(() {
                       isTabsVisible = false;
                     });
                   },
                 ),
-              ),
-            )).toList(),
-          ],
-        );
-      },
+              );
+            },
+          ),
+        ),
+      ],
     );
-  }
-
-  String _getFormattedDate(DateTime date) {
-    final now = DateTime.now();
-    final yesterday = now.subtract(const Duration(days: 1));
-
-    if (date.year == now.year && date.month == now.month && date.day == now.day) {
-      return AppLocalizations.of(context)!.today;
-    } else if (date.year == yesterday.year && date.month == yesterday.month && date.day == yesterday.day) {
-      return AppLocalizations.of(context)!.yesterday;
-    } else {
-      return '${date.day}/${date.month}/${date.year}';
-    }
   }
 
   // Add method to remove individual history items
@@ -3408,83 +3537,24 @@ class _BrowserScreenState extends State<BrowserScreen> {
     }
   }
 
-  Future<void> _addNewTab({String? initialUrl, bool isIncognito = false}) async {
+  void _addNewTab({String? url, bool isIncognito = false}) {
     final newTab = BrowserTab(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      url: initialUrl ?? _homeUrl,
+      url: url ?? _homeUrl,
+      title: isIncognito ? AppLocalizations.of(context)!.new_incognito_tab : AppLocalizations.of(context)!.new_tab,
+      favicon: null,
       isIncognito: isIncognito,
     );
-
-    final controller = WebViewController();
-    newTab.controller = controller;
-
-    await controller
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.transparent)
-      ..enableZoom(false)
-      ..setUserAgent('Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36')
-      ..addJavaScriptChannel(
-        'ImageHandler',
-        onMessageReceived: (JavaScriptMessage message) {
-          try {
-            final data = json.decode(message.message);
-            _tapPosition = Offset(data['x'].toDouble(), data['y'].toDouble());
-            _showImageOptions(data['url']);
-          } catch (e) {
-            _showImageOptions(message.message);
-          }
-        },
-      )
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (String url) async {
-            if (!mounted) return;
-            setState(() {
-              newTab.isLoading = true;
-            });
-            
-            await newTab.controller?.runJavaScript('''
-              document.addEventListener('DOMContentLoaded', function() {
-                document.querySelectorAll('img').forEach(function(img) {
-                  img.addEventListener('contextmenu', function(e) {
-                    e.preventDefault();
-                    window.ImageHandler.postMessage(JSON.stringify({
-                      url: e.target.src,
-                      x: e.clientX,
-                      y: e.clientY
-                    }));
-                  });
-                });
-              });
-            ''');
-          },
-          onPageFinished: (String url) async {
-            if (!mounted) return;
-            final title = await newTab.controller?.getTitle() ?? url;
-            setState(() {
-              newTab.isLoading = false;
-              newTab.title = title;
-              newTab.url = url;
-              newTab.isSecure = url.startsWith('https://');
-            });
-          },
-          onUrlChange: (UrlChange change) {
-            if (!mounted) return;
-            final url = change.url ?? '';
-            setState(() {
-              newTab.url = url;
-              newTab.isSecure = url.startsWith('https://');
-            });
-          },
-        ),
-      );
-
+    
+    _initializeTab(newTab);
+    
     setState(() {
       tabs.add(newTab);
       currentTabIndex = tabs.length - 1;
+      controller = newTab.controller;            // Added to update the active controller
+      _displayUrl = newTab.url;                   // Added to update the display URL
+      _urlController.text = _formatUrl(newTab.url); // Added to update the URL text field
     });
-
-    await newTab.controller?.loadRequest(Uri.parse(newTab.url));
   }
 
   void _closeTab(int index) {
@@ -3547,132 +3617,54 @@ class _BrowserScreenState extends State<BrowserScreen> {
   }
 
   Widget _buildUrlBar() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final urlBarWidth = screenWidth - 32;
-    
-    return AnimatedBuilder(
-      animation: _urlBarAnimation,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(0, 100 * _urlBarAnimation.value), // Changed from -100 * (1 - _urlBarAnimation.value)
-          child: GestureDetector(
-            onHorizontalDragUpdate: (details) {
-              setState(() {
-                _urlBarSlideOffset += details.delta.dx;
-              });
-            },
-            onHorizontalDragEnd: (details) {
-              if (_urlBarSlideOffset.abs() > 50) {
-                if (_urlBarSlideOffset < 0 && canGoBack) {
-                  controller.goBack();
-                  controller.runJavaScript("animatePageTransition('back')");
-                } else if (_urlBarSlideOffset > 0 && canGoForward) {
-                  controller.goForward();
-                  controller.runJavaScript("animatePageTransition('forward')");
-                }
-              }
-              setState(() {
-                _urlBarSlideOffset = 0;
-              });
-            },
-            child: Transform.translate(
-              offset: Offset(_urlBarSlideOffset, 0),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(28),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                  child: Container(
-                    width: urlBarWidth,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(28),
-                      color: isDarkMode 
-                        ? Colors.black.withOpacity(0.7) 
-                        : Colors.white.withOpacity(0.7),
-                      border: Border.all(
-                        color: isDarkMode 
-                          ? Colors.white.withOpacity(0.1) 
-                          : Colors.black.withOpacity(0.1),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 16),
-                        Icon(
-                          isSecure ? Icons.shield : Icons.shield_outlined,
-                          size: 20,
-                          color: isDarkMode ? Colors.white70 : Colors.black54,
-                          semanticLabel: isSecure ? 
-                            AppLocalizations.of(context)!.secure_connection : 
-                            AppLocalizations.of(context)!.insecure_connection,
-                        ),
-                        Expanded(
-                          child: TextField(
-                            controller: _urlController,
-                            focusNode: _urlFocusNode,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
-                              fontSize: 16,
-                            ),
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: AppLocalizations.of(context)!.search_or_type_url,
-                              hintStyle: TextStyle(
-                                color: isDarkMode ? Colors.white38 : Colors.black38,
-                              ),
-                            ),
-                            onTap: () {
-                              setState(() {
-                                _urlController.text = _displayUrl;
-                                _urlController.selection = TextSelection(
-                                  baseOffset: 0,
-                                  extentOffset: _urlController.text.length,
-                                );
-                                _urlBarIdleTimer?.cancel();
-                                _startUrlBarIdleTimer();
-                              });
-                            },
-                            onSubmitted: (url) {
-                              _loadUrl(url);
-                              _urlFocusNode.unfocus();
-                              setState(() {
-                                _urlController.text = _formatUrl(url);
-                              });
-                              _startUrlBarIdleTimer();
-                            },
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            _urlFocusNode.hasFocus ? Icons.close : Icons.refresh,
-                            size: 20,
-                            color: isDarkMode ? Colors.white70 : Colors.black54,
-                          ),
-                          tooltip: _urlFocusNode.hasFocus ? 
-                            AppLocalizations.of(context)!.close_search : 
-                            AppLocalizations.of(context)!.refresh_page,
-                          onPressed: () {
-                            if (_urlFocusNode.hasFocus) {
-                              _urlFocusNode.unfocus();
-                              setState(() {
-                                _urlController.text = _formatUrl(_displayUrl);
-                              });
-                            } else {
-                              controller.reload();
-                            }
-                          },
-                        ),
-                      ],
-                    ),
+    final urlBarWidth = MediaQuery.of(context).size.width - 16; // Increased width
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 8), // Reduced margin
+      child: GestureDetector(
+        onHorizontalDragUpdate: (details) {
+          setState(() {
+            _urlBarSlideOffset += details.delta.dx;
+          });
+        },
+        onHorizontalDragEnd: (details) async {
+          if (_urlBarSlideOffset.abs() > 50) {
+            if (_urlBarSlideOffset < 0 && canGoBack) {
+              await _goBack();
+            } else if (_urlBarSlideOffset > 0 && canGoForward) {
+              await _goForward();
+            }
+          }
+          setState(() {
+            _urlBarSlideOffset = 0;
+          });
+        },
+        child: Transform.translate(
+          offset: Offset(_urlBarSlideOffset, 0),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(28),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              child: Container(
+                width: urlBarWidth,
+                height: 48,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(28),
+                  color: isDarkMode 
+                    ? Colors.black.withOpacity(0.7) 
+                    : Colors.white.withOpacity(0.7),
+                  border: Border.all(
+                    color: isDarkMode 
+                      ? Colors.white.withOpacity(0.1) 
+                      : Colors.black.withOpacity(0.1),
+                    width: 1,
                   ),
                 ),
+                child: _buildUrlBarExpandedState(),
               ),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -3681,9 +3673,11 @@ class _BrowserScreenState extends State<BrowserScreen> {
       children: [
         const SizedBox(width: 16),
         Icon(
-          isSecure ? Icons.shield : Icons.shield_outlined,
+          isSecure ? Icons.shield : Icons.warning_amber_rounded,
           size: 20,
-          color: isDarkMode ? Colors.white70 : Colors.black54,
+          color: isSecure 
+            ? (isDarkMode ? Colors.green[300] : Colors.green[700])
+            : (isDarkMode ? Colors.orange[300] : Colors.orange[700]),
           semanticLabel: isSecure ? 
             AppLocalizations.of(context)!.secure_connection : 
             AppLocalizations.of(context)!.insecure_connection,
@@ -3711,17 +3705,11 @@ class _BrowserScreenState extends State<BrowserScreen> {
                   baseOffset: 0,
                   extentOffset: _urlController.text.length,
                 );
-                _urlBarIdleTimer?.cancel();
-                _startUrlBarIdleTimer();
               });
             },
             onSubmitted: (url) {
               _loadUrl(url);
               _urlFocusNode.unfocus();
-              setState(() {
-                _urlController.text = _formatUrl(url);
-              });
-              _startUrlBarIdleTimer();
             },
           ),
         ),
@@ -3790,17 +3778,7 @@ class _BrowserScreenState extends State<BrowserScreen> {
         body: Stack(
           children: [
             Positioned.fill(
-              child: Listener(
-                behavior: HitTestBehavior.translucent,
-                onPointerMove: (PointerMoveEvent event) {
-                  if (event.delta.dy < -2) { // Finger moving up (negative delta)
-                    _hideUrlBar();
-                  } else if (event.delta.dy > 2) { // Finger moving down (positive delta)
-                    _showUrlBar();
-                  }
-                },
-                child: WebViewWidget(controller: controller),
-              ),
+              child: WebViewWidget(controller: controller),
             ),
             
             if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible)
@@ -3876,7 +3854,41 @@ class _BrowserScreenState extends State<BrowserScreen> {
   }
 
   // Update URL when page changes
- 
+  void _updateUrl(String url) {
+    if (!mounted) return;
+    
+    setState(() {
+      _displayUrl = url;
+      _urlController.text = _formatUrl(url);
+      
+      if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+        tabs[currentTabIndex].url = url;
+      }
+
+      // Update secure indicator based on URL
+      try {
+        final uri = Uri.parse(url);
+        isSecure = uri.scheme == 'https';
+      } catch (e) {
+        isSecure = false;
+      }
+    });
+    
+    // Update navigation state whenever URL changes
+    _updateNavigationState();
+  }
+
+  // New helper method to handle page start logic without updating the URL bar/secure indicator
+  Future<void> _handlePageStarted(String url) async {
+    if (!mounted) return;
+    setState(() {
+      isLoading = true;
+    });
+    await _updateNavigationState();
+    await _optimizationEngine.onPageStartLoad(url);
+    await _saveToHistory(url, await controller.getTitle() ?? 'Untitled');
+  }
+
   // Navigation delegate methods
   Future<NavigationDelegate> get _navigationDelegate async {
     return NavigationDelegate(
@@ -3899,39 +3911,19 @@ class _BrowserScreenState extends State<BrowserScreen> {
         return NavigationDecision.navigate;
       },
       onPageStarted: (String url) async {
-        if (!mounted) return;
-        setState(() {
-          isLoading = true;
-          _displayUrl = url;
-          _urlController.text = _formatUrl(url);
-        });
-        
-        try {
-          final uri = Uri.parse(url);
-          setState(() {
-            isSecure = uri.scheme == 'https';
-          });
-        } catch (e) {
-          setState(() {
-            isSecure = false;
-          });
-        }
-        
-        await _updateNavigationState();
-        await _optimizationEngine.onPageStartLoad(url);
-        await _saveToHistory(url, await controller.getTitle() ?? 'Untitled');
+        _updateUrl(url);
+        await _handlePageStarted(url);
       },
       onPageFinished: (String url) async {
         if (!mounted) return;
         final title = await controller.getTitle() ?? _displayUrl;
+        _updateUrl(url);
         setState(() {
           isLoading = false;
           if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
             tabs[currentTabIndex].title = title;
             tabs[currentTabIndex].url = url;
           }
-          _displayUrl = url;
-          _urlController.text = _formatUrl(url);
         });
         await _updateNavigationState();
         await _optimizationEngine.onPageFinishLoad(url);
@@ -4812,24 +4804,62 @@ class _BrowserScreenState extends State<BrowserScreen> {
   Offset _tapPosition = Offset.zero;
 
   Future<void> _goBack() async {
-    if (await controller.canGoBack()) {
+    if (!canGoBack) return;
+    
+    try {
       await controller.goBack();
+      
+      // Wait a bit for the navigation to complete
+      await Future.delayed(const Duration(milliseconds: 100));
+      
+      // Update URL and navigation state
       final url = await controller.currentUrl();
-      if (url != null) {
-        _updateUrl(url);
+      final title = await controller.getTitle();
+      
+      if (mounted && url != null) {
+        setState(() {
+          _displayUrl = url;
+          _urlController.text = _formatUrl(url);
+          if (title != null) {
+            tabs[currentTabIndex].title = title;
+          }
+          tabs[currentTabIndex].url = url;
+        });
+        
         await _updateNavigationState();
       }
+    } catch (e) {
+      print('Error navigating back: $e');
     }
   }
 
   Future<void> _goForward() async {
-    if (await controller.canGoForward()) {
+    if (!canGoForward) return;
+    
+    try {
       await controller.goForward();
+      
+      // Wait a bit for the navigation to complete
+      await Future.delayed(const Duration(milliseconds: 100));
+      
+      // Update URL and navigation state
       final url = await controller.currentUrl();
-      if (url != null) {
-        _updateUrl(url);
+      final title = await controller.getTitle();
+      
+      if (mounted && url != null) {
+        setState(() {
+          _displayUrl = url;
+          _urlController.text = _formatUrl(url);
+          if (title != null) {
+            tabs[currentTabIndex].title = title;
+          }
+          tabs[currentTabIndex].url = url;
+        });
+        
         await _updateNavigationState();
       }
+    } catch (e) {
+      print('Error navigating forward: $e');
     }
   }
 
@@ -4838,43 +4868,55 @@ class _BrowserScreenState extends State<BrowserScreen> {
     if (index != currentTabIndex && index >= 0 && index < tabs.length) {
       final tab = tabs[index];
       
-      if (tab.controller == null) {
-        tab.controller = await _initializeWebViewController();
-      }
+      setState(() {
+        currentTabIndex = index;
+        controller = tab.controller;
+        _displayUrl = tab.url;
+        _urlController.text = _formatUrl(tab.url);
+      });
 
-      if (tab.controller != null) {
-        setState(() {
-          currentTabIndex = index;
-          controller = tab.controller!;
-          _displayUrl = tab.url;
-          _urlController.text = _formatUrl(tab.url);
-        });
-
-        // Force reload the page to prevent black screen
-        final targetUrl = await tab.controller?.currentUrl();
-        if (targetUrl != tab.url) {
-          await tab.controller?.loadRequest(Uri.parse(tab.url));
-        }
-      }
+      // Force reload the page to prevent black screen
+      await tab.controller.loadRequest(Uri.parse(tab.url));
     }
   }
 
   // In the method where you create new tabs
   void _createNewTab(String url) async {
-    final newController = await _initializeWebViewController();
-    
     final newTab = BrowserTab(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       url: url,
       title: 'New Tab',
       isIncognito: tabs.isNotEmpty ? tabs[currentTabIndex].isIncognito : false,
-      controller: newController,
     );
 
+    // Set up navigation delegate before adding the tab
+    newTab.controller.setNavigationDelegate(
+      NavigationDelegate(
+        onPageStarted: (String url) async {
+          if (!mounted) return;
+          setState(() {
+            isLoading = true;
+            _displayUrl = url;
+            _urlController.text = _formatUrl(url);
+          });
+        },
+        onPageFinished: (String url) async {
+          if (!mounted) return;
+          final title = await newTab.controller.getTitle() ?? 'New Tab';
+          setState(() {
+            isLoading = false;
+            newTab.title = title;
+            newTab.url = url;
+          });
+        },
+      ),
+    );
+
+    // Add the tab and switch to it
     setState(() {
       tabs.add(newTab);
       currentTabIndex = tabs.length - 1;
-      controller = newController;
+      controller = newTab.controller;
       _displayUrl = url;
       _urlController.text = _formatUrl(url);
     });
@@ -4882,7 +4924,7 @@ class _BrowserScreenState extends State<BrowserScreen> {
     // Ensure the page is loaded
     await Future.delayed(Duration(milliseconds: 100));
     if (url.isNotEmpty) {
-      await newController.loadRequest(Uri.parse(url));
+      await newTab.controller.loadRequest(Uri.parse(url));
     }
   }
 
@@ -5135,49 +5177,31 @@ class _BrowserScreenState extends State<BrowserScreen> {
 
   
   void _initializeTab(BrowserTab tab) {
-    if (tab.controller == null) {
-      _initializeWebViewController().then((webViewController) {
-        setState(() {
-          tab.controller = webViewController;
-        });
-        tab.controller?.setNavigationDelegate(
-          NavigationDelegate(
-            onPageStarted: (String url) async {
-              if (!mounted) return;
-              setState(() {
-                isLoading = true;
-              });
-              _updateUrl(url);
-              await _optimizationEngine.onPageStartLoad(url);
-            },
-            onPageFinished: (String url) async {
-              if (mounted) {
-                final title = await tab.controller?.getTitle() ?? url;
-                setState(() {
-                  isLoading = false;
-                  tab.title = title;
-                  tab.url = url;
-                });
-                if (!tab.isIncognito) {
-                  await _saveToHistory(url, title);
-                }
-                _updateUrl(url);
-                await _updateNavigationState();
-                await _updateFavicon(url);
-              }
-            },
-            onUrlChange: (UrlChange change) {
-              if (mounted && change.url != null) {
-                setState(() {
-                  tab.url = change.url!;
-                  _updateUrl(change.url!);
-                });
-              }
-            },
-          ),
-        );
-      });
-    }
+    tab.controller.setNavigationDelegate(
+      NavigationDelegate(
+        onPageFinished: (String url) async {
+          if (mounted) {
+            final title = await tab.controller.getTitle() ?? url;
+            setState(() {
+              tab.title = title;
+              tab.url = url;
+            });
+            // Only save to history if not incognito
+            if (!tab.isIncognito) {
+              await _saveToHistory(url, title);
+            }
+          }
+        },
+        onUrlChange: (UrlChange change) {
+          if (mounted) {
+            final url = change.url ?? '';
+            setState(() {
+              tab.url = url;
+            });
+          }
+        },
+      ),
+    );
   }
 
   Future<void> _downloadFile(String url, String? suggestedFilename) async {
@@ -5277,40 +5301,6 @@ class _BrowserScreenState extends State<BrowserScreen> {
         isLoading = false;
       });
     }
-  }
-
-  // Add getter for current tab
-  BrowserTab get currentTab => tabs[currentTabIndex];
-
-  Future<void> _clearBrowsingData() async {
-    for (var i = 0; i < tabs.length; i++) {
-      await tabs[i].controller?.clearCache();
-      await tabs[i].controller?.clearLocalStorage();
-    }
-  }
-
-  
-
-  Widget _buildTabIcon(BrowserTab tab) {
-    return Container(
-      padding: const EdgeInsets.all(4),
-      child: tab.favicon != null && !tab.isIncognito
-          ? Image.network(
-              tab.favicon!,
-              width: 16,
-              height: 16,
-              errorBuilder: (context, error, stackTrace) => Icon(
-                Icons.public,
-                size: 16,
-                color: isDarkMode ? Colors.white70 : Colors.black54,
-              ),
-            )
-          : Icon(
-              tab.isIncognito ? Icons.private_connectivity : Icons.public,
-              size: 16,
-              color: isDarkMode ? Colors.white70 : Colors.black54,
-            ),
-    );
   }
 }
 

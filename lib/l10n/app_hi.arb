@@ -184,10 +184,8 @@
   "no_downloads_yet": "कोई डाउनलोड नहीं",
   "just_now": "अभी अभी",
   "unknown": "अज्ञात",
-  "press_back_to_exit": "बाहर निकलने के लिए फिर से दबाएं",
+  "press_back_to_exit": "बाहर निकलने के लिए दोबारा दबाएं",
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
-  },
-  "file_not_found": "फ़ाइल नहीं मिली",
-  "file_deleted": "फ़ाइल हटा दी गई"
+  }
 } 

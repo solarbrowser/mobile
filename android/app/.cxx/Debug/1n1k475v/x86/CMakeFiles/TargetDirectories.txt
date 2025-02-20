@@ -1,0 +1,2 @@
+/home/wolf/Downloads/mobile-main(1)/mobile-main/android/app/.cxx/Debug/1n1k475v/x86/CMakeFiles/edit_cache.dir
+/home/wolf/Downloads/mobile-main(1)/mobile-main/android/app/.cxx/Debug/1n1k475v/x86/CMakeFiles/rebuild_cache.dir

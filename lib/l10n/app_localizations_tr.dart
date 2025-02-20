@@ -1,3 +1,5 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -466,25 +468,4 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
-
-  @override
-  String get no_active_tabs => 'No active tabs';
-
-  @override
-  String get no_browsing_history => 'No browsing history';
-
-  @override
-  String get today => 'Today';
-
-  @override
-  String get yesterday => 'Yesterday';
-
-  @override
-  String get clear_browsing_history_confirm => 'This will clear your browsing history. Downloaded files will not be deleted.';
-
-  @override
-  String get file_not_found => 'File not found';
-
-  @override
-  String get file_deleted => 'File deleted';
 }

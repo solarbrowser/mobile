@@ -181,10 +181,8 @@
   "@software_team": {
     "description": "Software team label"
   },
-  "press_back_to_exit": "뒤로 가기를 한 번 더 누르면 종료됩니다",
+  "press_back_to_exit": "한 번 더 누르면 종료됩니다",
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
-  },
-  "file_not_found": "파일을 찾을 수 없습니다",
-  "file_deleted": "파일이 삭제되었습니다"
+  }
 } 

@@ -6,11 +6,7 @@
     "storage_permission_denied",
     "new_incognito_tab",
     "incognito_mode",
-    "no_active_tabs",
-    "no_browsing_history",
-    "today",
-    "yesterday",
-    "clear_browsing_history_confirm"
+    "incognito_description"
   ],
 
   "de": [
@@ -20,12 +16,7 @@
     "storage_permission_denied",
     "new_incognito_tab",
     "incognito_mode",
-    "incognito_description",
-    "no_active_tabs",
-    "no_browsing_history",
-    "today",
-    "yesterday",
-    "clear_browsing_history_confirm"
+    "incognito_description"
   ],
 
   "es": [
@@ -35,12 +26,7 @@
     "storage_permission_denied",
     "new_incognito_tab",
     "incognito_mode",
-    "incognito_description",
-    "no_active_tabs",
-    "no_browsing_history",
-    "today",
-    "yesterday",
-    "clear_browsing_history_confirm"
+    "incognito_description"
   ],
 
   "fr": [
@@ -50,12 +36,7 @@
     "storage_permission_denied",
     "new_incognito_tab",
     "incognito_mode",
-    "incognito_description",
-    "no_active_tabs",
-    "no_browsing_history",
-    "today",
-    "yesterday",
-    "clear_browsing_history_confirm"
+    "incognito_description"
   ],
 
   "hi": [
@@ -65,12 +46,7 @@
     "storage_permission_denied",
     "new_incognito_tab",
     "incognito_mode",
-    "incognito_description",
-    "no_active_tabs",
-    "no_browsing_history",
-    "today",
-    "yesterday",
-    "clear_browsing_history_confirm"
+    "incognito_description"
   ],
 
   "it": [
@@ -80,12 +56,7 @@
     "storage_permission_denied",
     "new_incognito_tab",
     "incognito_mode",
-    "incognito_description",
-    "no_active_tabs",
-    "no_browsing_history",
-    "today",
-    "yesterday",
-    "clear_browsing_history_confirm"
+    "incognito_description"
   ],
 
   "ja": [
@@ -95,12 +66,7 @@
     "storage_permission_denied",
     "new_incognito_tab",
     "incognito_mode",
-    "incognito_description",
-    "no_active_tabs",
-    "no_browsing_history",
-    "today",
-    "yesterday",
-    "clear_browsing_history_confirm"
+    "incognito_description"
   ],
 
   "ko": [
@@ -110,12 +76,7 @@
     "storage_permission_denied",
     "new_incognito_tab",
     "incognito_mode",
-    "incognito_description",
-    "no_active_tabs",
-    "no_browsing_history",
-    "today",
-    "yesterday",
-    "clear_browsing_history_confirm"
+    "incognito_description"
   ],
 
   "pt": [
@@ -125,12 +86,7 @@
     "storage_permission_denied",
     "new_incognito_tab",
     "incognito_mode",
-    "incognito_description",
-    "no_active_tabs",
-    "no_browsing_history",
-    "today",
-    "yesterday",
-    "clear_browsing_history_confirm"
+    "incognito_description"
   ],
 
   "ru": [
@@ -140,12 +96,7 @@
     "storage_permission_denied",
     "new_incognito_tab",
     "incognito_mode",
-    "incognito_description",
-    "no_active_tabs",
-    "no_browsing_history",
-    "today",
-    "yesterday",
-    "clear_browsing_history_confirm"
+    "incognito_description"
   ],
 
   "tr": [
@@ -155,14 +106,7 @@
     "storage_permission_denied",
     "new_incognito_tab",
     "incognito_mode",
-    "incognito_description",
-    "no_active_tabs",
-    "no_browsing_history",
-    "today",
-    "yesterday",
-    "clear_browsing_history_confirm",
-    "file_not_found",
-    "file_deleted"
+    "incognito_description"
   ],
 
   "zh": [
@@ -172,13 +116,6 @@
     "storage_permission_denied",
     "new_incognito_tab",
     "incognito_mode",
-    "incognito_description",
-    "no_active_tabs",
-    "no_browsing_history",
-    "today",
-    "yesterday",
-    "clear_browsing_history_confirm",
-    "file_not_found",
-    "file_deleted"
+    "incognito_description"
   ]
 }
