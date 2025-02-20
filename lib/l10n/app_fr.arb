@@ -180,5 +180,7 @@
   "press_back_to_exit": "Appuyez à nouveau pour quitter",
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
-  }
+  },
+  "file_not_found": "Fichier non trouvé",
+  "file_deleted": "Fichier supprimé"
 } 

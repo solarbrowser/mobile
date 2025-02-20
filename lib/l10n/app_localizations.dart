@@ -1022,6 +1022,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally'**
   String get incognito_description;
+
+  /// Message shown when there are no active tabs
+  ///
+  /// In en, this message translates to:
+  /// **'No active tabs'**
+  String get no_active_tabs;
+
+  /// Message shown when there is no browsing history
+  ///
+  /// In en, this message translates to:
+  /// **'No browsing history'**
+  String get no_browsing_history;
+
+  /// Label for today's date in history
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// Label for yesterday's date in history
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
+  /// Confirmation message for clearing browsing history
+  ///
+  /// In en, this message translates to:
+  /// **'This will clear your browsing history. Downloaded files will not be deleted.'**
+  String get clear_browsing_history_confirm;
+
+  /// Message shown when a file cannot be found
+  ///
+  /// In en, this message translates to:
+  /// **'File not found'**
+  String get file_not_found;
+
+  /// Message shown when a file has been successfully deleted
+  ///
+  /// In en, this message translates to:
+  /// **'File deleted'**
+  String get file_deleted;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

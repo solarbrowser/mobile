@@ -444,7 +444,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get unknown => 'अज्ञात';
 
   @override
-  String get press_back_to_exit => 'बाहर निकलने के लिए दोबारा दबाएं';
+  String get press_back_to_exit => 'बाहर निकलने के लिए फिर से दबाएं';
 
   @override
   String get storage_permission_required => 'Storage Permission Required';
@@ -466,4 +466,25 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
+
+  @override
+  String get no_active_tabs => 'No active tabs';
+
+  @override
+  String get no_browsing_history => 'No browsing history';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get yesterday => 'Yesterday';
+
+  @override
+  String get clear_browsing_history_confirm => 'This will clear your browsing history. Downloaded files will not be deleted.';
+
+  @override
+  String get file_not_found => 'फ़ाइल नहीं मिली';
+
+  @override
+  String get file_deleted => 'फ़ाइल हटा दी गई';
 }

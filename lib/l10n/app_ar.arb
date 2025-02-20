@@ -180,5 +180,8 @@
   "press_back_to_exit": "اضغط مرة أخرى للخروج",
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
-  }
+  },
+  "incognito_description": "في وضع التصفح المتخفي:\n• لا يتم حفظ سجل التصفح\n• يتم مسح ملفات تعريف الارتباط عند إغلاق علامات التبويب\n• لا يتم تخزين البيانات محليًا",
+  "file_not_found": "الملف غير موجود",
+  "file_deleted": "تم حذف الملف"
 } 

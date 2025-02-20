@@ -444,7 +444,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get unknown => '알 수 없음';
 
   @override
-  String get press_back_to_exit => '한 번 더 누르면 종료됩니다';
+  String get press_back_to_exit => '뒤로 가기를 한 번 더 누르면 종료됩니다';
 
   @override
   String get storage_permission_required => 'Storage Permission Required';
@@ -466,4 +466,25 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
+
+  @override
+  String get no_active_tabs => 'No active tabs';
+
+  @override
+  String get no_browsing_history => 'No browsing history';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get yesterday => 'Yesterday';
+
+  @override
+  String get clear_browsing_history_confirm => 'This will clear your browsing history. Downloaded files will not be deleted.';
+
+  @override
+  String get file_not_found => '파일을 찾을 수 없습니다';
+
+  @override
+  String get file_deleted => '파일이 삭제되었습니다';
 }
