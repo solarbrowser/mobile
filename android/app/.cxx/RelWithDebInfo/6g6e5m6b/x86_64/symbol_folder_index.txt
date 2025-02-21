@@ -1,0 +1,1 @@
+/home/wolf/Downloads/mobile-main(1)/mobile-main/build/app/intermediates/cxx/RelWithDebInfo/6g6e5m6b/obj/x86_64

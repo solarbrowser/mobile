@@ -1,0 +1,2 @@
+/home/wolf/Downloads/mobile-main(1)/mobile-main/android/app/.cxx/RelWithDebInfo/6g6e5m6b/arm64-v8a/CMakeFiles/edit_cache.dir
+/home/wolf/Downloads/mobile-main(1)/mobile-main/android/app/.cxx/RelWithDebInfo/6g6e5m6b/arm64-v8a/CMakeFiles/rebuild_cache.dir

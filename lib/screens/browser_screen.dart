@@ -201,6 +201,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   bool isDownloadsVisible = false;
   bool isPanelExpanded = false;
   bool isPanelVisible = true;
+  bool _isLoading = false;  // Add loading state variable
   
   // URL Bar State
   bool _isUrlBarCollapsed = false;
@@ -334,7 +335,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     _initializeControllers();
     _urlController = TextEditingController();
     _urlFocusNode = FocusNode();
-    _initializeWebView();
     _loadPreferences();
     _loadBookmarks();
     _loadDownloads();
@@ -671,6 +671,18 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     await controller.setBackgroundColor(Colors.transparent);
     await controller.enableZoom(false);
     
+    // Add JavaScript for handling images
+    await controller.runJavaScript('''
+      (function() {
+        // Prevent default context menu on images
+        document.addEventListener('contextmenu', function(e) {
+          if (e.target.tagName === 'IMG') {
+            e.preventDefault();
+          }
+        }, true);
+      })();
+    ''');
+    
     await controller.setNavigationDelegate(NavigationDelegate(
       onNavigationRequest: (NavigationRequest request) async {
         final url = request.url.toLowerCase();
@@ -843,6 +855,70 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   Future<void> _setupWebViewCallbacks() async {
+    // Add JavaScript for handling image long press
+    await controller.runJavaScript('''
+      (function() {
+        let longPressTimer;
+        let isLongPress = false;
+        
+        document.addEventListener('touchstart', function(e) {
+          if (e.target.tagName === 'IMG') {
+            isLongPress = false;
+            longPressTimer = setTimeout(() => {
+              isLongPress = true;
+              const rect = e.target.getBoundingClientRect();
+              const imageUrl = e.target.src;
+              ImageLongPress.postMessage(JSON.stringify({
+                url: imageUrl,
+                x: e.touches[0].clientX,
+                y: e.touches[0].clientY + window.scrollY
+              }));
+            }, 500);
+          }
+        }, true);
+        
+        document.addEventListener('touchend', function(e) {
+          if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            if (isLongPress && e.target.tagName === 'IMG') {
+              e.preventDefault();
+              return false;
+            }
+          }
+        }, true);
+        
+        document.addEventListener('touchmove', function(e) {
+          if (longPressTimer) {
+            clearTimeout(longPressTimer);
+          }
+        }, true);
+      })();
+    ''');
+
+    await controller.addJavaScriptChannel(
+      'ImageLongPress',
+      onMessageReceived: (JavaScriptMessage message) {
+        if (!mounted) return;
+        
+        try {
+          final data = json.decode(message.message) as Map<String, dynamic>;
+          final imageUrl = data['url'] as String;
+          final x = (data['x'] as num).toDouble();
+          final y = (data['y'] as num).toDouble();
+          
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            setState(() {
+              _tapPosition = Offset(x, y);
+            });
+            _showImageOptions(imageUrl);
+          });
+        } catch (e) {
+          print('Error handling image long press: $e');
+        }
+      },
+    );
+
     await controller.setNavigationDelegate(NavigationDelegate(
       onNavigationRequest: (NavigationRequest request) async {
         final url = request.url.toLowerCase();
@@ -4176,14 +4252,16 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   Widget _buildUrlBar() {
+    final displayUrl = _urlFocusNode.hasFocus ? _displayUrl : _formatUrl(_displayUrl);
+    
     return Positioned(
       left: 0,
       right: 0,
-      bottom: 16, // Add some bottom padding for original position
+      bottom: 16,
       child: SlideTransition(
         position: _hideUrlBarAnimation,
         child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 16),
+          margin: const EdgeInsets.symmetric(horizontal: 8),
           child: GestureDetector(
             onHorizontalDragUpdate: (details) {
               setState(() {
@@ -4209,7 +4287,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
                   child: Container(
-                    width: MediaQuery.of(context).size.width - 32,
+                    width: MediaQuery.of(context).size.width - 16,
                     height: 48,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(28),
@@ -4361,12 +4439,84 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                       }
                     }
                   },
-                  child: WebViewWidget(controller: controller),
+                  child: Stack(
+                    children: [
+                      Stack(
+                        children: [
+                          GestureDetector(
+                            onLongPressStart: (details) async {
+                              HapticFeedback.mediumImpact();
+                              // Get image at tap position using JavaScript
+                              final js = '''
+                                (function() {
+                                  let element = document.elementFromPoint(${details.globalPosition.dx}, ${details.globalPosition.dy});
+                                  while (element && element.tagName !== 'IMG' && element.parentElement) {
+                                    element = element.parentElement;
+                                  }
+                                  if (element && element.tagName === 'IMG') {
+                                    return element.src;
+                                  }
+                                  return '';
+                                })()
+                              ''';
+                              
+                              final result = await controller.runJavaScriptReturningResult(js);
+                              String imageUrl = result.toString();
+                              
+                              // Clean the URL - remove any quotes and decode URL components
+                              imageUrl = imageUrl.replaceAll('"', '').replaceAll("'", "");
+                              imageUrl = Uri.decodeFull(imageUrl);
+                              
+                              if (imageUrl.isNotEmpty && imageUrl != 'null') {
+                                if (!mounted) return;
+                                showModalBottomSheet(
+                                  context: context,
+                                  builder: (context) => Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      ListTile(
+                                        leading: const Icon(Icons.image),
+                                        title: const Text('View Image'),
+                                        onTap: () async {
+                                          Navigator.pop(context);
+                                          await controller.loadRequest(Uri.parse(imageUrl));
+                                        },
+                                      ),
+                                      ListTile(
+                                        leading: const Icon(Icons.download),
+                                        title: const Text('Download Image'),
+                                        onTap: () async {
+                                          Navigator.pop(context);
+                                          await _handleDownload(imageUrl);
+                                        },
+                                      ),
+                                      ListTile(
+                                        leading: const Icon(Icons.share),
+                                        title: const Text('Share Image'),
+                                        onTap: () {
+                                          Navigator.pop(context);
+                                          Share.share(imageUrl);
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                            },
+                            child: WebViewWidget(controller: controller),
+                          ),
+                          if (_isLoading)
+                            const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                        ],
+                      ),
+                      if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible)
+                        _buildOverlayPanel(),
+                    ],
+                  ),
                 ),
               ),
-              
-              if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible)
-                _buildOverlayPanel(),
               
               Positioned(
                 left: 16,
@@ -4567,14 +4717,25 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   String _formatUrl(String url, {bool showFull = false}) {
-    if (showFull) return url;
+    // Always hide home page URL, even in edit mode
+    if (url.startsWith('file:///android_asset/main.html') || url == _homeUrl) {
+      return '';
+    }
+    
+    if (url.startsWith('file:///')) {
+      return '';
+    }
+    
     try {
       final uri = Uri.parse(url);
-      String domain = uri.host;
-      if (domain.startsWith('www.')) {
-        domain = domain.substring(4);
+      if (!showFull) {
+        String domain = uri.host;
+        if (domain.startsWith('www.')) {
+          domain = domain.substring(4);
+        }
+        return domain;
       }
-      return domain;
+      return url;
     } catch (e) {
       return url;
     }
@@ -5202,6 +5363,11 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       return false;
     });
 
+    // Don't build the panel if URL bar is hidden
+    if (_hideUrlBar) {
+      return const SizedBox.shrink();
+    }
+
     return Container(
       width: panelWidth,
       height: 48,
@@ -5255,76 +5421,69 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   double _urlBarSlideOffset = 0.0;
 
   void _showImageOptions(String imageUrl) {
-    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
-    
-    showMenu(
+    showModalBottomSheet(
       context: context,
-      position: RelativeRect.fromRect(
-        _tapPosition & const Size(1, 1),
-        Offset.zero & overlay.size,
-      ),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: isDarkMode ? Colors.grey[900] : Colors.white,
-      elevation: 8,
-      items: [
-        PopupMenuItem(
-          child: Row(
-            children: [
-              Icon(
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        margin: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isDarkMode ? Colors.grey[900] : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: Icon(
                 Icons.download_rounded,
                 color: isDarkMode ? Colors.white70 : Colors.black54,
-                size: 20,
               ),
-              const SizedBox(width: 12),
-              Text(
+              title: Text(
                 AppLocalizations.of(context)!.download_image,
                 style: TextStyle(
                   color: isDarkMode ? Colors.white : Colors.black,
                 ),
               ),
-            ],
-          ),
-          onTap: () => _handleDownload(imageUrl),
-        ),
-        PopupMenuItem(
-          child: Row(
-            children: [
-              Icon(
+              onTap: () {
+                Navigator.pop(context);
+                _handleDownload(imageUrl);
+              },
+            ),
+            ListTile(
+              leading: Icon(
                 Icons.share_rounded,
                 color: isDarkMode ? Colors.white70 : Colors.black54,
-                size: 20,
               ),
-              const SizedBox(width: 12),
-              Text(
+              title: Text(
                 AppLocalizations.of(context)!.share_image,
                 style: TextStyle(
                   color: isDarkMode ? Colors.white : Colors.black,
                 ),
               ),
-            ],
-          ),
-          onTap: () => Share.share(imageUrl),
-        ),
-        PopupMenuItem(
-          child: Row(
-            children: [
-              Icon(
+              onTap: () {
+                Navigator.pop(context);
+                Share.share(imageUrl);
+              },
+            ),
+            ListTile(
+              leading: Icon(
                 Icons.open_in_new_rounded,
                 color: isDarkMode ? Colors.white70 : Colors.black54,
-                size: 20,
               ),
-              const SizedBox(width: 12),
-              Text(
+              title: Text(
                 AppLocalizations.of(context)!.open_in_new_tab,
                 style: TextStyle(
                   color: isDarkMode ? Colors.white : Colors.black,
                 ),
               ),
-            ],
-          ),
-          onTap: () => _createNewTab(imageUrl),
+              onTap: () {
+                Navigator.pop(context);
+                _createNewTab(imageUrl);
+              },
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -6066,6 +6225,10 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         duration: const Duration(seconds: 4),
       );
     }
+  }
+
+  void _showDownloadProgress(String fileName, double progress) {
+    // ... existing code ...
   }
 }
 
