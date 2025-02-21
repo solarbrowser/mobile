@@ -187,5 +187,15 @@
   "press_back_to_exit": "बाहर निकलने के लिए दोबारा दबाएं",
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
-  }
+  },
+  "error_opening_file": "फ़ाइल खोलने में त्रुटि। कृपया इस प्रकार की फ़ाइल खोलने के लिए उपयुक्त ऐप इंस्टॉल करें।",
+  "storage_permission_required": "स्टोरेज अनुमति आवश्यक है",
+  "storage_permission_denied": "फ़ाइलें डाउनलोड करने के लिए स्टोरेज अनुमति आवश्यक है",
+  "download_in_progress": "डाउनलोड जारी है",
+  "download_paused": "डाउनलोड रुका हुआ है",
+  "download_canceled": "डाउनलोड रद्द किया गया",
+  "download_error": "डाउनलोड त्रुटि: {error}",
+  "open_downloads_folder": "डाउनलोड फ़ोल्डर खोलें",
+  "file_exists": "फ़ाइल पहले से मौजूद है",
+  "file_saved": "फ़ाइल डाउनलोड में सहेजी गई"
 } 

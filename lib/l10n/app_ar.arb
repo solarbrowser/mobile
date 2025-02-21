@@ -180,5 +180,15 @@
   "press_back_to_exit": "اضغط مرة أخرى للخروج",
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
-  }
+  },
+  "error_opening_file": "خطأ في فتح الملف. يرجى تثبيت تطبيق مناسب لفتح هذا النوع من الملفات.",
+  "storage_permission_required": "إذن التخزين مطلوب",
+  "storage_permission_denied": "إذن التخزين مطلوب لتنزيل الملفات",
+  "download_in_progress": "جاري التنزيل",
+  "download_paused": "تم إيقاف التنزيل مؤقتاً",
+  "download_canceled": "تم إلغاء التنزيل",
+  "download_error": "خطأ في التنزيل: {error}",
+  "open_downloads_folder": "فتح مجلد التنزيلات",
+  "file_exists": "الملف موجود بالفعل",
+  "file_saved": "تم حفظ الملف في التنزيلات"
 } 

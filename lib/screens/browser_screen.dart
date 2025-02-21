@@ -341,17 +341,22 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     });
 
     _updateSystemBars();
+    _startPermissionMonitoring();
   }
 
   void _updateSystemBars() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarDividerColor: Colors.transparent,
+      // Status bar
+      statusBarColor: isDarkMode ? Colors.black : Colors.white,
       statusBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
-      systemNavigationBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
       statusBarBrightness: isDarkMode ? Brightness.dark : Brightness.light,
+      
+      // Navigation bar - fully transparent with themed icons
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
+      systemNavigationBarContrastEnforced: false,
+      systemNavigationBarDividerColor: Colors.transparent,
     ));
   }
 
@@ -569,28 +574,117 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   Future<void> _initializeWebView() async {
-    controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(Colors.transparent)
-      ..enableZoom(false)
-      ..addJavaScriptChannel(
-        'ImageHandler',
-        onMessageReceived: (JavaScriptMessage message) {
-          try {
-            final data = json.decode(message.message);
-            _tapPosition = Offset(data['x'].toDouble(), data['y'].toDouble());
-            _showImageOptions(data['url']);
-          } catch (e) {
-            _showImageOptions(message.message);
-          }
-        },
+    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
+      controller = WebViewController.fromPlatformCreationParams(
+        WebKitWebViewControllerCreationParams(
+          allowsInlineMediaPlayback: true,
+          mediaTypesRequiringUserAction: const {},
+        ),
       );
+    } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
+      controller = WebViewController();
+    } else {
+      controller = WebViewController();
+    }
+
+    await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
+    await controller.setBackgroundColor(Colors.transparent);
+    await controller.enableZoom(false);
+    
+    await controller.setNavigationDelegate(NavigationDelegate(
+      onNavigationRequest: (NavigationRequest request) async {
+        final url = request.url.toLowerCase();
+        if (_isDownloadUrl(url)) {
+          await _handleDownload(request.url);
+          return NavigationDecision.prevent;
+        }
+        return NavigationDecision.navigate;
+      },
+      onPageStarted: (String url) async {
+        _updateUrl(url);
+        await _handlePageStarted(url);
+      },
+      onPageFinished: (String url) async {
+        if (!mounted) return;
+        final title = await controller.getTitle() ?? _displayUrl;
+        _updateUrl(url);
+        setState(() {
+          isLoading = false;
+          if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+            tabs[currentTabIndex].title = title;
+            tabs[currentTabIndex].url = url;
+          }
+        });
+        await _updateNavigationState();
+        await _optimizationEngine.onPageFinishLoad(url);
+        await _updateFavicon(url);
+      },
+      onWebResourceError: (WebResourceError error) {
+        if (!mounted) return;
+        setState(() {
+          isLoading = false;
+        });
+        print('Web resource error: ${error.description}');
+      },
+    ));
+
+    // Add JavaScript for handling downloads
+    await controller.runJavaScript('''
+      document.addEventListener('click', function(e) {
+        var link = e.target.closest('a');
+        if (link) {
+          var href = link.getAttribute('href');
+          if (href) {
+            var isDownload = link.hasAttribute('download') || 
+                            link.getAttribute('type') === 'application/octet-stream' ||
+                            /\\.(pdf|doc|docx|xls|xlsx|ppt|pptx|zip|rar|7z|mp3|mp4|exe|apk)\$/i.test(href);
+            if (isDownload) {
+              e.preventDefault();
+              window.flutter_inappwebview.callHandler('onDownloadStart', href);
+            }
+          }
+        }
+      });
+    ''');
 
     await _setupUrlMonitoring();
     await _setupWebViewCallbacks();
-    
-    // Initialize navigation state
     await _updateNavigationState();
+  }
+
+  bool _isDownloadUrl(String url) {
+    final downloadExtensions = [
+      // Documents
+      '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+      '.odt', '.ods', '.odp', '.rtf', '.csv', '.txt',
+      
+      // Archives
+      '.zip', '.rar', '.7z', '.tar', '.gz', '.bz2', '.xz',
+      
+      // Media
+      '.mp3', '.mp4', '.wav', '.avi', '.mov', '.wmv', '.flv',
+      '.mkv', '.m4a', '.m4v', '.3gp', '.aac', '.ogg', '.webm',
+      
+      // Images
+      '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg',
+      '.tiff', '.ico',
+      
+      // Software
+      '.apk', '.exe', '.dmg', '.iso', '.img', '.msi', '.deb',
+      '.rpm', '.pkg'
+    ];
+
+    // Check for direct download indicators
+    return downloadExtensions.any((ext) => url.endsWith(ext)) ||
+           url.startsWith('blob:') ||
+           (url.startsWith('data:') && !url.contains('text/html')) ||
+           url.contains('download=') ||
+           url.contains('attachment') ||
+           url.contains('/download/') ||
+           url.contains('downloadfile') ||
+           url.contains('getfile') ||
+           url.contains('filedownload') ||
+           (url.contains('?') && downloadExtensions.any((ext) => url.contains(ext)));
   }
 
   Future<void> _setupUrlMonitoring() async {
@@ -664,75 +758,39 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   Future<void> _setupWebViewCallbacks() async {
-    controller.setNavigationDelegate(
-      NavigationDelegate(
-        onPageStarted: (String url) async {
-          if (!mounted) return;
-          setState(() {
-            isLoading = true;
-            _displayUrl = url;
-            _urlController.text = _formatUrl(url);
-            
-            if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-              tabs[currentTabIndex].url = url;
-            }
-          });
-          
-          // Update navigation state at the start of loading
-          await _updateNavigationState();
-          await _optimizationEngine.onPageStartLoad(url);
-        },
-        onPageFinished: (String url) async {
-          if (!mounted) return;
-          
-          try {
-            final title = await controller.getTitle() ?? _displayUrl;
-            final currentUrl = await controller.currentUrl() ?? url;
-            
-            setState(() {
-              isLoading = false;
-              if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-                tabs[currentTabIndex].title = title;
-                tabs[currentTabIndex].url = currentUrl;
-              }
-              _displayUrl = currentUrl;
-              _urlController.text = _formatUrl(currentUrl);
-            });
-            
-            // Update navigation state after page load
-            await _updateNavigationState();
-            await _optimizationEngine.onPageFinishLoad(url);
-            await _updateFavicon(url);
-            
-            // Save to history if not in incognito mode
-            if (!tabs[currentTabIndex].isIncognito) {
-              await _saveToHistory(currentUrl, title);
-            }
-          } catch (e) {
-            print('Error in onPageFinished: $e');
+    await controller.setNavigationDelegate(NavigationDelegate(
+      onNavigationRequest: (NavigationRequest request) async {
+        final url = request.url.toLowerCase();
+        if (_isDownloadUrl(url)) {
+          _handleDownload(request.url);
+          return NavigationDecision.prevent;
+        }
+        return NavigationDecision.navigate;
+      },
+      onPageStarted: _handlePageStarted,
+      onPageFinished: (String url) async {
+        if (!mounted) return;
+        final title = await controller.getTitle() ?? _displayUrl;
+        _updateUrl(url);
+        setState(() {
+          isLoading = false;
+          if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+            tabs[currentTabIndex].title = title;
+            tabs[currentTabIndex].url = url;
           }
-        },
-        onUrlChange: (UrlChange change) async {
-          if (!mounted) return;
-          final url = change.url;
-          if (url != null) {
-            _updateUrl(url);
-          }
-        },
-        onNavigationRequest: (NavigationRequest request) async {
-          // Update navigation state before new navigation
-          await _updateNavigationState();
-          return NavigationDecision.navigate;
-        },
-        onWebResourceError: (WebResourceError error) {
-          if (!mounted) return;
-          setState(() {
-            isLoading = false;
-          });
-          _updateNavigationState();
-        },
-      ),
-    );
+        });
+        await _updateNavigationState();
+        await _optimizationEngine.onPageFinishLoad(url);
+        await _updateFavicon(url);
+      },
+      onWebResourceError: (WebResourceError error) {
+        if (!mounted) return;
+        setState(() {
+          isLoading = false;
+        });
+        print('Web resource error: ${error.description}');
+      },
+    ));
   }
 
   Future<void> _saveToHistory(String url, String title) async {
@@ -3769,85 +3827,96 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    // Update system bars whenever the theme changes
+    _updateSystemBars();
+    final statusBarHeight = MediaQuery.of(context).padding.top;
+    
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: isDarkMode ? Colors.black : Colors.white,
         extendBody: true,
         extendBodyBehindAppBar: true,
-        body: Stack(
-          children: [
-            Positioned.fill(
-              child: WebViewWidget(controller: controller),
-            ),
-            
-            if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible)
-              _buildOverlayPanel(),
-            
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: MediaQuery.of(context).padding.bottom,
-              child: GestureDetector(
-                onVerticalDragUpdate: (details) {
-                  if (details.delta.dy < -10 && !_isSlideUpPanelVisible) {
-                    _handleSlideUpPanelVisibility(true);
-                  } else if (details.delta.dy > 10 && _isSlideUpPanelVisible) {
-                    _handleSlideUpPanelVisibility(false);
-                  }
-                },
-                onVerticalDragEnd: (details) {
-                  if (details.primaryVelocity != null) {
-                    if (details.primaryVelocity! > 0) { // Dragging down
-                      _handleSlideUpPanelVisibility(false);
-                    } else if (details.primaryVelocity! < 0) { // Dragging up
+        body: Container(
+          color: isDarkMode ? Colors.black : Colors.white,
+          child: Stack(
+            children: [
+              Positioned(
+                top: statusBarHeight,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: WebViewWidget(controller: controller),
+              ),
+              
+              if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible)
+                _buildOverlayPanel(),
+              
+              Positioned(
+                left: 16,
+                right: 16,
+                bottom: MediaQuery.of(context).padding.bottom,
+                child: GestureDetector(
+                  onVerticalDragUpdate: (details) {
+                    if (details.delta.dy < -10 && !_isSlideUpPanelVisible) {
                       _handleSlideUpPanelVisibility(true);
+                    } else if (details.delta.dy > 10 && _isSlideUpPanelVisible) {
+                      _handleSlideUpPanelVisibility(false);
                     }
-                  }
-                },
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
-                      AnimatedBuilder(
-                        animation: _slideUpController,
-                        builder: (context, child) {
-                          final slideValue = _slideUpController.value;
-                          return Transform.translate(
-                            offset: Offset(0, (1 - slideValue) * 100),
-                            child: Opacity(
-                              opacity: slideValue,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  _buildQuickActionsPanel(),
-                                  const SizedBox(height: 8), // Reduced from 12 to 8
-                                  _buildNavigationPanel(),
-                                ],
+                  },
+                  onVerticalDragEnd: (details) {
+                    if (details.primaryVelocity != null) {
+                      if (details.primaryVelocity! > 0) { // Dragging down
+                        _handleSlideUpPanelVisibility(false);
+                      } else if (details.primaryVelocity! < 0) { // Dragging up
+                        _handleSlideUpPanelVisibility(true);
+                      }
+                    }
+                  },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
+                        AnimatedBuilder(
+                          animation: _slideUpController,
+                          builder: (context, child) {
+                            final slideValue = _slideUpController.value;
+                            return Transform.translate(
+                              offset: Offset(0, (1 - slideValue) * 100),
+                              child: Opacity(
+                                opacity: slideValue,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _buildQuickActionsPanel(),
+                                    const SizedBox(height: 8), // Reduced from 12 to 8
+                                    _buildNavigationPanel(),
+                                  ],
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-                    if (!_isSlideUpPanelVisible && !isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
-                      AnimatedBuilder(
-                        animation: _slideUpController,
-                        builder: (context, child) {
-                          final slideValue = _slideUpController.value;
-                          return Transform.translate(
-                            offset: Offset(0, (1 - slideValue) * -20),
-                            child: Opacity(
-                              opacity: 1 - slideValue,
-                              child: _buildUrlBar(),
-                            ),
-                          );
-                        },
-                      ),
-                  ],
+                            );
+                          },
+                        ),
+                      if (!_isSlideUpPanelVisible && !isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
+                        AnimatedBuilder(
+                          animation: _slideUpController,
+                          builder: (context, child) {
+                            final slideValue = _slideUpController.value;
+                            return Transform.translate(
+                              offset: Offset(0, (1 - slideValue) * -20),
+                              child: Opacity(
+                                opacity: 1 - slideValue,
+                                child: _buildUrlBar(),
+                              ),
+                            );
+                          },
+                        ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -3894,26 +3963,23 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     return NavigationDelegate(
       onNavigationRequest: (NavigationRequest request) async {
         final url = request.url.toLowerCase();
-        final downloadExtensions = [
-          '.pdf', '.doc', '.docx', '.xls', '.xlsx',
-          '.zip', '.rar', '.7z', '.tar', '.gz',
-          '.mp3', '.mp4', '.avi', '.mov', '.wmv',
-          '.apk', '.exe', '.dmg', '.iso', '.img',
-          '.csv', '.txt', '.rtf', '.ppt', '.pptx'
-        ];
         
-        if (downloadExtensions.any((ext) => url.contains(ext)) ||
-            request.url.startsWith('blob:') ||
-            request.url.startsWith('data:') && !url.contains('text/html')) {
-          await _handleDownload(request.url);
+        // Check if URL is a direct file download
+        if (_isDownloadUrl(url)) {
+          _handleDownload(request.url);
           return NavigationDecision.prevent;
         }
+        
+        // Handle blob URLs
+        if (url.startsWith('blob:')) {
+          _handleDownload(request.url);
+          return NavigationDecision.prevent;
+        }
+        
+        // Allow navigation for all other URLs
         return NavigationDecision.navigate;
       },
-      onPageStarted: (String url) async {
-        _updateUrl(url);
-        await _handlePageStarted(url);
-      },
+      onPageStarted: _handlePageStarted,
       onPageFinished: (String url) async {
         if (!mounted) return;
         final title = await controller.getTitle() ?? _displayUrl;
@@ -3934,6 +4000,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         setState(() {
           isLoading = false;
         });
+        print('Web resource error: ${error.description}');
       },
     );
   }
@@ -4009,22 +4076,19 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   Future<void> _handleDownload(String url) async {
-    if (Platform.isAndroid) {
-      // Get Android version
+    try {
+      // Request permissions
       final androidInfo = await DeviceInfoPlugin().androidInfo;
       final sdkInt = androidInfo.version.sdkInt;
       
       List<Permission> permissions = [];
-      
       if (sdkInt >= 33) {
-        // Android 13 and above: Request media permissions
         permissions.addAll([
           Permission.photos,
           Permission.videos,
           Permission.audio,
         ]);
       } else {
-        // Android 12 and below: Request storage permission
         permissions.add(Permission.storage);
       }
 
@@ -4032,115 +4096,126 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       bool allGranted = statuses.values.every((status) => status.isGranted);
       
       if (!allGranted) {
-        bool anyPermanentlyDenied = statuses.values.any((status) => status.isPermanentlyDenied);
-        
-        if (anyPermanentlyDenied) {
-          // Show dialog to open settings
-          if (!mounted) return;
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
-              title: Text(
-                AppLocalizations.of(context)!.storage_permission_required,
-                style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
-                ),
-              ),
-              content: Text(
-                AppLocalizations.of(context)!.storage_permission_description,
-                style: TextStyle(
-                  color: isDarkMode ? Colors.white70 : Colors.black87,
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    AppLocalizations.of(context)!.cancel,
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
-                    ),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    openAppSettings();
-                  },
-                  child: Text(
-                    AppLocalizations.of(context)!.settings,
-                    style: TextStyle(
-                      color: Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        } else {
-          // Show notification that permission is required
-          if (!mounted) return;
-          _showNotification(
-            Row(
-              children: [
-                const Icon(Icons.error, color: Colors.red),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(AppLocalizations.of(context)!.storage_permission_denied),
-                ),
-              ],
-            ),
-            duration: const Duration(seconds: 4),
-          );
-        }
+        _showNotification(
+          Text(AppLocalizations.of(context)!.storage_permission_denied),
+          duration: const Duration(seconds: 4),
+        );
         return;
       }
-    }
 
-    HttpClient? client;
-    IOSink? sink;
-    
-    try {
-      client = HttpClient();
-      final request = await client.getUrl(Uri.parse(url));
-      final response = await request.close();
-      final contentLength = response.contentLength;
-      
-      final contentDisposition = response.headers['content-disposition'];
-      String fileName = url.split('/').last;
-      if (contentDisposition != null && contentDisposition.isNotEmpty) {
-        final match = RegExp(r'filename[^;=\n]*=([\w\.]+)').firstMatch(contentDisposition.first);
-        if (match != null) {
-          fileName = match.group(1) ?? fileName;
-        }
-      }
+      // Show download starting notification
+      _showNotification(
+        Text(AppLocalizations.of(context)!.download_in_progress),
+        duration: const Duration(seconds: 2),
+      );
 
       setState(() {
         isDownloading = true;
         currentDownloadUrl = url;
         downloadProgress = 0.0;
-        currentDownloadSize = contentLength;
-        currentFileName = fileName;
       });
 
-      // Get the system's Downloads directory
+      // Create HTTP client with redirect following
+      final client = HttpClient()
+        ..maxConnectionsPerHost = 5
+        ..connectionTimeout = const Duration(seconds: 30)
+        ..idleTimeout = const Duration(seconds: 30)
+        ..autoUncompress = true;
+
+      final request = await client.getUrl(Uri.parse(url));
+      
+      // Add headers to handle various download scenarios
+      request.headers.add('Accept', '*/*');
+      request.headers.add('User-Agent', 'Mozilla/5.0');
+      request.followRedirects = true;
+      request.maxRedirects = 5;
+      
+      final response = await request.close();
+      
+      if (response.statusCode != 200) {
+        throw Exception('HTTP ${response.statusCode}');
+      }
+
+      final contentLength = response.contentLength;
+      
+      // Try to get filename from content disposition header
+      String? fileName;
+      final contentDisposition = response.headers['content-disposition'];
+      if (contentDisposition != null && contentDisposition.isNotEmpty) {
+        final match = RegExp(r'filename[^;=\n]*=((["]).*?\2|[^;\n]*)').firstMatch(contentDisposition.first);
+        if (match != null) {
+          fileName = match.group(1)?.replaceAll('"', '');
+        }
+      }
+      
+      // If no filename in header, try to get from URL
+      if (fileName == null || fileName.isEmpty) {
+        fileName = url.split('/').last.split('?').first;
+        if (fileName.isEmpty || !fileName.contains('.')) {
+          // Try to determine extension from content-type
+          final contentType = response.headers.value('content-type');
+          if (contentType != null) {
+            final ext = _getExtensionFromMimeType(contentType);
+            if (ext != null) {
+              fileName = 'download_${DateTime.now().millisecondsSinceEpoch}$ext';
+            } else {
+              fileName = 'download_${DateTime.now().millisecondsSinceEpoch}';
+            }
+          } else {
+            fileName = 'download_${DateTime.now().millisecondsSinceEpoch}';
+          }
+        }
+      }
+
+      // Clean up the filename
+      fileName = fileName.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_');
+      
+      setState(() {
+        currentFileName = fileName;
+        currentDownloadSize = contentLength;
+      });
+
+      // Always use the system's Download directory
       final downloadsDirectory = Directory('/storage/emulated/0/Download');
       if (!await downloadsDirectory.exists()) {
         await downloadsDirectory.create(recursive: true);
       }
       
       final filePath = '${downloadsDirectory.path}/$fileName';
-      final file = File(filePath);
-      sink = file.openWrite();
+      
+      // Handle duplicate filenames
+      String finalFilePath = filePath;
+      int counter = 1;
+      while (await File(finalFilePath).exists()) {
+        final lastDot = fileName.lastIndexOf('.');
+        if (lastDot != -1) {
+          finalFilePath = '${downloadsDirectory.path}/${fileName.substring(0, lastDot)} ($counter)${fileName.substring(lastDot)}';
+        } else {
+          finalFilePath = '${downloadsDirectory.path}/$fileName ($counter)';
+        }
+        counter++;
+      }
+
+      final file = File(finalFilePath);
+      final sink = await file.openWrite();
       
       int received = 0;
       await for (final chunk in response) {
-        if (!isDownloading) break;
+        if (!isDownloading) {
+          await sink.close();
+          if (await file.exists()) {
+            await file.delete();
+          }
+          _showNotification(
+            Text(AppLocalizations.of(context)!.download_canceled),
+            duration: const Duration(seconds: 2),
+          );
+          return;
+        }
+
         sink.add(chunk);
         received += chunk.length;
-        if (contentLength > 0) {  // Only update progress if we know the total size
+        if (contentLength > 0) {
           setState(() {
             downloadProgress = received / contentLength;
           });
@@ -4149,18 +4224,12 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       
       await sink.close();
       
-      if (!isDownloading) {
-        if (await file.exists()) {
-          await file.delete();
-        }
-        return;
-      }
-      
       final download = {
         'fileName': fileName,
         'url': url,
         'timestamp': DateTime.now().toIso8601String(),
-        'size': contentLength?.toString() ?? '0',  // Ensure size is stored as string
+        'size': _formatFileSize(contentLength ?? 0),
+        'path': finalFilePath,
       };
 
       final prefs = await SharedPreferences.getInstance();
@@ -4184,7 +4253,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             const Icon(Icons.check_circle, color: Colors.green),
             const SizedBox(width: 16),
             Expanded(
-              child: Text(AppLocalizations.of(context)!.download_completed + ': $fileName'),
+              child: Text(AppLocalizations.of(context)!.file_saved),
             ),
           ],
         ),
@@ -4193,10 +4262,10 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           label: AppLocalizations.of(context)!.open,
           onPressed: () async {
             try {
-              await OpenFile.open(filePath);
+              await OpenFile.open(finalFilePath);
             } catch (e) {
               _showNotification(
-                Text("Error opening file. Please install a suitable app to open this type of file."),
+                Text(AppLocalizations.of(context)!.error_opening_file),
                 duration: const Duration(seconds: 4),
               );
             }
@@ -4204,17 +4273,17 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         ),
       );
 
-      // Trigger media scanner
+      // Trigger media scanner to make file visible
       const platform = MethodChannel('com.vertex.solar/browser');
       try {
-        await platform.invokeMethod('scanFile', {'path': filePath});
+        await platform.invokeMethod('scanFile', {'path': finalFilePath});
+        await platform.invokeMethod('refreshMediaStore');
       } catch (e) {
         print('Error scanning file: $e');
       }
+
     } catch (e) {
       print('Download error: $e');
-      client?.close();
-      await sink?.close();
       setState(() {
         isDownloading = false;
         currentDownloadUrl = '';
@@ -4222,21 +4291,34 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         currentDownloadSize = null;
         currentFileName = null;
       });
-
-      // Show error notification
       _showNotification(
-        Row(
-          children: [
-            const Icon(Icons.error, color: Colors.red),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(AppLocalizations.of(context)!.download_failed + ': ${e.toString()}'),
-            ),
-          ],
-        ),
+        Text(AppLocalizations.of(context)!.download_error.toString().replaceAll('{error}', e.toString())),
         duration: const Duration(seconds: 4),
       );
     }
+  }
+
+  String? _getExtensionFromMimeType(String mimeType) {
+    final mimeToExt = {
+      'application/pdf': '.pdf',
+      'application/msword': '.doc',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+      'application/vnd.ms-excel': '.xls',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+      'application/vnd.ms-powerpoint': '.ppt',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
+      'application/zip': '.zip',
+      'application/x-rar-compressed': '.rar',
+      'application/x-7z-compressed': '.7z',
+      'audio/mpeg': '.mp3',
+      'video/mp4': '.mp4',
+      'image/jpeg': '.jpg',
+      'image/png': '.png',
+      'image/gif': '.gif',
+      'application/octet-stream': '.bin'
+    };
+    
+    return mimeToExt[mimeType.split(';')[0].trim()];
   }
 
   // Save URL bar position for icon state
@@ -4681,12 +4763,12 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     showMenu(
       context: context,
       position: RelativeRect.fromRect(
-        _tapPosition & const Size(40, 40),
-        Offset.zero & overlay.size
+        _tapPosition & const Size(1, 1),
+        Offset.zero & overlay.size,
       ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       color: isDarkMode ? Colors.grey[900] : Colors.white,
       elevation: 8,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       items: [
         PopupMenuItem(
           child: Row(
@@ -4711,7 +4793,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           child: Row(
             children: [
               Icon(
-                Icons.ios_share_rounded,
+                Icons.share_rounded,
                 color: isDarkMode ? Colors.white70 : Colors.black54,
                 size: 20,
               ),
@@ -4724,7 +4806,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
               ),
             ],
           ),
-          onTap: () async => await Share.share(imageUrl),
+          onTap: () => Share.share(imageUrl),
         ),
         PopupMenuItem(
           child: Row(
@@ -4743,58 +4825,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
               ),
             ],
           ),
-          onTap: () async {
-            Navigator.pop(context);
-            
-            // Create a simple HTML page that displays the image
-            final imageHtml = '''
-              <html>
-                <head>
-                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                  <style>
-                    body {
-                      margin: 0;
-                      padding: 0;
-                      display: flex;
-                      justify-content: center;
-                      align-items: center;
-                      min-height: 100vh;
-                      background: ${isDarkMode ? '#1a1a1a' : '#ffffff'};
-                    }
-                    img {
-                      max-width: 100%;
-                      max-height: 100vh;
-                      object-fit: contain;
-                    }
-                  </style>
-                </head>
-                <body>
-                  <img src="$imageUrl" alt="Image">
-                </body>
-              </html>
-            ''';
-            
-            // Create a new WebView controller first
-            final newController = WebViewController()
-              ..setJavaScriptMode(JavaScriptMode.unrestricted)
-              ..setBackgroundColor(Colors.transparent)
-              ..enableZoom(true);
-            
-            // Add the new tab with the controller
-            setState(() {
-              tabs.add(BrowserTab(
-                id: DateTime.now().millisecondsSinceEpoch.toString(),
-                url: imageUrl,
-                title: AppLocalizations.of(context)!.open_in_new_tab,
-                favicon: null,
-              ));
-              currentTabIndex = tabs.length - 1;
-              controller = tabs[currentTabIndex].controller;
-            });
-
-            // Load the HTML content
-            await controller.loadHtmlString(imageHtml);
-          },
+          onTap: () => _createNewTab(imageUrl),
         ),
       ],
     );
@@ -5301,6 +5332,107 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         isLoading = false;
       });
     }
+  }
+
+  // Add permission monitoring
+  void _startPermissionMonitoring() {
+    Timer.periodic(const Duration(seconds: 2), (timer) async {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      final sdkInt = androidInfo.version.sdkInt;
+      
+      if (sdkInt >= 33) {
+        // Check media permissions for Android 13+
+        final permissions = [
+          Permission.photos,
+          Permission.videos,
+          Permission.audio,
+        ];
+        
+        bool anyDenied = false;
+        for (var permission in permissions) {
+          if (!(await permission.isGranted)) {
+            anyDenied = true;
+            break;
+          }
+        }
+        
+        if (anyDenied) {
+          _showPermissionNotification();
+        }
+      } else {
+        // Check storage permission for Android 12 and below
+        if (!(await Permission.storage.isGranted)) {
+          _showPermissionNotification();
+        }
+      }
+    });
+  }
+
+  void _showPermissionNotification() {
+    _showNotification(
+      Row(
+        children: [
+          const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(AppLocalizations.of(context)!.storage_permission_required),
+          ),
+          TextButton(
+            onPressed: () => _requestPermissions(),
+            child: Text(
+              AppLocalizations.of(context)!.grant_permission,
+              style: TextStyle(
+                color: Theme.of(context).primaryColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+      duration: const Duration(seconds: 8),
+    );
+  }
+
+  Future<bool> _requestPermissions() async {
+    final androidInfo = await DeviceInfoPlugin().androidInfo;
+    final sdkInt = androidInfo.version.sdkInt;
+    
+    List<Permission> permissions = [];
+    
+    if (sdkInt >= 33) {
+      permissions.addAll([
+        Permission.photos,
+        Permission.videos,
+        Permission.audio,
+        // Add notification permission for better user experience
+        Permission.notification,
+      ]);
+      
+      // For Android 13+, also request all files access for non-media files
+      if (await Permission.manageExternalStorage.isGranted == false) {
+        final status = await Permission.manageExternalStorage.request();
+        if (!status.isGranted) {
+          _showNotification(
+            Text("Full storage access is needed for downloading non-media files"),
+            duration: const Duration(seconds: 6),
+            action: SnackBarAction(
+              label: 'Settings',
+              onPressed: () => openAppSettings(),
+            ),
+          );
+        }
+      }
+    } else {
+      permissions.add(Permission.storage);
+    }
+
+    Map<Permission, PermissionStatus> statuses = await permissions.request();
+    return statuses.values.every((status) => status.isGranted);
   }
 }
 

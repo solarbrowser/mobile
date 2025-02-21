@@ -458,7 +458,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get grant_permission => 'Grant Permission';
 
   @override
-  String get storage_permission_denied => 'Storage permission is required for downloads';
+  String get storage_permission_denied => 'Storage permission is required to download files';
 
   @override
   String get new_incognito_tab => 'New Incognito Tab';
@@ -468,4 +468,30 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
+
+  @override
+  String get error_opening_file => 'Error opening file. Please install a suitable app to open this type of file.';
+
+  @override
+  String get download_in_progress => 'Download in progress';
+
+  @override
+  String get download_paused => 'Download paused';
+
+  @override
+  String get download_canceled => 'Download canceled';
+
+  @override
+  String download_error(String error) {
+    return 'Download error: $error';
+  }
+
+  @override
+  String get open_downloads_folder => 'Open downloads folder';
+
+  @override
+  String get file_exists => 'File already exists';
+
+  @override
+  String get file_saved => 'File saved to Downloads';
 }

@@ -180,5 +180,15 @@
   "press_back_to_exit": "Drücken Sie erneut zum Beenden",
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
-  }
+  },
+  "error_opening_file": "Fehler beim Öffnen der Datei. Bitte installieren Sie eine geeignete App zum Öffnen dieses Dateityps.",
+  "storage_permission_required": "Speicherberechtigung erforderlich",
+  "storage_permission_denied": "Speicherberechtigung ist zum Herunterladen von Dateien erforderlich",
+  "download_in_progress": "Download läuft",
+  "download_paused": "Download pausiert",
+  "download_canceled": "Download abgebrochen",
+  "download_error": "Download-Fehler: {error}",
+  "open_downloads_folder": "Download-Ordner öffnen",
+  "file_exists": "Datei existiert bereits",
+  "file_saved": "Datei im Download-Ordner gespeichert"
 } 

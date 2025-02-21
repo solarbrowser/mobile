@@ -449,7 +449,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get press_back_to_exit => 'Pressione voltar novamente para sair';
 
   @override
-  String get storage_permission_required => 'Storage Permission Required';
+  String get storage_permission_required => 'Permissão de armazenamento necessária';
 
   @override
   String get storage_permission_description => 'Solar Browser needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
@@ -458,7 +458,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get grant_permission => 'Grant Permission';
 
   @override
-  String get storage_permission_denied => 'Storage permission is required for downloads';
+  String get storage_permission_denied => 'A permissão de armazenamento é necessária para baixar arquivos';
 
   @override
   String get new_incognito_tab => 'New Incognito Tab';
@@ -468,4 +468,30 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
+
+  @override
+  String get error_opening_file => 'Erro ao abrir o arquivo. Por favor, instale um aplicativo adequado para abrir este tipo de arquivo.';
+
+  @override
+  String get download_in_progress => 'Download em andamento';
+
+  @override
+  String get download_paused => 'Download pausado';
+
+  @override
+  String get download_canceled => 'Download cancelado';
+
+  @override
+  String download_error(String error) {
+    return 'Erro no download: $error';
+  }
+
+  @override
+  String get open_downloads_folder => 'Abrir pasta de downloads';
+
+  @override
+  String get file_exists => 'O arquivo já existe';
+
+  @override
+  String get file_saved => 'Arquivo salvo em Downloads';
 }

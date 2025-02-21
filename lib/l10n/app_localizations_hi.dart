@@ -449,7 +449,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get press_back_to_exit => 'बाहर निकलने के लिए दोबारा दबाएं';
 
   @override
-  String get storage_permission_required => 'Storage Permission Required';
+  String get storage_permission_required => 'स्टोरेज अनुमति आवश्यक है';
 
   @override
   String get storage_permission_description => 'Solar Browser needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
@@ -458,7 +458,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get grant_permission => 'Grant Permission';
 
   @override
-  String get storage_permission_denied => 'Storage permission is required for downloads';
+  String get storage_permission_denied => 'फ़ाइलें डाउनलोड करने के लिए स्टोरेज अनुमति आवश्यक है';
 
   @override
   String get new_incognito_tab => 'New Incognito Tab';
@@ -468,4 +468,30 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
+
+  @override
+  String get error_opening_file => 'फ़ाइल खोलने में त्रुटि। कृपया इस प्रकार की फ़ाइल खोलने के लिए उपयुक्त ऐप इंस्टॉल करें।';
+
+  @override
+  String get download_in_progress => 'डाउनलोड जारी है';
+
+  @override
+  String get download_paused => 'डाउनलोड रुका हुआ है';
+
+  @override
+  String get download_canceled => 'डाउनलोड रद्द किया गया';
+
+  @override
+  String download_error(String error) {
+    return 'डाउनलोड त्रुटि: $error';
+  }
+
+  @override
+  String get open_downloads_folder => 'डाउनलोड फ़ोल्डर खोलें';
+
+  @override
+  String get file_exists => 'फ़ाइल पहले से मौजूद है';
+
+  @override
+  String get file_saved => 'फ़ाइल डाउनलोड में सहेजी गई';
 }

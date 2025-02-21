@@ -449,7 +449,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get press_back_to_exit => 'Çıkmak için tekrar basın';
 
   @override
-  String get storage_permission_required => 'Storage Permission Required';
+  String get storage_permission_required => 'Depolama izni gerekli';
 
   @override
   String get storage_permission_description => 'Solar Browser needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
@@ -458,7 +458,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get grant_permission => 'Grant Permission';
 
   @override
-  String get storage_permission_denied => 'Storage permission is required for downloads';
+  String get storage_permission_denied => 'Dosyaları indirmek için depolama izni gerekli';
 
   @override
   String get new_incognito_tab => 'New Incognito Tab';
@@ -468,4 +468,30 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
+
+  @override
+  String get error_opening_file => 'Dosya açılırken hata oluştu. Lütfen bu dosya türünü açmak için uygun bir uygulama yükleyin.';
+
+  @override
+  String get download_in_progress => 'İndirme devam ediyor';
+
+  @override
+  String get download_paused => 'İndirme duraklatıldı';
+
+  @override
+  String get download_canceled => 'İndirme iptal edildi';
+
+  @override
+  String download_error(String error) {
+    return 'İndirme hatası: $error';
+  }
+
+  @override
+  String get open_downloads_folder => 'İndirilenler klasörünü aç';
+
+  @override
+  String get file_exists => 'Dosya zaten mevcut';
+
+  @override
+  String get file_saved => 'Dosya İndirilenler\'e kaydedildi';
 }

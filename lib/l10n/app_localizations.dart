@@ -981,7 +981,7 @@ abstract class AppLocalizations {
   /// **'Press back again to exit'**
   String get press_back_to_exit;
 
-  /// Title for the storage permission request page
+  /// Title for storage permission request
   ///
   /// In en, this message translates to:
   /// **'Storage Permission Required'**
@@ -1002,7 +1002,7 @@ abstract class AppLocalizations {
   /// Message shown when storage permission is denied
   ///
   /// In en, this message translates to:
-  /// **'Storage permission is required for downloads'**
+  /// **'Storage permission is required to download files'**
   String get storage_permission_denied;
 
   /// Label for new incognito tab button
@@ -1022,6 +1022,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally'**
   String get incognito_description;
+
+  /// Message shown when there is an error opening a downloaded file
+  ///
+  /// In en, this message translates to:
+  /// **'Error opening file. Please install a suitable app to open this type of file.'**
+  String get error_opening_file;
+
+  /// Message shown when a download is in progress
+  ///
+  /// In en, this message translates to:
+  /// **'Download in progress'**
+  String get download_in_progress;
+
+  /// Message shown when a download is paused
+  ///
+  /// In en, this message translates to:
+  /// **'Download paused'**
+  String get download_paused;
+
+  /// Message shown when a download is canceled
+  ///
+  /// In en, this message translates to:
+  /// **'Download canceled'**
+  String get download_canceled;
+
+  /// Message shown when there is an error during download
+  ///
+  /// In en, this message translates to:
+  /// **'Download error: {error}'**
+  String download_error(String error);
+
+  /// Label for button to open downloads folder
+  ///
+  /// In en, this message translates to:
+  /// **'Open downloads folder'**
+  String get open_downloads_folder;
+
+  /// Message shown when trying to download a file that already exists
+  ///
+  /// In en, this message translates to:
+  /// **'File already exists'**
+  String get file_exists;
+
+  /// Message shown when a file is successfully saved
+  ///
+  /// In en, this message translates to:
+  /// **'File saved to Downloads'**
+  String get file_saved;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

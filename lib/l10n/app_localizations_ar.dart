@@ -449,7 +449,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get press_back_to_exit => 'اضغط مرة أخرى للخروج';
 
   @override
-  String get storage_permission_required => 'Storage Permission Required';
+  String get storage_permission_required => 'إذن التخزين مطلوب';
 
   @override
   String get storage_permission_description => 'Solar Browser needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
@@ -458,7 +458,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get grant_permission => 'Grant Permission';
 
   @override
-  String get storage_permission_denied => 'Storage permission is required for downloads';
+  String get storage_permission_denied => 'إذن التخزين مطلوب لتنزيل الملفات';
 
   @override
   String get new_incognito_tab => 'New Incognito Tab';
@@ -468,4 +468,30 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
+
+  @override
+  String get error_opening_file => 'خطأ في فتح الملف. يرجى تثبيت تطبيق مناسب لفتح هذا النوع من الملفات.';
+
+  @override
+  String get download_in_progress => 'جاري التنزيل';
+
+  @override
+  String get download_paused => 'تم إيقاف التنزيل مؤقتاً';
+
+  @override
+  String get download_canceled => 'تم إلغاء التنزيل';
+
+  @override
+  String download_error(String error) {
+    return 'خطأ في التنزيل: $error';
+  }
+
+  @override
+  String get open_downloads_folder => 'فتح مجلد التنزيلات';
+
+  @override
+  String get file_exists => 'الملف موجود بالفعل';
+
+  @override
+  String get file_saved => 'تم حفظ الملف في التنزيلات';
 }

@@ -180,5 +180,15 @@
   "press_back_to_exit": "Presione atrás de nuevo para salir",
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
-  }
+  },
+  "error_opening_file": "Error al abrir el archivo. Por favor, instale una aplicación adecuada para abrir este tipo de archivo.",
+  "storage_permission_required": "Se requiere permiso de almacenamiento",
+  "storage_permission_denied": "Se requiere permiso de almacenamiento para descargar archivos",
+  "download_in_progress": "Descarga en progreso",
+  "download_paused": "Descarga pausada",
+  "download_canceled": "Descarga cancelada",
+  "download_error": "Error de descarga: {error}",
+  "open_downloads_folder": "Abrir carpeta de descargas",
+  "file_exists": "El archivo ya existe",
+  "file_saved": "Archivo guardado en Descargas"
 } 

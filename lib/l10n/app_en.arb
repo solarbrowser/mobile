@@ -225,7 +225,7 @@
   },
   "storage_permission_required": "Storage Permission Required",
   "@storage_permission_required": {
-    "description": "Title for the storage permission request page"
+    "description": "Title for storage permission request"
   },
   "storage_permission_description": "Solar Browser needs storage permission to download files and save them to your device. This allows you to access your downloads later.",
   "@storage_permission_description": {
@@ -235,7 +235,7 @@
   "@grant_permission": {
     "description": "Button text to grant storage permission"
   },
-  "storage_permission_denied": "Storage permission is required for downloads",
+  "storage_permission_denied": "Storage permission is required to download files",
   "@storage_permission_denied": {
     "description": "Message shown when storage permission is denied"
   },
@@ -250,5 +250,43 @@
   "incognito_description": "In Incognito mode:\n• Browsing history isn't saved\n• Cookies are cleared when you close tabs\n• No data is stored locally",
   "@incognito_description": {
     "description": "Description of incognito mode features"
+  },
+  "error_opening_file": "Error opening file. Please install a suitable app to open this type of file.",
+  "@error_opening_file": {
+    "description": "Message shown when there is an error opening a downloaded file"
+  },
+  "download_in_progress": "Download in progress",
+  "@download_in_progress": {
+    "description": "Message shown when a download is in progress"
+  },
+  "download_paused": "Download paused",
+  "@download_paused": {
+    "description": "Message shown when a download is paused"
+  },
+  "download_canceled": "Download canceled",
+  "@download_canceled": {
+    "description": "Message shown when a download is canceled"
+  },
+  "download_error": "Download error: {error}",
+  "@download_error": {
+    "description": "Message shown when there is an error during download",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "Network error"
+      }
+    }
+  },
+  "open_downloads_folder": "Open downloads folder",
+  "@open_downloads_folder": {
+    "description": "Label for button to open downloads folder"
+  },
+  "file_exists": "File already exists",
+  "@file_exists": {
+    "description": "Message shown when trying to download a file that already exists"
+  },
+  "file_saved": "File saved to Downloads",
+  "@file_saved": {
+    "description": "Message shown when a file is successfully saved"
   }
 } 

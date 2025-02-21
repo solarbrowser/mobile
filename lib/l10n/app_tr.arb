@@ -180,5 +180,15 @@
   "press_back_to_exit": "Çıkmak için tekrar basın",
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
-  }
+  },
+  "error_opening_file": "Dosya açılırken hata oluştu. Lütfen bu dosya türünü açmak için uygun bir uygulama yükleyin.",
+  "storage_permission_required": "Depolama izni gerekli",
+  "storage_permission_denied": "Dosyaları indirmek için depolama izni gerekli",
+  "download_in_progress": "İndirme devam ediyor",
+  "download_paused": "İndirme duraklatıldı",
+  "download_canceled": "İndirme iptal edildi",
+  "download_error": "İndirme hatası: {error}",
+  "open_downloads_folder": "İndirilenler klasörünü aç",
+  "file_exists": "Dosya zaten mevcut",
+  "file_saved": "Dosya İndirilenler'e kaydedildi"
 } 
