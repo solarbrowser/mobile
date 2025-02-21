@@ -335,7 +335,7 @@
                     `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${apiKey}`
                 );
                 
-                const data = await response.json();
+                        const data = await response.json();
                 const temp = Math.round(data.main.temp);
                 const icon = data.weather[0].icon;
                 const location = data.name;

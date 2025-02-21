@@ -152,6 +152,13 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   bool isLoading = false;
   String? _currentFaviconUrl;
   
+  // URL Bar Animation State
+  late AnimationController _hideUrlBarController;
+  late Animation<Offset> _hideUrlBarAnimation;
+  bool _hideUrlBar = false;
+  double _lastScrollPosition = 0;
+  bool _isScrollingUp = false;
+  
   // Download State
   bool isDownloading = false;
   String currentDownloadUrl = '';
@@ -179,8 +186,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   bool isSecurityPanelVisible = false;
   String securityMessage = '';
   String currentLanguage = 'en';
-  double lastScrollPosition = 0;
-  bool isScrollingUp = false;
   DateTime lastScrollEvent = DateTime.now();
   int currentSearchMatch = 0;
   int totalSearchMatches = 0;
@@ -346,6 +351,16 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
     _updateSystemBars();
     _startPermissionMonitoring();
+
+    _hideUrlBarController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    
+    _hideUrlBarAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.1), // Slightly down from top
+      end: const Offset(0, 2), // Move further down to ensure hiding
+    ).animate(_hideUrlBarController);
   }
 
   void _updateSystemBars() {
@@ -394,6 +409,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     _slideAnimationController.dispose();
     _slideUpController.dispose();
     _animationController.dispose();
+    _hideUrlBarController.dispose();
     _urlFocusNode.dispose();
     _urlController.dispose();
     _historyScrollController.dispose();
@@ -441,6 +457,19 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       parent: _animationController,
       curve: Curves.easeInOutCubic,
     );
+
+    // Initialize URL bar animation controller
+    _hideUrlBarController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+    _hideUrlBarAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(0, 1), // Changed from -1 to 1 to make it go down instead of up
+    ).animate(CurvedAnimation(
+      parent: _hideUrlBarController,
+      curve: Curves.easeInOut,
+    ));
 
     // Initialize other controllers
     _urlController = TextEditingController();
@@ -538,10 +567,10 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       
       function updateScroll() {
         if (window.flutter_inappwebview) {
-          window.flutter_inappwebview.postMessage(JSON.stringify({
+          window.flutter_inappwebview.callHandler('onScroll', {
             scrollY: window.scrollY,
             isScrollingUp: window.scrollY < lastScrollY
-          }));
+          });
         }
         lastScrollY = window.scrollY;
         ticking = false;
@@ -561,7 +590,30 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     await controller.addJavaScriptChannel(
       'onScroll',
       onMessageReceived: (JavaScriptMessage message) {
-        // No-op - removed icon state mode
+        if (!mounted) return;
+        
+        try {
+          final data = json.decode(message.message);
+          final currentScrollY = data['scrollY'] as double;
+          final isScrollingUp = data['isScrollingUp'] as bool;
+          
+          // Only trigger hide/show if scrolled more than 10 pixels
+          if ((currentScrollY - _lastScrollPosition).abs() > 10) {
+            setState(() {
+              _isScrollingUp = isScrollingUp;
+              if (_isScrollingUp && _hideUrlBar) {
+                _hideUrlBar = false;
+                _hideUrlBarController.reverse();
+              } else if (!_isScrollingUp && !_hideUrlBar && currentScrollY > 100) {
+                _hideUrlBar = true;
+                _hideUrlBarController.forward();
+              }
+              _lastScrollPosition = currentScrollY;
+            });
+          }
+        } catch (e) {
+          print('Error handling scroll: $e');
+        }
       },
     );
   }
@@ -4124,116 +4176,119 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   Widget _buildUrlBar() {
-    final urlBarWidth = MediaQuery.of(context).size.width - 16; // Increased width
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 8), // Reduced margin
-      child: GestureDetector(
-        onHorizontalDragUpdate: (details) {
-          setState(() {
-            _urlBarSlideOffset += details.delta.dx;
-          });
-        },
-        onHorizontalDragEnd: (details) async {
-          if (_urlBarSlideOffset.abs() > 50) {
-            if (_urlBarSlideOffset < 0 && canGoBack) {
-              await _goBack();
-            } else if (_urlBarSlideOffset > 0 && canGoForward) {
-              await _goForward();
-            }
-          }
-          setState(() {
-            _urlBarSlideOffset = 0;
-          });
-        },
-        child: Transform.translate(
-          offset: Offset(_urlBarSlideOffset, 0),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(28),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-              child: Container(
-                width: urlBarWidth,
-                height: 48,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(28),
-                  color: isDarkMode 
-                    ? Colors.black.withOpacity(0.7) 
-                    : Colors.white.withOpacity(0.7),
-                  border: Border.all(
-                    color: isDarkMode 
-                      ? Colors.white.withOpacity(0.1) 
-                      : Colors.black.withOpacity(0.1),
-                    width: 1,
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 16, // Add some bottom padding for original position
+      child: SlideTransition(
+        position: _hideUrlBarAnimation,
+        child: Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16),
+          child: GestureDetector(
+            onHorizontalDragUpdate: (details) {
+              setState(() {
+                _urlBarSlideOffset += details.delta.dx;
+              });
+            },
+            onHorizontalDragEnd: (details) async {
+              if (_urlBarSlideOffset.abs() > 50) {
+                if (_urlBarSlideOffset < 0 && canGoBack) {
+                  await _goBack();
+                } else if (_urlBarSlideOffset > 0 && canGoForward) {
+                  await _goForward();
+                }
+              }
+              setState(() {
+                _urlBarSlideOffset = 0;
+              });
+            },
+            child: Transform.translate(
+              offset: Offset(_urlBarSlideOffset, 0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(28),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                  child: Container(
+                    width: MediaQuery.of(context).size.width - 32,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(28),
+                      color: isDarkMode 
+                        ? Colors.black.withOpacity(0.7) 
+                        : Colors.white.withOpacity(0.7),
+                      border: Border.all(
+                        color: isDarkMode 
+                          ? Colors.white.withOpacity(0.1) 
+                          : Colors.black.withOpacity(0.1),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const SizedBox(width: 16),
+                        Icon(
+                          isSecure ? Icons.shield : Icons.warning_amber_rounded,
+                          size: 20,
+                          color: isSecure 
+                            ? (isDarkMode ? Colors.green[300] : Colors.green[700])
+                            : (isDarkMode ? Colors.orange[300] : Colors.orange[700]),
+                          semanticLabel: isSecure ? 
+                            AppLocalizations.of(context)!.secure_connection : 
+                            AppLocalizations.of(context)!.insecure_connection,
+                        ),
+                        Expanded(
+                          child: TextField(
+                            controller: _urlController,
+                            focusNode: _urlFocusNode,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: isDarkMode ? Colors.white : Colors.black,
+                              fontSize: 16,
+                            ),
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              hintText: AppLocalizations.of(context)!.search_or_type_url,
+                              hintStyle: TextStyle(
+                                color: isDarkMode ? Colors.white38 : Colors.black38,
+                              ),
+                            ),
+                            onTap: () {
+                              setState(() {
+                                _urlController.text = _displayUrl;
+                                _urlController.selection = TextSelection(
+                                  baseOffset: 0,
+                                  extentOffset: _urlController.text.length,
+                                );
+                              });
+                            },
+                            onSubmitted: (url) async {
+                              await _loadUrl(url);
+                              _urlFocusNode.unfocus();
+                            },
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.refresh_rounded,
+                            color: isDarkMode ? Colors.white70 : Colors.black54,
+                            size: 20,
+                          ),
+                          onPressed: () async {
+                            if (controller != null) {
+                              await controller.reload();
+                            }
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                    ),
                   ),
                 ),
-                child: _buildUrlBarExpandedState(),
               ),
             ),
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildUrlBarExpandedState() {
-    return Row(
-      children: [
-        const SizedBox(width: 16),
-        Icon(
-          isSecure ? Icons.shield : Icons.warning_amber_rounded,
-          size: 20,
-          color: isSecure 
-            ? (isDarkMode ? Colors.green[300] : Colors.green[700])
-            : (isDarkMode ? Colors.orange[300] : Colors.orange[700]),
-          semanticLabel: isSecure ? 
-            AppLocalizations.of(context)!.secure_connection : 
-            AppLocalizations.of(context)!.insecure_connection,
-        ),
-        Expanded(
-          child: TextField(
-            controller: _urlController,
-            focusNode: _urlFocusNode,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: isDarkMode ? Colors.white : Colors.black,
-              fontSize: 16,
-            ),
-            decoration: InputDecoration(
-              border: InputBorder.none,
-              hintText: AppLocalizations.of(context)!.search_or_type_url,
-              hintStyle: TextStyle(
-                color: isDarkMode ? Colors.white38 : Colors.black38,
-              ),
-            ),
-            onTap: () {
-              setState(() {
-                _urlController.text = _displayUrl;
-                _urlController.selection = TextSelection(
-                  baseOffset: 0,
-                  extentOffset: _urlController.text.length,
-                );
-              });
-            },
-            onSubmitted: (url) async {
-              await _loadUrl(url);
-              _urlFocusNode.unfocus();
-            },
-          ),
-        ),
-        IconButton(
-          icon: Icon(
-            Icons.refresh_rounded,
-            color: isDarkMode ? Colors.white70 : Colors.black54,
-            size: 20,
-          ),
-          onPressed: () async {
-            if (controller != null) {
-              await controller.reload();
-            }
-          },
-        ),
-        const SizedBox(width: 8),
-      ],
     );
   }
 
@@ -4269,7 +4324,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    // Update system bars whenever the theme changes
     _updateSystemBars();
     final statusBarHeight = MediaQuery.of(context).padding.top;
     
@@ -4283,12 +4337,32 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           color: isDarkMode ? Colors.black : Colors.white,
           child: Stack(
             children: [
+              // WebView with scroll detection
               Positioned(
                 top: statusBarHeight,
                 left: 0,
                 right: 0,
                 bottom: 0,
-                child: WebViewWidget(controller: controller),
+                child: Listener(
+                  onPointerMove: (event) {
+                    if (event.delta.dy < -10) { // Scrolling down - hide URL bar
+                      if (!_hideUrlBar) {
+                        setState(() {
+                          _hideUrlBar = true;
+                          _hideUrlBarController.forward();
+                        });
+                      }
+                    } else if (event.delta.dy > 10) { // Scrolling up - show URL bar
+                      if (_hideUrlBar) {
+                        setState(() {
+                          _hideUrlBar = false;
+                          _hideUrlBarController.reverse();
+                        });
+                      }
+                    }
+                  },
+                  child: WebViewWidget(controller: controller),
+                ),
               ),
               
               if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible)
@@ -4331,7 +4405,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     _buildQuickActionsPanel(),
-                                    const SizedBox(height: 8), // Reduced from 12 to 8
+                                    const SizedBox(height: 8),
                                     _buildNavigationPanel(),
                                   ],
                                 ),
