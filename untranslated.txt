@@ -1,53 +1,57 @@
 {
   "ar": [
+    "photoncore_version",
     "storage_permission_description",
     "grant_permission",
-    "new_incognito_tab",
     "incognito_mode",
     "incognito_description"
   ],
 
   "de": [
+    "software_team",
+    "download_image",
     "storage_permission_description",
     "grant_permission",
-    "new_incognito_tab",
     "incognito_mode",
     "incognito_description"
   ],
 
   "es": [
+    "software_team",
     "storage_permission_description",
     "grant_permission",
-    "new_incognito_tab",
     "incognito_mode",
     "incognito_description"
   ],
 
   "fr": [
+    "photoncore_version",
     "storage_permission_description",
     "grant_permission",
-    "new_incognito_tab",
     "incognito_mode",
     "incognito_description"
   ],
 
   "hi": [
+    "software_team",
     "storage_permission_description",
     "grant_permission",
-    "new_incognito_tab",
     "incognito_mode",
     "incognito_description"
   ],
 
   "it": [
+    "software_team",
+    "download_image",
     "storage_permission_description",
     "grant_permission",
-    "new_incognito_tab",
     "incognito_mode",
     "incognito_description"
   ],
 
   "ja": [
+    "photoncore_version",
+    "engine_version",
     "storage_permission_required",
     "storage_permission_description",
     "grant_permission",
@@ -62,10 +66,23 @@
     "download_error",
     "open_downloads_folder",
     "file_exists",
-    "file_saved"
+    "file_saved",
+    "no_tabs_open",
+    "incognito",
+    "clear_all",
+    "clear_history",
+    "clear_history_confirmation",
+    "no_history",
+    "today",
+    "yesterday",
+    "days_ago",
+    "weeks_ago",
+    "months_ago"
   ],
 
   "ko": [
+    "photoncore_version",
+    "engine_version",
     "storage_permission_required",
     "storage_permission_description",
     "grant_permission",
@@ -80,23 +97,34 @@
     "download_error",
     "open_downloads_folder",
     "file_exists",
-    "file_saved"
+    "file_saved",
+    "no_tabs_open",
+    "incognito",
+    "clear_all",
+    "clear_history",
+    "clear_history_confirmation",
+    "no_history",
+    "today",
+    "yesterday",
+    "days_ago",
+    "weeks_ago",
+    "months_ago"
   ],
 
   "pt": [
+    "software_team",
     "storage_permission_description",
     "grant_permission",
-    "new_incognito_tab",
     "incognito_mode",
     "incognito_description"
   ],
 
   "ru": [
+    "software_team",
     "storage_permission_required",
     "storage_permission_description",
     "grant_permission",
     "storage_permission_denied",
-    "new_incognito_tab",
     "incognito_mode",
     "incognito_description",
     "error_opening_file",
@@ -106,23 +134,35 @@
     "download_error",
     "open_downloads_folder",
     "file_exists",
-    "file_saved"
+    "file_saved",
+    "no_tabs_open",
+    "incognito",
+    "clear_all",
+    "clear_history",
+    "clear_history_confirmation",
+    "no_history",
+    "today",
+    "yesterday",
+    "days_ago",
+    "weeks_ago",
+    "months_ago"
   ],
 
   "tr": [
+    "software_team",
+    "download_image",
     "storage_permission_description",
     "grant_permission",
-    "new_incognito_tab",
     "incognito_mode",
     "incognito_description"
   ],
 
   "zh": [
+    "software_team",
     "storage_permission_required",
     "storage_permission_description",
     "grant_permission",
     "storage_permission_denied",
-    "new_incognito_tab",
     "incognito_mode",
     "incognito_description",
     "error_opening_file",
@@ -132,6 +172,17 @@
     "download_error",
     "open_downloads_folder",
     "file_exists",
-    "file_saved"
+    "file_saved",
+    "no_tabs_open",
+    "incognito",
+    "clear_all",
+    "clear_history",
+    "clear_history_confirmation",
+    "no_history",
+    "today",
+    "yesterday",
+    "days_ago",
+    "weeks_ago",
+    "months_ago"
   ]
 }

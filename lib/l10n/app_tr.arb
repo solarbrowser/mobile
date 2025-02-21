@@ -169,8 +169,14 @@
   "whats_new": "Yenilikler",
   "exit_confirmation": "Uygulamadan Çık",
   "flutter_version": "Flutter Sürümü",
-  "software_team": "Yazılım Ekibi",
-  "download_image": "Resmi İndir",
+  "photoncore_version": "Photoncore Sürümü",
+  "@photoncore_version": {
+    "description": "Label for Photoncore version in settings"
+  },
+  "engine_version": "Motor Sürümü",
+  "@engine_version": {
+    "description": "Label for engine version in settings"
+  },
   "share_image": "Resmi Paylaş",
   "open_in_new_tab": "Yeni Sekmede Aç",
   "downloading": "İndiriliyor...",
@@ -190,5 +196,20 @@
   "download_error": "İndirme hatası: {error}",
   "open_downloads_folder": "İndirilenler klasörünü aç",
   "file_exists": "Dosya zaten mevcut",
-  "file_saved": "Dosya İndirilenler'e kaydedildi"
+  "file_saved": "Dosya İndirilenler'e kaydedildi",
+  "no_tabs_open": "Açık sekme yok",
+  "incognito": "Gizli mod",
+  "clear_all": "Tümünü temizle",
+  "clear_history": "Geçmişi temizle",
+  "clear_history_confirmation": "Tarama geçmişini silmek istediğinizden emin misiniz?",
+  "no_history": "Tarama geçmişi yok",
+  "today": "Bugün",
+  "yesterday": "Dün",
+  "days_ago": "{days} gün önce",
+  "weeks_ago": "{weeks} hafta önce",
+  "months_ago": "{months} ay önce",
+  "new_incognito_tab": "Yeni gizli sekme",
+  "@new_incognito_tab": {
+    "description": "Label for new incognito tab button"
+  }
 } 

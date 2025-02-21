@@ -28,6 +28,7 @@ import '../widgets/custom_dialog.dart';
 import '../widgets/custom_notification.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
+import 'package:path/path.dart' as path;
 
 class Debouncer {
   final int milliseconds;
@@ -155,6 +156,13 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   bool isDownloading = false;
   String currentDownloadUrl = '';
   double downloadProgress = 0.0;
+  String? _currentFileName;
+  int? _currentDownloadSize;
+  List<Map<String, dynamic>> downloads = [];
+
+  // Getters
+  String? get currentFileName => _currentFileName;
+  int? get currentDownloadSize => _currentDownloadSize;
   
   // Controllers
   late TextEditingController _urlController;
@@ -226,7 +234,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   
   // Data
   List<Map<String, dynamic>> bookmarks = [];
-  List<Map<String, dynamic>> downloads = [];
   
   // Memory Management
   final _debouncer = Debouncer(milliseconds: 300);
@@ -279,10 +286,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   late AnimationController _loadingAnimationController;
   late Animation<double> _loadingAnimation;
 
-  // Add new variables for download size tracking
-  int? currentDownloadSize;
-  String? currentFileName;
-
   String _formatFileSize(int bytes) {
     if (bytes <= 0) return '0 B';
     const suffixes = ['B', 'KB', 'MB', 'GB', 'TB'];
@@ -330,6 +333,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     _loadPreferences();
     _loadBookmarks();
     _loadDownloads();
+    _loadHistory(); // Add history loading on init
     
     // Set up URL focus listener
     _urlFocusNode.addListener(() {
@@ -476,7 +480,31 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     final prefs = await SharedPreferences.getInstance();
     final downloadsList = prefs.getStringList('downloads') ?? [];
     setState(() {
-      downloads = downloadsList.isEmpty ? [] : downloadsList.map((e) => Map<String, dynamic>.from(json.decode(e))).toList();
+      downloads = downloadsList.map((e) {
+        try {
+          final map = Map<String, dynamic>.from(json.decode(e));
+          // Ensure required fields exist and have correct types
+          if (!map.containsKey('url') || 
+              !map.containsKey('filename') || 
+              !map.containsKey('path') ||
+              !map.containsKey('size') ||
+              !map.containsKey('timestamp')) {
+            return null;
+          }
+          // Ensure proper types
+          return {
+            'url': map['url'] as String,
+            'filename': map['filename'] as String,
+            'path': map['path'] as String,
+            'size': (map['size'] as num).toInt(),
+            'timestamp': map['timestamp'] as String,
+            'mimeType': map['mimeType'] as String? ?? 'application/octet-stream',
+          };
+        } catch (e) {
+          print('Error parsing download: $e');
+          return null;
+        }
+      }).whereType<Map<String, dynamic>>().toList();
     });
   }
 
@@ -600,10 +628,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         }
         return NavigationDecision.navigate;
       },
-      onPageStarted: (String url) async {
-        _updateUrl(url);
-        await _handlePageStarted(url);
-      },
+      onPageStarted: _handlePageStarted,
       onPageFinished: (String url) async {
         if (!mounted) return;
         final title = await controller.getTitle() ?? _displayUrl;
@@ -627,6 +652,9 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         print('Web resource error: ${error.description}');
       },
     ));
+
+    // Initialize the optimization engine after controller setup
+    await _initializeOptimizationEngine();
 
     // Add JavaScript for handling downloads
     await controller.runJavaScript('''
@@ -705,6 +733,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         // Monitor navigation events
         window.addEventListener('popstate', notifyUrlChanged);
         window.addEventListener('hashchange', notifyUrlChanged);
+        window.addEventListener('load', notifyUrlChanged);
         
         // Monitor programmatic changes
         const originalPushState = history.pushState;
@@ -720,15 +749,19 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           notifyUrlChanged();
         };
         
-        // Check periodically for URL changes
-        setInterval(notifyUrlChanged, 100);
+        // Check more frequently for URL changes
+        setInterval(notifyUrlChanged, 50);
       })();
     ''');
 
     await controller.addJavaScriptChannel(
       'UrlChanged',
       onMessageReceived: (JavaScriptMessage message) {
-        _updateUrl(message.message);
+        if (mounted) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            _updateUrl(message.message);
+          });
+        }
       },
     );
   }
@@ -761,10 +794,23 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     await controller.setNavigationDelegate(NavigationDelegate(
       onNavigationRequest: (NavigationRequest request) async {
         final url = request.url.toLowerCase();
+        
+        // Handle search:// protocol
+        if (url.startsWith('search://')) {
+          final query = url.substring(9); // Remove 'search://' prefix
+          final decodedQuery = Uri.decodeComponent(query);
+          final engine = searchEngines[currentSearchEngine] ?? searchEngines['Google']!;
+          final searchUrl = engine.replaceAll('{query}', Uri.encodeComponent(decodedQuery));
+          await controller.loadRequest(Uri.parse(searchUrl));
+          return NavigationDecision.prevent;
+        }
+        
+        // Handle downloads
         if (_isDownloadUrl(url)) {
           _handleDownload(request.url);
           return NavigationDecision.prevent;
         }
+        
         return NavigationDecision.navigate;
       },
       onPageStarted: _handlePageStarted,
@@ -794,8 +840,18 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   Future<void> _saveToHistory(String url, String title) async {
-    // Skip saving history in incognito mode
-    if (tabs[currentTabIndex].isIncognito) {
+    // Skip saving history in incognito mode or for special URLs
+    if (tabs[currentTabIndex].isIncognito ||
+        url.isEmpty || 
+        url == 'about:blank' ||
+        url.startsWith('file://') ||
+        url.contains('file:///') ||
+        url.endsWith('main.html')) {
+      return;
+    }
+
+    // Only save if it's a valid web URL
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
       return;
     }
 
@@ -803,29 +859,42 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       final prefs = await SharedPreferences.getInstance();
       final String entry = json.encode({
         'url': url,
-        'title': title,
+        'title': title.isEmpty ? _getDisplayUrl(url) : title,
         'favicon': tabs[currentTabIndex].favicon,
         'timestamp': DateTime.now().toIso8601String(),
       });
 
       final history = prefs.getStringList('history') ?? [];
       
-      // Check if URL already exists in recent history to avoid duplicates
+      // Remove existing entry with same URL if it exists
       history.removeWhere((item) {
-        final Map<String, dynamic> decoded = json.decode(item);
-        return decoded['url'] == url;
+        try {
+          final Map<String, dynamic> decoded = json.decode(item);
+          return decoded['url'] == url;
+        } catch (e) {
+          return false;
+        }
       });
 
+      // Add new entry at the beginning
       history.insert(0, entry);
 
-      // Limit history size
-      if (history.length > 100) {
-        history.removeLast();
+      // Limit history size to prevent excessive storage use
+      if (history.length > 1000) {
+        history.removeRange(1000, history.length);
       }
 
       await prefs.setStringList('history', history);
+      
+      // Update the loaded history in memory without affecting URL bar
       setState(() {
-        _loadedHistory = history.map((e) => Map<String, dynamic>.from(json.decode(e))).toList();
+        _loadedHistory = history.map((e) {
+          try {
+            return Map<String, dynamic>.from(json.decode(e));
+          } catch (e) {
+            return null;
+          }
+        }).whereType<Map<String, dynamic>>().toList();
       });
     }
   }
@@ -884,7 +953,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         formattedUrl = 'https://$formattedUrl';
       } else {
         final engine = searchEngines[currentSearchEngine] ?? searchEngines['Google']!;
-        formattedUrl = engine.replaceAll('{query}', formattedUrl);
+        formattedUrl = engine.replaceAll('{query}', Uri.encodeComponent(formattedUrl));
       }
     }
     
@@ -894,7 +963,16 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       _urlController.text = _formatUrl(formattedUrl);
     });
     
-    await controller.loadRequest(Uri.parse(formattedUrl));
+    try {
+      await controller.loadRequest(Uri.parse(formattedUrl));
+      // Update URL immediately after load request
+      _updateUrl(formattedUrl);
+    } catch (e) {
+      print('Error loading URL: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   void _performSearch({bool searchUp = false}) async {
@@ -1630,8 +1708,14 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                     isLast: false,
                   ),
                   _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.software_team,
-                    subtitle: 'Vertex Software',
+                    title: AppLocalizations.of(context)!.photoncore_version,
+                    subtitle: 'Photoncore 0.0.1B',
+                    isFirst: false,
+                    isLast: false,
+                  ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.engine_version,
+                    subtitle: 'MRE4.7.0, ARE4.3.2',
                     isFirst: false,
                     isLast: true,
                   ),
@@ -1899,7 +1983,9 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       currentTabIndex = index;
       controller = tabs[index].controller;
       _displayUrl = tabs[index].url;
-      _urlController.text = _formatUrl(tabs[index].url);
+      if (!_urlFocusNode.hasFocus) {
+        _urlController.text = _formatUrl(tabs[index].url);
+      }
       canGoBack = tabs[index].canGoBack;
       canGoForward = tabs[index].canGoForward;
     });
@@ -1992,241 +2078,384 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   Widget _buildDownloadsPanel() {
-    return _buildPanel(
-      header: _buildPanelHeader(
-        AppLocalizations.of(context)!.downloads,
-        onBack: () => setState(() => isDownloadsVisible = false),
-      ),
-      body: downloads.isEmpty && !isDownloading
-          ? _buildEmptyState(
-              AppLocalizations.of(context)!.no_downloads_yet,
-              Icons.download_outlined,
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              itemCount: isDownloading ? downloads.length + 1 : downloads.length,
-              itemBuilder: (context, index) {
-                if (isDownloading && index == 0) {
-                  final downloadedSize = (downloadProgress * (currentDownloadSize ?? 0)).toInt();
-                  final totalSize = currentDownloadSize ?? 0;
-                  final downloadedSizeStr = _formatFileSize(downloadedSize);
-                  final totalSizeStr = _formatFileSize(totalSize);
-                  
-                  return Card(
-                    elevation: 0,
-                    color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  CircularProgressIndicator(
-                                    value: downloadProgress,
-                                    color: isDarkMode ? Colors.white70 : Colors.black54,
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      currentFileName ?? AppLocalizations.of(context)!.downloading,
-                                      style: TextStyle(
-                                        color: isDarkMode ? Colors.white : Colors.black,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      _extractDomain(currentDownloadUrl),
-                                      style: TextStyle(
-                                        color: isDarkMode ? Colors.white54 : Colors.black45,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.close),
-                                onPressed: () {
-                                  setState(() {
-                                    isDownloading = false;
-                                    currentDownloadUrl = '';
-                                    downloadProgress = 0.0;
-                                    currentDownloadSize = null;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          LinearProgressIndicator(
-                            value: downloadProgress,
-                            backgroundColor: isDarkMode ? Colors.white12 : Colors.black12,
-                            valueColor: AlwaysStoppedAnimation(
-                              isDarkMode ? Colors.white70 : Colors.black54,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '$downloadedSizeStr / $totalSizeStr',
-                            style: TextStyle(
-                              color: isDarkMode ? Colors.white54 : Colors.black45,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
-                
-                final downloadIndex = isDownloading ? index - 1 : index;
-                final download = downloads[downloadIndex];
-                final fileName = download['fileName'] as String? ?? AppLocalizations.of(context)!.unknown;
-                final timestamp = DateTime.parse(download['timestamp'] as String? ?? DateTime.now().toIso8601String());
-                final sizeStr = download['size'] as String? ?? '0';
-                final filePath = '/storage/emulated/0/Download/$fileName';
-                
-                return Card(
-                  elevation: 0,
-                  color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(16),
-                    onTap: () async {
-                      await OpenFile.open(filePath);
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              Icons.file_download_done,
-                              color: isDarkMode ? Colors.white70 : Colors.black54,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
+    return Container(
+      color: isDarkMode ? Colors.black : Colors.white,
+      child: Column(
+        children: [
+          Container(
+            height: 56 + MediaQuery.of(context).padding.top,
+            padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+            decoration: BoxDecoration(
+              color: isDarkMode ? Colors.black : Colors.white,
+              border: Border(
+                bottom: BorderSide(
+                  color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                ),
+              ),
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: Icon(
+                    Icons.arrow_back,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                  onPressed: () => setState(() => isDownloadsVisible = false),
+                ),
+                Text(
+                  AppLocalizations.of(context)!.downloads,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: downloads.isEmpty && !isDownloading
+                ? _buildEmptyState(
+                    AppLocalizations.of(context)!.no_downloads_yet,
+                    Icons.download_outlined,
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    itemCount: isDownloading ? downloads.length + 1 : downloads.length,
+                    itemBuilder: (context, index) {
+                      if (isDownloading && index == 0) {
+                        final downloadedSize = (downloadProgress * (currentDownloadSize ?? 0)).toInt();
+                        final totalSize = currentDownloadSize ?? 0;
+                        final downloadedSizeStr = _formatFileSize(downloadedSize);
+                        final totalSizeStr = _formatFileSize(totalSize);
+                        
+                        return Card(
+                          elevation: 0,
+                          color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  fileName,
-                                  style: TextStyle(
-                                    color: isDarkMode ? Colors.white : Colors.black,
-                                    fontWeight: FontWeight.w500,
+                                Row(
+                                  children: [
+                                    Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        CircularProgressIndicator(
+                                          value: downloadProgress,
+                                          color: isDarkMode ? Colors.white70 : Colors.black54,
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            currentFileName ?? AppLocalizations.of(context)!.downloading,
+                                            style: TextStyle(
+                                              color: isDarkMode ? Colors.white : Colors.black,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            _extractDomain(currentDownloadUrl),
+                                            style: TextStyle(
+                                              color: isDarkMode ? Colors.white54 : Colors.black45,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    TextButton.icon(
+                                      icon: Icon(
+                                        Icons.close,
+                                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                                        size: 20,
+                                      ),
+                                      label: Text(
+                                        'Cancel',
+                                        style: TextStyle(
+                                          color: isDarkMode ? Colors.white70 : Colors.black54,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      style: TextButton.styleFrom(
+                                        backgroundColor: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          isDownloading = false;
+                                          currentDownloadUrl = '';
+                                          downloadProgress = 0.0;
+                                          _currentFileName = null;
+                                          _currentDownloadSize = null;
+                                        });
+                                        _showNotification(
+                                          Row(
+                                            children: [
+                                              Icon(Icons.info, color: isDarkMode ? Colors.blue[200] : Colors.blue),
+                                              const SizedBox(width: 16),
+                                              Text(
+                                                AppLocalizations.of(context)!.download_canceled,
+                                                style: TextStyle(
+                                                  color: isDarkMode ? Colors.white : Colors.black87,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          duration: const Duration(seconds: 3),
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                LinearProgressIndicator(
+                                  value: downloadProgress,
+                                  backgroundColor: isDarkMode ? Colors.white12 : Colors.black12,
+                                  valueColor: AlwaysStoppedAnimation(
+                                    isDarkMode ? Colors.white70 : Colors.black54,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 8),
                                 Text(
-                                  '${_formatDate(timestamp)} • $sizeStr',
+                                  '$downloadedSizeStr / $totalSizeStr',
                                   style: TextStyle(
                                     color: isDarkMode ? Colors.white54 : Colors.black45,
-                                    fontSize: 13,
+                                    fontSize: 12,
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          PopupMenuButton(
-                            icon: Icon(
-                              Icons.more_vert,
-                              color: isDarkMode ? Colors.white70 : Colors.black54,
+                        );
+                      }
+                      
+                      final downloadIndex = isDownloading ? index - 1 : index;
+                      final download = downloads[downloadIndex];
+                      final fileName = download['filename']?.toString() ?? AppLocalizations.of(context)!.unknown;
+                      final filePath = download['path']?.toString();
+                      final fileSize = download['size']?.toString() ?? '0 B';
+                      
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                Icons.file_download_done,
+                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                                size: 20,
+                              ),
                             ),
-                            color: isDarkMode ? Colors.grey[900] : Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            itemBuilder: (context) => [
-                              PopupMenuItem(
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.open_in_new,
-                                      size: 20,
-                                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    fileName,
+                                    style: TextStyle(
+                                      color: isDarkMode ? Colors.white : Colors.black87,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
                                     ),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      AppLocalizations.of(context)!.open,
-                                      style: TextStyle(
-                                        color: isDarkMode ? Colors.white : Colors.black,
-                                      ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    '$fileSize • ${_formatTimestamp(DateTime.parse(download['timestamp'] as String))}',
+                                    style: TextStyle(
+                                      color: isDarkMode ? Colors.white60 : Colors.black54,
+                                      fontSize: 12,
                                     ),
-                                  ],
-                                ),
-                                onTap: () async {
-                                  await OpenFile.open(filePath);
-                                },
+                                  ),
+                                ],
                               ),
-                              PopupMenuItem(
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.history,
-                                      size: 20,
-                                      color: isDarkMode ? Colors.white70 : Colors.black54,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      'Remove from History',
-                                      style: TextStyle(
-                                        color: isDarkMode ? Colors.white : Colors.black,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                onTap: () => _showDeleteDownloadDialog(downloadIndex),
+                            ),
+                            if (filePath != null) IconButton(
+                              icon: Icon(
+                                Icons.open_in_new,
+                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                                size: 20,
                               ),
-                              PopupMenuItem(
-                                child: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.delete_forever,
-                                      size: 20,
-                                      color: Colors.red,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      'Delete from Device',
-                                      style: const TextStyle(
+                              onPressed: () => _openDownloadedFile(download),
+                            ),
+                            PopupMenuButton(
+                              icon: Icon(
+                                Icons.more_vert,
+                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                                size: 20,
+                              ),
+                              color: isDarkMode ? Colors.grey[900] : Colors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              itemBuilder: (context) => [
+                                PopupMenuItem(
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.open_in_new,
+                                        size: 20,
+                                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        AppLocalizations.of(context)!.open,
+                                        style: TextStyle(
+                                          color: isDarkMode ? Colors.white : Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  onTap: () async {
+                                    await OpenFile.open(download['path'] as String);
+                                  },
+                                ),
+                                PopupMenuItem(
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.history,
+                                        size: 20,
+                                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        'Remove from History',
+                                        style: TextStyle(
+                                          color: isDarkMode ? Colors.white : Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  onTap: () => _showDeleteDownloadDialog(downloadIndex),
+                                ),
+                                PopupMenuItem(
+                                  child: Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.delete_forever,
+                                        size: 20,
                                         color: Colors.red,
                                       ),
-                                    ),
-                                  ],
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        'Delete from Device',
+                                        style: const TextStyle(
+                                          color: Colors.red,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  onTap: () async {
+                                    final filePath = download['path'] as String; // Use the stored complete path
+                                    final file = File(filePath);
+                                    if (await file.exists()) {
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+                                          title: Text(
+                                            'Delete File',
+                                            style: TextStyle(
+                                              color: isDarkMode ? Colors.white : Colors.black,
+                                            ),
+                                          ),
+                                          content: Text(
+                                            'Are you sure you want to permanently delete this file from your device?',
+                                            style: TextStyle(
+                                              color: isDarkMode ? Colors.white70 : Colors.black87,
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.pop(context),
+                                              child: Text(
+                                                AppLocalizations.of(context)!.cancel,
+                                                style: TextStyle(
+                                                  color: isDarkMode ? Colors.white70 : Colors.black54,
+                                                ),
+                                              ),
+                                            ),
+                                            TextButton(
+                                              onPressed: () async {
+                                                await file.delete();
+                                                
+                                                // Remove from downloads history
+                                                final prefs = await SharedPreferences.getInstance();
+                                                final downloadsList = prefs.getStringList('downloads') ?? [];
+                                                downloadsList.removeAt(index);
+                                                await prefs.setStringList('downloads', downloadsList);
+                                                
+                                                setState(() {
+                                                  downloads.removeAt(index);
+                                                });
+                                                
+                                                Navigator.pop(context);
+                                                _showNotification(
+                                                  Row(
+                                                    children: [
+                                                      const Icon(Icons.check_circle, color: Colors.green),
+                                                      const SizedBox(width: 16),
+                                                      Expanded(
+                                                        child: Text(
+                                                          'File deleted from device',
+                                                          style: TextStyle(
+                                                            color: isDarkMode ? Colors.white : Colors.black87,
+                                                            fontSize: 14,
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                  duration: const Duration(seconds: 4),
+                                                );
+                                              },
+                                              child: Text(
+                                                'Delete',
+                                                style: const TextStyle(
+                                                  color: Colors.red,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
+                                  },
                                 ),
-                                onTap: () async {
-                                  final file = File(filePath);
-                                  if (await file.exists()) {
-                                    await file.delete();
-                                    _showDeleteDownloadDialog(downloadIndex);
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -2721,8 +2950,8 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
               boxShadow: [
                 BoxShadow(
                   color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
+                  blurRadius: 4,
+                  offset: Offset(0, 1),
                 ),
               ],
             ),
@@ -2732,6 +2961,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                   icon: Icon(
                     Icons.arrow_back,
                     color: isDarkMode ? Colors.white : Colors.black,
+                    size: 22,
                   ),
                   onPressed: () {
                     setState(() {
@@ -2744,14 +2974,14 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _buildHeaderButton(
-                        title: 'Tabs',
+                        title: AppLocalizations.of(context)!.tabs,
                         count: displayTabs.length,
                         isSelected: !isHistoryVisible,
                         onTap: () => setState(() => isHistoryVisible = false),
                       ),
                       SizedBox(width: 16),
                       _buildHeaderButton(
-                        title: 'History',
+                        title: AppLocalizations.of(context)!.history,
                         count: _loadedHistory.length,
                         isSelected: isHistoryVisible,
                         onTap: () => setState(() => isHistoryVisible = true),
@@ -2761,8 +2991,9 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                 ),
                 PopupMenuButton<String>(
                   icon: Icon(
-                    Icons.add,
+                    Icons.add_circle_outline_rounded,
                     color: isDarkMode ? Colors.white : Colors.black,
+                    size: 22,
                   ),
                   onSelected: (String value) {
                     if (value == 'normal') {
@@ -2774,14 +3005,33 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                       isTabsVisible = false;
                     });
                   },
+                  color: isDarkMode ? Colors.grey[900] : Colors.white,
+                  elevation: 8,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    side: BorderSide(
+                      color: isDarkMode ? Colors.white10 : Colors.black12,
+                      width: 1,
+                    ),
+                  ),
                   itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                     PopupMenuItem<String>(
                       value: 'normal',
                       child: Row(
                         children: [
-                          Icon(Icons.tab),
-                          SizedBox(width: 8),
-                          Text(AppLocalizations.of(context)!.new_tab),
+                          Icon(
+                            Icons.tab_rounded,
+                            size: 20,
+                            color: isDarkMode ? Colors.white70 : Colors.black87,
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            AppLocalizations.of(context)!.new_tab,
+                            style: TextStyle(
+                              color: isDarkMode ? Colors.white : Colors.black,
+                              fontSize: 14,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -2789,9 +3039,19 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                       value: 'incognito',
                       child: Row(
                         children: [
-                          Icon(Icons.visibility_off),
-                          const SizedBox(width: 12),
-                          Text(AppLocalizations.of(context)!.new_incognito_tab),
+                          Icon(
+                            Icons.visibility_off_rounded,
+                            size: 20,
+                            color: isDarkMode ? Colors.white70 : Colors.black87,
+                          ),
+                          SizedBox(width: 12),
+                          Text(
+                            AppLocalizations.of(context)!.new_incognito_tab,
+                            style: TextStyle(
+                              color: isDarkMode ? Colors.white : Colors.black,
+                              fontSize: 14,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -2809,13 +3069,13 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.tab_unselected,
+                          Icons.tab_unselected_rounded,
                           size: 48,
-                          color: isDarkMode ? Colors.white38 : Colors.black38,
+                          color: isDarkMode ? Colors.white24 : Colors.black12,
                         ),
                         SizedBox(height: 16),
                         Text(
-                          'No tabs open',
+                          AppLocalizations.of(context)!.no_tabs_open,
                           style: TextStyle(
                             fontSize: 16,
                             color: isDarkMode ? Colors.white70 : Colors.black54,
@@ -2826,13 +3086,13 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                   )
                 : GridView.builder(
                     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 4,
-                      childAspectRatio: 1.0,
-                      crossAxisSpacing: 4,
-                      mainAxisSpacing: 4,
+                      crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 3,
+                      childAspectRatio: 0.85,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
                     ),
-                    padding: EdgeInsets.only(left: 4, right: 4, top: 4),
-                    physics: ClampingScrollPhysics(),
+                    padding: EdgeInsets.all(8),
+                    physics: BouncingScrollPhysics(),
                     itemCount: displayTabs.length,
                     itemBuilder: (context, index) {
                       final tab = displayTabs[index];
@@ -2849,91 +3109,109 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                           }
                         },
                         child: Container(
-                          margin: EdgeInsets.all(2),
                           decoration: BoxDecoration(
                             color: isCurrentTab 
-                              ? Theme.of(context).primaryColor.withOpacity(0.1)
-                              : Theme.of(context).cardColor,
-                            borderRadius: BorderRadius.circular(8),
+                              ? (isDarkMode ? Colors.white.withOpacity(0.08) : Theme.of(context).primaryColor.withOpacity(0.08))
+                              : isDarkMode ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.02),
+                            borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: isCurrentTab 
-                                ? Theme.of(context).primaryColor
+                                ? (isDarkMode ? Colors.white.withOpacity(0.2) : Theme.of(context).primaryColor)
                                 : Colors.transparent,
                               width: 1,
                             ),
                           ),
                           child: Column(
-                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Expanded(
-                                child: Stack(
-                                  fit: StackFit.expand,
-                                  children: [
-                                    Center(
-                                      child: Container(
-                                        width: 16,
-                                        height: 16,
-                                        child: tab.favicon != null && !tab.isIncognito
-                                          ? Image.network(
-                                              tab.favicon!,
-                                              fit: BoxFit.contain,
-                                              errorBuilder: (context, error, stackTrace) => Icon(
-                                                tab.isIncognito ? Icons.visibility_off : Icons.public,
-                                                size: 14,
-                                                color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
-                                              ),
-                                            )
-                                          : Icon(
-                                              tab.isIncognito ? Icons.visibility_off : Icons.public,
-                                              size: 14,
-                                              color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
-                                            ),
-                                      ),
-                                    ),
-                                    Positioned(
-                                      top: 2,
-                                      right: 2,
-                                      child: GestureDetector(
-                                        onTap: () => _closeTab(tabs.indexOf(tab)),
-                                        child: Container(
-                                          padding: EdgeInsets.all(1),
-                                          decoration: BoxDecoration(
-                                            color: Colors.black54,
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                          child: Icon(
-                                            Icons.close,
-                                            size: 12,
-                                            color: Colors.white,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.vertical(top: Radius.circular(11)),
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      Container(
+                                        color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.02),
+                                        child: Center(
+                                          child: Container(
+                                            width: 24,
+                                            height: 24,
+                                            child: tab.favicon != null && !tab.isIncognito
+                                              ? Image.network(
+                                                  tab.favicon!,
+                                                  fit: BoxFit.contain,
+                                                  errorBuilder: (context, error, stackTrace) => Icon(
+                                                    tab.isIncognito ? Icons.visibility_off_rounded : Icons.public_rounded,
+                                                    size: 20,
+                                                    color: isDarkMode ? Colors.white54 : Colors.black45,
+                                                  ),
+                                                )
+                                              : Icon(
+                                                  tab.isIncognito ? Icons.visibility_off_rounded : Icons.public_rounded,
+                                                  size: 20,
+                                                  color: isDarkMode ? Colors.white54 : Colors.black45,
+                                                ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                      Positioned(
+                                        top: 8,
+                                        right: 8,
+                                        child: GestureDetector(
+                                          onTap: () => _closeTab(tabs.indexOf(tab)),
+                                          child: Container(
+                                            padding: EdgeInsets.all(4),
+                                            decoration: BoxDecoration(
+                                              color: isDarkMode ? Colors.black45 : Colors.black38,
+                                              borderRadius: BorderRadius.circular(12),
+                                            ),
+                                            child: Icon(
+                                              Icons.close_rounded,
+                                              size: 14,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                               Padding(
-                                padding: EdgeInsets.all(2),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                                padding: EdgeInsets.all(8),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    if (tab.isIncognito)
-                                      Padding(
-                                        padding: EdgeInsets.only(right: 4),
-                                        child: Icon(
-                                          Icons.visibility_off,
-                                          size: 10,
-                                          color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
-                                        ),
-                                      ),
-                                    Expanded(
-                                      child: Text(
-                                        tab.title.isEmpty ? tab.url : tab.title,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(fontSize: 10),
+                                    Text(
+                                      tab.title.isEmpty ? _getDisplayUrl(tab.url) : tab.title,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: isDarkMode ? Colors.white : Colors.black87,
+                                        fontWeight: isCurrentTab ? FontWeight.w500 : FontWeight.normal,
                                       ),
                                     ),
+                                    if (tab.isIncognito) ...[
+                                      SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            Icons.visibility_off_rounded,
+                                            size: 12,
+                                            color: isDarkMode ? Colors.white38 : Colors.black38,
+                                          ),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            AppLocalizations.of(context)!.incognito,
+                                            style: TextStyle(
+                                              fontSize: 11,
+                                              color: isDarkMode ? Colors.white38 : Colors.black38,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
                                   ],
                                 ),
                               ),
@@ -3007,36 +3285,55 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       _isLoadingMore = true;
     });
 
-    final prefs = await SharedPreferences.getInstance();
-    final history = prefs.getStringList('history') ?? [];
-    
-    final start = _currentHistoryPage * _historyPageSize;
-    if (start >= history.length) {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final history = prefs.getStringList('history') ?? [];
+      
+      final start = _currentHistoryPage * _historyPageSize;
+      if (start >= history.length) {
+        setState(() {
+          _isLoadingMore = false;
+        });
+        return;
+      }
+      
+      final end = min(start + _historyPageSize, history.length);
+      final newItems = history
+        .sublist(start, end)
+        .map((e) {
+          try {
+            return Map<String, dynamic>.from(json.decode(e));
+          } catch (e) {
+            return null;
+          }
+        })
+        .whereType<Map<String, dynamic>>()
+        .toList();
+      
+      setState(() {
+        _loadedHistory.addAll(newItems);
+        _currentHistoryPage++;
+        _isLoadingMore = false;
+      });
+    } catch (e) {
+      print('Error loading history: $e');
       setState(() {
         _isLoadingMore = false;
       });
-      return;
     }
-    
-    final end = min(start + _historyPageSize, history.length);
-    final newItems = history
-      .sublist(start, end)
-      .map((e) => Map<String, dynamic>.from(json.decode(e)))
-      .toList();
-    
-    setState(() {
-      _loadedHistory.addAll(newItems);
-      _currentHistoryPage++;
-      _isLoadingMore = false;
-    });
   }
 
   Future<void> _clearHistory() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('history', []);
-    setState(() {
-      _loadedHistory = [];
-    });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('history', []);
+      setState(() {
+        _loadedHistory = [];
+        _currentHistoryPage = 0;
+      });
+    } catch (e) {
+      print('Error clearing history: $e');
+    }
   }
 
   void _showHistoryPanel() {
@@ -3146,74 +3443,218 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton.icon(
-                  icon: Icon(Icons.delete_outline),
-                  label: Text('Clear All'),
-                  onPressed: _clearHistory,
-                  style: TextButton.styleFrom(
-                    foregroundColor: isDarkMode ? Colors.white70 : Colors.black54,
+                  icon: Icon(
+                    Icons.delete_outline_rounded,
+                    size: 20,
+                    color: isDarkMode ? Colors.white70 : Colors.black54,
                   ),
+                  label: Text(
+                    AppLocalizations.of(context)!.clear_all,
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                      fontSize: 14,
+                    ),
+                  ),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        backgroundColor: isDarkMode ? Colors.black : Colors.white,
+                        title: Text(
+                          AppLocalizations.of(context)!.clear_history,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white : Colors.black,
+                          ),
+                        ),
+                        content: Text(
+                          AppLocalizations.of(context)!.clear_history_confirmation,
+                          style: TextStyle(
+                            color: isDarkMode ? Colors.white70 : Colors.black87,
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text(
+                              AppLocalizations.of(context)!.cancel,
+                              style: TextStyle(
+                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                              ),
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                              _clearHistory();
+                            },
+                            child: Text(
+                              AppLocalizations.of(context)!.clear,
+                              style: TextStyle(
+                                color: Colors.red,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
           ),
         Expanded(
-          child: ListView.builder(
-            itemCount: _loadedHistory.length,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemBuilder: (context, index) {
-              final item = _loadedHistory[index];
-              return Dismissible(
-                key: Key(item['timestamp'] ?? DateTime.now().toIso8601String()),
-                background: Container(
-                  color: Colors.red.withOpacity(0.2),
-                  alignment: Alignment.centerRight,
-                  padding: EdgeInsets.only(right: 16),
-                  child: Icon(
-                    Icons.delete,
-                    color: Colors.red,
-                  ),
+          child: _loadedHistory.isEmpty
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.history_rounded,
+                      size: 48,
+                      color: isDarkMode ? Colors.white24 : Colors.black12,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      AppLocalizations.of(context)!.no_history,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                      ),
+                    ),
+                  ],
                 ),
-                direction: DismissDirection.endToStart,
-                onDismissed: (direction) => _removeHistoryItem(index),
-                child: ListTile(
-                  leading: Icon(
-                    Icons.history,
-                    color: isDarkMode ? Colors.white54 : Colors.black45,
-                  ),
-                  title: Text(
-                    item['title'] ?? item['url'],
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.black,
+              )
+            : ListView.builder(
+                controller: _historyScrollController,
+                itemCount: _loadedHistory.length + (_isLoadingMore ? 1 : 0),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                physics: const BouncingScrollPhysics(),
+                itemBuilder: (context, index) {
+                  if (index == _loadedHistory.length) {
+                    return Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Center(
+                        child: SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              isDarkMode ? Colors.white70 : Colors.black45,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  final item = _loadedHistory[index];
+                  final DateTime timestamp = DateTime.parse(item['timestamp'] ?? DateTime.now().toIso8601String());
+                  final String formattedDate = _getFormattedDate(timestamp);
+                  final String formattedTime = DateFormat('h:mm a').format(timestamp);
+
+                  return Dismissible(
+                    key: Key(item['timestamp'] ?? DateTime.now().toIso8601String()),
+                    background: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.red.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      alignment: Alignment.centerRight,
+                      padding: EdgeInsets.only(right: 16),
+                      child: Icon(
+                        Icons.delete_rounded,
+                        color: Colors.red.withOpacity(0.8),
+                      ),
                     ),
-                  ),
-                  subtitle: Text(
-                    _formatUrl(item['url']),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                    direction: DismissDirection.endToStart,
+                    onDismissed: (direction) => _removeHistoryItem(index),
+                    child: Container(
+                      margin: EdgeInsets.symmetric(vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isDarkMode ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.02),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: ListTile(
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        leading: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: item['favicon'] != null
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.network(
+                                  item['favicon']!,
+                                  width: 20,
+                                  height: 20,
+                                  errorBuilder: (context, error, stackTrace) => Icon(
+                                    Icons.public_rounded,
+                                    size: 20,
+                                    color: isDarkMode ? Colors.white54 : Colors.black45,
+                                  ),
+                                ),
+                              )
+                            : Icon(
+                                Icons.public_rounded,
+                                size: 20,
+                                color: isDarkMode ? Colors.white54 : Colors.black45,
+                              ),
+                        ),
+                        title: Text(
+                          item['title'] ?? _getDisplayUrl(item['url']),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 15,
+                            color: isDarkMode ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _getDisplayUrl(item['url']),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isDarkMode ? Colors.white54 : Colors.black45,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              '$formattedDate • $formattedTime',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: isDarkMode ? Colors.white38 : Colors.black38,
+                              ),
+                            ),
+                          ],
+                        ),
+                        trailing: IconButton(
+                          icon: Icon(
+                            Icons.delete_outline_rounded,
+                            size: 20,
+                            color: isDarkMode ? Colors.white54 : Colors.black45,
+                          ),
+                          onPressed: () => _removeHistoryItem(index),
+                        ),
+                        onTap: () {
+                          _addNewTab(url: item['url']);
+                          setState(() {
+                            isTabsVisible = false;
+                          });
+                        },
+                      ),
                     ),
-                  ),
-                  trailing: IconButton(
-                    icon: Icon(
-                      Icons.delete_outline,
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
-                    ),
-                    onPressed: () => _removeHistoryItem(index),
-                  ),
-                  onTap: () {
-                    _addNewTab(url: item['url']);
-                    setState(() {
-                      isTabsVisible = false;
-                    });
-                  },
-                ),
-              );
-            },
-          ),
+                  );
+                },
+              ),
         ),
       ],
     );
@@ -3221,15 +3662,22 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   // Add method to remove individual history items
   Future<void> _removeHistoryItem(int index) async {
-    final prefs = await SharedPreferences.getInstance();
-    final history = prefs.getStringList('history') ?? [];
-    
-    if (index >= 0 && index < history.length) {
-      history.removeAt(index);
-      await prefs.setStringList('history', history);
+    if (index < 0 || index >= _loadedHistory.length) return;
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final history = prefs.getStringList('history') ?? [];
+      
+      if (index < history.length) {
+        history.removeAt(index);
+        await prefs.setStringList('history', history);
+      }
+      
       setState(() {
-        _loadedHistory = history.map((e) => Map<String, dynamic>.from(json.decode(e))).toList();
+        _loadedHistory.removeAt(index);
       });
+    } catch (e) {
+      print('Error removing history item: $e');
     }
   }
 
@@ -3248,6 +3696,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           Expanded(
             child: ListView(
               physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.zero, // Remove default padding
               children: [
                 _buildSettingsSection(
                   title: AppLocalizations.of(context)!.customize_browser,
@@ -3368,7 +3817,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.only(left: 16, right: 16, top: 4, bottom: 4),
           child: Text(
             title,
             style: TextStyle(
@@ -3393,7 +3842,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             children: children,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
       ],
     );
   }
@@ -3765,32 +4214,25 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                 );
               });
             },
-            onSubmitted: (url) {
-              _loadUrl(url);
+            onSubmitted: (url) async {
+              await _loadUrl(url);
               _urlFocusNode.unfocus();
             },
           ),
         ),
         IconButton(
           icon: Icon(
-            _urlFocusNode.hasFocus ? Icons.close : Icons.refresh,
-            size: 20,
+            Icons.refresh_rounded,
             color: isDarkMode ? Colors.white70 : Colors.black54,
+            size: 20,
           ),
-          tooltip: _urlFocusNode.hasFocus ? 
-            AppLocalizations.of(context)!.close_search : 
-            AppLocalizations.of(context)!.refresh_page,
-          onPressed: () {
-            if (_urlFocusNode.hasFocus) {
-              _urlFocusNode.unfocus();
-              setState(() {
-                _urlController.text = _formatUrl(_displayUrl);
-              });
-            } else {
-              controller.reload();
+          onPressed: () async {
+            if (controller != null) {
+              await controller.reload();
             }
           },
         ),
+        const SizedBox(width: 8),
       ],
     );
   }
@@ -3926,25 +4368,29 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   void _updateUrl(String url) {
     if (!mounted) return;
     
-    setState(() {
-      _displayUrl = url;
-      _urlController.text = _formatUrl(url);
-      
-      if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-        tabs[currentTabIndex].url = url;
-      }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        _displayUrl = url;
+        if (!_urlFocusNode.hasFocus) {
+          _urlController.text = _formatUrl(url);
+        }
+        
+        if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+          tabs[currentTabIndex].url = url;
+        }
 
-      // Update secure indicator based on URL
-      try {
-        final uri = Uri.parse(url);
-        isSecure = uri.scheme == 'https';
-      } catch (e) {
-        isSecure = false;
-      }
+        // Update secure indicator based on URL
+        try {
+          final uri = Uri.parse(url);
+          isSecure = uri.scheme == 'https';
+        } catch (e) {
+          isSecure = false;
+        }
+      });
+      
+      // Update navigation state whenever URL changes
+      _updateNavigationState();
     });
-    
-    // Update navigation state whenever URL changes
-    _updateNavigationState();
   }
 
   // New helper method to handle page start logic without updating the URL bar/secure indicator
@@ -3955,7 +4401,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     });
     await _updateNavigationState();
     await _optimizationEngine.onPageStartLoad(url);
-    await _saveToHistory(url, await controller.getTitle() ?? 'Untitled');
   }
 
   // Navigation delegate methods
@@ -3976,16 +4421,31 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           return NavigationDecision.prevent;
         }
         
+        // Update URL immediately when navigation starts
+        _updateUrl(request.url);
+        
         // Allow navigation for all other URLs
         return NavigationDecision.navigate;
       },
-      onPageStarted: _handlePageStarted,
+      onPageStarted: (String url) async {
+        if (!mounted) return;
+        setState(() {
+          isLoading = true;
+          // Update URL when page starts loading
+          _displayUrl = url;
+          _urlController.text = _formatUrl(url);
+        });
+        await _updateNavigationState();
+        await _optimizationEngine.onPageStartLoad(url);
+      },
       onPageFinished: (String url) async {
         if (!mounted) return;
         final title = await controller.getTitle() ?? _displayUrl;
-        _updateUrl(url);
         setState(() {
           isLoading = false;
+          // Update URL and title when page finishes loading
+          _displayUrl = url;
+          _urlController.text = _formatUrl(url);
           if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
             tabs[currentTabIndex].title = title;
             tabs[currentTabIndex].url = url;
@@ -3994,6 +4454,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         await _updateNavigationState();
         await _optimizationEngine.onPageFinishLoad(url);
         await _updateFavicon(url);
+        await _saveToHistory(url, title);
       },
       onWebResourceError: (WebResourceError error) {
         if (!mounted) return;
@@ -4103,12 +4564,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         return;
       }
 
-      // Show download starting notification
-      _showNotification(
-        Text(AppLocalizations.of(context)!.download_in_progress),
-        duration: const Duration(seconds: 2),
-      );
-
       setState(() {
         isDownloading = true;
         currentDownloadUrl = url;
@@ -4171,8 +4626,8 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       fileName = fileName.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_');
       
       setState(() {
-        currentFileName = fileName;
-        currentDownloadSize = contentLength;
+        _currentFileName = fileName;
+        _currentDownloadSize = contentLength;
       });
 
       // Always use the system's Download directory
@@ -4224,72 +4679,40 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       
       await sink.close();
       
-      final download = {
-        'fileName': fileName,
+      final downloadData = {
         'url': url,
-        'timestamp': DateTime.now().toIso8601String(),
-        'size': _formatFileSize(contentLength ?? 0),
+        'filename': fileName,
         'path': finalFilePath,
+        'size': received,
+        'timestamp': DateTime.now().toIso8601String(),
+        'mimeType': response.headers.value('content-type') ?? 'application/octet-stream'
       };
 
       final prefs = await SharedPreferences.getInstance();
       final downloadsList = prefs.getStringList('downloads') ?? [];
-      downloadsList.insert(0, json.encode(download));
+      downloadsList.insert(0, json.encode(downloadData));
       await prefs.setStringList('downloads', downloadsList);
 
       setState(() {
-        downloads = downloadsList.map((e) => Map<String, dynamic>.from(json.decode(e))).toList();
+        downloads.insert(0, downloadData);
         isDownloading = false;
         currentDownloadUrl = '';
+        _currentFileName = null;
+        _currentDownloadSize = null;
         downloadProgress = 0.0;
-        currentDownloadSize = null;
-        currentFileName = null;
       });
 
-      // Show download complete notification
       _showNotification(
-        Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.green),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(AppLocalizations.of(context)!.file_saved),
-            ),
-          ],
-        ),
+        Text('${AppLocalizations.of(context)!.download_completed}: $fileName'),
         duration: const Duration(seconds: 4),
-        action: SnackBarAction(
-          label: AppLocalizations.of(context)!.open,
-          onPressed: () async {
-            try {
-              await OpenFile.open(finalFilePath);
-            } catch (e) {
-              _showNotification(
-                Text(AppLocalizations.of(context)!.error_opening_file),
-                duration: const Duration(seconds: 4),
-              );
-            }
-          },
-        ),
       );
 
-      // Trigger media scanner to make file visible
-      const platform = MethodChannel('com.vertex.solar/browser');
-      try {
-        await platform.invokeMethod('scanFile', {'path': finalFilePath});
-        await platform.invokeMethod('refreshMediaStore');
-      } catch (e) {
-        print('Error scanning file: $e');
-      }
-
     } catch (e) {
-      print('Download error: $e');
       setState(() {
         isDownloading = false;
         currentDownloadUrl = '';
-        downloadProgress = 0.0;
-        currentDownloadSize = null;
-        currentFileName = null;
+        _currentFileName = null;
+        _currentDownloadSize = null;
       });
       _showNotification(
         Text(AppLocalizations.of(context)!.download_error.toString().replaceAll('{error}', e.toString())),
@@ -4471,7 +4894,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   void _showDeleteDownloadDialog(int index) {
     final download = downloads[index];
-    final fileName = download['fileName'];
+    final fileName = download['filename'];
     
     showDialog(
       context: context,
@@ -5433,6 +5856,142 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
     Map<Permission, PermissionStatus> statuses = await permissions.request();
     return statuses.values.every((status) => status.isGranted);
+  }
+
+  String _formatTimestamp(DateTime timestamp) {
+    final now = DateTime.now();
+    final difference = now.difference(timestamp);
+
+    if (difference.inSeconds < 60) {
+      return AppLocalizations.of(context)!.just_now;
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}d ago';
+    } else {
+      return DateFormat('MMM d, y').format(timestamp);
+    }
+  }
+
+  Future<void> _openDownloadedFile(Map<String, dynamic> download) async {
+    final filePath = download['path']?.toString();
+    if (filePath == null) {
+      _showNotification(
+        Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                'Cannot open file: path not found',
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+        duration: const Duration(seconds: 4),
+      );
+      return;
+    }
+
+    try {
+      final result = await OpenFile.open(filePath);
+      if (result.type != ResultType.done) {
+        _showNotification(
+          Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.red),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  'Error opening file: ${result.message}',
+                  style: TextStyle(
+                    color: isDarkMode ? Colors.white : Colors.black87,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          duration: const Duration(seconds: 4),
+        );
+      }
+    } catch (e) {
+      _showNotification(
+        Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Text(
+                'Error opening file: $e',
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+        duration: const Duration(seconds: 4),
+      );
+    }
+  }
+
+  String _getFormattedDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+    
+    if (difference.inDays == 0) {
+      return AppLocalizations.of(context)!.today;
+    } else if (difference.inDays == 1) {
+      return AppLocalizations.of(context)!.yesterday;
+    } else if (difference.inDays < 7) {
+      return AppLocalizations.of(context)!.days_ago(difference.inDays);
+    } else if (difference.inDays < 30) {
+      final weeks = (difference.inDays / 7).floor();
+      return AppLocalizations.of(context)!.weeks_ago(weeks);
+    } else {
+      final months = (difference.inDays / 30).floor();
+      return AppLocalizations.of(context)!.months_ago(months);
+    }
+  }
+
+  Future<void> _removeDownload(int index) async {
+    if (index < 0 || index >= downloads.length) return;
+    
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final downloadsList = prefs.getStringList('downloads') ?? [];
+      
+      if (index < downloadsList.length) {
+        downloadsList.removeAt(index);
+        await prefs.setStringList('downloads', downloadsList);
+        
+        setState(() {
+          downloads.removeAt(index);
+        });
+        
+        _showNotification(
+          Text(AppLocalizations.of(context)!.download_removed),
+          duration: const Duration(seconds: 2),
+        );
+      }
+    } catch (e) {
+      print('Error removing download: $e');
+      _showNotification(
+        Text('Error removing download: ${e.toString()}'),
+        duration: const Duration(seconds: 4),
+      );
+    }
   }
 }
 

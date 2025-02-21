@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CustomNotification extends StatelessWidget {
-  final String message;
+  final dynamic message;
   final IconData? icon;
   final Color? iconColor;
   final SnackBarAction? action;
@@ -21,34 +21,60 @@ class CustomNotification extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[900] : Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: isDarkMode ? Colors.grey[900] : Colors.grey[50],
+        borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            spreadRadius: 0,
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Row(
         children: [
           if (icon != null) ...[
-            Icon(icon, color: iconColor ?? Colors.green),
+            Icon(
+              icon,
+              color: iconColor ?? Colors.green,
+              size: 24,
+            ),
             const SizedBox(width: 12),
           ],
           Expanded(
-            child: Text(
-              message,
+            child: DefaultTextStyle(
               style: TextStyle(
                 color: isDarkMode ? Colors.white : Colors.black87,
                 fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+              child: message is Widget ? message as Widget : Text(
+                message.toString(),
+                style: TextStyle(
+                  color: isDarkMode ? Colors.white : Colors.black87,
+                ),
               ),
             ),
           ),
           if (action != null) ...[
             const SizedBox(width: 12),
-            action!,
+            TextButton(
+              onPressed: action!.onPressed,
+              style: TextButton.styleFrom(
+                foregroundColor: isDarkMode ? Colors.blue[200] : Colors.blue,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                minimumSize: const Size(0, 36),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+              child: Text(
+                action!.label,
+                style: TextStyle(
+                  color: isDarkMode ? Colors.blue[200] : Colors.blue,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+            ),
           ],
         ],
       ),

@@ -16,13 +16,13 @@
   "updated": "Solar ब्राउज़र अपडेट हो गया!",
   "version": "संस्करण",
   "flutter_version": "Flutter संस्करण",
-  "software_team": "सॉफ्टवेयर टीम",
-  "@version": {
-    "placeholders": {
-      "version": {
-        "type": "String"
-      }
-    }
+  "photoncore_version": "Photoncore संस्करण",
+  "@photoncore_version": {
+    "description": "Label for Photoncore version in settings"
+  },
+  "engine_version": "इंजन संस्करण",
+  "@engine_version": {
+    "description": "Label for engine version in settings"
   },
   "and": "और",
   "data_collection": "डेटा संग्रह",
@@ -197,5 +197,20 @@
   "download_error": "डाउनलोड त्रुटि: {error}",
   "open_downloads_folder": "डाउनलोड फ़ोल्डर खोलें",
   "file_exists": "फ़ाइल पहले से मौजूद है",
-  "file_saved": "फ़ाइल डाउनलोड में सहेजी गई"
+  "file_saved": "फ़ाइल डाउनलोड में सहेजी गई",
+  "no_tabs_open": "कोई टैब नहीं खुला है",
+  "incognito": "गुप्त मोड",
+  "clear_all": "सभी साफ़ करें",
+  "clear_history": "इतिहास साफ़ करें",
+  "clear_history_confirmation": "क्या आप वाकई ब्राउज़िंग इतिहास साफ़ करना चाहते हैं?",
+  "no_history": "कोई ब्राउज़िंग इतिहास नहीं",
+  "today": "आज",
+  "yesterday": "कल",
+  "days_ago": "{days} दिन पहले",
+  "weeks_ago": "{weeks} सप्ताह पहले",
+  "months_ago": "{months} महीने पहले",
+  "new_incognito_tab": "नया गुप्त टैब",
+  "@new_incognito_tab": {
+    "description": "Label for new incognito tab button"
+  }
 } 

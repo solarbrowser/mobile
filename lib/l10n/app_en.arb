@@ -183,8 +183,13 @@
   },
   "exit_confirmation": "Exit App",
   "flutter_version": "Flutter Version",
-  "@flutter_version": {
-    "description": "Flutter version label"
+  "photoncore_version": "Photoncore Version",
+  "@photoncore_version": {
+    "description": "Label for Photoncore version in settings"
+  },
+  "engine_version": "Engine Version",
+  "@engine_version": {
+    "description": "Label for engine version in settings"
   },
   "software_team": "Software Team",
   "@software_team": {
@@ -251,9 +256,9 @@
   "@incognito_description": {
     "description": "Description of incognito mode features"
   },
-  "error_opening_file": "Error opening file. Please install a suitable app to open this type of file.",
+  "error_opening_file": "Error opening file",
   "@error_opening_file": {
-    "description": "Message shown when there is an error opening a downloaded file"
+    "description": "Error message when a file cannot be opened"
   },
   "download_in_progress": "Download in progress",
   "@download_in_progress": {
@@ -288,5 +293,43 @@
   "file_saved": "File saved to Downloads",
   "@file_saved": {
     "description": "Message shown when a file is successfully saved"
+  },
+  "no_tabs_open": "No tabs open",
+  "incognito": "Incognito",
+  "clear_all": "Clear All",
+  "clear_history": "Clear History",
+  "clear_history_confirmation": "Are you sure you want to clear your browsing history?",
+  "no_history": "No browsing history",
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "days_ago": "{days} days ago",
+  "@days_ago": {
+    "description": "Shows how many days ago something happened",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "weeks_ago": "{weeks} weeks ago",
+  "@weeks_ago": {
+    "description": "Shows how many weeks ago something happened",
+    "placeholders": {
+      "weeks": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "months_ago": "{months} months ago",
+  "@months_ago": {
+    "description": "Shows how many months ago something happened",
+    "placeholders": {
+      "months": {
+        "type": "int",
+        "example": "3"
+      }
+    }
   }
 } 

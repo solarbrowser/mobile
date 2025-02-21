@@ -425,6 +425,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get flutter_version => 'Flutter 버전';
 
   @override
+  String get photoncore_version => 'Photoncore Version';
+
+  @override
+  String get engine_version => 'Engine Version';
+
+  @override
   String get software_team => '소프트웨어 팀';
 
   @override
@@ -470,7 +476,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
 
   @override
-  String get error_opening_file => 'Error opening file. Please install a suitable app to open this type of file.';
+  String get error_opening_file => 'Error opening file';
 
   @override
   String get download_in_progress => 'Download in progress';
@@ -494,4 +500,43 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get file_saved => 'File saved to Downloads';
+
+  @override
+  String get no_tabs_open => 'No tabs open';
+
+  @override
+  String get incognito => 'Incognito';
+
+  @override
+  String get clear_all => 'Clear All';
+
+  @override
+  String get clear_history => 'Clear History';
+
+  @override
+  String get clear_history_confirmation => 'Are you sure you want to clear your browsing history?';
+
+  @override
+  String get no_history => 'No browsing history';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get yesterday => 'Yesterday';
+
+  @override
+  String days_ago(int days) {
+    return '$days days ago';
+  }
+
+  @override
+  String weeks_ago(int weeks) {
+    return '$weeks weeks ago';
+  }
+
+  @override
+  String months_ago(int months) {
+    return '$months months ago';
+  }
 }

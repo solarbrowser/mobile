@@ -169,6 +169,10 @@
   "whats_new": "ما الجديد",
   "exit_confirmation": "الخروج من التطبيق",
   "flutter_version": "إصدار Flutter",
+  "engine_version": "إصدار المحرك",
+  "@engine_version": {
+    "description": "Label for engine version in settings"
+  },
   "software_team": "فريق البرمجة",
   "download_image": "تحميل الصورة",
   "share_image": "مشاركة الصورة",
@@ -190,5 +194,20 @@
   "download_error": "خطأ في التنزيل: {error}",
   "open_downloads_folder": "فتح مجلد التنزيلات",
   "file_exists": "الملف موجود بالفعل",
-  "file_saved": "تم حفظ الملف في التنزيلات"
+  "file_saved": "تم حفظ الملف في التنزيلات",
+  "no_tabs_open": "لا توجد علامات تبويب مفتوحة",
+  "incognito": "التصفح المتخفي",
+  "clear_all": "مسح الكل",
+  "clear_history": "مسح السجل",
+  "clear_history_confirmation": "هل أنت متأكد أنك تريد مسح سجل التصفح؟",
+  "no_history": "لا يوجد سجل تصفح",
+  "today": "اليوم",
+  "yesterday": "الأمس",
+  "days_ago": "منذ {days} يوم",
+  "weeks_ago": "منذ {weeks} أسبوع",
+  "months_ago": "منذ {months} شهر",
+  "new_incognito_tab": "علامة تبويب متخفية جديدة",
+  "@new_incognito_tab": {
+    "description": "Label for new incognito tab button"
+  }
 } 

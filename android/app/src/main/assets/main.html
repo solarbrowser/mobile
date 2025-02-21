@@ -47,40 +47,6 @@
             background: rgba(0, 0, 0, 0.3);
         }
 
-        .weather {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 50px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .weather-icon {
-            font-size: 32px;
-            margin-right: 12px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .weather-info {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .temperature {
-            font-size: 24px;
-            font-weight: 600;
-        }
-
-        .location {
-            font-size: 14px;
-            opacity: 0.8;
-        }
-
         .search-container {
             width: 90%;
             max-width: 584px;
@@ -121,62 +87,23 @@
         .date {
             font-size: 20px;
             opacity: 0.9;
-            margin-bottom: 16px;
+            margin-bottom: 8px;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
-        .weather-details {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        .weather-text {
+            font-size: 16px;
+            opacity: 0.9;
             margin-bottom: 40px;
             text-align: center;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 16px 32px;
-            border-radius: 16px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            width: 90%;
-        }
-
-        .weather-main {
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
             display: flex;
             align-items: center;
-            margin-bottom: 8px;
+            justify-content: center;
+            gap: 4px;
         }
 
-        .weather-main-icon {
-            font-size: 48px;
-            margin-right: 16px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .weather-main-temp {
-            font-size: 36px;
-            font-weight: 300;
-        }
-
-        .weather-description {
-            font-size: 18px;
-            margin-bottom: 12px;
-            text-transform: capitalize;
-        }
-
-        .weather-extra {
-            display: flex;
-            gap: 24px;
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
-        .weather-extra-item {
-            display: flex;
-            align-items: center;
-        }
-
-        .weather-extra-icon {
-            margin-right: 6px;
+        .weather-icon {
             font-size: 16px;
         }
 
@@ -187,26 +114,8 @@
             .date {
                 font-size: 18px;
             }
-            .weather {
-                padding: 8px 16px;
-            }
-            .weather-icon {
-                font-size: 24px;
-            }
-            .temperature {
-                font-size: 20px;
-            }
-            .weather-main-icon {
-                font-size: 36px;
-            }
-            .weather-main-temp {
-                font-size: 28px;
-            }
-            .weather-description {
-                font-size: 16px;
-            }
-            .weather-details {
-                padding: 12px 24px;
+            .weather-text {
+                font-size: 14px;
             }
         }
     </style>
@@ -215,33 +124,13 @@
     <div class="background"></div>
     <div class="blur-overlay"></div>
     
-    <div class="weather">
-        <div class="weather-icon">🌡️</div>
-        <div class="weather-info">
-            <div class="temperature">--°C</div>
-            <div class="location">Loading...</div>
-        </div>
-    </div>
-
     <div class="time">--:--</div>
     <div class="date">Loading...</div>
-
-    <div class="weather-details">
-        <div class="weather-main">
-            <div class="weather-main-icon">⛅</div>
-            <div class="weather-main-temp">--°C</div>
-        </div>
-        <div class="weather-description">Loading weather...</div>
-        <div class="weather-extra">
-            <div class="weather-extra-item">
-                <span class="weather-extra-icon">💧</span>
-                <span class="humidity">--%</span>
-            </div>
-            <div class="weather-extra-item">
-                <span class="weather-extra-icon">💨</span>
-                <span class="wind">-- km/h</span>
-            </div>
-        </div>
+    <div class="weather-text">
+        <span class="weather-icon">⛅</span>
+        <span class="temperature">--°C</span>
+        •
+        <span class="weather-description">Loading weather...</span>
     </div>
 
     <div class="search-container">
@@ -281,26 +170,17 @@
             document.querySelector('.date').textContent = date;
         }
 
-        // Weather icons mapping with more detailed icons
+        // Weather icons mapping
         const weatherIcons = {
-            '01d': '☀️', // Clear sky day
-            '01n': '🌙', // Clear sky night
-            '02d': '⛅', // Few clouds day
-            '02n': '☁️', // Few clouds night
-            '03d': '☁️', // Scattered clouds
-            '03n': '☁️',
-            '04d': '☁️', // Broken clouds
-            '04n': '☁️',
-            '09d': '🌧️', // Shower rain
-            '09n': '🌧️',
-            '10d': '🌦️', // Rain day
-            '10n': '🌧️', // Rain night
-            '11d': '⛈️', // Thunderstorm
-            '11n': '⛈️',
-            '13d': '🌨️', // Snow
-            '13n': '🌨️',
-            '50d': '🌫️', // Mist
-            '50n': '🌫️'
+            'Clear': '☀️',
+            'Clouds': '☁️',
+            'Rain': '🌧️',
+            'Drizzle': '🌦️',
+            'Thunderstorm': '⛈️',
+            'Snow': '🌨️',
+            'Mist': '🌫️',
+            'Fog': '🌫️',
+            'Haze': '🌫️'
         };
 
         // Weather descriptions mapping
@@ -330,38 +210,24 @@
                 });
 
                 const { latitude, longitude } = position.coords;
-                const apiKey = '89ac09c34c34e481c3c56c7ab5dd376c'; // Free OpenWeatherMap API key
+                const apiKey = '89ac09c34c34e481c3c56c7ab5dd376c';
                 const response = await fetch(
                     `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${apiKey}`
                 );
                 
                 const data = await response.json();
                 const temp = Math.round(data.main.temp);
-                const icon = data.weather[0].icon;
-                const location = data.name;
-                const description = data.weather[0].main;
-                const humidity = data.main.humidity;
-                const windSpeed = Math.round(data.wind.speed * 3.6); // Convert m/s to km/h
-                
-                // Update top-right weather widget
-                document.querySelector('.weather .temperature').textContent = `${temp}°C`;
-                document.querySelector('.weather .location').textContent = location;
-                document.querySelector('.weather .weather-icon').textContent = weatherIcons[icon] || '🌡️';
+                const mainWeather = data.weather[0].main;
+                const icon = weatherIcons[mainWeather] || '🌡️';
+                const description = weatherDescriptions[mainWeather] || mainWeather;
 
-                // Update main weather display
-                document.querySelector('.weather-main-icon').textContent = weatherIcons[icon] || '🌡️';
-                document.querySelector('.weather-main-temp').textContent = `${temp}°C`;
-                document.querySelector('.weather-description').textContent = 
-                    weatherDescriptions[description] || description;
-                document.querySelector('.humidity').textContent = `${humidity}%`;
-                document.querySelector('.wind').textContent = `${windSpeed} km/h`;
-
-                // Show weather details
-                document.querySelector('.weather-details').style.display = 'flex';
+                document.querySelector('.weather-icon').textContent = icon;
+                document.querySelector('.temperature').textContent = `${temp}°C`;
+                document.querySelector('.weather-description').textContent = description;
+                document.querySelector('.weather-text').style.opacity = '0.9';
             } catch (error) {
                 console.error('Weather error:', error);
-                document.querySelector('.weather').style.display = 'none';
-                document.querySelector('.weather-details').style.display = 'none';
+                document.querySelector('.weather-text').style.opacity = '0';
             }
         }
 
@@ -370,10 +236,18 @@
             if (e.key === 'Enter') {
                 const query = this.value.trim();
                 if (query) {
-                    // The app will handle the search using its configured search engine
-                    window.location.href = query.includes('.') && !query.includes(' ') 
-                        ? (query.startsWith('http') ? query : `https://${query}`)
-                        : `search://${query}`;
+                    // Check if it's a URL or a search query
+                    const isUrl = query.includes('.') && !query.includes(' ') && 
+                                !query.includes('?') && !query.includes('&') &&
+                                !query.includes('%') && !query.includes('+');
+                    
+                    if (isUrl) {
+                        // If it's a URL, add https:// if needed
+                        window.location.href = query.startsWith('http') ? query : `https://${query}`;
+                    } else {
+                        // If it's a search query, use the search:// protocol
+                        window.location.href = `search://${encodeURIComponent(query)}`;
+                    }
                 }
             }
         });

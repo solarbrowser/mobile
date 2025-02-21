@@ -169,8 +169,14 @@
   "whats_new": "Was ist neu",
   "exit_confirmation": "App beenden",
   "flutter_version": "Flutter Version",
-  "software_team": "Software-Team",
-  "download_image": "Bild herunterladen",
+  "photoncore_version": "Photoncore-Version",
+  "@photoncore_version": {
+    "description": "Label for Photoncore version in settings"
+  },
+  "engine_version": "Engine-Version",
+  "@engine_version": {
+    "description": "Label for engine version in settings"
+  },
   "share_image": "Bild teilen",
   "open_in_new_tab": "In neuem Tab öffnen",
   "downloading": "Wird heruntergeladen...",
@@ -190,5 +196,20 @@
   "download_error": "Download-Fehler: {error}",
   "open_downloads_folder": "Download-Ordner öffnen",
   "file_exists": "Datei existiert bereits",
-  "file_saved": "Datei im Download-Ordner gespeichert"
+  "file_saved": "Datei im Download-Ordner gespeichert",
+  "no_tabs_open": "Keine Tabs geöffnet",
+  "incognito": "Inkognito",
+  "clear_all": "Alles löschen",
+  "clear_history": "Verlauf löschen",
+  "clear_history_confirmation": "Möchten Sie den Browserverlauf wirklich löschen?",
+  "no_history": "Kein Browserverlauf",
+  "today": "Heute",
+  "yesterday": "Gestern",
+  "days_ago": "vor {days} Tagen",
+  "weeks_ago": "vor {weeks} Wochen",
+  "months_ago": "vor {months} Monaten",
+  "new_incognito_tab": "Neuer Inkognito-Tab",
+  "@new_incognito_tab": {
+    "description": "Label for new incognito tab button"
+  }
 } 

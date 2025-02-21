@@ -169,8 +169,14 @@
   "whats_new": "Novità",
   "exit_confirmation": "Esci dall'app",
   "flutter_version": "Versione Flutter",
-  "software_team": "Team di Sviluppo",
-  "download_image": "Scarica immagine",
+  "photoncore_version": "Versione Photoncore",
+  "@photoncore_version": {
+    "description": "Label for Photoncore version in settings"
+  },
+  "engine_version": "Versione del motore",
+  "@engine_version": {
+    "description": "Label for engine version in settings"
+  },
   "share_image": "Condividi immagine",
   "open_in_new_tab": "Apri in nuova scheda",
   "downloading": "Download in corso...",
@@ -190,5 +196,20 @@
   "download_error": "Errore di download: {error}",
   "open_downloads_folder": "Apri cartella download",
   "file_exists": "Il file esiste già",
-  "file_saved": "File salvato in Download"
+  "file_saved": "File salvato in Download",
+  "no_tabs_open": "Nessuna scheda aperta",
+  "incognito": "Incognito",
+  "clear_all": "Cancella tutto",
+  "clear_history": "Cancella cronologia",
+  "clear_history_confirmation": "Sei sicuro di voler cancellare la cronologia di navigazione?",
+  "no_history": "Nessuna cronologia di navigazione",
+  "today": "Oggi",
+  "yesterday": "Ieri",
+  "days_ago": "{days} giorni fa",
+  "weeks_ago": "{weeks} settimane fa",
+  "months_ago": "{months} mesi fa",
+  "new_incognito_tab": "Nuova scheda in incognito",
+  "@new_incognito_tab": {
+    "description": "Label for new incognito tab button"
+  }
 } 

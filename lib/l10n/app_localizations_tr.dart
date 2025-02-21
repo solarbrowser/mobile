@@ -425,10 +425,16 @@ class AppLocalizationsTr extends AppLocalizations {
   String get flutter_version => 'Flutter Sürümü';
 
   @override
-  String get software_team => 'Yazılım Ekibi';
+  String get photoncore_version => 'Photoncore Sürümü';
 
   @override
-  String get download_image => 'Resmi İndir';
+  String get engine_version => 'Motor Sürümü';
+
+  @override
+  String get software_team => 'Software Team';
+
+  @override
+  String get download_image => 'Download Image';
 
   @override
   String get share_image => 'Resmi Paylaş';
@@ -461,7 +467,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get storage_permission_denied => 'Dosyaları indirmek için depolama izni gerekli';
 
   @override
-  String get new_incognito_tab => 'New Incognito Tab';
+  String get new_incognito_tab => 'Yeni gizli sekme';
 
   @override
   String get incognito_mode => 'Incognito Mode';
@@ -494,4 +500,43 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get file_saved => 'Dosya İndirilenler\'e kaydedildi';
+
+  @override
+  String get no_tabs_open => 'Açık sekme yok';
+
+  @override
+  String get incognito => 'Gizli mod';
+
+  @override
+  String get clear_all => 'Tümünü temizle';
+
+  @override
+  String get clear_history => 'Geçmişi temizle';
+
+  @override
+  String get clear_history_confirmation => 'Tarama geçmişini silmek istediğinizden emin misiniz?';
+
+  @override
+  String get no_history => 'Tarama geçmişi yok';
+
+  @override
+  String get today => 'Bugün';
+
+  @override
+  String get yesterday => 'Dün';
+
+  @override
+  String days_ago(int days) {
+    return '$days gün önce';
+  }
+
+  @override
+  String weeks_ago(int weeks) {
+    return '$weeks hafta önce';
+  }
+
+  @override
+  String months_ago(int months) {
+    return '$months ay önce';
+  }
 }

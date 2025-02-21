@@ -425,10 +425,16 @@ class AppLocalizationsIt extends AppLocalizations {
   String get flutter_version => 'Versione Flutter';
 
   @override
-  String get software_team => 'Team di Sviluppo';
+  String get photoncore_version => 'Versione Photoncore';
 
   @override
-  String get download_image => 'Scarica immagine';
+  String get engine_version => 'Versione del motore';
+
+  @override
+  String get software_team => 'Software Team';
+
+  @override
+  String get download_image => 'Download Image';
 
   @override
   String get share_image => 'Condividi immagine';
@@ -461,7 +467,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get storage_permission_denied => 'L\'autorizzazione di archiviazione è necessaria per scaricare i file';
 
   @override
-  String get new_incognito_tab => 'New Incognito Tab';
+  String get new_incognito_tab => 'Nuova scheda in incognito';
 
   @override
   String get incognito_mode => 'Incognito Mode';
@@ -494,4 +500,43 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get file_saved => 'File salvato in Download';
+
+  @override
+  String get no_tabs_open => 'Nessuna scheda aperta';
+
+  @override
+  String get incognito => 'Incognito';
+
+  @override
+  String get clear_all => 'Cancella tutto';
+
+  @override
+  String get clear_history => 'Cancella cronologia';
+
+  @override
+  String get clear_history_confirmation => 'Sei sicuro di voler cancellare la cronologia di navigazione?';
+
+  @override
+  String get no_history => 'Nessuna cronologia di navigazione';
+
+  @override
+  String get today => 'Oggi';
+
+  @override
+  String get yesterday => 'Ieri';
+
+  @override
+  String days_ago(int days) {
+    return '$days giorni fa';
+  }
+
+  @override
+  String weeks_ago(int weeks) {
+    return '$weeks settimane fa';
+  }
+
+  @override
+  String months_ago(int months) {
+    return '$months mesi fa';
+  }
 }

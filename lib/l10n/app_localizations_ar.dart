@@ -425,6 +425,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get flutter_version => 'إصدار Flutter';
 
   @override
+  String get photoncore_version => 'Photoncore Version';
+
+  @override
+  String get engine_version => 'إصدار المحرك';
+
+  @override
   String get software_team => 'فريق البرمجة';
 
   @override
@@ -461,7 +467,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get storage_permission_denied => 'إذن التخزين مطلوب لتنزيل الملفات';
 
   @override
-  String get new_incognito_tab => 'New Incognito Tab';
+  String get new_incognito_tab => 'علامة تبويب متخفية جديدة';
 
   @override
   String get incognito_mode => 'Incognito Mode';
@@ -494,4 +500,43 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get file_saved => 'تم حفظ الملف في التنزيلات';
+
+  @override
+  String get no_tabs_open => 'لا توجد علامات تبويب مفتوحة';
+
+  @override
+  String get incognito => 'التصفح المتخفي';
+
+  @override
+  String get clear_all => 'مسح الكل';
+
+  @override
+  String get clear_history => 'مسح السجل';
+
+  @override
+  String get clear_history_confirmation => 'هل أنت متأكد أنك تريد مسح سجل التصفح؟';
+
+  @override
+  String get no_history => 'لا يوجد سجل تصفح';
+
+  @override
+  String get today => 'اليوم';
+
+  @override
+  String get yesterday => 'الأمس';
+
+  @override
+  String days_ago(int days) {
+    return 'منذ $days يوم';
+  }
+
+  @override
+  String weeks_ago(int weeks) {
+    return 'منذ $weeks أسبوع';
+  }
+
+  @override
+  String months_ago(int months) {
+    return 'منذ $months شهر';
+  }
 }

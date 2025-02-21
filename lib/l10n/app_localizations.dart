@@ -927,11 +927,23 @@ abstract class AppLocalizations {
   /// **'Exit App'**
   String get exit_confirmation;
 
-  /// Flutter version label
+  /// No description provided for @flutter_version.
   ///
   /// In en, this message translates to:
   /// **'Flutter Version'**
   String get flutter_version;
+
+  /// Label for Photoncore version in settings
+  ///
+  /// In en, this message translates to:
+  /// **'Photoncore Version'**
+  String get photoncore_version;
+
+  /// Label for engine version in settings
+  ///
+  /// In en, this message translates to:
+  /// **'Engine Version'**
+  String get engine_version;
 
   /// Software team label
   ///
@@ -1023,10 +1035,10 @@ abstract class AppLocalizations {
   /// **'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally'**
   String get incognito_description;
 
-  /// Message shown when there is an error opening a downloaded file
+  /// Error message when a file cannot be opened
   ///
   /// In en, this message translates to:
-  /// **'Error opening file. Please install a suitable app to open this type of file.'**
+  /// **'Error opening file'**
   String get error_opening_file;
 
   /// Message shown when a download is in progress
@@ -1070,6 +1082,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'File saved to Downloads'**
   String get file_saved;
+
+  /// No description provided for @no_tabs_open.
+  ///
+  /// In en, this message translates to:
+  /// **'No tabs open'**
+  String get no_tabs_open;
+
+  /// No description provided for @incognito.
+  ///
+  /// In en, this message translates to:
+  /// **'Incognito'**
+  String get incognito;
+
+  /// No description provided for @clear_all.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All'**
+  String get clear_all;
+
+  /// No description provided for @clear_history.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear History'**
+  String get clear_history;
+
+  /// No description provided for @clear_history_confirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to clear your browsing history?'**
+  String get clear_history_confirmation;
+
+  /// No description provided for @no_history.
+  ///
+  /// In en, this message translates to:
+  /// **'No browsing history'**
+  String get no_history;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
+  /// Shows how many days ago something happened
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days ago'**
+  String days_ago(int days);
+
+  /// Shows how many weeks ago something happened
+  ///
+  /// In en, this message translates to:
+  /// **'{weeks} weeks ago'**
+  String weeks_ago(int weeks);
+
+  /// Shows how many months ago something happened
+  ///
+  /// In en, this message translates to:
+  /// **'{months} months ago'**
+  String months_ago(int months);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

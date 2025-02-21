@@ -169,7 +169,14 @@
   "whats_new": "新功能",
   "exit_confirmation": "退出应用",
   "flutter_version": "Flutter 版本",
-  "software_team": "软件团队",
+  "photoncore_version": "Photoncore 版本",
+  "@photoncore_version": {
+    "description": "Label for Photoncore version in settings"
+  },
+  "engine_version": "引擎版本",
+  "@engine_version": {
+    "description": "Label for engine version in settings"
+  },
   "download_image": "下载图片",
   "share_image": "分享图片",
   "open_in_new_tab": "在新标签页中打开",
@@ -180,5 +187,9 @@
   "press_back_to_exit": "再按一次退出",
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
+  },
+  "new_incognito_tab": "新建隐身标签页",
+  "@new_incognito_tab": {
+    "description": "Label for new incognito tab button"
   }
 } 

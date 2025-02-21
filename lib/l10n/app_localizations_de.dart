@@ -425,10 +425,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get flutter_version => 'Flutter Version';
 
   @override
-  String get software_team => 'Software-Team';
+  String get photoncore_version => 'Photoncore-Version';
 
   @override
-  String get download_image => 'Bild herunterladen';
+  String get engine_version => 'Engine-Version';
+
+  @override
+  String get software_team => 'Software Team';
+
+  @override
+  String get download_image => 'Download Image';
 
   @override
   String get share_image => 'Bild teilen';
@@ -461,7 +467,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get storage_permission_denied => 'Speicherberechtigung ist zum Herunterladen von Dateien erforderlich';
 
   @override
-  String get new_incognito_tab => 'New Incognito Tab';
+  String get new_incognito_tab => 'Neuer Inkognito-Tab';
 
   @override
   String get incognito_mode => 'Incognito Mode';
@@ -494,4 +500,43 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get file_saved => 'Datei im Download-Ordner gespeichert';
+
+  @override
+  String get no_tabs_open => 'Keine Tabs geöffnet';
+
+  @override
+  String get incognito => 'Inkognito';
+
+  @override
+  String get clear_all => 'Alles löschen';
+
+  @override
+  String get clear_history => 'Verlauf löschen';
+
+  @override
+  String get clear_history_confirmation => 'Möchten Sie den Browserverlauf wirklich löschen?';
+
+  @override
+  String get no_history => 'Kein Browserverlauf';
+
+  @override
+  String get today => 'Heute';
+
+  @override
+  String get yesterday => 'Gestern';
+
+  @override
+  String days_ago(int days) {
+    return 'vor $days Tagen';
+  }
+
+  @override
+  String weeks_ago(int weeks) {
+    return 'vor $weeks Wochen';
+  }
+
+  @override
+  String months_ago(int months) {
+    return 'vor $months Monaten';
+  }
 }

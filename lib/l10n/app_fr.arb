@@ -169,6 +169,10 @@
   "whats_new": "Nouveautés",
   "exit_confirmation": "Quitter l'application",
   "flutter_version": "Version de Flutter",
+  "engine_version": "Version du moteur",
+  "@engine_version": {
+    "description": "Label for engine version in settings"
+  },
   "software_team": "Équipe Logicielle",
   "download_image": "Télécharger l'image",
   "share_image": "Partager l'image",
@@ -190,5 +194,20 @@
   "download_error": "Erreur de téléchargement : {error}",
   "open_downloads_folder": "Ouvrir le dossier des téléchargements",
   "file_exists": "Le fichier existe déjà",
-  "file_saved": "Fichier enregistré dans Téléchargements"
+  "file_saved": "Fichier enregistré dans Téléchargements",
+  "no_tabs_open": "Aucun onglet ouvert",
+  "incognito": "Navigation privée",
+  "clear_all": "Tout effacer",
+  "clear_history": "Effacer l'historique",
+  "clear_history_confirmation": "Voulez-vous vraiment effacer l'historique de navigation ?",
+  "no_history": "Aucun historique de navigation",
+  "today": "Aujourd'hui",
+  "yesterday": "Hier",
+  "days_ago": "il y a {days} jours",
+  "weeks_ago": "il y a {weeks} semaines",
+  "months_ago": "il y a {months} mois",
+  "new_incognito_tab": "Nouvel onglet de navigation privée",
+  "@new_incognito_tab": {
+    "description": "Label for new incognito tab button"
+  }
 } 

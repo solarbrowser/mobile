@@ -425,7 +425,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get flutter_version => 'Flutter संस्करण';
 
   @override
-  String get software_team => 'सॉफ्टवेयर टीम';
+  String get photoncore_version => 'Photoncore संस्करण';
+
+  @override
+  String get engine_version => 'इंजन संस्करण';
+
+  @override
+  String get software_team => 'Software Team';
 
   @override
   String get download_image => 'छवि डाउनलोड करें';
@@ -461,7 +467,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get storage_permission_denied => 'फ़ाइलें डाउनलोड करने के लिए स्टोरेज अनुमति आवश्यक है';
 
   @override
-  String get new_incognito_tab => 'New Incognito Tab';
+  String get new_incognito_tab => 'नया गुप्त टैब';
 
   @override
   String get incognito_mode => 'Incognito Mode';
@@ -494,4 +500,43 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get file_saved => 'फ़ाइल डाउनलोड में सहेजी गई';
+
+  @override
+  String get no_tabs_open => 'कोई टैब नहीं खुला है';
+
+  @override
+  String get incognito => 'गुप्त मोड';
+
+  @override
+  String get clear_all => 'सभी साफ़ करें';
+
+  @override
+  String get clear_history => 'इतिहास साफ़ करें';
+
+  @override
+  String get clear_history_confirmation => 'क्या आप वाकई ब्राउज़िंग इतिहास साफ़ करना चाहते हैं?';
+
+  @override
+  String get no_history => 'कोई ब्राउज़िंग इतिहास नहीं';
+
+  @override
+  String get today => 'आज';
+
+  @override
+  String get yesterday => 'कल';
+
+  @override
+  String days_ago(int days) {
+    return '$days दिन पहले';
+  }
+
+  @override
+  String weeks_ago(int weeks) {
+    return '$weeks सप्ताह पहले';
+  }
+
+  @override
+  String months_ago(int months) {
+    return '$months महीने पहले';
+  }
 }

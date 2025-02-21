@@ -425,7 +425,13 @@ class AppLocalizationsPt extends AppLocalizations {
   String get flutter_version => 'Versão do Flutter';
 
   @override
-  String get software_team => 'Equipe de Software';
+  String get photoncore_version => 'Versão do Photoncore';
+
+  @override
+  String get engine_version => 'Versão do motor';
+
+  @override
+  String get software_team => 'Software Team';
 
   @override
   String get download_image => 'Baixar imagem';
@@ -461,7 +467,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get storage_permission_denied => 'A permissão de armazenamento é necessária para baixar arquivos';
 
   @override
-  String get new_incognito_tab => 'New Incognito Tab';
+  String get new_incognito_tab => 'Nova aba anônima';
 
   @override
   String get incognito_mode => 'Incognito Mode';
@@ -494,4 +500,43 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get file_saved => 'Arquivo salvo em Downloads';
+
+  @override
+  String get no_tabs_open => 'Nenhuma aba aberta';
+
+  @override
+  String get incognito => 'Navegação anônima';
+
+  @override
+  String get clear_all => 'Limpar tudo';
+
+  @override
+  String get clear_history => 'Limpar histórico';
+
+  @override
+  String get clear_history_confirmation => 'Tem certeza que deseja limpar o histórico de navegação?';
+
+  @override
+  String get no_history => 'Nenhum histórico de navegação';
+
+  @override
+  String get today => 'Hoje';
+
+  @override
+  String get yesterday => 'Ontem';
+
+  @override
+  String days_ago(int days) {
+    return 'há $days dias';
+  }
+
+  @override
+  String weeks_ago(int weeks) {
+    return 'há $weeks semanas';
+  }
+
+  @override
+  String months_ago(int months) {
+    return 'há $months meses';
+  }
 }
