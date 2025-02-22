@@ -21,7 +21,7 @@
   "@just_now": {
     "description": "Time indicator for events that just happened"
   },
-  "updated": "Solar Browser Updated!",
+  "updated": "Solar Updated!",
   "version": "Version {version}",
   "@version": {
     "placeholders": {
@@ -57,7 +57,7 @@
   "history": "History",
   "bookmarks": "Bookmarks",
   "search_in_page": "Search in page",
-  "app_name": "Solar Browser",
+  "app_name": "Solar",
   "@app_name": {
     "description": "The name of the application"
   },
@@ -232,7 +232,11 @@
   "@storage_permission_required": {
     "description": "Title for storage permission request"
   },
-  "storage_permission_description": "Solar Browser needs storage permission to download files and save them to your device. This allows you to access your downloads later.",
+  "storage_permission_granted": "Storage Permission Granted",
+  "@storage_permission_granted": {
+    "description": "Title shown when storage permission is granted"
+  },
+  "storage_permission_description": "Solar needs storage permission to download files and save them to your device. This allows you to access your downloads later.",
   "@storage_permission_description": {
     "description": "Description explaining why storage permission is needed"
   },

@@ -12,7 +12,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get welcomeToSolar => 'Solar\'a Hoş Geldiniz';
 
   @override
-  String get welcomeDescription => 'Modern, hızlı ve güvenli bir tarayıcı';
+  String get welcomeDescription => 'Modern, hızlı ve güvenli';
 
   @override
   String get termsOfService => 'Devam ederek, Kullanım Koşullarımızı ve Gizlilik Politikamızı kabul etmiş olursunuz';
@@ -51,7 +51,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get just_now => 'az önce';
 
   @override
-  String get updated => 'Solar Browser Güncellendi!';
+  String get updated => 'Solar Güncellendi!';
 
   @override
   String version(String version) {
@@ -116,7 +116,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get terms_of_use => 'Kullanım Koşulları';
 
   @override
-  String get customize_browser => 'Tarayıcıyı Özelleştir';
+  String get customize_browser => 'Özelleştir';
 
   @override
   String get learn_more => 'Daha Fazla Bilgi';
@@ -134,7 +134,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get search_in_page => 'Sayfada ara';
 
   @override
-  String get app_name => 'Solar Browser';
+  String get app_name => 'Solar';
 
   @override
   String get search_or_enter_address => 'Arama yapın veya adres girin';
@@ -146,7 +146,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get change_location => 'Konumu Değiştir';
 
   @override
-  String get clear_browser_data => 'Tarayıcı Verilerini Temizle';
+  String get clear_browser_data => 'Verileri Temizle';
 
   @override
   String get browsing_history => 'Gezinme Geçmişi';
@@ -173,7 +173,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get close => 'Kapat';
 
   @override
-  String get browser_data_cleared => 'Tarayıcı verileri temizlendi';
+  String get browser_data_cleared => 'Veriler temizlendi';
 
   @override
   String get no_downloads => 'Henüz indirme yok';
@@ -251,7 +251,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get more => 'Daha Fazla';
 
   @override
-  String get reset_browser => 'Tarayıcıyı Sıfırla';
+  String get reset_browser => 'Sıfırla';
 
   @override
   String get reset_browser_confirm => 'Bu işlem geçmiş, yer imleri ve ayarlar dahil tüm verilerinizi temizleyecektir. Bu işlem geri alınamaz.';
@@ -260,7 +260,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get reset => 'Sıfırla';
 
   @override
-  String get reset_complete => 'Tarayıcı sıfırlandı';
+  String get reset_complete => 'Sıfırlandı';
 
   @override
   String get permission_denied => 'Depolama izni reddedildi';
@@ -458,7 +458,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get storage_permission_required => 'Depolama izni gerekli';
 
   @override
-  String get storage_permission_description => 'Solar Browser needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
+  String get storage_permission_granted => 'Storage Permission Granted';
+
+  @override
+  String get storage_permission_description => 'Solar needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
 
   @override
   String get grant_permission => 'Grant Permission';

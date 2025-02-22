@@ -458,7 +458,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get storage_permission_required => 'Storage Permission Required';
 
   @override
-  String get storage_permission_description => 'Solar Browser needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
+  String get storage_permission_granted => 'Storage Permission Granted';
+
+  @override
+  String get storage_permission_description => 'Solar needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
 
   @override
   String get grant_permission => 'Grant Permission';

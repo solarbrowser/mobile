@@ -51,7 +51,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get just_now => 'ahora mismo';
 
   @override
-  String get updated => '¡Solar Browser actualizado!';
+  String get updated => '¡Solar actualizado!';
 
   @override
   String version(String version) {
@@ -134,7 +134,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get search_in_page => 'Buscar en la página';
 
   @override
-  String get app_name => 'Solar Browser';
+  String get app_name => 'Solar';
 
   @override
   String get search_or_enter_address => 'Buscar o introducir dirección';
@@ -458,7 +458,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get storage_permission_required => 'Se requiere permiso de almacenamiento';
 
   @override
-  String get storage_permission_description => 'Solar Browser needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
+  String get storage_permission_granted => 'Storage Permission Granted';
+
+  @override
+  String get storage_permission_description => 'Solar needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
 
   @override
   String get grant_permission => 'Grant Permission';

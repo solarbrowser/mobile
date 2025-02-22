@@ -12,7 +12,7 @@
   "back": "戻る",
   "getStarted": "始める",
   "continueText": "続行",
-  "updated": "Solar Browser がアップデートされました！",
+  "updated": "Solar がアップデートされました！",
   "version": "バージョン {version}",
   "@version": {
     "placeholders": {
@@ -46,7 +46,7 @@
   "history": "履歴",
   "bookmarks": "ブックマーク",
   "search_in_page": "ページ内検索",
-  "app_name": "Solar Browser",
+  "app_name": "Solar",
   "search_or_enter_address": "検索またはアドレスを入力",
   "current_location": "現在の場所",
   "change_location": "場所を変更",

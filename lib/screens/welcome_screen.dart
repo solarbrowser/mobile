@@ -8,6 +8,9 @@ import 'update_screen.dart';
 import 'package:simple_animations/simple_animations.dart';
 import 'package:supercharged/supercharged.dart';
 import 'browser_screen.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:app_settings/app_settings.dart';
 
 class WelcomeScreen extends StatefulWidget {
   final Function(String) onLocaleChange;

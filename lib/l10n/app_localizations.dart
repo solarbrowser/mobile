@@ -204,7 +204,7 @@ abstract class AppLocalizations {
   /// No description provided for @updated.
   ///
   /// In en, this message translates to:
-  /// **'Solar Browser Updated!'**
+  /// **'Solar Updated!'**
   String get updated;
 
   /// Version label
@@ -366,7 +366,7 @@ abstract class AppLocalizations {
   /// The name of the application
   ///
   /// In en, this message translates to:
-  /// **'Solar Browser'**
+  /// **'Solar'**
   String get app_name;
 
   /// No description provided for @search_or_enter_address.
@@ -999,10 +999,16 @@ abstract class AppLocalizations {
   /// **'Storage Permission Required'**
   String get storage_permission_required;
 
+  /// Title shown when storage permission is granted
+  ///
+  /// In en, this message translates to:
+  /// **'Storage Permission Granted'**
+  String get storage_permission_granted;
+
   /// Description explaining why storage permission is needed
   ///
   /// In en, this message translates to:
-  /// **'Solar Browser needs storage permission to download files and save them to your device. This allows you to access your downloads later.'**
+  /// **'Solar needs storage permission to download files and save them to your device. This allows you to access your downloads later.'**
   String get storage_permission_description;
 
   /// Button text to grant storage permission

@@ -338,7 +338,10 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     _loadPreferences();
     _loadBookmarks();
     _loadDownloads();
-    _loadHistory(); // Add history loading on init
+    _loadHistory();
+    _loadUrlBarPosition();
+    _loadSettings();
+    _loadSearchEngines();
     
     // Set up URL focus listener
     _urlFocusNode.addListener(() {
@@ -350,7 +353,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     });
 
     _updateSystemBars();
-    _startPermissionMonitoring();
 
     _hideUrlBarController = AnimationController(
       vsync: this,
@@ -489,7 +491,10 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       isDarkMode = prefs.getBool('darkMode') ?? false;
-      _searchEngine = prefs.getString('searchEngine') ?? 'google';
+      textScale = prefs.getDouble('textScale') ?? 1.0;
+      showImages = prefs.getBool('showImages') ?? true;
+      currentSearchEngine = prefs.getString('searchEngine') ?? 'Google';
+      currentLanguage = prefs.getString('language') ?? 'en';
     });
   }
 
@@ -1129,6 +1134,26 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     }
   }
 
+  Future<String> _getCurrentLanguageName() async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentLocale = prefs.getString('locale') ?? 'en';
+    final languages = {
+      'en': 'English',
+      'tr': 'Türkçe',
+      'es': 'Español',
+      'ar': 'العربية',
+      'hi': 'हिन्दी',
+      'ru': 'Русский',
+      'zh': '中文',
+    };
+    return languages[currentLocale] ?? 'English';
+  }
+
+  Future<String> _getCurrentSearchEngine() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('search_engine') ?? 'Google';
+  }
+
   void _showGeneralSettings() {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -1153,23 +1178,28 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
             ),
           ),
           body: ListView(
-            padding: const EdgeInsets.only(top: 8),
             children: [
               _buildSettingsSection(
                 title: AppLocalizations.of(context)!.general,
                 children: [
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.language,
-                    trailing: const Icon(Icons.chevron_right),
+                    trailing: Icon(
+                      Icons.chevron_right,
+                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                      size: 20,
+                    ),
                     onTap: () => _showLanguageSelection(context),
                     isFirst: true,
-                    isLast: false,
                   ),
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.search_engine,
-                    trailing: const Icon(Icons.chevron_right),
+                    trailing: Icon(
+                      Icons.chevron_right,
+                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                      size: 20,
+                    ),
                     onTap: () => _showSearchEngineSelection(context),
-                    isFirst: false,
                     isLast: true,
                   ),
                 ],
@@ -1837,7 +1867,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                   ),
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.photoncore_version,
-                    subtitle: 'Photoncore 0.0.1B',
+                    subtitle: 'Photoncore 0.0.2A',
                     isFirst: false,
                     isLast: false,
                   ),
@@ -3824,14 +3854,14 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           Expanded(
             child: ListView(
               physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.zero, // Remove default padding
+              padding: EdgeInsets.zero,
               children: [
                 _buildSettingsSection(
                   title: AppLocalizations.of(context)!.customize_browser,
                   children: [
                     _buildSettingsButton('general', () => _showGeneralSettings()),
-                    _buildSettingsButton('downloads', () => _showDownloadsSettings()),
                     _buildSettingsButton('appearance', () => _showAppearanceSettings()),
+                    _buildSettingsButton('downloads', () => _showDownloadsSettings()),
                   ],
                 ),
                 _buildSettingsSection(
@@ -3858,7 +3888,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                     ),
                     onPressed: () => _showResetConfirmation(),
                     child: Text(
-                      'Reset Browser',
+                      AppLocalizations.of(context)!.reset_browser,
                       style: TextStyle(
                         color: Colors.red,
                         fontWeight: FontWeight.bold,
@@ -3872,6 +3902,41 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSettingsButton(String label, VoidCallback onTap, {bool isFirst = false, bool isLast = false}) {
+    String getLocalizedLabel() {
+      switch (label) {
+        case 'general': return AppLocalizations.of(context)!.general;
+        case 'downloads': return AppLocalizations.of(context)!.downloads;
+        case 'appearance': return AppLocalizations.of(context)!.appearance;
+        case 'help': return AppLocalizations.of(context)!.help;
+        case 'rate_us': return AppLocalizations.of(context)!.rate_us;
+        case 'privacy_policy': return AppLocalizations.of(context)!.privacy_policy;
+        case 'terms_of_use': return AppLocalizations.of(context)!.terms_of_use;
+        case 'about': return AppLocalizations.of(context)!.about;
+        default: return label;
+      }
+    }
+
+    return ListTile(
+      dense: true,
+      visualDensity: VisualDensity.compact,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+      title: Text(
+        getLocalizedLabel(),
+        style: TextStyle(
+          fontSize: 14,
+          color: isDarkMode ? Colors.white : Colors.black,
+        ),
+      ),
+      trailing: Icon(
+        Icons.chevron_right,
+        color: isDarkMode ? Colors.white54 : Colors.black45,
+        size: 20,
+      ),
+      onTap: onTap,
     );
   }
 
@@ -3972,41 +4037,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         ),
         const SizedBox(height: 12),
       ],
-    );
-  }
-
-  Widget _buildSettingsButton(String label, VoidCallback onTap, {bool isFirst = false, bool isLast = false}) {
-    String getLocalizedLabel() {
-      switch (label) {
-        case 'general': return AppLocalizations.of(context)!.general;
-        case 'downloads': return AppLocalizations.of(context)!.downloads;
-        case 'appearance': return AppLocalizations.of(context)!.appearance;
-        case 'help': return AppLocalizations.of(context)!.help;
-        case 'rate_us': return AppLocalizations.of(context)!.rate_us;
-        case 'privacy_policy': return AppLocalizations.of(context)!.privacy_policy;
-        case 'terms_of_use': return AppLocalizations.of(context)!.terms_of_use;
-        case 'about': return AppLocalizations.of(context)!.about;
-        default: return label;
-      }
-    }
-
-    return ListTile(
-      dense: true,
-      visualDensity: VisualDensity.compact,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-      title: Text(
-        getLocalizedLabel(),
-        style: TextStyle(
-          fontSize: 14,
-          color: isDarkMode ? Colors.white : Colors.black,
-        ),
-      ),
-      trailing: Icon(
-        Icons.chevron_right,
-        color: isDarkMode ? Colors.white54 : Colors.black45,
-        size: 20,
-      ),
-      onTap: onTap,
     );
   }
 
@@ -4489,7 +4519,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                                         },
                                       ),
                                       ListTile(
-                                        leading: const Icon(Icons.share),
+                                        leading: const Icon(Icons.ios_share_rounded),
                                         title: const Text('Share Image'),
                                         onTap: () {
                                           Navigator.pop(context);
@@ -4771,32 +4801,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   Future<void> _handleDownload(String url) async {
     try {
-      // Request permissions
-      final androidInfo = await DeviceInfoPlugin().androidInfo;
-      final sdkInt = androidInfo.version.sdkInt;
-      
-      List<Permission> permissions = [];
-      if (sdkInt >= 33) {
-        permissions.addAll([
-          Permission.photos,
-          Permission.videos,
-          Permission.audio,
-        ]);
-      } else {
-        permissions.add(Permission.storage);
-      }
-
-      Map<Permission, PermissionStatus> statuses = await permissions.request();
-      bool allGranted = statuses.values.every((status) => status.isGranted);
-      
-      if (!allGranted) {
-        _showNotification(
-          Text(AppLocalizations.of(context)!.storage_permission_denied),
-          duration: const Duration(seconds: 4),
-        );
-        return;
-      }
-
       setState(() {
         isDownloading = true;
         currentDownloadUrl = url;
@@ -5220,15 +5224,6 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
     final directory = await getApplicationDocumentsDirectory();
     final prefs = await SharedPreferences.getInstance();
     String currentPath = prefs.getString('downloadLocation') ?? directory.path;
-
-    // Request storage permission
-    final status = await Permission.storage.request();
-    if (!status.isGranted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.permission_denied)),
-      );
-      return;
-    }
 
     try {
       // Use FilePicker to select directory
@@ -5990,66 +5985,11 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   // Add permission monitoring
   void _startPermissionMonitoring() {
-    Timer.periodic(const Duration(seconds: 2), (timer) async {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-
-      final androidInfo = await DeviceInfoPlugin().androidInfo;
-      final sdkInt = androidInfo.version.sdkInt;
-      
-      if (sdkInt >= 33) {
-        // Check media permissions for Android 13+
-        final permissions = [
-          Permission.photos,
-          Permission.videos,
-          Permission.audio,
-        ];
-        
-        bool anyDenied = false;
-        for (var permission in permissions) {
-          if (!(await permission.isGranted)) {
-            anyDenied = true;
-            break;
-          }
-        }
-        
-        if (anyDenied) {
-          _showPermissionNotification();
-        }
-      } else {
-        // Check storage permission for Android 12 and below
-        if (!(await Permission.storage.isGranted)) {
-          _showPermissionNotification();
-        }
-      }
-    });
+    // Removed permission monitoring
   }
 
   void _showPermissionNotification() {
-    _showNotification(
-      Row(
-        children: [
-          const Icon(Icons.warning_amber_rounded, color: Colors.orange),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(AppLocalizations.of(context)!.storage_permission_required),
-          ),
-          TextButton(
-            onPressed: () => _requestPermissions(),
-            child: Text(
-              AppLocalizations.of(context)!.grant_permission,
-              style: TextStyle(
-                color: Theme.of(context).primaryColor,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-      duration: const Duration(seconds: 8),
-    );
+    // Removed permission notification
   }
 
   Future<bool> _requestPermissions() async {
@@ -6227,6 +6167,38 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   void _showDownloadProgress(String fileName, double progress) {
 
+  }
+
+  Future<bool> _checkStoragePermission() async {
+    final androidInfo = await DeviceInfoPlugin().androidInfo;
+    final sdkInt = androidInfo.version.sdkInt;
+    
+    if (sdkInt >= 33) {
+      final photos = await Permission.photos.status;
+      final videos = await Permission.videos.status;
+      final audio = await Permission.audio.status;
+      return photos.isGranted && videos.isGranted && audio.isGranted;
+    } else {
+      final storage = await Permission.storage.status;
+      return storage.isGranted;
+    }
+  }
+
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isDarkMode = prefs.getBool('darkMode') ?? false;
+      textScale = prefs.getDouble('textScale') ?? 1.0;
+      showImages = prefs.getBool('showImages') ?? true;
+      _askDownloadLocation = prefs.getBool('askDownloadLocation') ?? true;
+    });
+  }
+
+  Future<void> _loadSearchEngines() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      currentSearchEngine = prefs.getString('searchEngine') ?? 'Google';
+    });
   }
 }
 

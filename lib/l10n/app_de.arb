@@ -13,7 +13,7 @@
   "back": "Zurück",
   "getStarted": "Loslegen",
   "continueText": "Fortfahren",
-  "updated": "Solar Browser wurde aktualisiert!",
+  "updated": "Solar wurde aktualisiert!",
   "version": "Version {version}",
   "@version": {
     "placeholders": {
@@ -48,7 +48,7 @@
   "history": "Verlauf",
   "bookmarks": "Lesezeichen",
   "search_in_page": "Auf Seite suchen",
-  "app_name": "Solar Browser",
+  "app_name": "Solar",
   "search_or_enter_address": "Suchen oder Adresse eingeben",
   "current_location": "Aktueller Speicherort",
   "change_location": "Speicherort ändern",
