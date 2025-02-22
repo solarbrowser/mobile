@@ -1,76 +1,133 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
 
-class UrlBar extends StatelessWidget {
-  final TextEditingController controller;
-  final bool isSecure;
+class UrlBar extends StatefulWidget {
   final bool isDarkMode;
-  final VoidCallback onReload;
+  final TextEditingController urlController;
+  final FocusNode urlFocusNode;
   final Function(String) onSubmitted;
-  final bool isExpanded;
-  final bool isMinimized;
+  final VoidCallback onRefresh;
+  final bool canGoBack;
+  final bool canGoForward;
+  final Function() onGoBack;
+  final Function() onGoForward;
+  final Animation<Offset> hideAnimation;
 
   const UrlBar({
-    super.key,
-    required this.controller,
-    required this.isSecure,
+    Key? key,
     required this.isDarkMode,
-    required this.onReload,
+    required this.urlController,
+    required this.urlFocusNode,
     required this.onSubmitted,
-    this.isExpanded = false,
-    this.isMinimized = false,
-  });
+    required this.onRefresh,
+    required this.canGoBack,
+    required this.canGoForward,
+    required this.onGoBack,
+    required this.onGoForward,
+    required this.hideAnimation,
+  }) : super(key: key);
+
+  @override
+  State<UrlBar> createState() => _UrlBarState();
+}
+
+class _UrlBarState extends State<UrlBar> {
+  double _slideOffset = 0.0;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: isMinimized ? 36 : 48,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: isDarkMode ? Colors.black : Colors.white,
-        border: Border(
-          bottom: BorderSide(
-            color: isDarkMode ? Colors.white24 : Colors.black12,
-          ),
-        ),
-      ),
-      child: Row(
-        children: [
-          Image.asset(
-            isSecure ? 'assets/secure24.png' : 'assets/unsecure24.png',
-            width: isMinimized ? 16 : 20,
-            height: isMinimized ? 16 : 20,
-            color: isDarkMode ? Colors.white70 : Colors.black54,
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              style: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black,
-                fontSize: isMinimized ? 14 : 16,
+    return Positioned(
+      left: 16,
+      right: 16,
+      bottom: MediaQuery.of(context).padding.bottom + 16,
+      child: SlideTransition(
+        position: widget.hideAnimation,
+        child: Container(
+          height: 56,
+          decoration: BoxDecoration(
+            color: widget.isDarkMode ? Colors.black.withOpacity(0.7) : Colors.white.withOpacity(0.7),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(
+              color: widget.isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 20,
+                spreadRadius: 0,
               ),
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                hintStyle: TextStyle(
-                  color: isDarkMode ? Colors.white38 : Colors.black38,
-                  fontSize: isMinimized ? 14 : 16,
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(28),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+              child: GestureDetector(
+                onHorizontalDragUpdate: (details) {
+                  setState(() {
+                    _slideOffset += details.delta.dx;
+                    _slideOffset = _slideOffset.clamp(-100.0, 100.0);
+                  });
+                },
+                onHorizontalDragEnd: (details) async {
+                  if (_slideOffset.abs() > 50) {
+                    if (_slideOffset < 0 && widget.canGoBack) {
+                      widget.onGoBack();
+                    } else if (_slideOffset > 0 && widget.canGoForward) {
+                      widget.onGoForward();
+                    }
+                  }
+                  setState(() {
+                    _slideOffset = 0;
+                  });
+                },
+                child: Transform.translate(
+                  offset: Offset(_slideOffset, 0),
+                  child: Row(
+                    children: [
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: TextField(
+                          controller: widget.urlController,
+                          focusNode: widget.urlFocusNode,
+                          style: TextStyle(
+                            color: widget.isDarkMode ? Colors.white : Colors.black87,
+                            fontSize: 16,
+                          ),
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: 'Search or enter address',
+                            hintStyle: TextStyle(
+                              color: widget.isDarkMode ? Colors.white60 : Colors.black45,
+                            ),
+                          ),
+                          onTap: () {
+                            widget.urlController.selection = TextSelection(
+                              baseOffset: 0,
+                              extentOffset: widget.urlController.text.length,
+                            );
+                          },
+                          onSubmitted: widget.onSubmitted,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.refresh_rounded,
+                          color: widget.isDarkMode ? Colors.white70 : Colors.black54,
+                          size: 20,
+                        ),
+                        onPressed: widget.onRefresh,
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                  ),
                 ),
               ),
-              onSubmitted: onSubmitted,
             ),
           ),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: onReload,
-            child: Image.asset(
-              'assets/reload24.png',
-              width: isMinimized ? 16 : 20,
-              height: isMinimized ? 16 : 20,
-              color: isDarkMode ? Colors.white70 : Colors.black54,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

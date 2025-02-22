@@ -1,0 +1,2 @@
+/home/wolf/Documents/GitHub/mobile/android/app/.cxx/Debug/u2q4y140/armeabi-v7a/CMakeFiles/edit_cache.dir
+/home/wolf/Documents/GitHub/mobile/android/app/.cxx/Debug/u2q4y140/armeabi-v7a/CMakeFiles/rebuild_cache.dir

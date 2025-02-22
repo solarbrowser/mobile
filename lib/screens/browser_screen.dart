@@ -4254,10 +4254,8 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   Widget _buildUrlBar() {
     final displayUrl = _urlFocusNode.hasFocus ? _displayUrl : _formatUrl(_displayUrl);
     
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 16,
+    return Container(
+      margin: const EdgeInsets.fromLTRB(8, 0, 8, 16),
       child: SlideTransition(
         position: _hideUrlBarAnimation,
         child: Container(
@@ -6228,7 +6226,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   }
 
   void _showDownloadProgress(String fileName, double progress) {
-    // ... existing code ...
+
   }
 }
 
