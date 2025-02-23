@@ -137,7 +137,7 @@ class LoadingBorderPainter extends CustomPainter {
   }
 }
 
-class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateMixin {
+class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProviderStateMixin {
   // WebView and Navigation
   final List<WebViewController> _controllers = [];
   late WebViewController controller;
@@ -1938,12 +1938,12 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   Widget _buildQuickActionsPanel() {
     final screenWidth = MediaQuery.of(context).size.width;
-    final panelWidth = screenWidth - 32;
+    final panelWidth = screenWidth - 32; // 16px margin on each side
 
     return Container(
       width: panelWidth,
-      height: 100,
-      margin: const EdgeInsets.only(bottom: 0), // Removed bottom margin
+      height: 100, // Same as URL bar
+      margin: const EdgeInsets.only(bottom: 8), // Consistent 8px spacing
       child: Material(
         color: Colors.transparent,
         child: ClipRRect(
@@ -2054,7 +2054,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   Widget _buildSearchPanel() {
     return Container(
-      height: 50,
+      height: 48,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: BackdropFilter(
@@ -4283,52 +4283,55 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   Widget _buildUrlBar() {
     final displayUrl = _urlFocusNode.hasFocus ? _displayUrl : _formatUrl(_displayUrl);
+    final width = MediaQuery.of(context).size.width - 32;
     
     return Container(
-      margin: const EdgeInsets.fromLTRB(8, 0, 8, 16),
+      width: width,
+      margin: const EdgeInsets.only(bottom: 8),
       child: SlideTransition(
         position: _hideUrlBarAnimation,
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 8),
-          child: GestureDetector(
-            onHorizontalDragUpdate: (details) {
-              setState(() {
-                _urlBarSlideOffset += details.delta.dx;
-              });
-            },
-            onHorizontalDragEnd: (details) async {
-              if (_urlBarSlideOffset.abs() > 50) {
-                if (_urlBarSlideOffset < 0 && canGoBack) {
-                  await _goBack();
-                } else if (_urlBarSlideOffset > 0 && canGoForward) {
-                  await _goForward();
-                }
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onHorizontalDragUpdate: (details) {
+            setState(() {
+              _urlBarSlideOffset += details.delta.dx;
+            });
+          },
+          onHorizontalDragEnd: (details) async {
+            if (_urlBarSlideOffset.abs() > 50) {
+              if (_urlBarSlideOffset < 0 && canGoBack) {
+                await _goBack();
+              } else if (_urlBarSlideOffset > 0 && canGoForward) {
+                await _goForward();
               }
-              setState(() {
-                _urlBarSlideOffset = 0;
-              });
-            },
-            child: Transform.translate(
-              offset: Offset(_urlBarSlideOffset, 0),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(28),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                  child: Container(
-                    width: MediaQuery.of(context).size.width - 16,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(28),
+            }
+            setState(() {
+              _urlBarSlideOffset = 0;
+            });
+          },
+          child: Transform.translate(
+            offset: Offset(_urlBarSlideOffset, 0),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(28),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                child: Container(
+                  width: width,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(28),
+                    color: isDarkMode 
+                      ? Colors.black.withOpacity(0.7) 
+                      : Colors.white.withOpacity(0.7),
+                    border: Border.all(
                       color: isDarkMode 
-                        ? Colors.black.withOpacity(0.7) 
-                        : Colors.white.withOpacity(0.7),
-                      border: Border.all(
-                        color: isDarkMode 
-                          ? Colors.white.withOpacity(0.1) 
-                          : Colors.black.withOpacity(0.1),
-                        width: 1,
-                      ),
+                        ? Colors.white.withOpacity(0.1) 
+                        : Colors.black.withOpacity(0.1),
+                      width: 1,
                     ),
+                  ),
+                  child: Material(
+                    type: MaterialType.transparency,
                     child: Row(
                       children: [
                         const SizedBox(width: 16),
@@ -4359,33 +4362,44 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                               ),
                             ),
                             onTap: () {
-                              setState(() {
-                                _urlController.text = _displayUrl;
-                                _urlController.selection = TextSelection(
-                                  baseOffset: 0,
-                                  extentOffset: _urlController.text.length,
-                                );
-                              });
+                              if (!_urlFocusNode.hasFocus) {
+                                setState(() {
+                                  _urlController.text = _displayUrl;
+                                  _urlController.selection = TextSelection(
+                                    baseOffset: 0,
+                                    extentOffset: _urlController.text.length,
+                                  );
+                                });
+                              }
                             },
-                            onSubmitted: (url) async {
-                              await _loadUrl(url);
+                            onSubmitted: (value) {
+                              _loadUrl(value);
                               _urlFocusNode.unfocus();
+                              setState(() {
+                                _urlController.text = _formatUrl(_displayUrl);
+                                _urlController.selection = const TextSelection.collapsed(offset: -1);
+                              });
                             },
                           ),
                         ),
                         IconButton(
                           icon: Icon(
-                            Icons.refresh_rounded,
+                            _urlFocusNode.hasFocus ? Icons.close_rounded : Icons.refresh_rounded,
                             color: isDarkMode ? Colors.white70 : Colors.black54,
                             size: 20,
                           ),
-                          onPressed: () async {
-                            if (controller != null) {
-                              await controller.reload();
+                          onPressed: () {
+                            if (_urlFocusNode.hasFocus) {
+                              _urlFocusNode.unfocus();
+                              setState(() {
+                                _urlController.text = _formatUrl(_displayUrl);
+                                _urlController.selection = const TextSelection.collapsed(offset: -1);
+                              });
+                            } else if (controller != null) {
+                              controller.reload();
                             }
                           },
                         ),
-                        const SizedBox(width: 8),
                       ],
                     ),
                   ),
@@ -4432,6 +4446,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
   Widget build(BuildContext context) {
     _updateSystemBars();
     final statusBarHeight = MediaQuery.of(context).padding.top;
+    final screenWidth = MediaQuery.of(context).size.width;
     
     return WillPopScope(
       onWillPop: _onWillPop,
@@ -4439,18 +4454,17 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
         backgroundColor: isDarkMode ? Colors.black : Colors.white,
         extendBody: true,
         extendBodyBehindAppBar: true,
-        body: Container(
-          color: isDarkMode ? Colors.black : Colors.white,
-          child: Stack(
-            children: [
-              // WebView with scroll detection
-              Positioned(
-                top: statusBarHeight,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Listener(
-                  onPointerMove: (event) {
+        body: Stack(
+          children: [
+            // WebView (full screen)
+            WebViewWidget(controller: controller),
+
+            // Transparent gesture detection layer
+            Positioned.fill(
+              child: Listener(
+                onPointerMove: (event) {
+                  // Only handle vertical scrolls if they're significant
+                  if (event.delta.dy.abs() > event.delta.dx.abs()) {
                     if (event.delta.dy < -10) { // Scrolling down - hide URL bar
                       if (!_hideUrlBar) {
                         setState(() {
@@ -4466,116 +4480,60 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                         });
                       }
                     }
-                  },
-                  child: Stack(
-                    children: [
-                      Stack(
-                        children: [
-                          GestureDetector(
-                            onLongPressStart: (details) async {
-                              HapticFeedback.mediumImpact();
-                              // Get image at tap position using JavaScript
-                              final js = '''
-                                (function() {
-                                  let element = document.elementFromPoint(${details.globalPosition.dx}, ${details.globalPosition.dy});
-                                  while (element && element.tagName !== 'IMG' && element.parentElement) {
-                                    element = element.parentElement;
-                                  }
-                                  if (element && element.tagName === 'IMG') {
-                                    return element.src;
-                                  }
-                                  return '';
-                                })()
-                              ''';
-                              
-                              final result = await controller.runJavaScriptReturningResult(js);
-                              String imageUrl = result.toString();
-                              
-                              // Clean the URL - remove any quotes and decode URL components
-                              imageUrl = imageUrl.replaceAll('"', '').replaceAll("'", "");
-                              imageUrl = Uri.decodeFull(imageUrl);
-                              
-                              if (imageUrl.isNotEmpty && imageUrl != 'null') {
-                                if (!mounted) return;
-                                showModalBottomSheet(
-                                  context: context,
-                                  builder: (context) => Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      ListTile(
-                                        leading: const Icon(Icons.image),
-                                        title: const Text('View Image'),
-                                        onTap: () async {
-                                          Navigator.pop(context);
-                                          await controller.loadRequest(Uri.parse(imageUrl));
-                                        },
-                                      ),
-                                      ListTile(
-                                        leading: const Icon(Icons.download),
-                                        title: const Text('Download Image'),
-                                        onTap: () async {
-                                          Navigator.pop(context);
-                                          await _handleDownload(imageUrl);
-                                        },
-                                      ),
-                                      ListTile(
-                                        leading: const Icon(Icons.ios_share_rounded),
-                                        title: const Text('Share Image'),
-                                        onTap: () {
-                                          Navigator.pop(context);
-                                          Share.share(imageUrl);
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                );
-                              }
-                            },
-                            child: WebViewWidget(controller: controller),
-                          ),
-                          if (_isLoading)
-                            const Center(
-                              child: CircularProgressIndicator(),
-                            ),
-                        ],
-                      ),
-                      if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible)
-                        _buildOverlayPanel(),
-                    ],
-                  ),
-                ),
+                  }
+                },
+                onPointerDown: (event) {
+                  if (_urlFocusNode.hasFocus) {
+                    _urlFocusNode.unfocus();
+                    setState(() {
+                      _urlController.text = _formatUrl(_displayUrl);
+                      _urlController.selection = const TextSelection.collapsed(offset: -1);
+                    });
+                  }
+                },
+                behavior: HitTestBehavior.translucent,
+                child: Container(color: Colors.transparent),
               ),
-              
-              Positioned(
-                left: 16,
-                right: 16,
-                bottom: MediaQuery.of(context).padding.bottom,
-                child: GestureDetector(
-                  onVerticalDragUpdate: (details) {
-                    if (details.delta.dy < -10 && !_isSlideUpPanelVisible) {
-                      _handleSlideUpPanelVisibility(true);
-                    } else if (details.delta.dy > 10 && _isSlideUpPanelVisible) {
+            ),
+
+            // Loading indicator
+            if (_isLoading)
+              const Center(child: CircularProgressIndicator()),
+
+            // Bottom controls (URL bar and panels)
+            Positioned(
+              left: 16, // Consistent 16px margin
+              right: 16,
+              bottom: MediaQuery.of(context).padding.bottom + 8, // 8px from bottom
+              child: GestureDetector(
+                onVerticalDragUpdate: (details) {
+                  if (details.delta.dy < -10 && !_isSlideUpPanelVisible) {
+                    _handleSlideUpPanelVisibility(true);
+                  } else if (details.delta.dy > 10 && _isSlideUpPanelVisible) {
+                    _handleSlideUpPanelVisibility(false);
+                  }
+                },
+                onVerticalDragEnd: (details) {
+                  if (details.primaryVelocity != null) {
+                    if (details.primaryVelocity! > 0) { // Dragging down
                       _handleSlideUpPanelVisibility(false);
+                    } else if (details.primaryVelocity! < 0) { // Dragging up
+                      _handleSlideUpPanelVisibility(true);
                     }
-                  },
-                  onVerticalDragEnd: (details) {
-                    if (details.primaryVelocity != null) {
-                      if (details.primaryVelocity! > 0) { // Dragging down
-                        _handleSlideUpPanelVisibility(false);
-                      } else if (details.primaryVelocity! < 0) { // Dragging up
-                        _handleSlideUpPanelVisibility(true);
-                      }
-                    }
-                  },
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
-                        AnimatedBuilder(
-                          animation: _slideUpController,
-                          builder: (context, child) {
-                            final slideValue = _slideUpController.value;
-                            return Transform.translate(
+                  }
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
+                      AnimatedBuilder(
+                        animation: _slideUpController,
+                        builder: (context, child) {
+                          final slideValue = _slideUpController.value;
+                          return Visibility(
+                            visible: slideValue > 0,
+                            maintainState: false,
+                            child: Transform.translate(
                               offset: Offset(0, (1 - slideValue) * 100),
                               child: Opacity(
                                 opacity: slideValue,
@@ -4583,34 +4541,41 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     _buildQuickActionsPanel(),
-                                    const SizedBox(height: 8),
                                     _buildNavigationPanel(),
                                   ],
                                 ),
                               ),
-                            );
-                          },
-                        ),
-                      if (!_isSlideUpPanelVisible && !isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
-                        AnimatedBuilder(
-                          animation: _slideUpController,
-                          builder: (context, child) {
-                            final slideValue = _slideUpController.value;
-                            return Transform.translate(
-                              offset: Offset(0, (1 - slideValue) * -20),
+                            ),
+                          );
+                        },
+                      ),
+                    if (!_isSlideUpPanelVisible && !isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
+                      AnimatedBuilder(
+                        animation: _slideUpController,
+                        builder: (context, child) {
+                          final slideValue = _slideUpController.value;
+                          return Visibility(
+                            visible: true, // Always keep visible for smooth animation
+                            maintainState: true,
+                            child: Transform.translate(
+                              offset: Offset(0, slideValue * 100),
                               child: Opacity(
                                 opacity: 1 - slideValue,
                                 child: _buildUrlBar(),
                               ),
-                            );
-                          },
-                        ),
-                    ],
-                  ),
+                            ),
+                          );
+                        },
+                      ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+
+            // Overlay panels (tabs, settings, etc.)
+            if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible)
+              _buildOverlayPanel(),
+          ],
         ),
       ),
     );
@@ -5347,14 +5312,7 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
   Widget _buildNavigationPanel() {
     final screenWidth = MediaQuery.of(context).size.width;
-    final panelWidth = screenWidth - 32;
-    final currentUrl = tabs[currentTabIndex].url;
-    final isCurrentPageBookmarked = bookmarks.any((bookmark) {
-      if (bookmark is Map<String, dynamic>) {
-        return bookmark['url'] == currentUrl;
-      }
-      return false;
-    });
+    final panelWidth = screenWidth - 32; // 16px margin on each side
 
     // Don't build the panel if URL bar is hidden
     if (_hideUrlBar) {
@@ -5363,45 +5321,48 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
 
     return Container(
       width: panelWidth,
-      height: 48,
-      margin: const EdgeInsets.only(bottom: 16),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-          child: Container(
-            decoration: _getGlassmorphicDecoration(),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.chevron_left_rounded, size: 24),
-                  color: canGoBack ? (isDarkMode ? Colors.white70 : Colors.black54) : (isDarkMode ? Colors.white24 : Colors.black12),
-                  onPressed: canGoBack ? _goBack : null,
-                ),
-                IconButton(
-                  icon: Icon(
-                    isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
-                    size: 24
+      height: 48, // Match quick actions panel
+      margin: const EdgeInsets.only(bottom: 8), // Consistent 8px spacing
+      child: Material(
+        color: Colors.transparent,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: Container(
+              decoration: _getGlassmorphicDecoration(),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left_rounded, size: 24),
+                    color: canGoBack ? (isDarkMode ? Colors.white70 : Colors.black54) : (isDarkMode ? Colors.white24 : Colors.black12),
+                    onPressed: canGoBack ? _goBack : null,
                   ),
-                  color: isDarkMode ? Colors.white70 : Colors.black54,
-                  onPressed: _addBookmark,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.ios_share_rounded, size: 24),
-                  color: isDarkMode ? Colors.white70 : Colors.black54,
-                  onPressed: () async {
-                    if (currentUrl.isNotEmpty) {
-                      await Share.share(currentUrl);
-                    }
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.chevron_right_rounded, size: 24),
-                  color: canGoForward ? (isDarkMode ? Colors.white70 : Colors.black54) : (isDarkMode ? Colors.white24 : Colors.black12),
-                  onPressed: canGoForward ? _goForward : null,
-                ),
-              ],
+                  IconButton(
+                    icon: Icon(
+                      isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
+                      size: 24,
+                    ),
+                    color: isDarkMode ? Colors.white70 : Colors.black54,
+                    onPressed: _addBookmark,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.ios_share_rounded, size: 24),
+                    color: isDarkMode ? Colors.white70 : Colors.black54,
+                    onPressed: () async {
+                      if (currentUrl.isNotEmpty) {
+                        await Share.share(currentUrl);
+                      }
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right_rounded, size: 24),
+                    color: canGoForward ? (isDarkMode ? Colors.white70 : Colors.black54) : (isDarkMode ? Colors.white24 : Colors.black12),
+                    onPressed: canGoForward ? _goForward : null,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -6200,6 +6161,15 @@ class _BrowserScreenState extends State<BrowserScreen> with TickerProviderStateM
       currentSearchEngine = prefs.getString('searchEngine') ?? 'Google';
     });
   }
+
+  String get currentUrl => tabs[currentTabIndex].url;
+
+  bool get isCurrentPageBookmarked => bookmarks.any((bookmark) {
+    if (bookmark is Map<String, dynamic>) {
+      return bookmark['url'] == currentUrl;
+    }
+    return false;
+  });
 }
 
 class ThemeColors {
