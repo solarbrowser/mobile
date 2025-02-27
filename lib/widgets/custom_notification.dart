@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/theme_manager.dart';
 
 class CustomNotification extends StatelessWidget {
   final dynamic message;
@@ -21,11 +22,11 @@ class CustomNotification extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: isDarkMode ? Colors.grey[900] : Colors.grey[50],
+        color: ThemeManager.surfaceColor(),
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: ThemeManager.textColor().withOpacity(0.1),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -36,7 +37,7 @@ class CustomNotification extends StatelessWidget {
           if (icon != null) ...[
             Icon(
               icon,
-              color: iconColor ?? Colors.green,
+              color: iconColor ?? ThemeManager.successColor(),
               size: 24,
             ),
             const SizedBox(width: 12),
@@ -44,14 +45,14 @@ class CustomNotification extends StatelessWidget {
           Expanded(
             child: DefaultTextStyle(
               style: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black87,
+                color: ThemeManager.textColor(),
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
               child: message is Widget ? message as Widget : Text(
                 message.toString(),
                 style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black87,
+                  color: ThemeManager.textColor(),
                 ),
               ),
             ),
@@ -61,7 +62,7 @@ class CustomNotification extends StatelessWidget {
             TextButton(
               onPressed: action!.onPressed,
               style: TextButton.styleFrom(
-                foregroundColor: isDarkMode ? Colors.blue[200] : Colors.blue,
+                foregroundColor: ThemeManager.primaryColor(),
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 minimumSize: const Size(0, 36),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -69,7 +70,7 @@ class CustomNotification extends StatelessWidget {
               child: Text(
                 action!.label,
                 style: TextStyle(
-                  color: isDarkMode ? Colors.blue[200] : Colors.blue,
+                  color: ThemeManager.primaryColor(),
                   fontWeight: FontWeight.w600,
                   fontSize: 14,
                 ),

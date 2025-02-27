@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/app_localizations.dart';
+import '../utils/theme_manager.dart';
 
 class BrowserBottomBar extends StatelessWidget {
   final VoidCallback onTabsTap;
@@ -25,16 +26,16 @@ class BrowserBottomBar extends StatelessWidget {
       duration: const Duration(milliseconds: 200),
       height: isMinimized ? 48 : 56,
       child: BottomNavigationBar(
-        backgroundColor: isDarkMode ? Colors.black : Colors.white,
-        selectedItemColor: isDarkMode ? Colors.white : Colors.black,
-        unselectedItemColor: isDarkMode ? Colors.white70 : Colors.black54,
+        backgroundColor: ThemeManager.backgroundColor(),
+        selectedItemColor: ThemeManager.textColor(),
+        unselectedItemColor: ThemeManager.textSecondaryColor(),
         items: [
           BottomNavigationBarItem(
             icon: Image.asset(
               'assets/tabs24.png',
               width: isMinimized ? 16 : 20,
               height: isMinimized ? 16 : 20,
-              color: isDarkMode ? Colors.white70 : Colors.black54,
+              color: ThemeManager.textSecondaryColor(),
             ),
             label: AppLocalizations.of(context)!.tabs,
           ),
@@ -43,7 +44,7 @@ class BrowserBottomBar extends StatelessWidget {
               'assets/history24.png',
               width: isMinimized ? 16 : 20,
               height: isMinimized ? 16 : 20,
-              color: isDarkMode ? Colors.white70 : Colors.black54,
+              color: ThemeManager.textSecondaryColor(),
             ),
             label: AppLocalizations.of(context)!.history,
           ),
@@ -52,7 +53,7 @@ class BrowserBottomBar extends StatelessWidget {
               'assets/settings24.png',
               width: isMinimized ? 16 : 20,
               height: isMinimized ? 16 : 20,
-              color: isDarkMode ? Colors.white70 : Colors.black54,
+              color: ThemeManager.textSecondaryColor(),
             ),
             label: AppLocalizations.of(context)!.settings,
           ),

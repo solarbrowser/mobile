@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
@@ -29,6 +30,7 @@ import '../widgets/custom_notification.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
+import 'package:solar/theme/theme_manager.dart';
 
 class Debouncer {
   final int milliseconds;
@@ -251,20 +253,20 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   ThemeColors get _colors => isDarkMode ? _darkModeColors : _lightModeColors;
   
-  final _darkModeColors = const ThemeColors(
-    background: Colors.black,
-    surface: Colors.white10,
-    text: Colors.white,
-    textSecondary: Colors.white70,
-    border: Colors.white24,
+  final _darkModeColors = ThemeColors(
+    background: ThemeManager.backgroundColor(),
+    surface: ThemeManager.surfaceColor(),
+    text: ThemeManager.textColor(),
+    textSecondary: ThemeManager.textSecondaryColor(),
+    border: ThemeManager.textColor().withOpacity(0.24),
   );
 
-  final _lightModeColors = const ThemeColors(
-    background: Colors.white,
-    surface: Colors.black12,
-    text: Colors.black,
-    textSecondary: Colors.black54,
-    border: Colors.black12,
+  final _lightModeColors = ThemeColors(
+    background: ThemeManager.backgroundColor(),
+    surface: ThemeManager.surfaceColor(),
+    text: ThemeManager.textColor(),
+    textSecondary: ThemeManager.textSecondaryColor(),
+    border: ThemeManager.textColor().withOpacity(0.12),
   );
 
   late OptimizationEngine _optimizationEngine;
@@ -309,19 +311,15 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   BoxDecoration _getGlassmorphicDecoration() {
     return BoxDecoration(
-      color: isDarkMode 
-        ? Colors.black.withOpacity(0.7) 
-        : Colors.white.withOpacity(0.7),
+      color: ThemeManager.backgroundColor().withOpacity(0.7),
       borderRadius: BorderRadius.circular(28),
       border: Border.all(
-        color: isDarkMode 
-          ? Colors.white.withOpacity(0.1) 
-          : Colors.black.withOpacity(0.1),
+        color: ThemeManager.textColor().withOpacity(0.1),
         width: 1,
       ),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.1),
+          color: ThemeManager.textColor().withOpacity(0.1),
           blurRadius: 20,
           spreadRadius: 0,
         ),
@@ -360,22 +358,32 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     );
     
     _hideUrlBarAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.1), // Slightly down from top
-      end: const Offset(0, 2), // Move further down to ensure hiding
+      begin: const Offset(0, 0), 
+      end: const Offset(0, 2),
     ).animate(_hideUrlBarController);
+
+    // Initialize scroll detection
+    _setupScrollHandling();
   }
+
+  SystemUiOverlayStyle get _transparentNavBar => SystemUiOverlayStyle(
+    statusBarColor: ThemeManager.backgroundColor(),
+    statusBarIconBrightness: ThemeManager.textColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
+    statusBarBrightness: ThemeManager.backgroundColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarIconBrightness: ThemeManager.textColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
+    systemNavigationBarContrastEnforced: false,
+    systemNavigationBarDividerColor: Colors.transparent,
+  );
 
   void _updateSystemBars() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      // Status bar
-      statusBarColor: isDarkMode ? Colors.black : Colors.white,
-      statusBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
-      statusBarBrightness: isDarkMode ? Brightness.dark : Brightness.light,
-      
-      // Navigation bar - fully transparent with themed icons
+      statusBarColor: ThemeManager.backgroundColor(),
+      statusBarIconBrightness: ThemeManager.textColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
+      statusBarBrightness: ThemeManager.backgroundColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
       systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
+      systemNavigationBarIconBrightness: ThemeManager.textColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
       systemNavigationBarContrastEnforced: false,
       systemNavigationBarDividerColor: Colors.transparent,
     ));
@@ -568,26 +576,52 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   Future<void> _setupScrollHandling() async {
     await controller.runJavaScript('''
       let lastScrollY = window.scrollY;
+      let lastScrollTime = Date.now();
       let ticking = false;
-      
-      function updateScroll() {
-        if (window.flutter_inappwebview) {
-          window.flutter_inappwebview.callHandler('onScroll', {
-            scrollY: window.scrollY,
-            isScrollingUp: window.scrollY < lastScrollY
-          });
-        }
-        lastScrollY = window.scrollY;
-        ticking = false;
-      }
 
       window.addEventListener('scroll', function() {
         if (!ticking) {
           window.requestAnimationFrame(function() {
-            updateScroll();
+            const currentScrollY = window.scrollY;
+            const currentTime = Date.now();
+            const delta = currentScrollY - lastScrollY;
+            
+            // Only trigger if the scroll is fast enough (natural scroll)
+            if (currentTime - lastScrollTime < 100) {
+              if (window.flutter_inappwebview) {
+                window.flutter_inappwebview.callHandler('onScroll', {
+                  scrollY: currentScrollY,
+                  delta: delta
+                });
+              }
+            }
+            
+            lastScrollY = currentScrollY;
+            lastScrollTime = currentTime;
             ticking = false;
           });
           ticking = true;
+        }
+      }, { passive: true });
+
+      // Also detect touch moves for smoother detection
+      let touchStartY = 0;
+      window.addEventListener('touchstart', function(e) {
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+
+      window.addEventListener('touchmove', function(e) {
+        const currentY = e.touches[0].clientY;
+        const delta = touchStartY - currentY;
+        
+        if (Math.abs(delta) > 5) {
+          if (window.flutter_inappwebview) {
+            window.flutter_inappwebview.callHandler('onScroll', {
+              scrollY: window.scrollY,
+              delta: delta
+            });
+          }
+          touchStartY = currentY;
         }
       }, { passive: true });
     ''');
@@ -599,22 +633,24 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         
         try {
           final data = json.decode(message.message);
-          final currentScrollY = data['scrollY'] as double;
-          final isScrollingUp = data['isScrollingUp'] as bool;
+          final delta = data['delta'] as double;
           
-          // Only trigger hide/show if scrolled more than 10 pixels
-          if ((currentScrollY - _lastScrollPosition).abs() > 10) {
-            setState(() {
-              _isScrollingUp = isScrollingUp;
-              if (_isScrollingUp && _hideUrlBar) {
-                _hideUrlBar = false;
-                _hideUrlBarController.reverse();
-              } else if (!_isScrollingUp && !_hideUrlBar && currentScrollY > 100) {
-                _hideUrlBar = true;
-                _hideUrlBarController.forward();
+          if (delta.abs() > 5) {
+            if (delta > 0) {  // Scrolling up
+              if (!_hideUrlBar) {
+                setState(() {
+                  _hideUrlBar = true;
+                  _hideUrlBarController.forward();
+                });
               }
-              _lastScrollPosition = currentScrollY;
-            });
+            } else {  // Scrolling down
+              if (_hideUrlBar) {
+                setState(() {
+                  _hideUrlBar = false;
+                  _hideUrlBarController.reverse();
+                });
+              }
+            }
           }
         } catch (e) {
           print('Error handling scroll: $e');
@@ -1074,7 +1110,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         context: context,
         message: "Please select a search engine in settings first",
         icon: Icons.warning,
-        iconColor: Colors.orange,
+        iconColor: ThemeManager.warningColor(),
         isDarkMode: isDarkMode,
       );
       return;
@@ -1158,21 +1194,21 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => Scaffold(
-          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+          backgroundColor: ThemeManager.backgroundColor(),
           appBar: AppBar(
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            backgroundColor: ThemeManager.backgroundColor(),
             elevation: 0,
             leading: IconButton(
               icon: Icon(
                 Icons.arrow_back,
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: ThemeManager.textColor(),
               ),
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
               AppLocalizations.of(context)!.general,
               style: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: ThemeManager.textColor(),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -1186,7 +1222,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     title: AppLocalizations.of(context)!.language,
                     trailing: Icon(
                       Icons.chevron_right,
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                      color: ThemeManager.textSecondaryColor(),
                       size: 20,
                     ),
                     onTap: () => _showLanguageSelection(context),
@@ -1196,7 +1232,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     title: AppLocalizations.of(context)!.search_engine,
                     trailing: Icon(
                       Icons.chevron_right,
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                      color: ThemeManager.textSecondaryColor(),
                       size: 20,
                     ),
                     onTap: () => _showSearchEngineSelection(context),
@@ -1232,7 +1268,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               title: Text(
                 AppLocalizations.of(context)!.browsing_history,
                 style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
+                  color: ThemeManager.textColor(),
                 ),
               ),
             ),
@@ -1242,7 +1278,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               title: Text(
                 AppLocalizations.of(context)!.cookies,
                 style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
+                  color: ThemeManager.textColor(),
                 ),
               ),
             ),
@@ -1252,7 +1288,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               title: Text(
                 AppLocalizations.of(context)!.cache,
                 style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
+                  color: ThemeManager.textColor(),
                 ),
               ),
             ),
@@ -1265,7 +1301,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           child: Text(
             AppLocalizations.of(context)!.cancel,
             style: TextStyle(
-              color: isDarkMode ? Colors.white70 : Colors.black54,
+              color: ThemeManager.textSecondaryColor(),
             ),
           ),
         ),
@@ -1286,7 +1322,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               context: context,
               message: AppLocalizations.of(context)!.browser_data_cleared,
               icon: Icons.check_circle,
-              iconColor: Colors.green,
+              iconColor: ThemeManager.successColor(),
               isDarkMode: isDarkMode,
             );
           },
@@ -1333,7 +1369,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           !title.contains('한국어')) {
         trailingWidget = Icon(
           Icons.chevron_right,
-          color: isDarkMode ? Colors.white70 : Colors.black45,
+          color: ThemeManager.textColor(),
           size: 18,
         );
       }
@@ -1341,7 +1377,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       // Update existing arrow icons to use consistent colors
       trailingWidget = Icon(
         Icons.chevron_right,
-        color: isDarkMode ? Colors.white70 : Colors.black45,
+        color: ThemeManager.textColor(),
         size: 18,
       );
     }
@@ -1354,7 +1390,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         title,
         style: TextStyle(
           fontSize: 15,
-          color: isDarkMode ? Colors.white : Colors.black,
+          color: ThemeManager.textColor(),
         ),
       ),
       subtitle: subtitle != null
@@ -1362,7 +1398,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             subtitle,
             style: TextStyle(
               fontSize: 13,
-              color: isDarkMode ? Colors.white70 : Colors.black54,
+              color: ThemeManager.textSecondaryColor(),
             ),
           )
         : null,
@@ -1391,7 +1427,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      barrierColor: isDarkMode ? Colors.white10 : Colors.black12,
+      barrierColor: ThemeManager.textColor().withOpacity(0.1),
       transitionAnimationController: AnimationController(
         duration: const Duration(milliseconds: 300),
         vsync: this,
@@ -1408,15 +1444,15 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               child: Container(
         height: height,
         decoration: BoxDecoration(
-          color: isDarkMode ? Colors.black : Colors.white,
+          color: ThemeManager.backgroundColor(),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.2),
-                      blurRadius: 20,
-                      spreadRadius: 5,
-                    ),
-                  ],
+          boxShadow: [
+            BoxShadow(
+              color: ThemeManager.textColor().withOpacity(0.2),
+              blurRadius: 20,
+              spreadRadius: 5,
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1456,31 +1492,26 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     );
   }
 
-  SystemUiOverlayStyle get _transparentNavBar => SystemUiOverlayStyle(
-    systemNavigationBarColor: Colors.transparent,
-    systemNavigationBarDividerColor: Colors.transparent,
-  );
-
   void _showLanguageSelection(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => Scaffold(
-          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+          backgroundColor: ThemeManager.backgroundColor(),
           appBar: AppBar(
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            backgroundColor: ThemeManager.backgroundColor(),
             elevation: 0,
             systemOverlayStyle: _transparentNavBar,
             leading: IconButton(
               icon: Icon(
                 Icons.arrow_back,
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: ThemeManager.textColor(),
               ),
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
               AppLocalizations.of(context)!.language,
               style: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: ThemeManager.textColor(),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -1494,7 +1525,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   final isSelected = Localizations.localeOf(context).languageCode == locale.languageCode;
                   return _buildSettingsItem(
                     title: _getLanguageName(locale.languageCode),
-                    trailing: isSelected ? Icon(Icons.check, color: Colors.blue) : null,
+                    trailing: isSelected ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
                     onTap: () {
                       setState(() => _currentLocale = locale.languageCode);
                       widget.onLocaleChange?.call(locale.languageCode);
@@ -1516,21 +1547,22 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => Scaffold(
-          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+          backgroundColor: ThemeManager.backgroundColor(),
           appBar: AppBar(
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            backgroundColor: ThemeManager.backgroundColor(),
             elevation: 0,
+            systemOverlayStyle: _transparentNavBar,
             leading: IconButton(
               icon: Icon(
                 Icons.arrow_back,
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: ThemeManager.textColor(),
               ),
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
               AppLocalizations.of(context)!.search_engine,
               style: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: ThemeManager.textColor(),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -1545,33 +1577,33 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     title: 'Google',
                     onTap: () => _setSearchEngine('Google'),
                     isFirst: true,
-                    trailing: currentSearchEngine == 'Google' ? Icon(Icons.check, color: Colors.blue) : null,
+                    trailing: currentSearchEngine == 'Google' ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
                   ),
                   _buildSettingsItem(
                     title: 'Bing',
                     onTap: () => _setSearchEngine('Bing'),
-                    trailing: currentSearchEngine == 'Bing' ? Icon(Icons.check, color: Colors.blue) : null,
+                    trailing: currentSearchEngine == 'Bing' ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
                   ),
                   _buildSettingsItem(
                     title: 'DuckDuckGo',
                     onTap: () => _setSearchEngine('DuckDuckGo'),
-                    trailing: currentSearchEngine == 'DuckDuckGo' ? Icon(Icons.check, color: Colors.blue) : null,
+                    trailing: currentSearchEngine == 'DuckDuckGo' ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
                   ),
                   _buildSettingsItem(
                     title: 'Brave',
                     onTap: () => _setSearchEngine('Brave'),
-                    trailing: currentSearchEngine == 'Brave' ? Icon(Icons.check, color: Colors.blue) : null,
+                    trailing: currentSearchEngine == 'Brave' ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
                   ),
                   _buildSettingsItem(
                     title: 'Yahoo',
                     onTap: () => _setSearchEngine('Yahoo'),
-                    trailing: currentSearchEngine == 'Yahoo' ? Icon(Icons.check, color: Colors.blue) : null,
+                    trailing: currentSearchEngine == 'Yahoo' ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
                   ),
                   _buildSettingsItem(
                     title: 'Yandex',
                     onTap: () => _setSearchEngine('Yandex'),
                     isLast: true,
-                    trailing: currentSearchEngine == 'Yandex' ? Icon(Icons.check, color: Colors.blue) : null,
+                    trailing: currentSearchEngine == 'Yandex' ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
                   ),
                 ],
               ),
@@ -1603,25 +1635,30 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       MaterialPageRoute(
         builder: (context) => StatefulBuilder(
           builder: (context, setState) => Scaffold(
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            backgroundColor: ThemeManager.backgroundColor(),
             appBar: AppBar(
-              backgroundColor: isDarkMode ? Colors.black : Colors.white,
+              backgroundColor: ThemeManager.backgroundColor(),
               elevation: 0,
               systemOverlayStyle: SystemUiOverlayStyle(
+                statusBarColor: ThemeManager.backgroundColor(),
+                statusBarIconBrightness: ThemeManager.textColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
+                statusBarBrightness: ThemeManager.backgroundColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
                 systemNavigationBarColor: Colors.transparent,
+                systemNavigationBarIconBrightness: ThemeManager.textColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
+                systemNavigationBarContrastEnforced: false,
                 systemNavigationBarDividerColor: Colors.transparent,
               ),
               leading: IconButton(
                 icon: Icon(
                   Icons.arrow_back,
-                  color: isDarkMode ? Colors.white : Colors.black,
+                  color: ThemeManager.textColor(),
                 ),
                 onPressed: () => Navigator.pop(context),
               ),
               title: Text(
                 AppLocalizations.of(context)!.appearance,
                 style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
+                  color: ThemeManager.textColor(),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -1665,21 +1702,21 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => Scaffold(
-          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+          backgroundColor: ThemeManager.backgroundColor(),
           appBar: AppBar(
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            backgroundColor: ThemeManager.backgroundColor(),
             elevation: 0,
             leading: IconButton(
               icon: Icon(
                 Icons.arrow_back,
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: ThemeManager.textColor(),
               ),
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
               AppLocalizations.of(context)!.text_size,
               style: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: ThemeManager.textColor(),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -1692,7 +1729,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                 children: [
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.text_size_small,
-                    trailing: _textSize == 0.8 ? Icon(Icons.check, color: Theme.of(context).primaryColor) : null,
+                    trailing: _textSize == 0.8 ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
                     onTap: () {
                       setState(() => _textSize = 0.8);
                       Navigator.pop(context);
@@ -1702,7 +1739,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   ),
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.text_size_medium,
-                    trailing: _textSize == 1.0 ? Icon(Icons.check, color: Theme.of(context).primaryColor) : null,
+                    trailing: _textSize == 1.0 ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
                     onTap: () {
                       setState(() => _textSize = 1.0);
                       Navigator.pop(context);
@@ -1712,7 +1749,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   ),
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.text_size_large,
-                    trailing: _textSize == 1.2 ? Icon(Icons.check, color: Theme.of(context).primaryColor) : null,
+                    trailing: _textSize == 1.2 ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
                     onTap: () {
                       setState(() => _textSize = 1.2);
                       Navigator.pop(context);
@@ -1722,7 +1759,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   ),
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.text_size_very_large,
-                    trailing: _textSize == 1.4 ? Icon(Icons.check, color: Theme.of(context).primaryColor) : null,
+                    trailing: _textSize == 1.4 ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
                     onTap: () {
                       setState(() => _textSize = 1.4);
                       Navigator.pop(context);
@@ -1743,22 +1780,22 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => Scaffold(
-          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+          backgroundColor: ThemeManager.backgroundColor(),
           appBar: AppBar(
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            backgroundColor: ThemeManager.backgroundColor(),
             elevation: 0,
             systemOverlayStyle: _transparentNavBar,
             leading: IconButton(
               icon: Icon(
                 Icons.arrow_back,
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: ThemeManager.textColor(),
               ),
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
               AppLocalizations.of(context)!.downloads,
               style: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: ThemeManager.textColor(),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -1828,21 +1865,22 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     return Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => Scaffold(
-          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+          backgroundColor: ThemeManager.backgroundColor(),
           appBar: AppBar(
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            backgroundColor: ThemeManager.backgroundColor(),
             elevation: 0,
+            systemOverlayStyle: _transparentNavBar,
             leading: IconButton(
               icon: Icon(
                 Icons.chevron_left,
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: ThemeManager.textColor(),
               ),
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
               AppLocalizations.of(context)!.about,
               style: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: ThemeManager.textColor(),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -1855,7 +1893,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                 children: [
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.app_name,
-                    subtitle: AppLocalizations.of(context)!.version('0.0.6'),
+                    subtitle: AppLocalizations.of(context)!.version('0.0.7'),
                     isFirst: true,
                     isLast: false,
                   ),
@@ -1907,7 +1945,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+            color: ThemeManager.textColor().withOpacity(0.1),
           ),
         ),
       ),
@@ -1916,7 +1954,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           IconButton(
             icon: Icon(
               Icons.chevron_left,
-              color: isDarkMode ? Colors.white : Colors.black,
+              color: ThemeManager.textColor(),
             ),
             onPressed: onBack,
           ),
@@ -1926,7 +1964,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: ThemeManager.textColor(),
               ),
             ),
           ),
@@ -1951,7 +1989,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
             child: Container(
-              decoration: _getGlassmorphicDecoration(),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(28),
+                color: ThemeManager.backgroundColor().withOpacity(0.7),
+                border: Border.all(
+                  color: ThemeManager.textColor().withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -2021,7 +2066,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               width: 50,
               height: 50,
               decoration: BoxDecoration(
-                color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                color: ThemeManager.surfaceColor().withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: IconButton(
@@ -2035,14 +2080,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     onPressed();
                   }
                 },
-                color: isDarkMode ? Colors.white70 : Colors.black54,
+                color: ThemeManager.textSecondaryColor(),
               ),
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: ThemeManager.textColor(),
                 fontSize: 12,
               ),
             ),
@@ -2060,7 +2105,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
           child: Container(
-            decoration: _getGlassmorphicDecoration(),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28),
+              color: ThemeManager.backgroundColor().withOpacity(0.7),
+              border: Border.all(
+                color: ThemeManager.textColor().withOpacity(0.1),
+                width: 1,
+              ),
+            ),
             child: Row(
               children: [
                 const SizedBox(width: 16),
@@ -2069,12 +2121,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     controller: _urlController,
                     decoration: InputDecoration(
                       hintStyle: TextStyle(
-                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                        color: ThemeManager.textSecondaryColor().withOpacity(0.5),
                       ),
                       border: InputBorder.none,
                     ),
                     style: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.black,
+                      color: ThemeManager.textColor(),
                     ),
                     onSubmitted: (_) => _performSearch(),
                   ),
@@ -2085,28 +2137,28 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     child: Text(
                       '${currentSearchMatch + 1}/$totalSearchMatches',
                       style: TextStyle(
-                        color: isDarkMode ? Colors.white : Colors.black,
+                        color: ThemeManager.textColor(),
                       ),
                     ),
                   ),
                 IconButton(
                   icon: Icon(
                     Icons.keyboard_arrow_up_rounded,
-                    color: isDarkMode ? Colors.white70 : Colors.black54,
+                    color: ThemeManager.textSecondaryColor(),
                   ),
                   onPressed: () => _performSearch(searchUp: true),
                 ),
                 IconButton(
                   icon: Icon(
                     Icons.keyboard_arrow_down_rounded,
-                    color: isDarkMode ? Colors.white70 : Colors.black54,
+                    color: ThemeManager.textSecondaryColor(),
                   ),
                   onPressed: () => _performSearch(),
                 ),
                 IconButton(
                   icon: Icon(
                     Icons.close_rounded,
-                    color: isDarkMode ? Colors.white70 : Colors.black54,
+                    color: ThemeManager.textSecondaryColor(),
                   ),
                   onPressed: () {
                     setState(() {
@@ -2162,7 +2214,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             margin: EdgeInsets.symmetric(vertical: 8),
             padding: EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+              color: ThemeManager.surfaceColor(),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -2172,7 +2224,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   title: Text(
                     AppLocalizations.of(context)!.dark_mode,
                     style: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.black,
+                      color: ThemeManager.textColor(),
                     ),
                   ),
                   value: isDarkMode,
@@ -2186,13 +2238,18 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                       child: Text(
                         AppLocalizations.of(context)!.text_size,
                         style: TextStyle(
-                          color: isDarkMode ? Colors.white : Colors.black,
+                          color: ThemeManager.textColor(),
                         ),
                       ),
                     ),
                     Row(
                       children: [
-                        Text('A', style: TextStyle(fontSize: 14)),
+                        Text('A', 
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: ThemeManager.textColor(),
+                          )
+                        ),
                         Expanded(
                           child: Slider(
                             value: textScale,
@@ -2205,7 +2262,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                             },
                           ),
                         ),
-                        Text('A', style: TextStyle(fontSize: 24)),
+                        Text('A', 
+                          style: TextStyle(
+                            fontSize: 24,
+                            color: ThemeManager.textColor(),
+                          )
+                        ),
                       ],
                     ),
                   ],
@@ -2215,7 +2277,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   title: Text(
                     AppLocalizations.of(context)!.show_images,
                     style: TextStyle(
-                      color: isDarkMode ? Colors.white : Colors.black,
+                      color: ThemeManager.textColor(),
                     ),
                   ),
                   value: showImages,
@@ -2237,17 +2299,17 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   Widget _buildDownloadsPanel() {
     return Container(
-      color: isDarkMode ? Colors.black : Colors.white,
+      color: ThemeManager.backgroundColor(),
       child: Column(
         children: [
           Container(
             height: 56 + MediaQuery.of(context).padding.top,
             padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
             decoration: BoxDecoration(
-              color: isDarkMode ? Colors.black : Colors.white,
+              color: ThemeManager.backgroundColor(),
               border: Border(
                 bottom: BorderSide(
-                  color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                  color: ThemeManager.textColor().withOpacity(0.1),
                 ),
               ),
             ),
@@ -2256,7 +2318,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                 IconButton(
                   icon: Icon(
                     Icons.arrow_back,
-                    color: isDarkMode ? Colors.white : Colors.black,
+                    color: ThemeManager.textColor(),
                   ),
                   onPressed: () => setState(() => isDownloadsVisible = false),
                 ),
@@ -2265,7 +2327,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: isDarkMode ? Colors.white : Colors.black,
+                    color: ThemeManager.textColor(),
                   ),
                 ),
               ],
@@ -2303,7 +2365,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                       children: [
                                         CircularProgressIndicator(
                                           value: downloadProgress,
-                                          color: isDarkMode ? Colors.white70 : Colors.black54,
+                                          color: ThemeManager.textSecondaryColor(),
                                         ),
                                       ],
                                     ),
@@ -2315,7 +2377,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                           Text(
                                             currentFileName ?? AppLocalizations.of(context)!.downloading,
                                             style: TextStyle(
-                                              color: isDarkMode ? Colors.white : Colors.black,
+                                              color: ThemeManager.textColor(),
                                               fontWeight: FontWeight.w500,
                                             ),
                                           ),
@@ -2323,7 +2385,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                           Text(
                                             _extractDomain(currentDownloadUrl),
                                             style: TextStyle(
-                                              color: isDarkMode ? Colors.white54 : Colors.black45,
+                                              color: ThemeManager.textSecondaryColor(),
                                               fontSize: 13,
                                             ),
                                           ),
@@ -2333,18 +2395,18 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                     TextButton.icon(
                                       icon: Icon(
                                         Icons.close,
-                                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                                        color: ThemeManager.textColor(),
                                         size: 20,
                                       ),
                                       label: Text(
                                         'Cancel',
                                         style: TextStyle(
-                                          color: isDarkMode ? Colors.white70 : Colors.black54,
+                                          color: ThemeManager.textSecondaryColor(),
                                           fontSize: 14,
                                         ),
                                       ),
                                       style: TextButton.styleFrom(
-                                        backgroundColor: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                                        backgroundColor: ThemeManager.surfaceColor().withOpacity(0.05),
                                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                                         shape: RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(8),
@@ -2361,12 +2423,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                         _showNotification(
                                           Row(
                                             children: [
-                                              Icon(Icons.info, color: isDarkMode ? Colors.blue[200] : Colors.blue),
+                                              Icon(Icons.info, color: ThemeManager.primaryColor()),
                                               const SizedBox(width: 16),
                                               Text(
                                                 AppLocalizations.of(context)!.download_canceled,
                                                 style: TextStyle(
-                                                  color: isDarkMode ? Colors.white : Colors.black87,
+                                                  color: ThemeManager.textColor(),
                                                 ),
                                               ),
                                             ],
@@ -2380,16 +2442,16 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                 const SizedBox(height: 8),
                                 LinearProgressIndicator(
                                   value: downloadProgress,
-                                  backgroundColor: isDarkMode ? Colors.white12 : Colors.black12,
+                                  backgroundColor: ThemeManager.surfaceColor().withOpacity(0.12),
                                   valueColor: AlwaysStoppedAnimation(
-                                    isDarkMode ? Colors.white70 : Colors.black54,
+                                    ThemeManager.textSecondaryColor(),
                                   ),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
                                   '$downloadedSizeStr / $totalSizeStr',
                                   style: TextStyle(
-                                    color: isDarkMode ? Colors.white54 : Colors.black45,
+                                    color: ThemeManager.textSecondaryColor(),
                                     fontSize: 12,
                                   ),
                                 ),
@@ -2409,7 +2471,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                         margin: const EdgeInsets.symmetric(vertical: 4),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                          color: ThemeManager.secondaryColor(),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(
@@ -2418,12 +2480,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                               width: 40,
                               height: 40,
                               decoration: BoxDecoration(
-                                color: isDarkMode ? Colors.grey[800] : Colors.grey[200],
+                                color: ThemeManager.surfaceColor().withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Icon(
                                 Icons.file_download_done,
-                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                                color: ThemeManager.textColor(),
                                 size: 20,
                               ),
                             ),
@@ -2435,7 +2497,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                   Text(
                                     fileName,
                                     style: TextStyle(
-                                      color: isDarkMode ? Colors.white : Colors.black87,
+                                      color: ThemeManager.textColor(),
                                       fontSize: 14,
                                       fontWeight: FontWeight.w400,
                                     ),
@@ -2444,7 +2506,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                   Text(
                                     '$fileSize • ${_formatTimestamp(DateTime.parse(download['timestamp'] as String))}',
                                     style: TextStyle(
-                                      color: isDarkMode ? Colors.white60 : Colors.black54,
+                                      color: ThemeManager.textSecondaryColor(),
                                       fontSize: 12,
                                     ),
                                   ),
@@ -2454,7 +2516,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                             if (filePath != null) IconButton(
                               icon: Icon(
                                 Icons.open_in_new,
-                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                                color: ThemeManager.textColor(),
                                 size: 20,
                               ),
                               onPressed: () => _openDownloadedFile(download),
@@ -2462,10 +2524,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                             PopupMenuButton(
                               icon: Icon(
                                 Icons.more_vert,
-                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                                color: ThemeManager.textColor(),
                                 size: 20,
                               ),
-                              color: isDarkMode ? Colors.grey[900] : Colors.white,
+                              color: ThemeManager.backgroundColor(),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               itemBuilder: (context) => [
                                 PopupMenuItem(
@@ -2474,13 +2536,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                       Icon(
                                         Icons.open_in_new,
                                         size: 20,
-                                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                                        color: ThemeManager.textColor(),
                                       ),
                                       const SizedBox(width: 12),
                                       Text(
                                         AppLocalizations.of(context)!.open,
                                         style: TextStyle(
-                                          color: isDarkMode ? Colors.white : Colors.black,
+                                          color: ThemeManager.textColor(),
                                         ),
                                       ),
                                     ],
@@ -2495,13 +2557,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                       Icon(
                                         Icons.history,
                                         size: 20,
-                                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                                        color: ThemeManager.textColor(),
                                       ),
                                       const SizedBox(width: 12),
                                       Text(
                                         'Remove from History',
                                         style: TextStyle(
-                                          color: isDarkMode ? Colors.white : Colors.black,
+                                          color: ThemeManager.textColor(),
                                         ),
                                       ),
                                     ],
@@ -2511,16 +2573,16 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                 PopupMenuItem(
                                   child: Row(
                                     children: [
-                                      const Icon(
+                                      Icon(
                                         Icons.delete_forever,
                                         size: 20,
-                                        color: Colors.red,
+                                        color: ThemeManager.errorColor(),
                                       ),
                                       const SizedBox(width: 12),
                                       Text(
                                         'Delete from Device',
-                                        style: const TextStyle(
-                                          color: Colors.red,
+                                        style: TextStyle(
+                                          color: ThemeManager.errorColor(),
                                         ),
                                       ),
                                     ],
@@ -2531,18 +2593,21 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                     if (await file.exists()) {
                                       showDialog(
                                         context: context,
+                                        barrierColor: ThemeManager.textColor().withOpacity(0.1),
                                         builder: (context) => AlertDialog(
-                                          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+                                          backgroundColor: ThemeManager.backgroundColor(),
                                           title: Text(
                                             'Delete File',
                                             style: TextStyle(
-                                              color: isDarkMode ? Colors.white : Colors.black,
+                                              color: ThemeManager.textColor(),
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
                                             ),
                                           ),
                                           content: Text(
                                             'Are you sure you want to permanently delete this file from your device?',
                                             style: TextStyle(
-                                              color: isDarkMode ? Colors.white70 : Colors.black87,
+                                              color: ThemeManager.textColor(),
                                             ),
                                           ),
                                           actions: [
@@ -2551,7 +2616,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                               child: Text(
                                                 AppLocalizations.of(context)!.cancel,
                                                 style: TextStyle(
-                                                  color: isDarkMode ? Colors.white70 : Colors.black54,
+                                                  color: ThemeManager.textColor(),
                                                 ),
                                               ),
                                             ),
@@ -2573,13 +2638,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                                 _showNotification(
                                                   Row(
                                                     children: [
-                                                      const Icon(Icons.check_circle, color: Colors.green),
+                                                      Icon(Icons.check_circle, color: ThemeManager.successColor()),
                                                       const SizedBox(width: 16),
                                                       Expanded(
                                                         child: Text(
                                                           'File deleted from device',
                                                           style: TextStyle(
-                                                            color: isDarkMode ? Colors.white : Colors.black87,
+                                                            color: ThemeManager.textColor(),
                                                             fontSize: 14,
                                                             fontWeight: FontWeight.w500,
                                                           ),
@@ -2592,8 +2657,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                               },
                                               child: Text(
                                                 'Delete',
-                                                style: const TextStyle(
-                                                  color: Colors.red,
+                                                style: TextStyle(
+                                                  color: ThemeManager.errorColor(),
                                                   fontWeight: FontWeight.bold,
                                                 ),
                                               ),
@@ -2619,17 +2684,17 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   Widget _buildBookmarksPanel() {
     return Container(
-      color: isDarkMode ? Colors.black : Colors.white,
+      color: ThemeManager.backgroundColor(),
       child: Column(
         children: [
           Container(
             height: 56 + MediaQuery.of(context).padding.top,
             padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
             decoration: BoxDecoration(
-              color: isDarkMode ? Colors.black : Colors.white,
+              color: ThemeManager.backgroundColor(),
               border: Border(
                 bottom: BorderSide(
-                  color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                  color: ThemeManager.textColor().withOpacity(0.1),
                 ),
               ),
             ),
@@ -2638,7 +2703,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                 IconButton(
                   icon: Icon(
                     Icons.arrow_back,
-                    color: isDarkMode ? Colors.white : Colors.black,
+                    color: ThemeManager.textColor(),
                   ),
                   onPressed: () {
                     setState(() {
@@ -2651,7 +2716,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: isDarkMode ? Colors.white : Colors.black,
+                    color: ThemeManager.textColor(),
                   ),
                 ),
               ],
@@ -2663,7 +2728,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   child: Text(
                     'No bookmarks yet',
                     style: TextStyle(
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                      color: ThemeManager.textSecondaryColor(),
                     ),
                   ),
                 )
@@ -2675,7 +2740,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     return Container(
                       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                       decoration: BoxDecoration(
-                        color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                        color: ThemeManager.secondaryColor(),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: ListTile(
@@ -2687,29 +2752,29 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                               height: 24,
                               errorBuilder: (context, error, stackTrace) => Icon(
                                 Icons.web,
-                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                                color: ThemeManager.textColor(),
                               ),
                             )
                           : Icon(
                               Icons.web,
-                              color: isDarkMode ? Colors.white70 : Colors.black54,
+                              color: ThemeManager.textColor(),
                             ),
                         title: Text(
                           bookmark['title'],
                           style: TextStyle(
-                            color: isDarkMode ? Colors.white : Colors.black,
+                            color: ThemeManager.textColor(),
                           ),
                         ),
                         subtitle: Text(
                           _getDisplayUrl(bookmark['url']),
                           style: TextStyle(
-                            color: isDarkMode ? Colors.white70 : Colors.black45,
+                            color: ThemeManager.textColor(),
                           ),
                         ),
                         trailing: IconButton(
                           icon: Icon(
                             Icons.delete,
-                            color: isDarkMode ? Colors.white70 : Colors.black54,
+                            color: ThemeManager.textColor(),
                           ),
                           onPressed: () async {
                             final prefs = await SharedPreferences.getInstance();
@@ -3048,9 +3113,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
               child: Container(
-                color: isDarkMode 
-                  ? Colors.black.withOpacity(0.7) 
-                  : Colors.white.withOpacity(0.7),
+                color: ThemeManager.backgroundColor().withOpacity(0.7),
                 child: TweenAnimationBuilder<double>(
                   tween: Tween<double>(begin: 0.0, end: 1.0),
                   duration: const Duration(milliseconds: 300),
@@ -3097,17 +3160,17 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
     return Container(
       height: MediaQuery.of(context).size.height,
-      color: isDarkMode ? Colors.black : Colors.white,
+      color: ThemeManager.backgroundColor(),
       child: Column(
         children: [
           Container(
             height: 56 + MediaQuery.of(context).padding.top,
             padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
             decoration: BoxDecoration(
-              color: isDarkMode ? Colors.black : Colors.white,
+              color: ThemeManager.backgroundColor(),
               boxShadow: [
                 BoxShadow(
-                  color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+                  color: ThemeManager.textColor().withOpacity(0.1),
                   blurRadius: 4,
                   offset: Offset(0, 1),
                 ),
@@ -3118,7 +3181,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                 IconButton(
                   icon: Icon(
                     Icons.arrow_back,
-                    color: isDarkMode ? Colors.white : Colors.black,
+                    color: ThemeManager.textColor(),
                     size: 22,
                   ),
                   onPressed: () {
@@ -3150,7 +3213,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                 PopupMenuButton<String>(
                   icon: Icon(
                     Icons.add_circle_outline_rounded,
-                    color: isDarkMode ? Colors.white : Colors.black,
+                    color: ThemeManager.textColor(),
                     size: 22,
                   ),
                   onSelected: (String value) {
@@ -3163,12 +3226,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                       isTabsVisible = false;
                     });
                   },
-                  color: isDarkMode ? Colors.grey[900] : Colors.white,
+                  color: ThemeManager.surfaceColor(),
                   elevation: 8,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                     side: BorderSide(
-                      color: isDarkMode ? Colors.white10 : Colors.black12,
+                      color: ThemeManager.textSecondaryColor().withOpacity(0.1),
                       width: 1,
                     ),
                   ),
@@ -3180,13 +3243,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                           Icon(
                             Icons.tab_rounded,
                             size: 20,
-                            color: isDarkMode ? Colors.white70 : Colors.black87,
+                            color: ThemeManager.textColor(),
                           ),
                           SizedBox(width: 12),
                           Text(
                             AppLocalizations.of(context)!.new_tab,
                             style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
+                              color: ThemeManager.textColor(),
                               fontSize: 14,
                             ),
                           ),
@@ -3200,13 +3263,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                           Icon(
                             Icons.visibility_off_rounded,
                             size: 20,
-                            color: isDarkMode ? Colors.white70 : Colors.black87,
+                            color: ThemeManager.textColor(),
                           ),
                           SizedBox(width: 12),
                           Text(
                             AppLocalizations.of(context)!.new_incognito_tab,
                             style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
+                              color: ThemeManager.textColor(),
                               fontSize: 14,
                             ),
                           ),
@@ -3229,14 +3292,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                         Icon(
                           Icons.tab_unselected_rounded,
                           size: 48,
-                          color: isDarkMode ? Colors.white24 : Colors.black12,
+                          color: ThemeManager.surfaceColor().withOpacity(0.24),
                         ),
                         SizedBox(height: 16),
                         Text(
                           AppLocalizations.of(context)!.no_tabs_open,
                           style: TextStyle(
                             fontSize: 16,
-                            color: isDarkMode ? Colors.white70 : Colors.black54,
+                            color: ThemeManager.textSecondaryColor(),
                           ),
                         ),
                       ],
@@ -3269,15 +3332,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                         child: Container(
                           decoration: BoxDecoration(
                             color: isCurrentTab 
-                              ? (isDarkMode ? Colors.white.withOpacity(0.08) : Theme.of(context).primaryColor.withOpacity(0.08))
-                              : isDarkMode ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.02),
+                              ? ThemeManager.surfaceColor().withOpacity(0.24)
+                              : ThemeManager.surfaceColor().withOpacity(0.12),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: isCurrentTab 
-                                ? (isDarkMode ? Colors.white.withOpacity(0.2) : Theme.of(context).primaryColor)
-                                : Colors.transparent,
-                              width: 1,
-                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -3289,7 +3346,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                     fit: StackFit.expand,
                                     children: [
                                       Container(
-                                        color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.02),
+                                        color: ThemeManager.surfaceColor().withOpacity(0.05),
                                         child: Center(
                                           child: Container(
                                             width: 24,
@@ -3301,13 +3358,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                                   errorBuilder: (context, error, stackTrace) => Icon(
                                                     tab.isIncognito ? Icons.visibility_off_rounded : Icons.public_rounded,
                                                     size: 20,
-                                                    color: isDarkMode ? Colors.white54 : Colors.black45,
+                                                    color: ThemeManager.textSecondaryColor(),
                                                   ),
                                                 )
                                               : Icon(
                                                   tab.isIncognito ? Icons.visibility_off_rounded : Icons.public_rounded,
                                                   size: 20,
-                                                  color: isDarkMode ? Colors.white54 : Colors.black45,
+                                                  color: ThemeManager.textSecondaryColor(),
                                                 ),
                                           ),
                                         ),
@@ -3320,13 +3377,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                           child: Container(
                                             padding: EdgeInsets.all(4),
                                             decoration: BoxDecoration(
-                                              color: isDarkMode ? Colors.black45 : Colors.black38,
+                                              color: ThemeManager.surfaceColor().withOpacity(0.5),
                                               borderRadius: BorderRadius.circular(12),
                                             ),
                                             child: Icon(
-                                              Icons.close_rounded,
-                                              size: 14,
-                                              color: Colors.white,
+                                              Icons.close,
+                                              size: 18,
+                                              color: ThemeManager.textColor(),
                                             ),
                                           ),
                                         ),
@@ -3346,7 +3403,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
                                         fontSize: 13,
-                                        color: isDarkMode ? Colors.white : Colors.black87,
+                                        color: ThemeManager.textColor(),
                                         fontWeight: isCurrentTab ? FontWeight.w500 : FontWeight.normal,
                                       ),
                                     ),
@@ -3357,14 +3414,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                           Icon(
                                             Icons.visibility_off_rounded,
                                             size: 12,
-                                            color: isDarkMode ? Colors.white38 : Colors.black38,
+                                            color: ThemeManager.textSecondaryColor(),
                                           ),
                                           SizedBox(width: 4),
                                           Text(
                                             AppLocalizations.of(context)!.incognito,
                                             style: TextStyle(
                                               fontSize: 11,
-                                              color: isDarkMode ? Colors.white38 : Colors.black38,
+                                              color: ThemeManager.textSecondaryColor(),
                                             ),
                                           ),
                                         ],
@@ -3397,7 +3454,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-            ? (isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05))
+            ? ThemeManager.primaryColor().withOpacity(0.1)
             : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
@@ -3409,21 +3466,21 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: ThemeManager.textColor(),
               ),
             ),
             SizedBox(width: 4),
             Container(
               padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
+                color: ThemeManager.primaryColor().withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 count.toString(),
                 style: TextStyle(
                   fontSize: 12,
-                  color: isDarkMode ? Colors.white70 : Colors.black54,
+                  color: ThemeManager.textSecondaryColor(),
                 ),
               ),
             ),
@@ -3515,7 +3572,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   IconButton(
                     icon: Icon(
                       Icons.arrow_back,
-                      color: isDarkMode ? Colors.white : Colors.black,
+                      color: ThemeManager.textColor(),
                     ),
                     onPressed: () => Navigator.pop(context),
                   ),
@@ -3525,39 +3582,42 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
-                        color: isDarkMode ? Colors.white : Colors.black,
+                        color: ThemeManager.textColor(),
                       ),
                     ),
                   ),
                   IconButton(
                     icon: Icon(
                       Icons.delete_outline,
-                      color: isDarkMode ? Colors.white : Colors.black,
+                      color: ThemeManager.textColor(),
                     ),
                     onPressed: () {
                       showDialog(
                         context: context,
+                        barrierColor: ThemeManager.textColor().withOpacity(0.1),
                         builder: (context) => AlertDialog(
-                          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+                          backgroundColor: ThemeManager.backgroundColor(),
                           title: Text(
                             'Clear History',
                             style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
+                              color: ThemeManager.textColor(),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                           content: Text(
                             'Are you sure you want to clear all browsing history?',
                             style: TextStyle(
-                              color: isDarkMode ? Colors.white70 : Colors.black87,
+                              color: ThemeManager.textColor(),
                             ),
                           ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context),
                               child: Text(
-                                'Cancel',
+                                AppLocalizations.of(context)!.cancel,
                                 style: TextStyle(
-                                  color: isDarkMode ? Colors.white70 : Colors.black54,
+                                  color: ThemeManager.textColor(),
                                 ),
                               ),
                             ),
@@ -3569,7 +3629,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                               child: Text(
                                 'Clear',
                                 style: TextStyle(
-                                  color: Colors.red,
+                                  color: ThemeManager.errorColor(),
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -3604,30 +3664,33 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   icon: Icon(
                     Icons.delete_outline_rounded,
                     size: 20,
-                    color: isDarkMode ? Colors.white70 : Colors.black54,
+                    color: ThemeManager.textSecondaryColor(),
                   ),
                   label: Text(
                     AppLocalizations.of(context)!.clear_all,
                     style: TextStyle(
-                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                      color: ThemeManager.textSecondaryColor(),
                       fontSize: 14,
                     ),
                   ),
                   onPressed: () {
                     showDialog(
                       context: context,
+                      barrierColor: ThemeManager.textColor().withOpacity(0.1),
                       builder: (context) => AlertDialog(
-                        backgroundColor: isDarkMode ? Colors.black : Colors.white,
+                        backgroundColor: ThemeManager.backgroundColor(),
                         title: Text(
                           AppLocalizations.of(context)!.clear_history,
                           style: TextStyle(
-                            color: isDarkMode ? Colors.white : Colors.black,
+                            color: ThemeManager.textColor(),
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                         content: Text(
                           AppLocalizations.of(context)!.clear_history_confirmation,
                           style: TextStyle(
-                            color: isDarkMode ? Colors.white70 : Colors.black87,
+                            color: ThemeManager.textSecondaryColor(),
                           ),
                         ),
                         actions: [
@@ -3636,7 +3699,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                             child: Text(
                               AppLocalizations.of(context)!.cancel,
                               style: TextStyle(
-                                color: isDarkMode ? Colors.white70 : Colors.black54,
+                                color: ThemeManager.textSecondaryColor(),
                               ),
                             ),
                           ),
@@ -3648,7 +3711,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                             child: Text(
                               AppLocalizations.of(context)!.clear,
                               style: TextStyle(
-                                color: Colors.red,
+                                color: ThemeManager.errorColor(),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -3670,14 +3733,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     Icon(
                       Icons.history_rounded,
                       size: 48,
-                      color: isDarkMode ? Colors.white24 : Colors.black12,
+                      color: ThemeManager.surfaceColor().withOpacity(0.24),
                     ),
                     SizedBox(height: 16),
                     Text(
                       AppLocalizations.of(context)!.no_history,
                       style: TextStyle(
                         fontSize: 16,
-                        color: isDarkMode ? Colors.white70 : Colors.black54,
+                        color: ThemeManager.textSecondaryColor(),
                       ),
                     ),
                   ],
@@ -3699,7 +3762,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              isDarkMode ? Colors.white70 : Colors.black45,
+                              ThemeManager.textSecondaryColor(),
                             ),
                           ),
                         ),
@@ -3716,14 +3779,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     key: Key(item['timestamp'] ?? DateTime.now().toIso8601String()),
                     background: Container(
                       decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
+                        color: ThemeManager.errorColor().withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       alignment: Alignment.centerRight,
                       padding: EdgeInsets.only(right: 16),
                       child: Icon(
                         Icons.delete_rounded,
-                        color: Colors.red.withOpacity(0.8),
+                        color: ThemeManager.errorColor().withOpacity(0.8),
                       ),
                     ),
                     direction: DismissDirection.endToStart,
@@ -3731,7 +3794,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     child: Container(
                       margin: EdgeInsets.symmetric(vertical: 4),
                       decoration: BoxDecoration(
-                        color: isDarkMode ? Colors.white.withOpacity(0.03) : Colors.black.withOpacity(0.02),
+                        color: ThemeManager.secondaryColor(),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: ListTile(
@@ -3740,7 +3803,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                           width: 40,
                           height: 40,
                           decoration: BoxDecoration(
-                            color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
+                            color: ThemeManager.surfaceColor().withOpacity(0.05),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: item['favicon'] != null
@@ -3753,14 +3816,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                   errorBuilder: (context, error, stackTrace) => Icon(
                                     Icons.public_rounded,
                                     size: 20,
-                                    color: isDarkMode ? Colors.white54 : Colors.black45,
+                                    color: ThemeManager.textSecondaryColor(),
                                   ),
                                 ),
                               )
                             : Icon(
                                 Icons.public_rounded,
                                 size: 20,
-                                color: isDarkMode ? Colors.white54 : Colors.black45,
+                                color: ThemeManager.textSecondaryColor(),
                               ),
                         ),
                         title: Text(
@@ -3769,7 +3832,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 15,
-                            color: isDarkMode ? Colors.white : Colors.black87,
+                            color: ThemeManager.textColor(),
                           ),
                         ),
                         subtitle: Column(
@@ -3781,7 +3844,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 fontSize: 13,
-                                color: isDarkMode ? Colors.white54 : Colors.black45,
+                                color: ThemeManager.textSecondaryColor(),
                               ),
                             ),
                             SizedBox(height: 4),
@@ -3789,7 +3852,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                               '$formattedDate • $formattedTime',
                               style: TextStyle(
                                 fontSize: 12,
-                                color: isDarkMode ? Colors.white38 : Colors.black38,
+                                color: ThemeManager.textSecondaryColor(),
                               ),
                             ),
                           ],
@@ -3798,7 +3861,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                           icon: Icon(
                             Icons.delete_outline_rounded,
                             size: 20,
-                            color: isDarkMode ? Colors.white54 : Colors.black45,
+                            color: ThemeManager.textSecondaryColor(),
                           ),
                           onPressed: () => _removeHistoryItem(index),
                         ),
@@ -3841,7 +3904,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   Widget _buildSettingsPanel() {
     return Material(
-      color: isDarkMode ? Colors.black : Colors.white,
+      color: ThemeManager.backgroundColor(),
       child: Column(
         children: [
           _buildPanelHeader(AppLocalizations.of(context)!.settings, 
@@ -3879,8 +3942,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.withOpacity(0.1),
-                      foregroundColor: Colors.red,
+                      backgroundColor: ThemeManager.errorColor().withOpacity(0.1),
+                      foregroundColor: ThemeManager.errorColor(),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -3890,7 +3953,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     child: Text(
                       AppLocalizations.of(context)!.reset_browser,
                       style: TextStyle(
-                        color: Colors.red,
+                        color: ThemeManager.errorColor(),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -3928,12 +3991,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         getLocalizedLabel(),
         style: TextStyle(
           fontSize: 14,
-          color: isDarkMode ? Colors.white : Colors.black,
+          color: ThemeManager.textColor(),
         ),
       ),
       trailing: Icon(
         Icons.chevron_right,
-        color: isDarkMode ? Colors.white54 : Colors.black45,
+        color: ThemeManager.textSecondaryColor(),
         size: 20,
       ),
       onTap: onTap,
@@ -3952,7 +4015,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           child: Text(
             AppLocalizations.of(context)!.cancel,
             style: TextStyle(
-              color: isDarkMode ? Colors.white70 : Colors.black54,
+              color: ThemeManager.textSecondaryColor(),
             ),
           ),
         ),
@@ -3996,7 +4059,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       context: context,
       message: AppLocalizations.of(context)!.reset_complete,
       icon: Icons.check_circle,
-      iconColor: Colors.green,
+      iconColor: ThemeManager.successColor(),
       isDarkMode: isDarkMode,
     );
     
@@ -4016,17 +4079,17 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: isDarkMode ? Colors.white70 : Colors.black54,
+              color: ThemeManager.textColor(),
             ),
           ),
         ),
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),
           decoration: BoxDecoration(
-            color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.white,
+            color: ThemeManager.surfaceColor(),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isDarkMode ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+              color: ThemeManager.textColor().withOpacity(0.1),
               width: 0.5,
             ),
           ),
@@ -4254,7 +4317,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         return CustomPaint(
           painter: LoadingBorderPainter(
             progress: value,
-            color: isDarkMode ? Colors.white70 : Colors.black54,
+            color: ThemeManager.textColor().withOpacity(0.7),
           ),
           child: Container(
             height: 48,
@@ -4320,13 +4383,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   height: 48,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(28),
-                    color: isDarkMode 
-                      ? Colors.black.withOpacity(0.7) 
-                      : Colors.white.withOpacity(0.7),
+                    color: ThemeManager.backgroundColor().withOpacity(0.7),
                     border: Border.all(
-                      color: isDarkMode 
-                        ? Colors.white.withOpacity(0.1) 
-                        : Colors.black.withOpacity(0.1),
+                      color: ThemeManager.textColor().withOpacity(0.1),
                       width: 1,
                     ),
                   ),
@@ -4337,10 +4396,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                         const SizedBox(width: 16),
                         Icon(
                           isSecure ? Icons.shield : Icons.warning_amber_rounded,
-                          size: 20,
-                          color: isSecure 
-                            ? (isDarkMode ? Colors.green[300] : Colors.green[700])
-                            : (isDarkMode ? Colors.orange[300] : Colors.orange[700]),
+                          size: 16,
+                          color: ThemeManager.textColor(),
                           semanticLabel: isSecure ? 
                             AppLocalizations.of(context)!.secure_connection : 
                             AppLocalizations.of(context)!.insecure_connection,
@@ -4351,15 +4408,16 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                             focusNode: _urlFocusNode,
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: isDarkMode ? Colors.white : Colors.black,
+                              color: ThemeManager.textColor(),
                               fontSize: 16,
                             ),
                             decoration: InputDecoration(
-                              border: InputBorder.none,
                               hintText: AppLocalizations.of(context)!.search_or_type_url,
                               hintStyle: TextStyle(
-                                color: isDarkMode ? Colors.white38 : Colors.black38,
+                                color: ThemeManager.textColor().withOpacity(0.5),
                               ),
+                              border: InputBorder.none,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                             ),
                             onTap: () {
                               if (!_urlFocusNode.hasFocus) {
@@ -4384,9 +4442,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                         ),
                         IconButton(
                           icon: Icon(
-                            _urlFocusNode.hasFocus ? Icons.close_rounded : Icons.refresh_rounded,
-                            color: isDarkMode ? Colors.white70 : Colors.black54,
-                            size: 20,
+                            Icons.refresh,
+                            color: ThemeManager.textColor(),
                           ),
                           onPressed: () {
                             if (_urlFocusNode.hasFocus) {
@@ -4431,7 +4488,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         context: context,
         message: AppLocalizations.of(context)!.press_back_to_exit,
         icon: Icons.exit_to_app,
-        iconColor: isDarkMode ? Colors.white70 : Colors.black54,
+        iconColor: ThemeManager.textColor(),
         isDarkMode: isDarkMode,
         duration: const Duration(seconds: 2),
       );
@@ -4451,54 +4508,19 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
-        backgroundColor: isDarkMode ? Colors.black : Colors.white,
+        backgroundColor: ThemeManager.backgroundColor(),
         extendBody: true,
         extendBodyBehindAppBar: true,
         body: Stack(
           children: [
-            // WebView (full screen)
-            WebViewWidget(controller: controller),
-
-            // Transparent gesture detection layer
-            Positioned.fill(
-              child: Listener(
-                onPointerMove: (event) {
-                  // Only handle vertical scrolls if they're significant
-                  if (event.delta.dy.abs() > event.delta.dx.abs()) {
-                    if (event.delta.dy < -10) { // Scrolling down - hide URL bar
-                      if (!_hideUrlBar) {
-                        setState(() {
-                          _hideUrlBar = true;
-                          _hideUrlBarController.forward();
-                        });
-                      }
-                    } else if (event.delta.dy > 10) { // Scrolling up - show URL bar
-                      if (_hideUrlBar) {
-                        setState(() {
-                          _hideUrlBar = false;
-                          _hideUrlBarController.reverse();
-                        });
-                      }
-                    }
-                  }
-                },
-                onPointerDown: (event) {
-                  if (_urlFocusNode.hasFocus) {
-                    _urlFocusNode.unfocus();
-                    setState(() {
-                      _urlController.text = _formatUrl(_displayUrl);
-                      _urlController.selection = const TextSelection.collapsed(offset: -1);
-                    });
-                  }
-                },
-                behavior: HitTestBehavior.translucent,
-                child: Container(color: Colors.transparent),
-              ),
+            // WebView with proper padding
+            Positioned(
+              top: statusBarHeight,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: WebViewWidget(controller: controller),
             ),
-
-            // Loading indicator
-            if (_isLoading)
-              const Center(child: CircularProgressIndicator()),
 
             // Bottom controls (URL bar and panels)
             Positioned(
@@ -4750,10 +4772,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     } else {
       await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
+        statusBarColor: ThemeManager.backgroundColor(),
+        statusBarIconBrightness: ThemeManager.textColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
+        statusBarBrightness: ThemeManager.backgroundColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
         systemNavigationBarColor: Colors.transparent,
-        statusBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
-        systemNavigationBarIconBrightness: isDarkMode ? Brightness.light : Brightness.dark,
+        systemNavigationBarIconBrightness: ThemeManager.textColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
+        systemNavigationBarContrastEnforced: false,
+        systemNavigationBarDividerColor: Colors.transparent,
       ));
     }
   }
@@ -4895,8 +4920,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       downloadsList.insert(0, json.encode(downloadData));
       await prefs.setStringList('downloads', downloadsList);
 
+      // Immediately refresh the downloads list
+      await _loadDownloads();
+
       setState(() {
-        downloads.insert(0, downloadData);
         isDownloading = false;
         currentDownloadUrl = '';
         _currentFileName = null;
@@ -4987,11 +5014,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               margin: const EdgeInsets.symmetric(vertical: 8),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
-                color: isDarkMode ? Colors.grey[900] : Colors.white,
+                color: ThemeManager.backgroundColor(),
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: ThemeManager.textColor().withOpacity(0.1),
                     blurRadius: 10,
                     spreadRadius: 0,
                   ),
@@ -5010,7 +5037,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                       child: Text(
                         action.label,
                         style: TextStyle(
-                          color: Theme.of(context).primaryColor,
+                          color: ThemeManager.primaryColor(),
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -5037,17 +5064,17 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: isDarkMode ? Colors.black : Colors.white,
+        backgroundColor: ThemeManager.backgroundColor(),
         title: Text(
           AppLocalizations.of(context)!.clear_downloads_history_title,
           style: TextStyle(
-            color: isDarkMode ? Colors.white : Colors.black,
+            color: ThemeManager.textColor(),
           ),
         ),
         content: Text(
           AppLocalizations.of(context)!.clear_downloads_history_confirm,
           style: TextStyle(
-            color: isDarkMode ? Colors.white70 : Colors.black87,
+            color: ThemeManager.textSecondaryColor(),
           ),
         ),
         actions: [
@@ -5056,7 +5083,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             child: Text(
               AppLocalizations.of(context)!.cancel,
               style: TextStyle(
-                color: isDarkMode ? Colors.white70 : Colors.black54,
+                color: ThemeManager.textSecondaryColor(),
               ),
             ),
           ),
@@ -5071,7 +5098,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               _showNotification(
                 Row(
                   children: [
-                    const Icon(Icons.check_circle, color: Colors.green),
+                    Icon(Icons.check_circle, color: ThemeManager.successColor()),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(AppLocalizations.of(context)!.downloads_history_cleared),
@@ -5084,7 +5111,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             child: Text(
               AppLocalizations.of(context)!.clear,
               style: TextStyle(
-                color: Colors.red,
+                color: ThemeManager.errorColor(),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -5101,17 +5128,17 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: isDarkMode ? Colors.black : Colors.white,
+        backgroundColor: ThemeManager.backgroundColor(),
         title: Text(
           AppLocalizations.of(context)!.delete_download,
           style: TextStyle(
-            color: isDarkMode ? Colors.white : Colors.black,
+            color: ThemeManager.textColor(),
           ),
         ),
         content: Text(
           AppLocalizations.of(context)!.delete_download_confirm(fileName),
           style: TextStyle(
-            color: isDarkMode ? Colors.white70 : Colors.black87,
+            color: ThemeManager.textSecondaryColor(),
           ),
         ),
         actions: [
@@ -5120,7 +5147,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             child: Text(
               AppLocalizations.of(context)!.cancel,
               style: TextStyle(
-                color: isDarkMode ? Colors.white70 : Colors.black54,
+                color: ThemeManager.textSecondaryColor(),
               ),
             ),
           ),
@@ -5137,7 +5164,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               _showNotification(
                 Row(
                   children: [
-                    const Icon(Icons.check_circle, color: Colors.green),
+                    Icon(Icons.check_circle, color: ThemeManager.successColor()),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(AppLocalizations.of(context)!.download_removed),
@@ -5150,7 +5177,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             child: Text(
               AppLocalizations.of(context)!.delete,
               style: TextStyle(
-                color: Colors.red,
+                color: ThemeManager.errorColor(),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -5330,13 +5357,20 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
             child: Container(
-              decoration: _getGlassmorphicDecoration(),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(28),
+                color: ThemeManager.backgroundColor().withOpacity(0.7),
+                border: Border.all(
+                  color: ThemeManager.textColor().withOpacity(0.1),
+                  width: 1,
+                ),
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   IconButton(
                     icon: const Icon(Icons.chevron_left_rounded, size: 24),
-                    color: canGoBack ? (isDarkMode ? Colors.white70 : Colors.black54) : (isDarkMode ? Colors.white24 : Colors.black12),
+                    color: canGoBack ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
                     onPressed: canGoBack ? _goBack : null,
                   ),
                   IconButton(
@@ -5344,12 +5378,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                       isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
                       size: 24,
                     ),
-                    color: isDarkMode ? Colors.white70 : Colors.black54,
+                    color: ThemeManager.textSecondaryColor(),
                     onPressed: _addBookmark,
                   ),
                   IconButton(
                     icon: const Icon(Icons.ios_share_rounded, size: 24),
-                    color: isDarkMode ? Colors.white70 : Colors.black54,
+                    color: ThemeManager.textSecondaryColor(),
                     onPressed: () async {
                       if (currentUrl.isNotEmpty) {
                         await Share.share(currentUrl);
@@ -5358,7 +5392,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   ),
                   IconButton(
                     icon: const Icon(Icons.chevron_right_rounded, size: 24),
-                    color: canGoForward ? (isDarkMode ? Colors.white70 : Colors.black54) : (isDarkMode ? Colors.white24 : Colors.black12),
+                    color: canGoForward ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
                     onPressed: canGoForward ? _goForward : null,
                   ),
                 ],
@@ -5390,12 +5424,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             ListTile(
               leading: Icon(
                 Icons.download_rounded,
-                color: isDarkMode ? Colors.white70 : Colors.black54,
+                color: ThemeManager.textSecondaryColor(),
               ),
               title: Text(
                 AppLocalizations.of(context)!.download_image,
                 style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
+                  color: ThemeManager.textColor(),
                 ),
               ),
               onTap: () {
@@ -5406,12 +5440,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             ListTile(
               leading: Icon(
                 Icons.share_rounded,
-                color: isDarkMode ? Colors.white70 : Colors.black54,
+                color: ThemeManager.textSecondaryColor(),
               ),
               title: Text(
                 AppLocalizations.of(context)!.share_image,
                 style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
+                  color: ThemeManager.textColor(),
                 ),
               ),
               onTap: () {
@@ -5422,12 +5456,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             ListTile(
               leading: Icon(
                 Icons.open_in_new_rounded,
-                color: isDarkMode ? Colors.white70 : Colors.black54,
+                color: ThemeManager.textSecondaryColor(),
               ),
               title: Text(
                 AppLocalizations.of(context)!.open_in_new_tab,
                 style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black,
+                  color: ThemeManager.textColor(),
                 ),
               ),
               onTap: () {
@@ -5615,15 +5649,23 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => Scaffold(
-          backgroundColor: isDarkMode ? Colors.black : Colors.white,
+          backgroundColor: ThemeManager.backgroundColor(),
           appBar: AppBar(
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            backgroundColor: ThemeManager.backgroundColor(),
             elevation: 0,
-            systemOverlayStyle: _transparentNavBar,
+            systemOverlayStyle: SystemUiOverlayStyle(
+              statusBarColor: ThemeManager.backgroundColor(),
+              statusBarIconBrightness: ThemeManager.textColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
+              statusBarBrightness: ThemeManager.backgroundColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
+              systemNavigationBarColor: Colors.transparent,
+              systemNavigationBarIconBrightness: ThemeManager.textColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
+              systemNavigationBarContrastEnforced: false,
+              systemNavigationBarDividerColor: Colors.transparent,
+            ),
             title: Text(
               AppLocalizations.of(context)!.settings,
               style: TextStyle(
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: ThemeManager.textColor(),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -5634,60 +5676,29 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               _buildSettingsSection(
                 title: AppLocalizations.of(context)!.settings,
                 children: [
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.general,
-                    onTap: () => _showGeneralSettings(),
-                    isFirst: true,
-                    isLast: false,
-                  ),
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.downloads,
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => _showDownloadsSettings(),
-                    isFirst: false,
-                    isLast: false,
-                  ),
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.appearance,
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => _showAppearanceSettings(),
-                    isFirst: false,
-                    isLast: false,
-                  ),
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.help,
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => _showHelpPage(),
-                    isFirst: false,
-                    isLast: false,
-                  ),
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.rate_us,
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => _showRateUs(),
-                    isFirst: false,
-                    isLast: false,
-                  ),
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.privacy_policy,
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => _showPrivacyPolicy(),
-                    isFirst: false,
-                    isLast: false,
-                  ),
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.terms_of_use,
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => _showTermsOfUse(),
-                    isFirst: false,
-                    isLast: false,
-                  ),
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.about,
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => _showAboutPage(),
-                    isFirst: false,
-                    isLast: true,
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: ThemeManager.secondaryColor().withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          AppLocalizations.of(context)!.dark_mode,
+                          style: TextStyle(
+                            color: ThemeManager.textColor(),
+                            fontSize: 16,
+                          ),
+                        ),
+                        Switch(
+                          value: isDarkMode,
+                          onChanged: _toggleTheme,
+                          activeColor: ThemeManager.primaryColor(),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -5887,7 +5898,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           _showNotification(
             Row(
               children: [
-                const Icon(Icons.check_circle, color: Colors.green),
+                Icon(Icons.check_circle, color: ThemeManager.successColor()),
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(AppLocalizations.of(context)!.download_completed + ': $fileName'),
@@ -6013,13 +6024,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       _showNotification(
         Row(
           children: [
-            const Icon(Icons.error_outline, color: Colors.red),
+            Icon(Icons.error_outline, color: ThemeManager.errorColor()),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 'Cannot open file: path not found',
                 style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black87,
+                  color: ThemeManager.textColor(),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
@@ -6038,13 +6049,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         _showNotification(
           Row(
             children: [
-              const Icon(Icons.error_outline, color: Colors.red),
+              Icon(Icons.error_outline, color: ThemeManager.errorColor()),
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
                   'Error opening file: ${result.message}',
                   style: TextStyle(
-                    color: isDarkMode ? Colors.white : Colors.black87,
+                    color: ThemeManager.textColor(),
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -6059,13 +6070,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       _showNotification(
         Row(
           children: [
-            const Icon(Icons.error_outline, color: Colors.red),
+            Icon(Icons.error_outline, color: ThemeManager.errorColor()),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
                 'Error opening file: $e',
                 style: TextStyle(
-                  color: isDarkMode ? Colors.white : Colors.black87,
+                  color: ThemeManager.textColor(),
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),

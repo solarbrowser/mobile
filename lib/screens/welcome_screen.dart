@@ -11,6 +11,7 @@ import 'browser_screen.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:app_settings/app_settings.dart';
+import '../theme/theme_manager.dart';
 
 class WelcomeScreen extends StatefulWidget {
   final Function(String) onLocaleChange;
@@ -164,17 +165,17 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.white.withOpacity(_isDarkMode ? 0.1 : 0.2),
-                Colors.white.withOpacity(_isDarkMode ? 0.05 : 0.1),
+                ThemeManager.textColor().withOpacity(0.2),
+                ThemeManager.textColor().withOpacity(0.1),
               ],
             ),
             borderRadius: BorderRadius.circular(30),
             border: Border.all(
-              color: Colors.white.withOpacity(_isDarkMode ? 0.1 : 0.2),
+              color: ThemeManager.textColor().withOpacity(0.2),
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.1),
+                color: ThemeManager.textColor().withOpacity(0.1),
                 blurRadius: 10,
                 spreadRadius: 1,
               ),
@@ -256,7 +257,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                     style: TextStyle(
                                       fontSize: isLargeScreen ? 32 : 24,
                                       fontWeight: FontWeight.bold,
-                                      color: _isDarkMode ? Colors.white : Colors.black,
+                                      color: ThemeManager.textColor(),
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
@@ -267,7 +268,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: isLargeScreen ? 18 : 14,
-                                    color: _isDarkMode ? Colors.white70 : Colors.black87,
+                                    color: ThemeManager.textSecondaryColor(),
                                     letterSpacing: 0.3,
                                   ),
                                 ),
@@ -288,7 +289,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                             text: AppLocalizations.of(context)!.termsOfService,
                             style: TextStyle(
                               fontSize: isLargeScreen ? 16 : 13,
-                              color: _isDarkMode ? Colors.white60 : Colors.black54,
+                              color: ThemeManager.textSecondaryColor(),
                               fontWeight: FontWeight.bold
                             ),
                           ),
@@ -323,9 +324,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
           child: FadeTransition(
             opacity: animation,
             child: AlertDialog(
-              backgroundColor: _isDarkMode 
-                ? Colors.grey[900] 
-                : Colors.white,
+              backgroundColor: ThemeManager.backgroundColor(),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -335,7 +334,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     TextSpan(
                       text: AppLocalizations.of(context)!.terms_of_use,
                       style: TextStyle(
-                        color: _isDarkMode ? Colors.white : Colors.black,
+                        color: ThemeManager.textColor(),
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                       ),
@@ -343,14 +342,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     TextSpan(
                       text: ' & ',
                       style: TextStyle(
-                        color: _isDarkMode ? Colors.white70 : Colors.black87,
+                        color: ThemeManager.textSecondaryColor(),
                         fontSize: 18,
                       ),
                     ),
                     TextSpan(
                       text: AppLocalizations.of(context)!.privacy_policy,
                       style: TextStyle(
-                        color: _isDarkMode ? Colors.white : Colors.black,
+                        color: ThemeManager.textColor(),
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                       ),
@@ -366,14 +365,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     Text(
                       AppLocalizations.of(context)!.termsOfService,
                       style: TextStyle(
-                        color: _isDarkMode ? Colors.white70 : Colors.black87,
+                        color: ThemeManager.textSecondaryColor(),
                       ),
                     ),
                     const SizedBox(height: 16),
                     Text(
                       AppLocalizations.of(context)!.data_collection + ':',
                       style: TextStyle(
-                        color: _isDarkMode ? Colors.white : Colors.black,
+                        color: ThemeManager.textColor(),
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -381,7 +380,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     Text(
                       AppLocalizations.of(context)!.data_collection_details,
                       style: TextStyle(
-                        color: _isDarkMode ? Colors.white70 : Colors.black87,
+                        color: ThemeManager.textSecondaryColor(),
                       ),
                     ),
                   ],
@@ -393,7 +392,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   child: Text(
                     AppLocalizations.of(context)!.continueText,
                     style: TextStyle(
-                      color: _isDarkMode ? Colors.white : Colors.black,
+                      color: ThemeManager.textColor(),
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -419,7 +418,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
           style: TextStyle(
             fontSize: isLargeScreen ? 32 : 24,
             fontWeight: FontWeight.bold,
-            color: _isDarkMode ? Colors.white : Colors.black,
+            color: ThemeManager.textColor(),
           ),
         ),
         SizedBox(height: size.height * 0.04),
@@ -439,7 +438,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   title: Text(
                     name,
                     style: TextStyle(
-                      color: _isDarkMode ? Colors.white : Colors.black,
+                      color: ThemeManager.textColor(),
                       fontSize: isLargeScreen ? 18 : 15,
                       fontWeight: _selectedLanguage == language ? 
                         FontWeight.bold : FontWeight.normal,
@@ -447,7 +446,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   ),
                   trailing: _selectedLanguage == language ? 
                     Icon(Icons.check, 
-                      color: _isDarkMode ? Colors.white : Colors.black,
+                      color: ThemeManager.textColor(),
                       size: isLargeScreen ? 24 : 20,
                     ) : null,
                   onTap: () {
@@ -477,7 +476,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
           style: TextStyle(
             fontSize: isLargeScreen ? 32 : 24,
             fontWeight: FontWeight.bold,
-            color: _isDarkMode ? Colors.white : Colors.black,
+            color: ThemeManager.textColor(),
           ),
         ),
         SizedBox(height: size.height * 0.04),
@@ -491,7 +490,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(30),
                   border: !_isDarkMode ? Border.all(
-                    color: _isDarkMode ? Colors.white70 : Colors.black54,
+                    color: ThemeManager.textSecondaryColor(),
                     width: 1.5,
                   ) : null,
                 ),
@@ -508,14 +507,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                       children: [
                         Icon(
                           Icons.light_mode,
-                          color: _isDarkMode ? Colors.white70 : Colors.black87,
+                          color: ThemeManager.textSecondaryColor(),
                           size: isLargeScreen ? 48 : 32,
                         ),
                         SizedBox(height: size.height * 0.02),
                         Text(
                           AppLocalizations.of(context)!.lightTheme,
                           style: TextStyle(
-                            color: _isDarkMode ? Colors.white70 : Colors.black87,
+                            color: ThemeManager.textSecondaryColor(),
                             fontSize: isLargeScreen ? 20 : 16,
                             fontWeight: !_isDarkMode ? FontWeight.bold : FontWeight.normal,
                           ),
@@ -534,7 +533,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(30),
                   border: _isDarkMode ? Border.all(
-                    color: _isDarkMode ? Colors.white70 : Colors.black54,
+                    color: ThemeManager.textSecondaryColor(),
                     width: 1.5,
                   ) : null,
                 ),
@@ -551,14 +550,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                       children: [
                         Icon(
                           Icons.dark_mode,
-                          color: _isDarkMode ? Colors.white70 : Colors.black87,
+                          color: ThemeManager.textSecondaryColor(),
                           size: isLargeScreen ? 48 : 32,
                         ),
                         SizedBox(height: size.height * 0.02),
                         Text(
                           AppLocalizations.of(context)!.darkTheme,
                           style: TextStyle(
-                            color: _isDarkMode ? Colors.white70 : Colors.black87,
+                            color: ThemeManager.textSecondaryColor(),
                             fontSize: isLargeScreen ? 20 : 16,
                             fontWeight: _isDarkMode ? FontWeight.bold : FontWeight.normal,
                           ),
@@ -587,7 +586,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
           style: TextStyle(
             fontSize: isLargeScreen ? 32 : 24,
             fontWeight: FontWeight.bold,
-            color: _isDarkMode ? Colors.white : Colors.black,
+            color: ThemeManager.textColor(),
           ),
         ),
         SizedBox(height: size.height * 0.04),
@@ -607,7 +606,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   title: Text(
                     name,
                     style: TextStyle(
-                      color: _isDarkMode ? Colors.white : Colors.black,
+                      color: ThemeManager.textColor(),
                       fontSize: isLargeScreen ? 18 : 15,
                       fontWeight: _selectedSearchEngine == engine ? 
                         FontWeight.bold : FontWeight.normal,
@@ -615,7 +614,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   ),
                   trailing: _selectedSearchEngine == engine ? 
                     Icon(Icons.check, 
-                      color: _isDarkMode ? Colors.white : Colors.black,
+                      color: ThemeManager.textColor(),
                       size: isLargeScreen ? 24 : 20,
                     ) : null,
                   onTap: () {
@@ -636,7 +635,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _isDarkMode ? Colors.black : Colors.white,
+      backgroundColor: ThemeManager.backgroundColor(),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -715,7 +714,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   child: Text(
                     AppLocalizations.of(context)!.back,
                     style: TextStyle(
-                      color: _isDarkMode ? Colors.white70 : Colors.black54,
+                      color: ThemeManager.textSecondaryColor(),
                       fontSize: isLargeScreen ? 18 : 15,
                     ),
                   ),
@@ -732,8 +731,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(isLargeScreen ? 4 : 3),
                       color: _currentPage == index
-                        ? (_isDarkMode ? Colors.white : Colors.black)
-                        : (_isDarkMode ? Colors.white24 : Colors.black12),
+                        ? ThemeManager.textColor()
+                        : ThemeManager.textSecondaryColor(),
                     ),
                   ),
                 )),
@@ -758,7 +757,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     ? AppLocalizations.of(context)!.next
                     : AppLocalizations.of(context)!.getStarted,
                   style: TextStyle(
-                    color: _isDarkMode ? Colors.white : Colors.black,
+                    color: ThemeManager.textColor(),
                     fontWeight: FontWeight.bold,
                     fontSize: isLargeScreen ? 18 : 15,
                   ),

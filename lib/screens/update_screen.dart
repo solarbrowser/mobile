@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/app_localizations.dart';
 import 'dart:ui';
 import 'browser_screen.dart';
+import '../theme/theme_manager.dart';
 
 class UpdateScreen extends StatefulWidget {
   final String currentVersion;
@@ -105,7 +106,7 @@ class _UpdateScreenState extends State<UpdateScreen> with SingleTickerProviderSt
     // Add update notes for each version
     return [
       {
-        'version': '0.0.6',
+        'version': '0.0.7',
         'changes': [
           AppLocalizations.of(context)!.welcomeDescription,
           AppLocalizations.of(context)!.whats_new,
@@ -121,15 +122,15 @@ class _UpdateScreenState extends State<UpdateScreen> with SingleTickerProviderSt
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.black : Colors.white,
+      backgroundColor: ThemeManager.backgroundColor(),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: isDarkMode 
-              ? [Colors.black, Colors.black87]
-              : [Colors.white, Colors.grey.shade100],
+              ? [ThemeManager.backgroundColor(), ThemeManager.backgroundColor().withOpacity(0.87)]
+              : [ThemeManager.backgroundColor(), ThemeManager.surfaceColor()],
           ),
         ),
         child: SafeArea(
@@ -162,8 +163,8 @@ class _UpdateScreenState extends State<UpdateScreen> with SingleTickerProviderSt
                                   ShaderMask(
                                     shaderCallback: (bounds) => LinearGradient(
                                       colors: isDarkMode
-                                          ? [Colors.white, Colors.white70]
-                                          : [Colors.black, Colors.black87],
+                                          ? [ThemeManager.textColor(), ThemeManager.textSecondaryColor()]
+                                          : [ThemeManager.textColor(), ThemeManager.textSecondaryColor()],
                                     ).createShader(bounds),
                                     child: Text(
                                       AppLocalizations.of(context)!.updated,

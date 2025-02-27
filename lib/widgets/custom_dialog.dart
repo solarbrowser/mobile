@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/theme_manager.dart';
 
 class CustomDialog extends StatelessWidget {
   final String title;
@@ -19,14 +20,14 @@ class CustomDialog extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
+      backgroundColor: ThemeManager.backgroundColor(),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
       title: Text(
         title,
         style: TextStyle(
-          color: isDarkMode ? Colors.white : Colors.black,
+          color: ThemeManager.textColor(),
           fontWeight: FontWeight.bold,
           fontSize: 18,
         ),
@@ -34,7 +35,7 @@ class CustomDialog extends StatelessWidget {
       content: customContent ?? (content != null ? Text(
         content!,
         style: TextStyle(
-          color: isDarkMode ? Colors.white70 : Colors.black87,
+          color: ThemeManager.textSecondaryColor(),
           fontSize: 16,
         ),
       ) : null),
@@ -76,7 +77,7 @@ void showCustomDialog({
     },
     barrierDismissible: true,
     barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
-    barrierColor: Colors.black54,
+    barrierColor: ThemeManager.textColor().withOpacity(0.5),
     transitionDuration: const Duration(milliseconds: 200),
   );
 } 
