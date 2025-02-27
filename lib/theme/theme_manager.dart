@@ -20,6 +20,10 @@ class ThemeColors {
   final Color successColor;
   final Color warningColor;
   final Color secondaryColor;
+  final Color textColor;
+  final Color textSecondaryColor;
+  final Color primaryColor;
+  final Color accentColor;
 
   const ThemeColors({
     required this.backgroundColor,
@@ -128,3 +132,5 @@ class ThemeManager {
   static Color warningColor() => _currentColors.warningColor;
   static Color secondaryColor() => _currentColors.secondaryColor;
 } 
+} 
+

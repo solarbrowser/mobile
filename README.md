@@ -37,7 +37,7 @@ This section is for those who want to run Solar Browser when no releases are ava
 2. Run the application using the following command:
 
    ```bash
-   flutter run
+   flutter run --release or flutter run --debug
    ```
 
 3. Alternatively, you can build the project for release using:
