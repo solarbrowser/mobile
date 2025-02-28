@@ -20,10 +20,6 @@ class ThemeColors {
   final Color successColor;
   final Color warningColor;
   final Color secondaryColor;
-  final Color textColor;
-  final Color textSecondaryColor;
-  final Color primaryColor;
-  final Color accentColor;
 
   const ThemeColors({
     required this.backgroundColor,
@@ -40,7 +36,7 @@ class ThemeColors {
 }
 
 class ThemeManager {
-  static ThemeType _currentTheme = ThemeType.solarizedLight;
+  static ThemeType _currentTheme = ThemeType.dracula;
   static bool _isDarkMode = false;
 
   static final Map<ThemeType, ThemeColors> _themes = {
@@ -131,6 +127,5 @@ class ThemeManager {
   static Color successColor() => _currentColors.successColor;
   static Color warningColor() => _currentColors.warningColor;
   static Color secondaryColor() => _currentColors.secondaryColor;
-} 
 } 
 

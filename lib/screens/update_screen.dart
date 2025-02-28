@@ -179,7 +179,7 @@ class _UpdateScreenState extends State<UpdateScreen> with SingleTickerProviderSt
                                     AppLocalizations.of(context)!.version(widget.currentVersion),
                                     style: TextStyle(
                                       fontSize: 16,
-                                      color: isDarkMode ? Colors.white70 : Colors.black54,
+                                      color: ThemeManager.textColor(),
                                     ),
                                   ),
                                   const SizedBox(height: 40),
@@ -206,7 +206,7 @@ class _UpdateScreenState extends State<UpdateScreen> with SingleTickerProviderSt
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
-                                        color: isDarkMode ? Colors.white : Colors.black,
+                                        color: ThemeManager.textColor(),
                                       ),
                                     ),
                                   ),
@@ -241,7 +241,7 @@ class _UpdateScreenState extends State<UpdateScreen> with SingleTickerProviderSt
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: isDarkMode ? Colors.white : Colors.black,
+                color: ThemeManager.textColor(),
               ),
             ),
             const SizedBox(height: 20),
@@ -254,7 +254,7 @@ class _UpdateScreenState extends State<UpdateScreen> with SingleTickerProviderSt
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: isDarkMode ? Colors.white70 : Colors.black87,
+                      color: ThemeManager.textColor(),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -271,7 +271,7 @@ class _UpdateScreenState extends State<UpdateScreen> with SingleTickerProviderSt
                             height: 6,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: isDarkMode ? Colors.white60 : Colors.black54,
+                              color: ThemeManager.secondaryColor(),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -280,7 +280,7 @@ class _UpdateScreenState extends State<UpdateScreen> with SingleTickerProviderSt
                               version['changes'][index],
                               style: TextStyle(
                                 fontSize: 15,
-                                color: isDarkMode ? Colors.white60 : Colors.black54,
+                                color: ThemeManager.textColor(),
                               ),
                             ),
                           ),

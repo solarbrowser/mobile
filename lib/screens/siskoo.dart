@@ -358,12 +358,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     );
     
     _hideUrlBarAnimation = Tween<Offset>(
-      begin: Offset.zero,
+      begin: const Offset(0, 0), 
       end: const Offset(0, 2),
-    ).animate(CurvedAnimation(
-      parent: _hideUrlBarController,
-      curve: Curves.easeInOut,
-    ));
+    ).animate(_hideUrlBarController);
 
     // Initialize scroll detection
     _setupScrollHandling();
@@ -582,49 +579,49 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       let lastScrollTime = Date.now();
       let ticking = false;
 
-      function handleScroll() {
-        const currentScrollY = window.scrollY;
-        const currentTime = Date.now();
-        const delta = currentScrollY - lastScrollY;
-        
-        // More sensitive scroll detection
-        if (Math.abs(delta) > 2) {  // Reduced threshold
-          if (window.flutter_inappwebview) {
-            window.flutter_inappwebview.callHandler('onScroll', {
-              scrollY: currentScrollY,
-              delta: delta
-            });
-          }
-          lastScrollTime = currentTime;
-          lastScrollY = currentScrollY;
-        }
-      }
-
       window.addEventListener('scroll', function() {
-        handleScroll();  // Immediate handling
+        if (!ticking) {
+          window.requestAnimationFrame(function() {
+            const currentScrollY = window.scrollY;
+            const currentTime = Date.now();
+            const delta = currentScrollY - lastScrollY;
+            
+            // Only trigger if the scroll is fast enough (natural scroll)
+            if (currentTime - lastScrollTime < 100) {
+              if (window.flutter_inappwebview) {
+                window.flutter_inappwebview.callHandler('onScroll', {
+                  scrollY: currentScrollY,
+                  delta: delta
+                });
+              }
+            }
+            
+            lastScrollY = currentScrollY;
+            lastScrollTime = currentTime;
+            ticking = false;
+          });
+          ticking = true;
+        }
       }, { passive: true });
 
-      // Touch events for smoother mobile detection
+      // Also detect touch moves for smoother detection
       let touchStartY = 0;
-      let lastTouchY = 0;
-
       window.addEventListener('touchstart', function(e) {
         touchStartY = e.touches[0].clientY;
-        lastTouchY = touchStartY;
       }, { passive: true });
 
       window.addEventListener('touchmove', function(e) {
         const currentY = e.touches[0].clientY;
-        const delta = lastTouchY - currentY;  // Reversed delta calculation
+        const delta = touchStartY - currentY;
         
-        if (Math.abs(delta) > 2) {  // More sensitive threshold
+        if (Math.abs(delta) > 5) {
           if (window.flutter_inappwebview) {
             window.flutter_inappwebview.callHandler('onScroll', {
               scrollY: window.scrollY,
               delta: delta
             });
           }
-          lastTouchY = currentY;
+          touchStartY = currentY;
         }
       }, { passive: true });
     ''');
@@ -638,15 +635,15 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           final data = json.decode(message.message);
           final delta = data['delta'] as double;
           
-          if (delta.abs() > 2) {  // More sensitive threshold
-            if (delta > 0) {  // Scrolling up (finger moving up) = hide URL bar
+          if (delta.abs() > 5) {
+            if (delta > 0) {  // Scrolling up
               if (!_hideUrlBar) {
                 setState(() {
                   _hideUrlBar = true;
                   _hideUrlBarController.forward();
                 });
               }
-            } else {  // Scrolling down (finger moving down) = show URL bar
+            } else {  // Scrolling down
               if (_hideUrlBar) {
                 setState(() {
                   _hideUrlBar = false;
@@ -2354,7 +2351,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                         
                         return Card(
                           elevation: 0,
-                          color: ThemeManager.secondaryColor(),
+                          color: isDarkMode ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.03),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           child: Padding(
                             padding: const EdgeInsets.all(12),
@@ -4516,103 +4513,84 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         extendBodyBehindAppBar: true,
         body: Stack(
           children: [
-            // WebView
-            Positioned.fill(
+            // WebView with proper padding
+            Positioned(
+              top: statusBarHeight,
+              left: 0,
+              right: 0,
+              bottom: 0,
               child: WebViewWidget(controller: controller),
-            ),
-
-            // Gesture detector for URL bar control
-            Positioned.fill(
-              child: Listener(
-                behavior: HitTestBehavior.translucent,
-                onPointerMove: (PointerMoveEvent event) {
-                  // Only handle significant vertical movements
-                  if (event.delta.dy.abs() > 10) {
-                    // Ignore if it's more of a horizontal drag
-                    if (event.delta.dx.abs() < event.delta.dy.abs()) {
-                      if (event.delta.dy > 0) { // Dragging down = show URL bar
-                        if (_hideUrlBar) {
-                          setState(() {
-                            _hideUrlBar = false;
-                            _hideUrlBarController.reverse();
-                          });
-                        }
-                      } else { // Dragging up = hide URL bar
-                        if (!_hideUrlBar) {
-                          setState(() {
-                            _hideUrlBar = true;
-                            _hideUrlBarController.forward();
-                          });
-                        }
-                      }
-                    }
-                  }
-                },
-              ),
             ),
 
             // Bottom controls (URL bar and panels)
             Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Quick actions and navigation panels when visible
-                  if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
-                    AnimatedBuilder(
-                      animation: _slideUpController,
-                      builder: (context, child) {
-                        final slideValue = _slideUpController.value;
-                        return Visibility(
-                          visible: slideValue > 0,
-                          maintainState: false,
-                          child: Transform.translate(
-                            offset: Offset(0, (1 - slideValue) * 100),
-                            child: Opacity(
-                              opacity: slideValue,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  _buildQuickActionsPanel(),
-                                  _buildNavigationPanel(),
-                                ],
+              left: 16, // Consistent 16px margin
+              right: 16,
+              bottom: MediaQuery.of(context).padding.bottom + 8, // 8px from bottom
+              child: GestureDetector(
+                onVerticalDragUpdate: (details) {
+                  if (details.delta.dy < -10 && !_isSlideUpPanelVisible) {
+                    _handleSlideUpPanelVisibility(true);
+                  } else if (details.delta.dy > 10 && _isSlideUpPanelVisible) {
+                    _handleSlideUpPanelVisibility(false);
+                  }
+                },
+                onVerticalDragEnd: (details) {
+                  if (details.primaryVelocity != null) {
+                    if (details.primaryVelocity! > 0) { // Dragging down
+                      _handleSlideUpPanelVisibility(false);
+                    } else if (details.primaryVelocity! < 0) { // Dragging up
+                      _handleSlideUpPanelVisibility(true);
+                    }
+                  }
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
+                      AnimatedBuilder(
+                        animation: _slideUpController,
+                        builder: (context, child) {
+                          final slideValue = _slideUpController.value;
+                          return Visibility(
+                            visible: slideValue > 0,
+                            maintainState: false,
+                            child: Transform.translate(
+                              offset: Offset(0, (1 - slideValue) * 100),
+                              child: Opacity(
+                                opacity: slideValue,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _buildQuickActionsPanel(),
+                                    _buildNavigationPanel(),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                    
-                  // URL bar with slide-up gesture
-                  Padding(
-                    padding: EdgeInsets.only(
-                      left: 16,
-                      right: 16,
-                      bottom: MediaQuery.of(context).padding.bottom + 8,
-                    ),
-                    child: GestureDetector(
-                      onVerticalDragUpdate: (details) {
-                        if (details.delta.dy < -10 && !_isSlideUpPanelVisible) {
-                          _handleSlideUpPanelVisibility(true);
-                        } else if (details.delta.dy > 10 && _isSlideUpPanelVisible) {
-                          _handleSlideUpPanelVisibility(false);
-                        }
-                      },
-                      onVerticalDragEnd: (details) {
-                        if (details.primaryVelocity != null) {
-                          if (details.primaryVelocity! > 0) {
-                            _handleSlideUpPanelVisibility(false);
-                          } else if (details.primaryVelocity! < 0) {
-                            _handleSlideUpPanelVisibility(true);
-                          }
-                        }
-                      },
-                      child: _buildUrlBar(),
-                    ),
-                  ),
-                ],
+                          );
+                        },
+                      ),
+                    if (!_isSlideUpPanelVisible && !isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
+                      AnimatedBuilder(
+                        animation: _slideUpController,
+                        builder: (context, child) {
+                          final slideValue = _slideUpController.value;
+                          return Visibility(
+                            visible: true, // Always keep visible for smooth animation
+                            maintainState: true,
+                            child: Transform.translate(
+                              offset: Offset(0, slideValue * 100),
+                              child: Opacity(
+                                opacity: 1 - slideValue,
+                                child: _buildUrlBar(),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                  ],
+                ),
               ),
             ),
 
