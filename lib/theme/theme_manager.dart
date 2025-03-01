@@ -7,6 +7,12 @@ enum ThemeType {
   tokyoNight,
   solarizedLight,
   dracula,
+  nord,
+  gruvbox,
+  oneDark,
+  catppuccin,
+  nordLight,
+  gruvboxLight,
 }
 
 class ThemeColors {
@@ -36,11 +42,11 @@ class ThemeColors {
 }
 
 class ThemeManager {
-  static ThemeType _currentTheme = ThemeType.dracula;
+  static ThemeType _currentTheme = ThemeType.nordLight;
   static bool _isDarkMode = false;
 
   static final Map<ThemeType, ThemeColors> _themes = {
-    ThemeType.light: ThemeColors(
+        ThemeType.light: ThemeColors(
       backgroundColor: Colors.white,
       surfaceColor: Colors.grey[100]!,
       textColor: Colors.black,
@@ -99,6 +105,54 @@ class ThemeManager {
       successColor: const Color(0xFF50FA7B),
       warningColor: const Color(0xFFFFB86C),
       secondaryColor: const Color(0xFF3B3D4D),
+    ),
+    ThemeType.nord: ThemeColors(
+      backgroundColor: const Color(0xFF2E3440),
+      surfaceColor: const Color(0xFF3B4252),
+      textColor: const Color(0xFFD8DEE9),
+      textSecondaryColor: const Color(0xFF81A1C1),
+      primaryColor: const Color(0xFF88C0D0),
+      accentColor: const Color(0xFF8FBCBB),
+      errorColor: const Color(0xFFBF616A),
+      successColor: const Color(0xFFA3BE8C),
+      warningColor: const Color(0xFFD08770),
+      secondaryColor: const Color(0xFF4C566A),
+    ),
+    ThemeType.gruvbox: ThemeColors(
+      backgroundColor: const Color(0xFF282828),
+      surfaceColor: const Color(0xFF3C3836),
+      textColor: const Color(0xFFEBDBB2),
+      textSecondaryColor: const Color(0xFFD5C4A1),
+      primaryColor: const Color(0xFFFE8019),
+      accentColor: const Color(0xFFB8BB26),
+      errorColor: const Color(0xFFFB4934),
+      successColor: const Color(0xFF8EC07C),
+      warningColor: const Color(0xFFFABD2F),
+      secondaryColor: const Color(0xFF504945),
+    ),
+    ThemeType.nordLight: ThemeColors(
+      backgroundColor: const Color(0xFFE5E9F0),
+      surfaceColor: const Color(0xFFD8DEE9),
+      textColor: const Color(0xFF2E3440),
+      textSecondaryColor: const Color(0xFF4C566A),
+      primaryColor: const Color(0xFF5E81AC),
+      accentColor: const Color(0xFF81A1C1),
+      errorColor: const Color(0xFFBF616A),
+      successColor: const Color(0xFFA3BE8C),
+      warningColor: const Color(0xFFD08770),
+      secondaryColor: const Color(0xFFB48EAD),
+    ),
+    ThemeType.gruvboxLight: ThemeColors(
+      backgroundColor: const Color(0xFFFBF1C7),
+      surfaceColor: const Color(0xFFEBDBB2),
+      textColor: const Color(0xFF3C3836),
+      textSecondaryColor: const Color(0xFF504945),
+      primaryColor: const Color(0xFFFE8019),
+      accentColor: const Color(0xFFB8BB26),
+      errorColor: const Color(0xFFCC241D),
+      successColor: const Color(0xFF98971A),
+      warningColor: const Color(0xFFD79921),
+      secondaryColor: const Color(0xFFD5C4A1),
     ),
   };
 

@@ -341,6 +341,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     _loadSettings();
     _loadSearchEngines();
     
+    // Handle incoming intents
+    if (Platform.isAndroid) {
+      _handleIncomingIntents();
+    }
+
     // Set up URL focus listener
     _urlFocusNode.addListener(() {
       if (!_urlFocusNode.hasFocus) {
@@ -359,14 +364,29 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     
     _hideUrlBarAnimation = Tween<Offset>(
       begin: Offset.zero,
-      end: const Offset(0, 2),
+      end: const Offset(0, 1.5), // Reduced from 2 to 1.5 for smoother animation
     ).animate(CurvedAnimation(
       parent: _hideUrlBarController,
-      curve: Curves.easeInOut,
+      curve: Curves.easeOutCubic,
     ));
+
+    _slideUpController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
 
     // Initialize scroll detection
     _setupScrollHandling();
+  }
+
+  Future<void> _handleIncomingIntents() async {
+    // Handle URLs shared from other apps
+    const platform = MethodChannel('app.channel.shared.data');
+    String? sharedUrl = await platform.invokeMethod('getSharedUrl');
+    
+    if (sharedUrl != null && sharedUrl.isNotEmpty) {
+      _loadUrl(sharedUrl);
+    }
   }
 
   SystemUiOverlayStyle get _transparentNavBar => SystemUiOverlayStyle(
@@ -478,10 +498,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     );
     _hideUrlBarAnimation = Tween<Offset>(
       begin: Offset.zero,
-      end: const Offset(0, 1), // Changed from -1 to 1 to make it go down instead of up
+      end: const Offset(0, 1.5), // Reduced from 2 to 1.5 for smoother animation
     ).animate(CurvedAnimation(
       parent: _hideUrlBarController,
-      curve: Curves.easeInOut,
+      curve: Curves.easeOutCubic,
     ));
 
     // Initialize other controllers
@@ -1977,23 +1997,64 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     );
   }
 
+  Widget _buildQuickActionButton(String label, IconData icon, {VoidCallback? onPressed}) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: onPressed,
+        child: SizedBox(
+          width: 70,
+          height: 80,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: ThemeManager.surfaceColor().withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  icon,
+                  color: ThemeManager.textSecondaryColor(),
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: ThemeManager.textColor(),
+                  fontSize: 12,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildQuickActionsPanel() {
     final screenWidth = MediaQuery.of(context).size.width;
-    final panelWidth = screenWidth - 32; // 16px margin on each side
+    final panelWidth = screenWidth - 32;
 
     return Container(
       width: panelWidth,
-      height: 100, // Same as URL bar
-      margin: const EdgeInsets.only(bottom: 8), // Consistent 8px spacing
+      height: 100,
+      margin: const EdgeInsets.only(bottom: 8),
       child: Material(
-        color: Colors.transparent,
+        color: ThemeManager.backgroundColor(),
+        elevation: 0,
+        borderRadius: BorderRadius.circular(28),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(20),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
             child: Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
                 color: ThemeManager.backgroundColor().withOpacity(0.7),
                 border: Border.all(
                   color: ThemeManager.textColor().withOpacity(0.1),
@@ -2006,95 +2067,51 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   _buildQuickActionButton(
                     AppLocalizations.of(context)!.settings,
                     Icons.settings_rounded,
-                    onPressed: () => setState(() {
-                      isSettingsVisible = true;
-                      _isSlideUpPanelVisible = false;
-                      _slideUpController.reverse();
-                    }),
+                    onPressed: () {
+                      setState(() {
+                        isSettingsVisible = true;
+                        _isSlideUpPanelVisible = false;
+                        _slideUpController.reverse();
+                      });
+                    },
                   ),
                   _buildQuickActionButton(
                     AppLocalizations.of(context)!.downloads,
                     Icons.download_rounded,
-                    onPressed: () => setState(() {
-                      isDownloadsVisible = true;
-                      _isSlideUpPanelVisible = false;
-                      _slideUpController.reverse();
-                    }),
+                    onPressed: () {
+                      setState(() {
+                        isDownloadsVisible = true;
+                        _isSlideUpPanelVisible = false;
+                        _slideUpController.reverse();
+                      });
+                    },
                   ),
                   _buildQuickActionButton(
                     AppLocalizations.of(context)!.tabs,
                     Icons.tab_rounded,
-                    onPressed: () => setState(() {
-                      isTabsVisible = true;
-                      _isSlideUpPanelVisible = false;
-                      _slideUpController.reverse();
-                    }),
+                    onPressed: () {
+                      setState(() {
+                        isTabsVisible = true;
+                        _isSlideUpPanelVisible = false;
+                        _slideUpController.reverse();
+                      });
+                    },
                   ),
                   _buildQuickActionButton(
                     AppLocalizations.of(context)!.bookmarks,
                     Icons.bookmark_rounded,
-                    onPressed: () => setState(() {
-                      isBookmarksVisible = true;
-                      _isSlideUpPanelVisible = false;
-                      _slideUpController.reverse();
-                    }),
+                    onPressed: () {
+                      setState(() {
+                        isBookmarksVisible = true;
+                        _isSlideUpPanelVisible = false;
+                        _slideUpController.reverse();
+                      });
+                    },
                   ),
                 ],
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickActionButton(String label, IconData icon, {VoidCallback? onPressed}) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          if (onPressed != null) {
-            setState(() {
-              _isSlideUpPanelVisible = false;
-              _slideUpController.reverse();
-            });
-            onPressed();
-          }
-        },
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 50,
-              height: 50,
-              decoration: BoxDecoration(
-                color: ThemeManager.surfaceColor().withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: IconButton(
-                icon: Icon(icon),
-                onPressed: () {
-                  if (onPressed != null) {
-                    setState(() {
-                      _isSlideUpPanelVisible = false;
-                      _slideUpController.reverse();
-                    });
-                    onPressed();
-                  }
-                },
-                color: ThemeManager.textSecondaryColor(),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                color: ThemeManager.textColor(),
-                fontSize: 12,
-              ),
-            ),
-          ],
         ),
       ),
     );
@@ -4516,32 +4533,37 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         extendBodyBehindAppBar: true,
         body: Stack(
           children: [
-            // WebView
-            Positioned.fill(
-              child: WebViewWidget(controller: controller),
+            // WebView with proper padding
+            Positioned(
+              top: statusBarHeight,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: IgnorePointer(
+                ignoring: _isSlideUpPanelVisible,
+                child: WebViewWidget(controller: controller),
+              ),
             ),
 
-            // Gesture detector for URL bar control
+            // WebView scroll detector
             Positioned.fill(
               child: Listener(
                 behavior: HitTestBehavior.translucent,
                 onPointerMove: (PointerMoveEvent event) {
-                  // Only handle significant vertical movements
-                  if (event.delta.dy.abs() > 10) {
-                    // Ignore if it's more of a horizontal drag
+                  if (!_isSlideUpPanelVisible && event.delta.dy.abs() > 5) {
                     if (event.delta.dx.abs() < event.delta.dy.abs()) {
-                      if (event.delta.dy > 0) { // Dragging down = show URL bar
-                        if (_hideUrlBar) {
-                          setState(() {
-                            _hideUrlBar = false;
-                            _hideUrlBarController.reverse();
-                          });
-                        }
-                      } else { // Dragging up = hide URL bar
+                      if (event.delta.dy < 0) { // Scrolling up = hide URL bar
                         if (!_hideUrlBar) {
                           setState(() {
                             _hideUrlBar = true;
                             _hideUrlBarController.forward();
+                          });
+                        }
+                      } else { // Scrolling down = show URL bar
+                        if (_hideUrlBar) {
+                          setState(() {
+                            _hideUrlBar = false;
+                            _hideUrlBarController.reverse();
                           });
                         }
                       }
@@ -4553,13 +4575,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
             // Bottom controls (URL bar and panels)
             Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
+              left: 16,
+              right: 16,
+              bottom: MediaQuery.of(context).padding.bottom + 8,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Quick actions and navigation panels when visible
+                  // Quick actions and navigation panels
                   if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
                     AnimatedBuilder(
                       animation: _slideUpController,
@@ -4572,39 +4594,38 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                             offset: Offset(0, (1 - slideValue) * 100),
                             child: Opacity(
                               opacity: slideValue,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  _buildQuickActionsPanel(),
-                                  _buildNavigationPanel(),
-                                ],
+                              child: Material(
+                                color: Colors.transparent,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _buildQuickActionsPanel(),
+                                    const SizedBox(height: 8),
+                                    _buildNavigationPanel(),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
                         );
                       },
                     ),
-                    
-                  // URL bar with slide-up gesture
-                  Padding(
-                    padding: EdgeInsets.only(
-                      left: 16,
-                      right: 16,
-                      bottom: MediaQuery.of(context).padding.bottom + 8,
-                    ),
+
+                  // URL bar with gesture detection
+                  SlideTransition(
+                    position: _hideUrlBarAnimation,
                     child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
                       onVerticalDragUpdate: (details) {
-                        if (details.delta.dy < -10 && !_isSlideUpPanelVisible) {
-                          _handleSlideUpPanelVisibility(true);
-                        } else if (details.delta.dy > 10 && _isSlideUpPanelVisible) {
-                          _handleSlideUpPanelVisibility(false);
+                        if (!_isSlideUpPanelVisible) {
+                          if (details.delta.dy < -5) {
+                            _handleSlideUpPanelVisibility(true);
+                          }
                         }
                       },
                       onVerticalDragEnd: (details) {
-                        if (details.primaryVelocity != null) {
-                          if (details.primaryVelocity! > 0) {
-                            _handleSlideUpPanelVisibility(false);
-                          } else if (details.primaryVelocity! < 0) {
+                        if (!_isSlideUpPanelVisible && details.primaryVelocity != null) {
+                          if (details.primaryVelocity! < -100) {
                             _handleSlideUpPanelVisibility(true);
                           }
                         }
@@ -5286,19 +5307,17 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   bool get isSlideUpPanelVisible => _isSlideUpPanelVisible;
 
-  void _handleSlideUpPanelVisibility(bool value) {
-    if (mounted) {
-      setState(() {
-        _isSlideUpPanelVisible = value;
-        if (value) {
-          _slideUpPanelOffset = 0.0;
-          _slideUpPanelOpacity = 0.0;
-          _slideUpController.forward();
-        } else {
-          _slideUpController.reverse();
-        }
-      });
-    }
+  void _handleSlideUpPanelVisibility(bool show) {
+    setState(() {
+      _isSlideUpPanelVisible = show;
+      if (show) {
+        _slideUpController.forward();
+        _hideUrlBarController.forward(); // Hide URL bar when showing panels
+      } else {
+        _slideUpController.reverse();
+        _hideUrlBarController.reverse(); // Show URL bar when hiding panels
+      }
+    });
   }
 
   void _updateSlideUpPanelOffset(double value) {
@@ -5360,65 +5379,53 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
 
   Widget _buildNavigationPanel() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final panelWidth = screenWidth - 32; // 16px margin on each side
-
-    // Don't build the panel if URL bar is hidden
-    if (_hideUrlBar) {
-      return const SizedBox.shrink();
-    }
-
     return Container(
-      width: panelWidth,
-      height: 48, // Match quick actions panel
-      margin: const EdgeInsets.only(bottom: 8), // Consistent 8px spacing
-      child: Material(
-        color: Colors.transparent,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(28),
-                color: ThemeManager.backgroundColor().withOpacity(0.7),
-                border: Border.all(
-                  color: ThemeManager.textColor().withOpacity(0.1),
-                  width: 1,
+      width: double.infinity,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+          child: Container(
+            height: 48, // Match URL bar height
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28),
+              color: ThemeManager.backgroundColor().withOpacity(0.7),
+              border: Border.all(
+                color: ThemeManager.textColor().withOpacity(0.1),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.chevron_left_rounded, size: 24),
+                  color: canGoBack ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
+                  onPressed: canGoBack ? _goBack : null,
                 ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.chevron_left_rounded, size: 24),
-                    color: canGoBack ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
-                    onPressed: canGoBack ? _goBack : null,
+                IconButton(
+                  icon: Icon(
+                    isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
+                    size: 24,
                   ),
-                  IconButton(
-                    icon: Icon(
-                      isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
-                      size: 24,
-                    ),
-                    color: ThemeManager.textSecondaryColor(),
-                    onPressed: _addBookmark,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.ios_share_rounded, size: 24),
-                    color: ThemeManager.textSecondaryColor(),
-                    onPressed: () async {
-                      if (currentUrl.isNotEmpty) {
-                        await Share.share(currentUrl);
-                      }
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.chevron_right_rounded, size: 24),
-                    color: canGoForward ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
-                    onPressed: canGoForward ? _goForward : null,
-                  ),
-                ],
-              ),
+                  color: ThemeManager.textSecondaryColor(),
+                  onPressed: _addBookmark,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.ios_share_rounded, size: 24),
+                  color: ThemeManager.textSecondaryColor(),
+                  onPressed: () async {
+                    if (currentUrl.isNotEmpty) {
+                      await Share.share(currentUrl);
+                    }
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.chevron_right_rounded, size: 24),
+                  color: canGoForward ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
+                  onPressed: canGoForward ? _goForward : null,
+                ),
+              ],
             ),
           ),
         ),
