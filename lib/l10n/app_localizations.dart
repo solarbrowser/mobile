@@ -171,6 +171,66 @@ abstract class AppLocalizations {
   /// **'Dark'**
   String get darkTheme;
 
+  /// No description provided for @systemTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get systemTheme;
+
+  /// No description provided for @tokyoNightTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Tokyo Night'**
+  String get tokyoNightTheme;
+
+  /// No description provided for @solarizedLightTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Solarized Light'**
+  String get solarizedLightTheme;
+
+  /// No description provided for @draculaTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Dracula'**
+  String get draculaTheme;
+
+  /// No description provided for @nordTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Nord'**
+  String get nordTheme;
+
+  /// No description provided for @gruvboxTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Gruvbox'**
+  String get gruvboxTheme;
+
+  /// No description provided for @oneDarkTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'One Dark'**
+  String get oneDarkTheme;
+
+  /// No description provided for @catppuccinTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Catppuccin'**
+  String get catppuccinTheme;
+
+  /// No description provided for @nordLightTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Nord Light'**
+  String get nordLightTheme;
+
+  /// No description provided for @gruvboxLightTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Gruvbox Light'**
+  String get gruvboxLightTheme;
+
   /// No description provided for @next.
   ///
   /// In en, this message translates to:
@@ -182,6 +242,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back'**
   String get back;
+
+  /// Skip button text
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get skip;
 
   /// No description provided for @getStarted.
   ///
@@ -1154,6 +1220,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{months} months ago'**
   String months_ago(int months);
+
+  /// Title for first update note
+  ///
+  /// In en, this message translates to:
+  /// **'Enhanced Theme System'**
+  String get update1;
+
+  /// Description for first update
+  ///
+  /// In en, this message translates to:
+  /// **'Introducing a beautiful new theme system with more color options and improved dark mode support'**
+  String get update1desc;
+
+  /// Title for second update note
+  ///
+  /// In en, this message translates to:
+  /// **'Performance Improvements'**
+  String get update2;
+
+  /// Description for second update
+  ///
+  /// In en, this message translates to:
+  /// **'Faster page loading and smoother scrolling experience'**
+  String get update2desc;
+
+  /// Title for third update note
+  ///
+  /// In en, this message translates to:
+  /// **'New Privacy Features'**
+  String get update3;
+
+  /// Description for third update
+  ///
+  /// In en, this message translates to:
+  /// **'Enhanced tracking protection and improved incognito mode'**
+  String get update3desc;
+
+  /// Title for fourth update note
+  ///
+  /// In en, this message translates to:
+  /// **'UI Refinements'**
+  String get update4;
+
+  /// Description for fourth update
+  ///
+  /// In en, this message translates to:
+  /// **'Polished interface with better navigation and accessibility'**
+  String get update4desc;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -7,6 +7,7 @@ import 'l10n/app_localizations.dart';
 import 'screens/browser_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/update_screen.dart';
+import 'utils/theme_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,11 +23,20 @@ void main() async {
   final systemLocale = WidgetsBinding.instance.window.locale.languageCode;
   final systemDarkMode = WidgetsBinding.instance.window.platformBrightness == Brightness.dark;
   
+  // Load saved theme
+  await ThemeManager.loadSavedTheme();
+  
   // Set default preferences if first start
   if (isFirstStart) {
     await prefs.setString('language', systemLocale);
     await prefs.setBool('darkMode', systemDarkMode);
     await prefs.setString('searchEngine', 'google');
+    await prefs.setBool('first_start', false);
+  }
+
+  // Save current version after showing update screen
+  if (lastVersion != currentVersion) {
+    await prefs.setString('last_version', currentVersion);
   }
   
   runApp(MyApp(
@@ -127,7 +137,7 @@ class _MyAppState extends State<MyApp> {
               onThemeChange: _handleThemeChange,
               onSearchEngineChange: _handleSearchEngineChange,
             );
-          } else if (widget.lastVersion == '0.0.0' || widget.lastVersion != widget.currentVersion) {
+          } else if (widget.lastVersion != widget.currentVersion) {
             return UpdateScreen(
               currentVersion: widget.currentVersion,
               oldVersion: widget.lastVersion,

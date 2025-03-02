@@ -36,10 +36,43 @@ class AppLocalizationsEn extends AppLocalizations {
   String get darkTheme => 'Dark';
 
   @override
+  String get systemTheme => 'System';
+
+  @override
+  String get tokyoNightTheme => 'Tokyo Night';
+
+  @override
+  String get solarizedLightTheme => 'Solarized Light';
+
+  @override
+  String get draculaTheme => 'Dracula';
+
+  @override
+  String get nordTheme => 'Nord';
+
+  @override
+  String get gruvboxTheme => 'Gruvbox';
+
+  @override
+  String get oneDarkTheme => 'One Dark';
+
+  @override
+  String get catppuccinTheme => 'Catppuccin';
+
+  @override
+  String get nordLightTheme => 'Nord Light';
+
+  @override
+  String get gruvboxLightTheme => 'Gruvbox Light';
+
+  @override
   String get next => 'Next';
 
   @override
   String get back => 'Back';
+
+  @override
+  String get skip => 'Skip';
 
   @override
   String get getStarted => 'Get Started';
@@ -542,4 +575,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String months_ago(int months) {
     return '$months months ago';
   }
+
+  @override
+  String get update1 => 'Enhanced Theme System';
+
+  @override
+  String get update1desc => 'Introducing a beautiful new theme system with more color options and improved dark mode support';
+
+  @override
+  String get update2 => 'Performance Improvements';
+
+  @override
+  String get update2desc => 'Faster page loading and smoother scrolling experience';
+
+  @override
+  String get update3 => 'New Privacy Features';
+
+  @override
+  String get update3desc => 'Enhanced tracking protection and improved incognito mode';
+
+  @override
+  String get update4 => 'UI Refinements';
+
+  @override
+  String get update4desc => 'Polished interface with better navigation and accessibility';
 }

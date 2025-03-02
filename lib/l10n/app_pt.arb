@@ -11,6 +11,10 @@
   "darkTheme": "Escuro",
   "next": "Próximo",
   "back": "Voltar",
+  "skip": "Pular",
+  "@skip": {
+    "description": "Skip button text"
+  },
   "getStarted": "Começar",
   "welcomeSubtitle": "Um navegador moderno, rápido e seguro para você",
   "continueText": "Continuar",
@@ -212,5 +216,37 @@
   "new_incognito_tab": "Nova aba anônima",
   "@new_incognito_tab": {
     "description": "Label for new incognito tab button"
+  },
+  "update1": "Sistema de temas aprimorado",
+  "@update1": {
+    "description": "Title for first update note"
+  },
+  "update1desc": "Novo sistema de temas com mais opções de cores e melhor suporte ao modo escuro",
+  "@update1desc": {
+    "description": "Description for first update"
+  },
+  "update2": "Melhorias de desempenho",
+  "@update2": {
+    "description": "Title for second update note"
+  },
+  "update2desc": "Carregamento de páginas mais rápido e experiência de rolagem mais suave",
+  "@update2desc": {
+    "description": "Description for second update"
+  },
+  "update3": "Novos recursos de privacidade",
+  "@update3": {
+    "description": "Title for third update note"
+  },
+  "update3desc": "Proteção aprimorada contra rastreamento e otimizações do modo anônimo",
+  "@update3desc": {
+    "description": "Description for third update"
+  },
+  "update4": "Melhorias na interface",
+  "@update4": {
+    "description": "Title for fourth update note"
+  },
+  "update4desc": "Interface do usuário aprimorada com melhor navegação e acessibilidade",
+  "@update4desc": {
+    "description": "Description for fourth update"
   }
 } 

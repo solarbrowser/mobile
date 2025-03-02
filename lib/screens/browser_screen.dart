@@ -31,6 +31,8 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as path;
 import 'package:solar/theme/theme_manager.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:solar/services/notification_service.dart';
 
 class Debouncer {
   final int milliseconds;
@@ -85,6 +87,17 @@ class BrowserTab {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.transparent)
       ..enableZoom(false);
+    
+    if (isIncognito) {
+      controller.clearCache();
+      controller.clearLocalStorage();
+      controller.runJavaScript('''
+        localStorage.clear();
+        sessionStorage.clear();
+        document.cookie = '';
+        Object.defineProperty(document, 'cookie', { get: () => '', set: () => true });
+      ''');
+    }
     
     if (url.isNotEmpty && url != 'about:blank') {
       controller.loadRequest(Uri.parse(url));
@@ -341,6 +354,21 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     _loadSettings();
     _loadSearchEngines();
     
+    // Load saved theme
+    SharedPreferences.getInstance().then((prefs) {
+      final savedTheme = prefs.getString('selectedTheme');
+      if (savedTheme != null) {
+        try {
+          final theme = ThemeType.values.firstWhere((t) => t.name == savedTheme);
+          setState(() {
+            isDarkMode = theme.isDark;
+          });
+          ThemeManager.setTheme(theme);
+          _updateSystemBars();
+        } catch (_) {}
+      }
+    });
+    
     // Handle incoming intents
     if (Platform.isAndroid) {
       _handleIncomingIntents();
@@ -364,7 +392,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     
     _hideUrlBarAnimation = Tween<Offset>(
       begin: Offset.zero,
-      end: const Offset(0, 1.5), // Reduced from 2 to 1.5 for smoother animation
+      end: const Offset(0, 1.5),
     ).animate(CurvedAnimation(
       parent: _hideUrlBarController,
       curve: Curves.easeOutCubic,
@@ -389,24 +417,32 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     }
   }
 
-  SystemUiOverlayStyle get _transparentNavBar => SystemUiOverlayStyle(
-    statusBarColor: ThemeManager.backgroundColor(),
-    statusBarIconBrightness: ThemeManager.textColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
-    statusBarBrightness: ThemeManager.backgroundColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
-    systemNavigationBarColor: Colors.transparent,
-    systemNavigationBarIconBrightness: ThemeManager.textColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
-    systemNavigationBarContrastEnforced: false,
-    systemNavigationBarDividerColor: Colors.transparent,
-  );
+  SystemUiOverlayStyle get _transparentNavBar {
+    final backgroundColor = ThemeManager.backgroundColor();
+    final isBackgroundDark = backgroundColor.computeLuminance() < 0.5;
+    
+    return SystemUiOverlayStyle(
+      statusBarColor: backgroundColor,
+      statusBarIconBrightness: isBackgroundDark ? Brightness.light : Brightness.dark,
+      statusBarBrightness: isBackgroundDark ? Brightness.dark : Brightness.light,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: isBackgroundDark ? Brightness.light : Brightness.dark,
+      systemNavigationBarContrastEnforced: false,
+      systemNavigationBarDividerColor: Colors.transparent,
+    );
+  }
 
   void _updateSystemBars() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    final backgroundColor = ThemeManager.backgroundColor();
+    final isBackgroundDark = backgroundColor.computeLuminance() < 0.5;
+    
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: ThemeManager.backgroundColor(),
-      statusBarIconBrightness: ThemeManager.textColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
-      statusBarBrightness: ThemeManager.backgroundColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
+      statusBarColor: backgroundColor,
+      statusBarIconBrightness: isBackgroundDark ? Brightness.light : Brightness.dark,
+      statusBarBrightness: isBackgroundDark ? Brightness.dark : Brightness.light,
       systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarIconBrightness: ThemeManager.textColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
+      systemNavigationBarIconBrightness: isBackgroundDark ? Brightness.light : Brightness.dark,
       systemNavigationBarContrastEnforced: false,
       systemNavigationBarDividerColor: Colors.transparent,
     ));
@@ -498,7 +534,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     );
     _hideUrlBarAnimation = Tween<Offset>(
       begin: Offset.zero,
-      end: const Offset(0, 1.5), // Reduced from 2 to 1.5 for smoother animation
+      end: const Offset(0, 1.5),
     ).animate(CurvedAnimation(
       parent: _hideUrlBarController,
       curve: Curves.easeOutCubic,
@@ -771,6 +807,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         await _updateNavigationState();
         await _optimizationEngine.onPageFinishLoad(url);
         await _updateFavicon(url);
+        await _saveToHistory(url, title); // Add this line to save history
       },
       onWebResourceError: (WebResourceError error) {
         if (!mounted) return;
@@ -1020,6 +1057,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         await _updateNavigationState();
         await _optimizationEngine.onPageFinishLoad(url);
         await _updateFavicon(url);
+        await _saveToHistory(url, title);
       },
       onWebResourceError: (WebResourceError error) {
         if (!mounted) return;
@@ -1032,6 +1070,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
 
   Future<void> _saveToHistory(String url, String title) async {
+    print('Attempting to save history for URL: $url'); // Debug log
+    
     // Skip saving history in incognito mode or for special URLs
     if (tabs[currentTabIndex].isIncognito ||
         url.isEmpty || 
@@ -1039,55 +1079,66 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         url.startsWith('file://') ||
         url.contains('file:///') ||
         url.endsWith('main.html')) {
+      print('Skipping history save - special URL or incognito mode'); // Debug log
       return;
     }
 
     // Only save if it's a valid web URL
     if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      print('Skipping history save - not a valid web URL'); // Debug log
       return;
     }
 
     if (mounted) {
-      final prefs = await SharedPreferences.getInstance();
-      final String entry = json.encode({
-        'url': url,
-        'title': title.isEmpty ? _getDisplayUrl(url) : title,
-        'favicon': tabs[currentTabIndex].favicon,
-        'timestamp': DateTime.now().toIso8601String(),
-      });
+      try {
+        print('Saving history entry...'); // Debug log
+        final prefs = await SharedPreferences.getInstance();
+        final String entry = json.encode({
+          'url': url,
+          'title': title.isEmpty ? _getDisplayUrl(url) : title,
+          'favicon': tabs[currentTabIndex].favicon,
+          'timestamp': DateTime.now().toIso8601String(),
+        });
 
-      final history = prefs.getStringList('history') ?? [];
-      
-      // Remove existing entry with same URL if it exists
-      history.removeWhere((item) {
-        try {
-          final Map<String, dynamic> decoded = json.decode(item);
-          return decoded['url'] == url;
-        } catch (e) {
-          return false;
-        }
-      });
-
-      // Add new entry at the beginning
-      history.insert(0, entry);
-
-      // Limit history size to prevent excessive storage use
-      if (history.length > 1000) {
-        history.removeRange(1000, history.length);
-      }
-
-      await prefs.setStringList('history', history);
-      
-      // Update the loaded history in memory without affecting URL bar
-      setState(() {
-        _loadedHistory = history.map((e) {
+        List<String> history = prefs.getStringList('history') ?? [];
+        print('Current history size: ${history.length}'); // Debug log
+        
+        // Remove existing entry with same URL if it exists
+        history.removeWhere((item) {
           try {
-            return Map<String, dynamic>.from(json.decode(e));
+            final Map<String, dynamic> decoded = json.decode(item);
+            return decoded['url'] == url;
           } catch (e) {
-            return null;
+            return false;
           }
-        }).whereType<Map<String, dynamic>>().toList();
-      });
+        });
+
+        // Add new entry at the beginning
+        history.insert(0, entry);
+
+        // Limit history size to prevent excessive storage use
+        if (history.length > 1000) {
+          history.removeRange(1000, history.length);
+        }
+
+        await prefs.setStringList('history', history);
+        print('History saved to SharedPreferences'); // Debug log
+        
+        // Update the loaded history in memory
+        setState(() {
+          _loadedHistory = history.map((e) {
+            try {
+              return Map<String, dynamic>.from(json.decode(e));
+            } catch (e) {
+              return null;
+            }
+          }).whereType<Map<String, dynamic>>().toList();
+        });
+        print('In-memory history updated'); // Debug log
+
+      } catch (e) {
+        print('Error saving history: $e'); // Debug log
+      }
     }
   }
 
@@ -1300,7 +1351,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               onChanged: (value) => setState(() => clearCookies = value!),
               title: Text(
                 AppLocalizations.of(context)!.cookies,
-                style: TextStyle(
+              style: TextStyle(
                   color: ThemeManager.textColor(),
                 ),
               ),
@@ -1421,9 +1472,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             subtitle,
             style: TextStyle(
               fontSize: 13,
-              color: ThemeManager.textSecondaryColor(),
-            ),
-          )
+                        color: ThemeManager.textSecondaryColor(),
+                      ),
+                    )
         : null,
       trailing: trailingWidget,
       onTap: onTap,
@@ -1478,8 +1529,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
             _buildPanelHeader(title, onBack: () => Navigator.pop(context)),
             Expanded(
               child: ListView.builder(
@@ -1584,7 +1635,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             ),
             title: Text(
               AppLocalizations.of(context)!.search_engine,
-              style: TextStyle(
+                style: TextStyle(
                 color: ThemeManager.textColor(),
                 fontWeight: FontWeight.bold,
               ),
@@ -1656,21 +1707,74 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   void _showAppearanceSettings() {
     Navigator.of(context).push(
       MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: ThemeManager.backgroundColor(),
+          appBar: AppBar(
+            backgroundColor: ThemeManager.backgroundColor(),
+            elevation: 0,
+            systemOverlayStyle: _transparentNavBar,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: ThemeManager.textColor(),
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              AppLocalizations.of(context)!.appearance,
+              style: TextStyle(
+                color: ThemeManager.textColor(),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          body: ListView(
+            padding: const EdgeInsets.only(top: 8),
+            children: [
+              _buildSettingsSection(
+                title: 'Customize',
+                children: [
+                  _buildSettingsItem(
+                    title: 'Themes',
+                    trailing: Icon(
+                      Icons.chevron_right,
+              color: ThemeManager.textSecondaryColor(),
+                      size: 20,
+                    ),
+                    onTap: () => _showThemeSelection(context),
+                    isFirst: true,
+                  ),
+                  _buildSettingsItem(
+                    title: 'App Icon',
+                    trailing: Icon(
+                      Icons.chevron_right,
+                      color: ThemeManager.textSecondaryColor(),
+                      size: 20,
+                    ),
+                    onTap: () {
+                      // TODO: Implement app icon selection
+                    },
+                    isLast: true,
+        ),
+      ],
+                  ),
+                ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showThemeSelection(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
         builder: (context) => StatefulBuilder(
           builder: (context, setState) => Scaffold(
             backgroundColor: ThemeManager.backgroundColor(),
             appBar: AppBar(
               backgroundColor: ThemeManager.backgroundColor(),
               elevation: 0,
-              systemOverlayStyle: SystemUiOverlayStyle(
-                statusBarColor: ThemeManager.backgroundColor(),
-                statusBarIconBrightness: ThemeManager.textColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
-                statusBarBrightness: ThemeManager.backgroundColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
-                systemNavigationBarColor: Colors.transparent,
-                systemNavigationBarIconBrightness: ThemeManager.textColor().computeLuminance() > 0.5 ? Brightness.light : Brightness.dark,
-                systemNavigationBarContrastEnforced: false,
-                systemNavigationBarDividerColor: Colors.transparent,
-              ),
+              systemOverlayStyle: _transparentNavBar,
               leading: IconButton(
                 icon: Icon(
                   Icons.arrow_back,
@@ -1679,7 +1783,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                 onPressed: () => Navigator.pop(context),
               ),
               title: Text(
-                AppLocalizations.of(context)!.appearance,
+                'Themes',
                 style: TextStyle(
                   color: ThemeManager.textColor(),
                   fontWeight: FontWeight.bold,
@@ -1687,31 +1791,120 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               ),
             ),
             body: ListView(
-              padding: const EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
-                _buildSettingsSection(
-                  title: AppLocalizations.of(context)!.chooseTheme,
-                  children: [
-                    _buildSettingsItem(
-                      title: AppLocalizations.of(context)!.dark_mode,
-                      trailing: Transform.scale(
-                        scale: 0.7,
-                        child: Switch(
-                          value: isDarkMode,
-                          onChanged: _toggleTheme,
+                ...ThemeType.values.map((theme) {
+                  if (theme == ThemeType.system) return const SizedBox.shrink();
+                  
+                  final colors = ThemeManager.getThemeColors(theme);
+                  final isSelected = ThemeManager.getCurrentTheme() == theme;
+                  
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: colors.surfaceColor,
+                      borderRadius: BorderRadius.circular(12),
+                      border: isSelected ? Border.all(
+                        color: colors.primaryColor,
+                        width: 2,
+                      ) : null,
+                    ),
+                    child: ListTile(
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      title: Text(
+                        _getThemeName(theme),
+                        style: TextStyle(
+                          color: colors.textColor,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
-                      isFirst: true,
-                      isLast: true,
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (isSelected) 
+                            Container(
+                              margin: const EdgeInsets.only(right: 12),
+                              child: Icon(Icons.check, color: colors.primaryColor),
+                            ),
+                          ...[ 
+                            colors.primaryColor,
+                            colors.accentColor,
+                            colors.textColor,
+                            colors.surfaceColor,
+                            colors.secondaryColor,
+                          ].map((color) => Container(
+                            width: 24,
+                            height: 24,
+                            margin: const EdgeInsets.only(right: 4),
+                            decoration: BoxDecoration(
+                              color: color,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: colors.textSecondaryColor.withOpacity(0.2),
+                                width: 1,
+                              ),
+                            ),
+                          )).toList(),
+                        ],
+                      ),
+                      onTap: () async {
+                        // Save and apply theme
+                        await ThemeManager.setTheme(theme);
+                        
+                        // Update dark mode state
+                        setState(() {
+                          isDarkMode = theme.isDark;
+                        });
+                        this.setState(() {
+                          isDarkMode = theme.isDark;
+                        });
+                        
+                        // Update system bars
+                        _updateSystemBars();
+                        
+                        // Pop both theme selection and appearance settings screens
+                        Navigator.of(context)
+                          ..pop() // Pop theme selection
+                          ..pop(); // Pop appearance settings
+                      },
                     ),
-                  ],
-                ),
+                  );
+                }).where((widget) => widget is! SizedBox).toList(),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  String _getThemeName(ThemeType theme) {
+    switch (theme) {
+      case ThemeType.system:
+        return 'System';
+      case ThemeType.light:
+        return 'Light';
+      case ThemeType.dark:
+        return 'Dark';
+      case ThemeType.tokyoNight:
+        return 'Tokyo Night';
+      case ThemeType.solarizedLight:
+        return 'Solarized Light';
+      case ThemeType.dracula:
+        return 'Dracula';
+      case ThemeType.nord:
+        return 'Nord Dark';
+      case ThemeType.gruvbox:
+        return 'Gruvbox Dark';
+      case ThemeType.oneDark:
+        return 'One Dark';
+      case ThemeType.catppuccin:
+        return 'Catppuccin';
+      case ThemeType.nordLight:
+        return 'Nord Light';
+      case ThemeType.gruvboxLight:
+        return 'Gruvbox Light';
+    }
   }
 
   String _getTextSizeLabel() {
@@ -1861,9 +2054,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   void _showRateUs() {
     if (Platform.isAndroid) {
-      controller.loadRequest(Uri.parse('market://details?id=com.solarbrowser.mobile'));
+      controller.loadRequest(Uri.parse('market://details?id=com.vertex.solar'));
     } else if (Platform.isIOS) {
-      controller.loadRequest(Uri.parse('itms-apps://itunes.apple.com/app/idYOUR_APP_ID'));
+      controller.loadRequest(Uri.parse('itms-apps://itunes.apple.com/app/'));
     }
     setState(() {
       isSettingsVisible = false;
@@ -2038,29 +2231,33 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
 
   Widget _buildQuickActionsPanel() {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final panelWidth = screenWidth - 32;
-
-    return Container(
-      width: panelWidth,
-      height: 100,
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Material(
-        color: ThemeManager.backgroundColor(),
-        elevation: 0,
-        borderRadius: BorderRadius.circular(28),
+    return GestureDetector(
+      onVerticalDragUpdate: (details) {
+        if (details.delta.dy > 2) {
+          _handleSlideUpPanelVisibility(false);
+        }
+      },
+      onVerticalDragEnd: (details) {
+        if (details.primaryVelocity != null && details.primaryVelocity! > 50) {
+          _handleSlideUpPanelVisibility(false);
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(
+            color: ThemeManager.textColor().withOpacity(0.1),
+            width: 1,
+          ),
+        ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(28),
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
             child: Container(
-              decoration: BoxDecoration(
-                color: ThemeManager.backgroundColor().withOpacity(0.7),
-                border: Border.all(
-                  color: ThemeManager.textColor().withOpacity(0.1),
-                  width: 1,
-                ),
-              ),
+              height: 100,
+              color: ThemeManager.backgroundColor().withOpacity(0.7),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -2069,6 +2266,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     Icons.settings_rounded,
                     onPressed: () {
                       setState(() {
+                        _hideUrlBar = false;
+                        _hideUrlBarController.reverse();
                         isSettingsVisible = true;
                         _isSlideUpPanelVisible = false;
                         _slideUpController.reverse();
@@ -2080,6 +2279,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     Icons.download_rounded,
                     onPressed: () {
                       setState(() {
+                        _hideUrlBar = false;
+                        _hideUrlBarController.reverse();
                         isDownloadsVisible = true;
                         _isSlideUpPanelVisible = false;
                         _slideUpController.reverse();
@@ -2091,6 +2292,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     Icons.tab_rounded,
                     onPressed: () {
                       setState(() {
+                        _hideUrlBar = false;
+                        _hideUrlBarController.reverse();
                         isTabsVisible = true;
                         _isSlideUpPanelVisible = false;
                         _slideUpController.reverse();
@@ -2102,6 +2305,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     Icons.bookmark_rounded,
                     onPressed: () {
                       setState(() {
+                        _hideUrlBar = false;
+                        _hideUrlBarController.reverse();
                         isBookmarksVisible = true;
                         _isSlideUpPanelVisible = false;
                         _slideUpController.reverse();
@@ -3514,47 +3719,28 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   bool isHistoryVisible = false;
 
   Future<void> _loadHistory() async {
-    if (_isLoadingMore) return;
+    if (!mounted) return;
     
-    setState(() {
-      _isLoadingMore = true;
-    });
-
     try {
+      print('Loading history...'); // Debug log
       final prefs = await SharedPreferences.getInstance();
       final history = prefs.getStringList('history') ?? [];
+      print('Found ${history.length} history items'); // Debug log
       
-      final start = _currentHistoryPage * _historyPageSize;
-      if (start >= history.length) {
-        setState(() {
-          _isLoadingMore = false;
-        });
-        return;
-      }
-      
-      final end = min(start + _historyPageSize, history.length);
-      final newItems = history
-        .sublist(start, end)
-        .map((e) {
+      setState(() {
+        _loadedHistory = history.map((e) {
           try {
             return Map<String, dynamic>.from(json.decode(e));
           } catch (e) {
+            print('Error parsing history item: $e'); // Debug log
             return null;
           }
-        })
-        .whereType<Map<String, dynamic>>()
-        .toList();
-      
-      setState(() {
-        _loadedHistory.addAll(newItems);
-        _currentHistoryPage++;
-        _isLoadingMore = false;
+        }).whereType<Map<String, dynamic>>().toList();
+        _currentHistoryPage = 0;
       });
+      print('History loaded successfully with ${_loadedHistory.length} items'); // Debug log
     } catch (e) {
-      print('Error loading history: $e');
-      setState(() {
-        _isLoadingMore = false;
-      });
+      print('Error loading history: $e'); // Debug log
     }
   }
 
@@ -3572,6 +3758,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
 
   void _showHistoryPanel() {
+    _loadHistory(); // Refresh history when panel is opened
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -3585,84 +3772,72 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         child: Column(
           children: [
             Container(
-              height: 56 + MediaQuery.of(context).padding.top,
+              height: 96 + MediaQuery.of(context).padding.top,
               padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-              child: Row(
+              color: ThemeManager.backgroundColor(),
+              child: Column(
                 children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.arrow_back,
-                      color: ThemeManager.textColor(),
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  Expanded(
-                    child: Text(
-                      'History',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: ThemeManager.textColor(),
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.delete_outline,
-                      color: ThemeManager.textColor(),
-                    ),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        barrierColor: ThemeManager.textColor().withOpacity(0.1),
-                        builder: (context) => AlertDialog(
-                          backgroundColor: ThemeManager.backgroundColor(),
-                          title: Text(
-                            'Clear History',
-                            style: TextStyle(
-                              color: ThemeManager.textColor(),
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          content: Text(
-                            'Are you sure you want to clear all browsing history?',
-                            style: TextStyle(
-                              color: ThemeManager.textColor(),
-                            ),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: Text(
-                                AppLocalizations.of(context)!.cancel,
-                                style: TextStyle(
-                                  color: ThemeManager.textColor(),
-                                ),
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                                _clearHistory();
-                              },
-                              child: Text(
-                                'Clear',
-                                style: TextStyle(
-                                  color: ThemeManager.errorColor(),
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
+                  SizedBox(
+                    height: 56,
+                    child: Row(
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          Icons.arrow_back,
+                          color: ThemeManager.textColor(),
                         ),
-                      );
-                    },
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      Expanded(
+                        child: Text(
+                          'History',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: ThemeManager.textColor(),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            '${_loadedHistory.length} ${_loadedHistory.length == 1 ? 'page' : 'pages'}',
+                  style: TextStyle(
+                              color: ThemeManager.textSecondaryColor(),
+                    fontSize: 14,
+                  ),
+                          ),
+                        TextButton.icon(
+                          onPressed: () => _clearHistory(),
+                          icon: Icon(
+                                  Icons.delete_outline,
+                                  color: ThemeManager.errorColor(),
+                                  size: 20,
+                                ),
+                          label: Text(
+                                  AppLocalizations.of(context)!.clear_all,
+                  style: TextStyle(
+                                    color: ThemeManager.errorColor(),
+                                    fontSize: 14,
+                                  ),
+                                ),
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            ),
+                          ),
+                        ],
+                      ),
                   ),
                 ],
-              ),
-            ),
-            Expanded(
+                    ),
+                  ),
+                  Expanded(
               child: _buildHistoryList(),
             ),
           ],
@@ -3672,254 +3847,161 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
 
   Widget _buildHistoryList() {
-    return Column(
-      children: [
-        if (_loadedHistory.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                TextButton.icon(
-                  icon: Icon(
-                    Icons.delete_outline_rounded,
-                    size: 20,
+    if (_loadedHistory.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.history,
+              size: 48,
+              color: ThemeManager.surfaceColor().withOpacity(0.24),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No History',
+              style: TextStyle(
+                fontSize: 16,
+                color: ThemeManager.textSecondaryColor(),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      controller: _historyScrollController,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      itemCount: _loadedHistory.length,
+      physics: const BouncingScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        final historyItem = _loadedHistory[index];
+                        final url = historyItem['url'] as String;
+                        final title = historyItem['title'] as String;
+                        final favicon = historyItem['favicon'] as String?;
+                        final timestamp = DateTime.parse(historyItem['timestamp'] as String);
+
+                        return Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: ThemeManager.surfaceColor().withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            leading: SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: favicon != null
+                                  ? Image.network(
+                                      favicon,
+                                      width: 16,
+                                      height: 16,
+                                      errorBuilder: (context, error, stackTrace) => Icon(
+                                        Icons.public,
+                                        size: 14,
                     color: ThemeManager.textSecondaryColor(),
-                  ),
-                  label: Text(
-                    AppLocalizations.of(context)!.clear_all,
-                    style: TextStyle(
-                      color: ThemeManager.textSecondaryColor(),
-                      fontSize: 14,
-                    ),
-                  ),
-                  onPressed: () {
-                    showDialog(
-                      context: context,
-                      barrierColor: ThemeManager.textColor().withOpacity(0.1),
-                      builder: (context) => AlertDialog(
-                        backgroundColor: ThemeManager.backgroundColor(),
-                        title: Text(
-                          AppLocalizations.of(context)!.clear_history,
-                          style: TextStyle(
-                            color: ThemeManager.textColor(),
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        content: Text(
-                          AppLocalizations.of(context)!.clear_history_confirmation,
-                          style: TextStyle(
-                            color: ThemeManager.textSecondaryColor(),
-                          ),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: Text(
-                              AppLocalizations.of(context)!.cancel,
-                              style: TextStyle(
-                                color: ThemeManager.textSecondaryColor(),
-                              ),
+                                      ),
+                                    )
+                                  : Icon(
+                                      Icons.public,
+                                      size: 14,
+                                      color: ThemeManager.textSecondaryColor(),
+                                    ),
                             ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                              _clearHistory();
-                            },
-                            child: Text(
-                              AppLocalizations.of(context)!.clear,
-                              style: TextStyle(
-                                color: ThemeManager.errorColor(),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
+                            title: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                Text(
+                                  title.isEmpty ? _getDisplayUrl(url) : title,
+                  style: TextStyle(
+                                    color: ThemeManager.textColor(),
+                    fontSize: 14,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  url,
+                  style: TextStyle(
+                    color: ThemeManager.textSecondaryColor(),
+                    fontSize: 12,
+                                      ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                                      Text(
+                  _formatHistoryDate(timestamp),
+                                        style: TextStyle(
+                                          color: ThemeManager.textSecondaryColor(),
+                    fontSize: 11,
+                  ),
                 ),
               ],
             ),
-          ),
-        Expanded(
-          child: _loadedHistory.isEmpty
-            ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.history_rounded,
-                      size: 48,
-                      color: ThemeManager.surfaceColor().withOpacity(0.24),
-                    ),
-                    SizedBox(height: 16),
-                    Text(
-                      AppLocalizations.of(context)!.no_history,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: ThemeManager.textSecondaryColor(),
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            : ListView.builder(
-                controller: _historyScrollController,
-                itemCount: _loadedHistory.length + (_isLoadingMore ? 1 : 0),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                physics: const BouncingScrollPhysics(),
-                itemBuilder: (context, index) {
-                  if (index == _loadedHistory.length) {
-                    return Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Center(
-                        child: SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              ThemeManager.textSecondaryColor(),
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-
-                  final item = _loadedHistory[index];
-                  final DateTime timestamp = DateTime.parse(item['timestamp'] ?? DateTime.now().toIso8601String());
-                  final String formattedDate = _getFormattedDate(timestamp);
-                  final String formattedTime = DateFormat('h:mm a').format(timestamp);
-
-                  return Dismissible(
-                    key: Key(item['timestamp'] ?? DateTime.now().toIso8601String()),
-                    background: Container(
-                      decoration: BoxDecoration(
-                        color: ThemeManager.errorColor().withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      alignment: Alignment.centerRight,
-                      padding: EdgeInsets.only(right: 16),
-                      child: Icon(
-                        Icons.delete_rounded,
-                        color: ThemeManager.errorColor().withOpacity(0.8),
-                      ),
-                    ),
-                    direction: DismissDirection.endToStart,
-                    onDismissed: (direction) => _removeHistoryItem(index),
-                    child: Container(
-                      margin: EdgeInsets.symmetric(vertical: 4),
-                      decoration: BoxDecoration(
-                        color: ThemeManager.secondaryColor(),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: ListTile(
-                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        leading: Container(
-                          width: 40,
-                          height: 40,
-                          decoration: BoxDecoration(
-                            color: ThemeManager.surfaceColor().withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: item['favicon'] != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: Image.network(
-                                  item['favicon']!,
-                                  width: 20,
-                                  height: 20,
-                                  errorBuilder: (context, error, stackTrace) => Icon(
-                                    Icons.public_rounded,
-                                    size: 20,
-                                    color: ThemeManager.textSecondaryColor(),
-                                  ),
-                                ),
-                              )
-                            : Icon(
-                                Icons.public_rounded,
-                                size: 20,
-                                color: ThemeManager.textSecondaryColor(),
-                              ),
-                        ),
-                        title: Text(
-                          item['title'] ?? _getDisplayUrl(item['url']),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontSize: 15,
-                            color: ThemeManager.textColor(),
-                          ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _getDisplayUrl(item['url']),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: ThemeManager.textSecondaryColor(),
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              '$formattedDate • $formattedTime',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: ThemeManager.textSecondaryColor(),
-                              ),
-                            ),
-                          ],
-                        ),
-                        trailing: IconButton(
-                          icon: Icon(
-                            Icons.delete_outline_rounded,
-                            size: 20,
-                            color: ThemeManager.textSecondaryColor(),
-                          ),
-                          onPressed: () => _removeHistoryItem(index),
-                        ),
-                        onTap: () {
-                          _addNewTab(url: item['url']);
-                          setState(() {
-                            isTabsVisible = false;
-                          });
-                        },
-                      ),
-                    ),
-                  );
-                },
+            trailing: IconButton(
+              icon: Icon(
+                Icons.delete_outline,
+                color: ThemeManager.textSecondaryColor(),
+                size: 20,
               ),
-        ),
-      ],
+              onPressed: () => _removeHistoryItem(index),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
+            onTap: () {
+              controller.loadRequest(Uri.parse(url));
+              Navigator.pop(context);
+            },
+          ),
+        );
+      },
     );
   }
 
-  // Add method to remove individual history items
+  String _formatHistoryDate(DateTime date) {
+    final now = DateTime.now();
+    final difference = now.difference(date);
+
+    if (difference.inDays == 0) {
+      if (difference.inHours == 0) {
+        if (difference.inMinutes == 0) {
+          return 'Just now';
+        }
+        return '${difference.inMinutes} min ago';
+      }
+      return '${difference.inHours} hr ago';
+    } else if (difference.inDays == 1) {
+      return 'Yesterday';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays} days ago';
+    }
+
+    return DateFormat('MMM d, y').format(date);
+  }
+
   Future<void> _removeHistoryItem(int index) async {
     if (index < 0 || index >= _loadedHistory.length) return;
 
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final history = prefs.getStringList('history') ?? [];
-      
-      if (index < history.length) {
-        history.removeAt(index);
-        await prefs.setStringList('history', history);
+    final removedItem = _loadedHistory[index];
+    setState(() {
+      _loadedHistory.removeAt(index);
+    });
+
+    final prefs = await SharedPreferences.getInstance();
+    final history = prefs.getStringList('history') ?? [];
+    
+    history.removeWhere((item) {
+      try {
+        final Map<String, dynamic> decoded = json.decode(item);
+        return decoded['url'] == removedItem['url'];
+      } catch (e) {
+        return false;
       }
-      
-      setState(() {
-        _loadedHistory.removeAt(index);
-      });
-    } catch (e) {
-      print('Error removing history item: $e');
-    }
+    });
+
+    await prefs.setStringList('history', history);
   }
 
   Widget _buildSettingsPanel() {
@@ -4202,11 +4284,58 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     });
   }
 
+  Future<void> _removeBookmark(String url) async {
+    final prefs = await SharedPreferences.getInstance();
+    final bookmarksList = prefs.getStringList('bookmarks') ?? [];
+    
+    bookmarksList.removeWhere((item) {
+      try {
+        final Map<String, dynamic> decoded = json.decode(item);
+        return decoded['url'] == url;
+      } catch (e) {
+        return false;
+      }
+    });
+    
+    await prefs.setStringList('bookmarks', bookmarksList);
+    setState(() {
+      bookmarks = bookmarksList.map((e) => Map<String, dynamic>.from(json.decode(e))).toList();
+    });
+    
+    _showNotification(
+      Row(
+        children: [
+          Icon(Icons.check_circle, color: ThemeManager.successColor()),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              'Bookmark removed',
+              style: TextStyle(
+                color: ThemeManager.textColor(),
+              ),
+            ),
+          ),
+        ],
+      ),
+      duration: const Duration(seconds: 2),
+    );
+  }
+
   Future<void> _addBookmark() async {
     final url = await controller.currentUrl();
     final title = await controller.getTitle() ?? 'Untitled';
     final favicon = await BrowserUtils.getFaviconUrl(url ?? '');
     
+    final prefs = await SharedPreferences.getInstance();
+    final bookmarksList = prefs.getStringList('bookmarks') ?? [];
+    
+    // Check if URL already exists in bookmarks
+    bool isBookmarked = bookmarksList.any((item) => 
+      Map<String, dynamic>.from(json.decode(item))['url'] == url);
+
+    if (isBookmarked) {
+      await _removeBookmark(url!);
+    } else {
     final bookmark = {
       'url': url,
       'title': title,
@@ -4214,34 +4343,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       'timestamp': DateTime.now().toIso8601String(),
     };
 
-    final prefs = await SharedPreferences.getInstance();
-    final bookmarksList = prefs.getStringList('bookmarks') ?? [];
-    
-    // Check if URL already exists in bookmarks
-    if (!bookmarksList.any((item) => 
-      Map<String, dynamic>.from(json.decode(item))['url'] == url)) {
       bookmarksList.insert(0, json.encode(bookmark));
       await prefs.setStringList('bookmarks', bookmarksList);
       
       setState(() {
-        bookmarks = bookmarksList.map((e) => 
-          Map<String, dynamic>.from(json.decode(e))).toList();
+        bookmarks = bookmarksList.map((e) => Map<String, dynamic>.from(json.decode(e))).toList();
       });
       
       _showBookmarkAddedNotification();
-    } else {
-      _showNotification(
-        Row(
-          children: [
-            const Icon(Icons.info, color: Colors.blue),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(AppLocalizations.of(context)!.bookmark_exists),
-            ),
-          ],
-        ),
-        duration: const Duration(seconds: 4),
-      );
     }
   }
 
@@ -4442,7 +4551,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                             onTap: () {
                               if (!_urlFocusNode.hasFocus) {
                                 setState(() {
-                                  _urlController.text = _displayUrl;
+                                  if (_displayUrl == 'file:///android_asset/main.html' || _displayUrl == _homeUrl) {
+                                    _urlController.text = '';
+                                  } else {
+                                    _urlController.text = _displayUrl;
+                                  }
                                   _urlController.selection = TextSelection(
                                     baseOffset: 0,
                                     extentOffset: _urlController.text.length,
@@ -4462,13 +4575,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                         ),
                         IconButton(
                           icon: Icon(
-                            Icons.refresh,
+                            _urlFocusNode.hasFocus ? Icons.close : Icons.refresh,
                             color: ThemeManager.textColor(),
                           ),
                           onPressed: () {
                             if (_urlFocusNode.hasFocus) {
                               _urlFocusNode.unfocus();
                               setState(() {
+                                _urlController.clear();
                                 _urlController.text = _formatUrl(_displayUrl);
                                 _urlController.selection = const TextSelection.collapsed(offset: -1);
                               });
@@ -4496,6 +4610,17 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   DateTime? _lastBackPressTime;
 
   Future<bool> _onWillPop() async {
+    // First check if any panel is open
+    if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible) {
+      setState(() {
+        isTabsVisible = false;
+        isSettingsVisible = false;
+        isBookmarksVisible = false;
+        isDownloadsVisible = false;
+      });
+      return false;
+    }
+
     if (await controller.canGoBack()) {
       await _goBack();
       return false;
@@ -4503,7 +4628,6 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
     if (_lastBackPressTime == null || 
         DateTime.now().difference(_lastBackPressTime!) > const Duration(seconds: 2)) {
-      // Show modern notification using custom notification
       showCustomNotification(
         context: context,
         message: AppLocalizations.of(context)!.press_back_to_exit,
@@ -4525,6 +4649,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     final statusBarHeight = MediaQuery.of(context).padding.top;
     final screenWidth = MediaQuery.of(context).size.width;
     
+    // Force show URL bar when any panel is visible
+    if ((isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible) && _hideUrlBar) {
+      _hideUrlBar = false;
+      _hideUrlBarController.reverse();
+    }
+    
     return WillPopScope(
       onWillPop: _onWillPop,
       child: Scaffold(
@@ -4539,45 +4669,65 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               left: 0,
               right: 0,
               bottom: 0,
-              child: IgnorePointer(
-                ignoring: _isSlideUpPanelVisible,
-                child: WebViewWidget(controller: controller),
+              child: GestureDetector(
+                onTap: () {
+                  if (_isSlideUpPanelVisible) {
+                    setState(() {
+                      _isSlideUpPanelVisible = false;
+                      _slideUpController.reverse();
+                      _hideUrlBar = false;
+                      _hideUrlBarController.reverse();
+                    });
+                  }
+                },
+                child: IgnorePointer(
+                  ignoring: isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible,
+                  child: WebViewWidget(controller: controller),
+                ),
               ),
             ),
 
-            // WebView scroll detector
-            Positioned.fill(
-              child: Listener(
-                behavior: HitTestBehavior.translucent,
-                onPointerMove: (PointerMoveEvent event) {
-                  if (!_isSlideUpPanelVisible && event.delta.dy.abs() > 5) {
-                    if (event.delta.dx.abs() < event.delta.dy.abs()) {
-                      if (event.delta.dy < 0) { // Scrolling up = hide URL bar
-                        if (!_hideUrlBar) {
-                          setState(() {
-                            _hideUrlBar = true;
-                            _hideUrlBarController.forward();
-                          });
-                        }
-                      } else { // Scrolling down = show URL bar
-                        if (_hideUrlBar) {
-                          setState(() {
-                            _hideUrlBar = false;
-                            _hideUrlBarController.reverse();
-                          });
+            // WebView scroll detector with padding
+            if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
+            Positioned(
+              top: statusBarHeight,
+              left: 0,
+              right: 0,
+              bottom: 60, // URL bar height
+              child: IgnorePointer(
+                ignoring: _isSlideUpPanelVisible,
+                child: Listener(
+                  behavior: HitTestBehavior.translucent,
+                  onPointerMove: (PointerMoveEvent event) {
+                    if (!_isSlideUpPanelVisible && event.delta.dy.abs() > 5) {
+                      if (event.delta.dx.abs() < event.delta.dy.abs()) {
+                        if (event.delta.dy < 0) { // Scrolling up = hide URL bar
+                          if (!_hideUrlBar) {
+                            setState(() {
+                              _hideUrlBar = true;
+                              _hideUrlBarController.forward();
+                            });
+                          }
+                        } else { // Scrolling down = show URL bar
+                          if (_hideUrlBar) {
+                            setState(() {
+                              _hideUrlBar = false;
+                              _hideUrlBarController.reverse();
+                            });
+                          }
                         }
                       }
                     }
-                  }
-                },
+                  },
+                ),
               ),
             ),
 
             // Bottom controls (URL bar and panels)
             Positioned(
-              left: 16,
-              right: 16,
-              bottom: MediaQuery.of(context).padding.bottom + 8,
+              left: 0,
+              right: 0,
+              bottom: MediaQuery.of(context).padding.bottom + 16,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -4591,7 +4741,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                           visible: slideValue > 0,
                           maintainState: false,
                           child: Transform.translate(
-                            offset: Offset(0, (1 - slideValue) * 100),
+                            offset: Offset(0, 60 + (1 - slideValue) * 60),
                             child: Opacity(
                               opacity: slideValue,
                               child: Material(
@@ -4599,6 +4749,28 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
+                                    // Handle indicator
+                                    GestureDetector(
+                                      onVerticalDragUpdate: (details) {
+                                        if (details.delta.dy > 2) { // Reduced from 5 to 2
+                                          _handleSlideUpPanelVisibility(false);
+                                        }
+                                      },
+                                      onVerticalDragEnd: (details) {
+                                        if (details.primaryVelocity != null && details.primaryVelocity! > 50) { // Reduced from 100 to 50
+                                          _handleSlideUpPanelVisibility(false);
+                                        }
+                                      },
+                                      child: Container(
+                                        width: 32,
+                                        height: 4,
+                                        margin: const EdgeInsets.only(bottom: 8),
+                                        decoration: BoxDecoration(
+                                          color: ThemeManager.textColor().withOpacity(0.2),
+                                          borderRadius: BorderRadius.circular(2),
+                                        ),
+                                      ),
+                                    ),
                                     _buildQuickActionsPanel(),
                                     const SizedBox(height: 8),
                                     _buildNavigationPanel(),
@@ -4621,12 +4793,18 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                           if (details.delta.dy < -5) {
                             _handleSlideUpPanelVisibility(true);
                           }
+                        } else {
+                          if (details.delta.dy > 5) {
+                            _handleSlideUpPanelVisibility(false);
+                          }
                         }
                       },
                       onVerticalDragEnd: (details) {
-                        if (!_isSlideUpPanelVisible && details.primaryVelocity != null) {
-                          if (details.primaryVelocity! < -100) {
+                        if (details.primaryVelocity != null) {
+                          if (!_isSlideUpPanelVisible && details.primaryVelocity! < -100) {
                             _handleSlideUpPanelVisibility(true);
+                          } else if (_isSlideUpPanelVisible && details.primaryVelocity! > 100) {
+                            _handleSlideUpPanelVisibility(false);
                           }
                         }
                       },
@@ -4644,6 +4822,25 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         ),
       ),
     );
+  }
+
+  @override
+  void didUpdateWidget(covariant BrowserScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Show URL bar when URL changes
+    if (_hideUrlBar) {
+      setState(() {
+        _hideUrlBar = false;
+        _hideUrlBarController.reverse();
+      });
+    }
+    // Hide slide-up panel when URL changes
+    if (_isSlideUpPanelVisible) {
+      setState(() {
+        _isSlideUpPanelVisible = false;
+        _slideUpController.reverse();
+      });
+    }
   }
 
   // Update URL when page changes
@@ -4834,11 +5031,23 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   Future<void> _handleDownload(String url) async {
     try {
+      final notificationService = NotificationService();
+      await notificationService.initialize();
+      
       setState(() {
         isDownloading = true;
         currentDownloadUrl = url;
         downloadProgress = 0.0;
       });
+
+      // Show in-app download started notification
+      _showNotification(
+        Text('${AppLocalizations.of(context)!.download_started}: ${url.split('/').last}'),
+        duration: const Duration(seconds: 2),
+      );
+
+      // Show system download started notification
+      await notificationService.showDownloadStartedNotification(url.split('/').last);
 
       // Create HTTP client with redirect following
       final client = HttpClient()
@@ -4910,16 +5119,35 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       
       // Handle duplicate filenames
       String finalFilePath = filePath;
+      String displayFileName = fileName;
       int counter = 1;
       while (await File(finalFilePath).exists()) {
         final lastDot = fileName.lastIndexOf('.');
         if (lastDot != -1) {
-          finalFilePath = '${downloadsDirectory.path}/${fileName.substring(0, lastDot)} ($counter)${fileName.substring(lastDot)}';
+          final nameWithoutExt = fileName.substring(0, lastDot);
+          final ext = fileName.substring(lastDot);
+          finalFilePath = '${downloadsDirectory.path}/$nameWithoutExt ($counter)$ext';
+          displayFileName = '$nameWithoutExt ($counter)$ext';
         } else {
           finalFilePath = '${downloadsDirectory.path}/$fileName ($counter)';
+          displayFileName = '$fileName ($counter)';
         }
         counter++;
       }
+
+      // Update the current filename to match the actual saved filename
+      setState(() {
+        _currentFileName = displayFileName;
+      });
+
+      // Show in-app download started notification with correct filename
+      _showNotification(
+        Text('${AppLocalizations.of(context)!.download_started}: $displayFileName'),
+        duration: const Duration(seconds: 2),
+      );
+
+      // Show system download started notification with correct filename
+      await notificationService.showDownloadStartedNotification(displayFileName);
 
       final file = File(finalFilePath);
       final sink = await file.openWrite();
@@ -4941,9 +5169,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         sink.add(chunk);
         received += chunk.length;
         if (contentLength > 0) {
+          final progress = (received / contentLength * 100).round();
           setState(() {
             downloadProgress = received / contentLength;
           });
+          // Update download progress notification with correct filename
+          await notificationService.updateDownloadProgress(displayFileName, progress);
         }
       }
       
@@ -4951,8 +5182,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       
       final downloadData = {
         'url': url,
-        'filename': fileName,
-        'path': finalFilePath,
+        'filename': displayFileName,  // Store the actual filename used
+        'path': finalFilePath,       // Store the full path with counter if needed
         'size': received,
         'timestamp': DateTime.now().toIso8601String(),
         'mimeType': response.headers.value('content-type') ?? 'application/octet-stream'
@@ -4966,6 +5197,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       // Immediately refresh the downloads list
       await _loadDownloads();
 
+      // Show both in-app and system notifications with correct filename
+      _showNotification(
+        Text('${AppLocalizations.of(context)!.download_completed}: $displayFileName'),
+        duration: const Duration(seconds: 4),
+      );
+      await notificationService.showDownloadCompleteNotification(displayFileName);
+
       setState(() {
         isDownloading = false;
         currentDownloadUrl = '';
@@ -4973,11 +5211,6 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         _currentDownloadSize = null;
         downloadProgress = 0.0;
       });
-
-      _showNotification(
-        Text('${AppLocalizations.of(context)!.download_completed}: $fileName'),
-        duration: const Duration(seconds: 4),
-      );
 
     } catch (e) {
       setState(() {
@@ -5379,53 +5612,95 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
 
   Widget _buildNavigationPanel() {
-    return Container(
-      width: double.infinity,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-          child: Container(
-            height: 48, // Match URL bar height
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(28),
+    return GestureDetector(
+      onVerticalDragUpdate: (details) {
+        if (details.delta.dy > 2) {
+          _handleSlideUpPanelVisibility(false);
+        }
+      },
+      onVerticalDragEnd: (details) {
+        if (details.primaryVelocity != null && details.primaryVelocity! > 50) {
+          _handleSlideUpPanelVisibility(false);
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(
+            color: ThemeManager.textColor().withOpacity(0.1),
+            width: 1,
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(28),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+            child: Container(
+              height: 48,
               color: ThemeManager.backgroundColor().withOpacity(0.7),
-              border: Border.all(
-                color: ThemeManager.textColor().withOpacity(0.1),
-                width: 1,
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.chevron_left_rounded, size: 24),
-                  color: canGoBack ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
-                  onPressed: canGoBack ? _goBack : null,
-                ),
-                IconButton(
-                  icon: Icon(
-                    isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
-                    size: 24,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left_rounded, size: 24),
+                    color: canGoBack ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
+                    onPressed: canGoBack ? () {
+                      _goBack();
+                      if (_hideUrlBar) {
+                        setState(() {
+                          _hideUrlBar = false;
+                          _hideUrlBarController.reverse();
+                        });
+                      }
+                    } : null,
                   ),
-                  color: ThemeManager.textSecondaryColor(),
-                  onPressed: _addBookmark,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.ios_share_rounded, size: 24),
-                  color: ThemeManager.textSecondaryColor(),
-                  onPressed: () async {
-                    if (currentUrl.isNotEmpty) {
-                      await Share.share(currentUrl);
-                    }
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.chevron_right_rounded, size: 24),
-                  color: canGoForward ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
-                  onPressed: canGoForward ? _goForward : null,
-                ),
-              ],
+                  IconButton(
+                    icon: Icon(
+                      isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
+                      size: 24,
+                    ),
+                    color: ThemeManager.textSecondaryColor(),
+                    onPressed: () {
+                      _addBookmark();
+                      if (_hideUrlBar) {
+                        setState(() {
+                          _hideUrlBar = false;
+                          _hideUrlBarController.reverse();
+                        });
+                      }
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.ios_share_rounded, size: 24),
+                    color: ThemeManager.textSecondaryColor(),
+                    onPressed: () async {
+                      if (currentUrl.isNotEmpty) {
+                        await Share.share(currentUrl);
+                      }
+                      if (_hideUrlBar) {
+                        setState(() {
+                          _hideUrlBar = false;
+                          _hideUrlBarController.reverse();
+                        });
+                      }
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right_rounded, size: 24),
+                    color: canGoForward ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
+                    onPressed: canGoForward ? () {
+                      _goForward();
+                      if (_hideUrlBar) {
+                        setState(() {
+                          _hideUrlBar = false;
+                          _hideUrlBarController.reverse();
+                        });
+                      }
+                    } : null,
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -5612,6 +5887,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             newTab.title = title;
             newTab.url = url;
           });
+          await _saveToHistory(url, title); // Add this line to save history
         },
       ),
     );
@@ -6210,6 +6486,70 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     }
     return false;
   });
+
+  void _showSettingsPanel() {
+    setState(() {
+      // Hide slide-up panel first
+      _isSlideUpPanelVisible = false;
+      _slideUpController.reverse();
+      // Show URL bar
+      _hideUrlBar = false;
+      _hideUrlBarController.reverse();
+      // Show settings panel
+      isSettingsVisible = true;
+      isTabsVisible = false;
+      isBookmarksVisible = false;
+      isDownloadsVisible = false;
+    });
+  }
+
+  void _showTabsPanel() {
+    setState(() {
+      // Hide slide-up panel first
+      _isSlideUpPanelVisible = false;
+      _slideUpController.reverse();
+      // Show URL bar
+      _hideUrlBar = false;
+      _hideUrlBarController.reverse();
+      // Show tabs panel
+      isTabsVisible = true;
+      isSettingsVisible = false;
+      isBookmarksVisible = false;
+      isDownloadsVisible = false;
+    });
+  }
+
+  void _showBookmarksPanel() {
+    setState(() {
+      // Hide slide-up panel first
+      _isSlideUpPanelVisible = false;
+      _slideUpController.reverse();
+      // Show URL bar
+      _hideUrlBar = false;
+      _hideUrlBarController.reverse();
+      // Show bookmarks panel
+      isBookmarksVisible = true;
+      isTabsVisible = false;
+      isSettingsVisible = false;
+      isDownloadsVisible = false;
+    });
+  }
+
+  void _showDownloadsPanel() {
+    setState(() {
+      // Hide slide-up panel first
+      _isSlideUpPanelVisible = false;
+      _slideUpController.reverse();
+      // Show URL bar
+      _hideUrlBar = false;
+      _hideUrlBarController.reverse();
+      // Show downloads panel
+      isDownloadsVisible = true;
+      isTabsVisible = false;
+      isSettingsVisible = false;
+      isBookmarksVisible = false;
+    });
+  }
 }
 
 class ThemeColors {

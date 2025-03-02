@@ -36,10 +36,43 @@ class AppLocalizationsPt extends AppLocalizations {
   String get darkTheme => 'Escuro';
 
   @override
+  String get systemTheme => 'System';
+
+  @override
+  String get tokyoNightTheme => 'Tokyo Night';
+
+  @override
+  String get solarizedLightTheme => 'Solarized Light';
+
+  @override
+  String get draculaTheme => 'Dracula';
+
+  @override
+  String get nordTheme => 'Nord';
+
+  @override
+  String get gruvboxTheme => 'Gruvbox';
+
+  @override
+  String get oneDarkTheme => 'One Dark';
+
+  @override
+  String get catppuccinTheme => 'Catppuccin';
+
+  @override
+  String get nordLightTheme => 'Nord Light';
+
+  @override
+  String get gruvboxLightTheme => 'Gruvbox Light';
+
+  @override
   String get next => 'Próximo';
 
   @override
   String get back => 'Voltar';
+
+  @override
+  String get skip => 'Pular';
 
   @override
   String get getStarted => 'Começar';
@@ -542,4 +575,28 @@ class AppLocalizationsPt extends AppLocalizations {
   String months_ago(int months) {
     return 'há $months meses';
   }
+
+  @override
+  String get update1 => 'Sistema de temas aprimorado';
+
+  @override
+  String get update1desc => 'Novo sistema de temas com mais opções de cores e melhor suporte ao modo escuro';
+
+  @override
+  String get update2 => 'Melhorias de desempenho';
+
+  @override
+  String get update2desc => 'Carregamento de páginas mais rápido e experiência de rolagem mais suave';
+
+  @override
+  String get update3 => 'Novos recursos de privacidade';
+
+  @override
+  String get update3desc => 'Proteção aprimorada contra rastreamento e otimizações do modo anônimo';
+
+  @override
+  String get update4 => 'Melhorias na interface';
+
+  @override
+  String get update4desc => 'Interface do usuário aprimorada com melhor navegação e acessibilidade';
 }

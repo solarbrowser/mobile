@@ -211,5 +211,37 @@
   "new_incognito_tab": "Neuer Inkognito-Tab",
   "@new_incognito_tab": {
     "description": "Label for new incognito tab button"
+  },
+  "update1": "Verbessertes Theme-System",
+  "@update1": {
+    "description": "Title for first update note"
+  },
+  "update1desc": "Neues Theme-System mit mehr Farboptionen und verbesserter Unterstützung für den Dunkelmodus",
+  "@update1desc": {
+    "description": "Description for first update"
+  },
+  "update2": "Leistungsverbesserungen",
+  "@update2": {
+    "description": "Title for second update note"
+  },
+  "update2desc": "Schnelleres Laden von Seiten und flüssigeres Scrollen",
+  "@update2desc": {
+    "description": "Description for second update"
+  },
+  "update3": "Neue Datenschutzfunktionen",
+  "@update3": {
+    "description": "Title for third update note"
+  },
+  "update3desc": "Verbesserter Tracking-Schutz und Optimierungen im Inkognito-Modus",
+  "@update3desc": {
+    "description": "Description for third update"
+  },
+  "update4": "UI-Verfeinerungen",
+  "@update4": {
+    "description": "Title for fourth update note"
+  },
+  "update4desc": "Verbesserte Benutzeroberfläche mit besserer Navigation und Zugänglichkeit",
+  "@update4desc": {
+    "description": "Description for fourth update"
   }
 } 

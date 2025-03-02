@@ -36,10 +36,43 @@ class AppLocalizationsJa extends AppLocalizations {
   String get darkTheme => 'ダーク';
 
   @override
+  String get systemTheme => 'System';
+
+  @override
+  String get tokyoNightTheme => 'Tokyo Night';
+
+  @override
+  String get solarizedLightTheme => 'Solarized Light';
+
+  @override
+  String get draculaTheme => 'Dracula';
+
+  @override
+  String get nordTheme => 'Nord';
+
+  @override
+  String get gruvboxTheme => 'Gruvbox';
+
+  @override
+  String get oneDarkTheme => 'One Dark';
+
+  @override
+  String get catppuccinTheme => 'Catppuccin';
+
+  @override
+  String get nordLightTheme => 'Nord Light';
+
+  @override
+  String get gruvboxLightTheme => 'Gruvbox Light';
+
+  @override
   String get next => '次へ';
 
   @override
   String get back => '戻る';
+
+  @override
+  String get skip => 'スキップ';
 
   @override
   String get getStarted => '始める';
@@ -542,4 +575,28 @@ class AppLocalizationsJa extends AppLocalizations {
   String months_ago(int months) {
     return '$months months ago';
   }
+
+  @override
+  String get update1 => 'テーマシステムの改善';
+
+  @override
+  String get update1desc => 'より多くのカラーオプションと改善されたダークモードサポートを備えた新しいテーマシステム';
+
+  @override
+  String get update2 => 'パフォーマンスの向上';
+
+  @override
+  String get update2desc => 'ページの読み込みが高速化し、よりスムーズなスクロール体験を実現';
+
+  @override
+  String get update3 => '新しいプライバシー機能';
+
+  @override
+  String get update3desc => 'トラッキング保護の強化とシークレットモードの最適化';
+
+  @override
+  String get update4 => 'UIの改善';
+
+  @override
+  String get update4desc => 'より良いナビゲーションとアクセシビリティを備えた改善されたユーザーインターフェース';
 }

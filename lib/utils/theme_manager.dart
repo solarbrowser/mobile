@@ -67,7 +67,7 @@ class ThemeManager {
   static bool _isDarkMode = false;
 
   static final Map<ThemeType, ThemeColors> _themes = {
-        ThemeType.light: ThemeColors(
+    ThemeType.light: ThemeColors(
       backgroundColor: Colors.white,
       surfaceColor: Colors.grey[100]!,
       textColor: Colors.black,
@@ -209,26 +209,18 @@ class ThemeManager {
         final theme = ThemeType.values.firstWhere((t) => t.name == savedTheme);
         _currentTheme = theme;
         _isDarkMode = theme.isDark;
-      } catch (_) {
-        // If saved theme is invalid, set default theme
-        _currentTheme = ThemeType.nordLight;
-        _isDarkMode = false;
-        await prefs.setString('selectedTheme', _currentTheme.name);
+      } catch (e) {
+        // If the saved theme is invalid, keep the default
       }
-    } else {
-      // If no theme saved, set default theme
-      _currentTheme = ThemeType.nordLight;
-      _isDarkMode = false;
-      await prefs.setString('selectedTheme', _currentTheme.name);
     }
   }
 
   static Future<void> setTheme(ThemeType theme) async {
     _currentTheme = theme;
     _isDarkMode = theme.isDark;
+    // Save theme preference
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selectedTheme', theme.name);
-    await prefs.setBool('darkMode', theme.isDark);
   }
 
   static void setIsDarkMode(bool isDark) {

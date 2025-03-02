@@ -36,10 +36,43 @@ class AppLocalizationsKo extends AppLocalizations {
   String get darkTheme => '다크';
 
   @override
+  String get systemTheme => 'System';
+
+  @override
+  String get tokyoNightTheme => 'Tokyo Night';
+
+  @override
+  String get solarizedLightTheme => 'Solarized Light';
+
+  @override
+  String get draculaTheme => 'Dracula';
+
+  @override
+  String get nordTheme => 'Nord';
+
+  @override
+  String get gruvboxTheme => 'Gruvbox';
+
+  @override
+  String get oneDarkTheme => 'One Dark';
+
+  @override
+  String get catppuccinTheme => 'Catppuccin';
+
+  @override
+  String get nordLightTheme => 'Nord Light';
+
+  @override
+  String get gruvboxLightTheme => 'Gruvbox Light';
+
+  @override
   String get next => '다음';
 
   @override
   String get back => '뒤로';
+
+  @override
+  String get skip => '건너뛰기';
 
   @override
   String get getStarted => '시작하기';
@@ -542,4 +575,28 @@ class AppLocalizationsKo extends AppLocalizations {
   String months_ago(int months) {
     return '$months months ago';
   }
+
+  @override
+  String get update1 => '향상된 테마 시스템';
+
+  @override
+  String get update1desc => '더 많은 색상 옵션과 개선된 다크 모드 지원을 갖춘 새로운 테마 시스템';
+
+  @override
+  String get update2 => '성능 개선';
+
+  @override
+  String get update2desc => '더 빠른 페이지 로딩과 더 부드러운 스크롤 경험';
+
+  @override
+  String get update3 => '새로운 개인정보 보호 기능';
+
+  @override
+  String get update3desc => '향상된 추적 방지 및 시크릿 모드 최적화';
+
+  @override
+  String get update4 => 'UI 개선';
+
+  @override
+  String get update4desc => '더 나은 탐색과 접근성을 갖춘 개선된 사용자 인터페이스';
 }

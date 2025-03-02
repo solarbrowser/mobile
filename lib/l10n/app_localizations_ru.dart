@@ -36,10 +36,43 @@ class AppLocalizationsRu extends AppLocalizations {
   String get darkTheme => 'Тёмная';
 
   @override
+  String get systemTheme => 'System';
+
+  @override
+  String get tokyoNightTheme => 'Tokyo Night';
+
+  @override
+  String get solarizedLightTheme => 'Solarized Light';
+
+  @override
+  String get draculaTheme => 'Dracula';
+
+  @override
+  String get nordTheme => 'Nord';
+
+  @override
+  String get gruvboxTheme => 'Gruvbox';
+
+  @override
+  String get oneDarkTheme => 'One Dark';
+
+  @override
+  String get catppuccinTheme => 'Catppuccin';
+
+  @override
+  String get nordLightTheme => 'Nord Light';
+
+  @override
+  String get gruvboxLightTheme => 'Gruvbox Light';
+
+  @override
   String get next => 'Далее';
 
   @override
   String get back => 'Назад';
+
+  @override
+  String get skip => 'Пропустить';
 
   @override
   String get getStarted => 'Начать';
@@ -542,4 +575,28 @@ class AppLocalizationsRu extends AppLocalizations {
   String months_ago(int months) {
     return '$months months ago';
   }
+
+  @override
+  String get update1 => 'Улучшенная система тем';
+
+  @override
+  String get update1desc => 'Новая система тем с большим выбором цветов и улучшенной поддержкой тёмного режима';
+
+  @override
+  String get update2 => 'Улучшения производительности';
+
+  @override
+  String get update2desc => 'Более быстрая загрузка страниц и плавная прокрутка';
+
+  @override
+  String get update3 => 'Новые функции конфиденциальности';
+
+  @override
+  String get update3desc => 'Улучшенная защита от отслеживания и оптимизация режима инкогнито';
+
+  @override
+  String get update4 => 'Улучшения интерфейса';
+
+  @override
+  String get update4desc => 'Улучшенный пользовательский интерфейс с более удобной навигацией и доступностью';
 }

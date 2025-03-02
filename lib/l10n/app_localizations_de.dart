@@ -36,10 +36,43 @@ class AppLocalizationsDe extends AppLocalizations {
   String get darkTheme => 'Dunkel';
 
   @override
+  String get systemTheme => 'System';
+
+  @override
+  String get tokyoNightTheme => 'Tokyo Night';
+
+  @override
+  String get solarizedLightTheme => 'Solarized Light';
+
+  @override
+  String get draculaTheme => 'Dracula';
+
+  @override
+  String get nordTheme => 'Nord';
+
+  @override
+  String get gruvboxTheme => 'Gruvbox';
+
+  @override
+  String get oneDarkTheme => 'One Dark';
+
+  @override
+  String get catppuccinTheme => 'Catppuccin';
+
+  @override
+  String get nordLightTheme => 'Nord Light';
+
+  @override
+  String get gruvboxLightTheme => 'Gruvbox Light';
+
+  @override
   String get next => 'Weiter';
 
   @override
   String get back => 'Zurück';
+
+  @override
+  String get skip => 'Skip';
 
   @override
   String get getStarted => 'Loslegen';
@@ -542,4 +575,28 @@ class AppLocalizationsDe extends AppLocalizations {
   String months_ago(int months) {
     return 'vor $months Monaten';
   }
+
+  @override
+  String get update1 => 'Verbessertes Theme-System';
+
+  @override
+  String get update1desc => 'Neues Theme-System mit mehr Farboptionen und verbesserter Unterstützung für den Dunkelmodus';
+
+  @override
+  String get update2 => 'Leistungsverbesserungen';
+
+  @override
+  String get update2desc => 'Schnelleres Laden von Seiten und flüssigeres Scrollen';
+
+  @override
+  String get update3 => 'Neue Datenschutzfunktionen';
+
+  @override
+  String get update3desc => 'Verbesserter Tracking-Schutz und Optimierungen im Inkognito-Modus';
+
+  @override
+  String get update4 => 'UI-Verfeinerungen';
+
+  @override
+  String get update4desc => 'Verbesserte Benutzeroberfläche mit besserer Navigation und Zugänglichkeit';
 }

@@ -11,6 +11,10 @@
   "darkTheme": "深色",
   "next": "下一步",
   "back": "返回",
+  "skip": "跳过",
+  "@skip": {
+    "description": "Skip button text"
+  },
   "getStarted": "开始使用",
   "continueText": "继续",
   "updated": "Solar 浏览器已更新！",
@@ -191,5 +195,37 @@
   "new_incognito_tab": "新建隐身标签页",
   "@new_incognito_tab": {
     "description": "Label for new incognito tab button"
+  },
+  "update1": "主题系统优化",
+  "@update1": {
+    "description": "Title for first update note"
+  },
+  "update1desc": "新的主题系统，提供更多颜色选项和改进的深色模式支持",
+  "@update1desc": {
+    "description": "Description for first update"
+  },
+  "update2": "性能提升",
+  "@update2": {
+    "description": "Title for second update note"
+  },
+  "update2desc": "更快的页面加载速度和更流畅的滚动体验",
+  "@update2desc": {
+    "description": "Description for second update"
+  },
+  "update3": "新的隐私功能",
+  "@update3": {
+    "description": "Title for third update note"
+  },
+  "update3desc": "增强的跟踪保护和无痕模式优化",
+  "@update3desc": {
+    "description": "Description for third update"
+  },
+  "update4": "界面改进",
+  "@update4": {
+    "description": "Title for fourth update note"
+  },
+  "update4desc": "改进的用户界面，提供更好的导航和无障碍功能",
+  "@update4desc": {
+    "description": "Description for fourth update"
   }
 } 

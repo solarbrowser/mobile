@@ -11,7 +11,7 @@ import 'browser_screen.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:app_settings/app_settings.dart';
-import '../theme/theme_manager.dart';
+import '../utils/theme_manager.dart';
 
 class WelcomeScreen extends StatefulWidget {
   final Function(String) onLocaleChange;
@@ -37,7 +37,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
   late Animation<double> _floatAnimation;
   int _currentPage = 0;
   String _selectedLanguage = 'en';
-  bool _isDarkMode = false;
   String _selectedSearchEngine = 'Google';
 
   final Map<String, String> _languages = {
@@ -94,12 +93,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
     
     // Set system theme
     final isDark = window.platformBrightness == Brightness.dark;
-    if (isDark != _isDarkMode) {
-      setState(() {
-        _isDarkMode = isDark;
-      });
-      widget.onThemeChange(isDark);
-    }
+    ThemeManager.setIsDarkMode(isDark);
+    widget.onThemeChange(isDark);
     
     // Set system language
     final List<Locale> systemLocales = window.locales;
@@ -155,6 +150,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
   }
 
   Widget _buildGlassmorphicContainer({required Widget child}) {
+    final themeColors = ThemeManager.getThemeColors(ThemeManager.getCurrentTheme());
     return ClipRRect(
       borderRadius: BorderRadius.circular(30),
       child: BackdropFilter(
@@ -165,17 +161,17 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                ThemeManager.textColor().withOpacity(0.2),
-                ThemeManager.textColor().withOpacity(0.1),
+                themeColors.textColor.withOpacity(0.2),
+                themeColors.textColor.withOpacity(0.1),
               ],
             ),
             borderRadius: BorderRadius.circular(30),
             border: Border.all(
-              color: ThemeManager.textColor().withOpacity(0.2),
+              color: themeColors.textColor.withOpacity(0.2),
             ),
             boxShadow: [
               BoxShadow(
-                color: ThemeManager.textColor().withOpacity(0.1),
+                color: themeColors.textColor.withOpacity(0.1),
                 blurRadius: 10,
                 spreadRadius: 1,
               ),
@@ -195,7 +191,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
         return CustomPaint(
           painter: ParticlePainter(
             angle: value,
-            isDarkMode: _isDarkMode,
+            isDarkMode: ThemeManager.getCurrentTheme().isDark,
           ),
           child: child,
         );
@@ -246,7 +242,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                 SizedBox(height: size.height * 0.02),
                                 ShaderMask(
                                   shaderCallback: (bounds) => LinearGradient(
-                                    colors: _isDarkMode
+                                    colors: ThemeManager.getCurrentTheme().isDark
                                         ? [Colors.white, Colors.white70]
                                         : [Colors.black, Colors.black87],
                                     begin: Alignment.topLeft,
@@ -257,7 +253,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                     style: TextStyle(
                                       fontSize: isLargeScreen ? 32 : 24,
                                       fontWeight: FontWeight.bold,
-                                      color: ThemeManager.textColor(),
+                                      color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
                                     ),
                                     textAlign: TextAlign.center,
                                   ),
@@ -268,7 +264,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
                                     fontSize: isLargeScreen ? 18 : 14,
-                                    color: ThemeManager.textSecondaryColor(),
+                                    color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textSecondaryColor,
                                     letterSpacing: 0.3,
                                   ),
                                 ),
@@ -289,7 +285,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                             text: AppLocalizations.of(context)!.termsOfService,
                             style: TextStyle(
                               fontSize: isLargeScreen ? 16 : 13,
-                              color: ThemeManager.textSecondaryColor(),
+                              color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textSecondaryColor,
                               fontWeight: FontWeight.bold
                             ),
                           ),
@@ -324,7 +320,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
           child: FadeTransition(
             opacity: animation,
             child: AlertDialog(
-              backgroundColor: ThemeManager.backgroundColor(),
+              backgroundColor: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).backgroundColor,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -334,7 +330,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     TextSpan(
                       text: AppLocalizations.of(context)!.terms_of_use,
                       style: TextStyle(
-                        color: ThemeManager.textColor(),
+                        color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                       ),
@@ -342,14 +338,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     TextSpan(
                       text: ' & ',
                       style: TextStyle(
-                        color: ThemeManager.textSecondaryColor(),
+                        color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textSecondaryColor,
                         fontSize: 18,
                       ),
                     ),
                     TextSpan(
                       text: AppLocalizations.of(context)!.privacy_policy,
                       style: TextStyle(
-                        color: ThemeManager.textColor(),
+                        color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                       ),
@@ -365,14 +361,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     Text(
                       AppLocalizations.of(context)!.termsOfService,
                       style: TextStyle(
-                        color: ThemeManager.textSecondaryColor(),
+                        color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textSecondaryColor,
                       ),
                     ),
                     const SizedBox(height: 16),
                     Text(
                       AppLocalizations.of(context)!.data_collection + ':',
                       style: TextStyle(
-                        color: ThemeManager.textColor(),
+                        color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -380,7 +376,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     Text(
                       AppLocalizations.of(context)!.data_collection_details,
                       style: TextStyle(
-                        color: ThemeManager.textSecondaryColor(),
+                        color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textSecondaryColor,
                       ),
                     ),
                   ],
@@ -392,7 +388,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   child: Text(
                     AppLocalizations.of(context)!.continueText,
                     style: TextStyle(
-                      color: ThemeManager.textColor(),
+                      color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -418,7 +414,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
           style: TextStyle(
             fontSize: isLargeScreen ? 32 : 24,
             fontWeight: FontWeight.bold,
-            color: ThemeManager.textColor(),
+            color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
           ),
         ),
         SizedBox(height: size.height * 0.04),
@@ -438,7 +434,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   title: Text(
                     name,
                     style: TextStyle(
-                      color: ThemeManager.textColor(),
+                      color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
                       fontSize: isLargeScreen ? 18 : 15,
                       fontWeight: _selectedLanguage == language ? 
                         FontWeight.bold : FontWeight.normal,
@@ -446,7 +442,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   ),
                   trailing: _selectedLanguage == language ? 
                     Icon(Icons.check, 
-                      color: ThemeManager.textColor(),
+                      color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
                       size: isLargeScreen ? 24 : 20,
                     ) : null,
                   onTap: () {
@@ -476,102 +472,92 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
           style: TextStyle(
             fontSize: isLargeScreen ? 32 : 24,
             fontWeight: FontWeight.bold,
-            color: ThemeManager.textColor(),
+            color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
           ),
         ),
         SizedBox(height: size.height * 0.04),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildGlassmorphicContainer(
-              child: Container(
-                width: isLargeScreen ? size.width * 0.25 : 120,
-                height: isLargeScreen ? size.height * 0.25 : 160,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
-                  border: !_isDarkMode ? Border.all(
-                    color: ThemeManager.textSecondaryColor(),
-                    width: 1.5,
-                  ) : null,
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(30),
-                    onTap: () => setState(() {
-                      _isDarkMode = false;
-                      widget.onThemeChange(false);
-                    }),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.light_mode,
-                          color: ThemeManager.textSecondaryColor(),
-                          size: isLargeScreen ? 48 : 32,
-                        ),
-                        SizedBox(height: size.height * 0.02),
-                        Text(
-                          AppLocalizations.of(context)!.lightTheme,
-                          style: TextStyle(
-                            color: ThemeManager.textSecondaryColor(),
-                            fontSize: isLargeScreen ? 20 : 16,
-                            fontWeight: !_isDarkMode ? FontWeight.bold : FontWeight.normal,
-                          ),
-                        ),
-                      ],
+        _buildGlassmorphicContainer(
+          child: Container(
+            height: size.height * 0.5,
+            width: isLargeScreen ? 400 : 280,
+            padding: EdgeInsets.symmetric(vertical: size.height * 0.015),
+            child: ListView.builder(
+              itemCount: ThemeType.values.length,
+              itemBuilder: (context, index) {
+                final theme = ThemeType.values[index];
+                final themeColors = ThemeManager.getThemeColors(theme);
+                return ListTile(
+                  dense: true,
+                  visualDensity: const VisualDensity(vertical: -2),
+                  title: Text(
+                    _getThemeName(theme),
+                    style: TextStyle(
+                      color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
+                      fontSize: isLargeScreen ? 18 : 15,
+                      fontWeight: ThemeManager.getCurrentTheme() == theme ? 
+                        FontWeight.bold : FontWeight.normal,
                     ),
                   ),
-                ),
-              ),
-            ),
-            SizedBox(width: size.width * 0.05),
-            _buildGlassmorphicContainer(
-              child: Container(
-                width: isLargeScreen ? size.width * 0.25 : 120,
-                height: isLargeScreen ? size.height * 0.25 : 160,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
-                  border: _isDarkMode ? Border.all(
-                    color: ThemeManager.textSecondaryColor(),
-                    width: 1.5,
-                  ) : null,
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(30),
-                    onTap: () => setState(() {
-                      _isDarkMode = true;
-                      widget.onThemeChange(true);
-                    }),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.dark_mode,
-                          color: ThemeManager.textSecondaryColor(),
-                          size: isLargeScreen ? 48 : 32,
-                        ),
-                        SizedBox(height: size.height * 0.02),
-                        Text(
-                          AppLocalizations.of(context)!.darkTheme,
-                          style: TextStyle(
-                            color: ThemeManager.textSecondaryColor(),
-                            fontSize: isLargeScreen ? 20 : 16,
-                            fontWeight: _isDarkMode ? FontWeight.bold : FontWeight.normal,
-                          ),
-                        ),
-                      ],
+                  leading: Container(
+                    width: 24,
+                    height: 24,
+                    decoration: BoxDecoration(
+                      color: themeColors.backgroundColor,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: themeColors.primaryColor,
+                        width: 2,
+                      ),
                     ),
                   ),
-                ),
-              ),
+                  trailing: ThemeManager.getCurrentTheme() == theme ? 
+                    Icon(Icons.check, 
+                      color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
+                      size: isLargeScreen ? 24 : 20,
+                    ) : null,
+                  onTap: () {
+                    ThemeManager.setTheme(theme);
+                    setState(() {
+                      _selectedLanguage = theme.isDark ? 'en' : 'en';
+                    });
+                    widget.onThemeChange(theme.isDark);
+                  },
+                );
+              },
             ),
-          ],
+          ),
         ),
       ],
     );
+  }
+
+  String _getThemeName(ThemeType theme) {
+    switch (theme) {
+      case ThemeType.system:
+        return AppLocalizations.of(context)!.systemTheme;
+      case ThemeType.light:
+        return AppLocalizations.of(context)!.lightTheme;
+      case ThemeType.dark:
+        return AppLocalizations.of(context)!.darkTheme;
+      case ThemeType.tokyoNight:
+        return AppLocalizations.of(context)!.tokyoNightTheme;
+      case ThemeType.solarizedLight:
+        return AppLocalizations.of(context)!.solarizedLightTheme;
+      case ThemeType.dracula:
+        return AppLocalizations.of(context)!.draculaTheme;
+      case ThemeType.nord:
+        return AppLocalizations.of(context)!.nordTheme;
+      case ThemeType.gruvbox:
+        return AppLocalizations.of(context)!.gruvboxTheme;
+      case ThemeType.oneDark:
+        return AppLocalizations.of(context)!.oneDarkTheme;
+      case ThemeType.catppuccin:
+        return AppLocalizations.of(context)!.catppuccinTheme;
+      case ThemeType.nordLight:
+        return AppLocalizations.of(context)!.nordLightTheme;
+      case ThemeType.gruvboxLight:
+        return AppLocalizations.of(context)!.gruvboxLightTheme;
+    }
   }
 
   Widget _buildSearchEnginePage() {
@@ -586,7 +572,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
           style: TextStyle(
             fontSize: isLargeScreen ? 32 : 24,
             fontWeight: FontWeight.bold,
-            color: ThemeManager.textColor(),
+            color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
           ),
         ),
         SizedBox(height: size.height * 0.04),
@@ -606,7 +592,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   title: Text(
                     name,
                     style: TextStyle(
-                      color: ThemeManager.textColor(),
+                      color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
                       fontSize: isLargeScreen ? 18 : 15,
                       fontWeight: _selectedSearchEngine == engine ? 
                         FontWeight.bold : FontWeight.normal,
@@ -614,7 +600,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   ),
                   trailing: _selectedSearchEngine == engine ? 
                     Icon(Icons.check, 
-                      color: ThemeManager.textColor(),
+                      color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
                       size: isLargeScreen ? 24 : 20,
                     ) : null,
                   onTap: () {
@@ -634,21 +620,22 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    final themeColors = ThemeManager.getThemeColors(ThemeManager.getCurrentTheme());
     return Scaffold(
-      backgroundColor: ThemeManager.backgroundColor(),
+      backgroundColor: themeColors.backgroundColor,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: _isDarkMode 
+            colors: ThemeManager.getCurrentTheme().isDark
               ? [
-                  Color(0xFF1a1a1a),
-                  Color(0xFF0a0a0a),
+                  const Color(0xFF1a1a1a),
+                  const Color(0xFF0a0a0a),
                 ]
               : [
-                  Color(0xFFffffff),
-                  Color(0xFFf0f0f0),
+                  const Color(0xFFffffff),
+                  const Color(0xFFf0f0f0),
                 ],
           ),
         ),
@@ -714,7 +701,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                   child: Text(
                     AppLocalizations.of(context)!.back,
                     style: TextStyle(
-                      color: ThemeManager.textSecondaryColor(),
+                      color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textSecondaryColor,
                       fontSize: isLargeScreen ? 18 : 15,
                     ),
                   ),
@@ -731,8 +718,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(isLargeScreen ? 4 : 3),
                       color: _currentPage == index
-                        ? ThemeManager.textColor()
-                        : ThemeManager.textSecondaryColor(),
+                        ? ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor
+                        : ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textSecondaryColor,
                     ),
                   ),
                 )),
@@ -757,7 +744,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     ? AppLocalizations.of(context)!.next
                     : AppLocalizations.of(context)!.getStarted,
                   style: TextStyle(
-                    color: ThemeManager.textColor(),
+                    color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
                     fontWeight: FontWeight.bold,
                     fontSize: isLargeScreen ? 18 : 15,
                   ),

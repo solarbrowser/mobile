@@ -36,10 +36,43 @@ class AppLocalizationsTr extends AppLocalizations {
   String get darkTheme => 'Koyu';
 
   @override
+  String get systemTheme => 'System';
+
+  @override
+  String get tokyoNightTheme => 'Tokyo Night';
+
+  @override
+  String get solarizedLightTheme => 'Solarized Light';
+
+  @override
+  String get draculaTheme => 'Dracula';
+
+  @override
+  String get nordTheme => 'Nord';
+
+  @override
+  String get gruvboxTheme => 'Gruvbox';
+
+  @override
+  String get oneDarkTheme => 'One Dark';
+
+  @override
+  String get catppuccinTheme => 'Catppuccin';
+
+  @override
+  String get nordLightTheme => 'Nord Light';
+
+  @override
+  String get gruvboxLightTheme => 'Gruvbox Light';
+
+  @override
   String get next => 'İleri';
 
   @override
   String get back => 'Geri';
+
+  @override
+  String get skip => 'Skip';
 
   @override
   String get getStarted => 'Başlayın';
@@ -542,4 +575,28 @@ class AppLocalizationsTr extends AppLocalizations {
   String months_ago(int months) {
     return '$months ay önce';
   }
+
+  @override
+  String get update1 => 'Geliştirilmiş Tema Sistemi';
+
+  @override
+  String get update1desc => 'Daha fazla renk seçeneği ve geliştirilmiş karanlık mod desteği ile yeni tema sistemi';
+
+  @override
+  String get update2 => 'Performans İyileştirmeleri';
+
+  @override
+  String get update2desc => 'Daha hızlı sayfa yükleme ve daha akıcı kaydırma deneyimi';
+
+  @override
+  String get update3 => 'Yeni Gizlilik Özellikleri';
+
+  @override
+  String get update3desc => 'Geliştirilmiş izleme koruması ve gizli mod iyileştirmeleri';
+
+  @override
+  String get update4 => 'Arayüz İyileştirmeleri';
+
+  @override
+  String get update4desc => 'Daha iyi gezinme ve erişilebilirlik ile geliştirilmiş arayüz';
 }

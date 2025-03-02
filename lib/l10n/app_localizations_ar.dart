@@ -36,10 +36,43 @@ class AppLocalizationsAr extends AppLocalizations {
   String get darkTheme => 'داكن';
 
   @override
+  String get systemTheme => 'System';
+
+  @override
+  String get tokyoNightTheme => 'Tokyo Night';
+
+  @override
+  String get solarizedLightTheme => 'Solarized Light';
+
+  @override
+  String get draculaTheme => 'Dracula';
+
+  @override
+  String get nordTheme => 'Nord';
+
+  @override
+  String get gruvboxTheme => 'Gruvbox';
+
+  @override
+  String get oneDarkTheme => 'One Dark';
+
+  @override
+  String get catppuccinTheme => 'Catppuccin';
+
+  @override
+  String get nordLightTheme => 'Nord Light';
+
+  @override
+  String get gruvboxLightTheme => 'Gruvbox Light';
+
+  @override
   String get next => 'التالي';
 
   @override
   String get back => 'رجوع';
+
+  @override
+  String get skip => 'Skip';
 
   @override
   String get getStarted => 'ابدأ';
@@ -542,4 +575,28 @@ class AppLocalizationsAr extends AppLocalizations {
   String months_ago(int months) {
     return 'منذ $months شهر';
   }
+
+  @override
+  String get update1 => 'نظام سمات محسّن';
+
+  @override
+  String get update1desc => 'نظام سمات جديد مع المزيد من خيارات الألوان ودعم محسّن للوضع المظلم';
+
+  @override
+  String get update2 => 'تحسينات في الأداء';
+
+  @override
+  String get update2desc => 'تحميل أسرع للصفحات وتجربة تمرير أكثر سلاسة';
+
+  @override
+  String get update3 => 'ميزات خصوصية جديدة';
+
+  @override
+  String get update3desc => 'حماية محسّنة من التتبع وتحسينات في وضع التصفح الخاص';
+
+  @override
+  String get update4 => 'تحسينات في واجهة المستخدم';
+
+  @override
+  String get update4desc => 'واجهة مستخدم محسّنة مع تنقل وإمكانية وصول أفضل';
 }

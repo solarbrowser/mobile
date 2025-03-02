@@ -36,10 +36,43 @@ class AppLocalizationsZh extends AppLocalizations {
   String get darkTheme => '深色';
 
   @override
+  String get systemTheme => 'System';
+
+  @override
+  String get tokyoNightTheme => 'Tokyo Night';
+
+  @override
+  String get solarizedLightTheme => 'Solarized Light';
+
+  @override
+  String get draculaTheme => 'Dracula';
+
+  @override
+  String get nordTheme => 'Nord';
+
+  @override
+  String get gruvboxTheme => 'Gruvbox';
+
+  @override
+  String get oneDarkTheme => 'One Dark';
+
+  @override
+  String get catppuccinTheme => 'Catppuccin';
+
+  @override
+  String get nordLightTheme => 'Nord Light';
+
+  @override
+  String get gruvboxLightTheme => 'Gruvbox Light';
+
+  @override
   String get next => '下一步';
 
   @override
   String get back => '返回';
+
+  @override
+  String get skip => '跳过';
 
   @override
   String get getStarted => '开始使用';
@@ -542,4 +575,28 @@ class AppLocalizationsZh extends AppLocalizations {
   String months_ago(int months) {
     return '$months months ago';
   }
+
+  @override
+  String get update1 => '主题系统优化';
+
+  @override
+  String get update1desc => '新的主题系统，提供更多颜色选项和改进的深色模式支持';
+
+  @override
+  String get update2 => '性能提升';
+
+  @override
+  String get update2desc => '更快的页面加载速度和更流畅的滚动体验';
+
+  @override
+  String get update3 => '新的隐私功能';
+
+  @override
+  String get update3desc => '增强的跟踪保护和无痕模式优化';
+
+  @override
+  String get update4 => '界面改进';
+
+  @override
+  String get update4desc => '改进的用户界面，提供更好的导航和无障碍功能';
 }

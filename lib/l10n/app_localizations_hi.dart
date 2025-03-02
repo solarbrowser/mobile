@@ -36,10 +36,43 @@ class AppLocalizationsHi extends AppLocalizations {
   String get darkTheme => 'डार्क';
 
   @override
+  String get systemTheme => 'System';
+
+  @override
+  String get tokyoNightTheme => 'Tokyo Night';
+
+  @override
+  String get solarizedLightTheme => 'Solarized Light';
+
+  @override
+  String get draculaTheme => 'Dracula';
+
+  @override
+  String get nordTheme => 'Nord';
+
+  @override
+  String get gruvboxTheme => 'Gruvbox';
+
+  @override
+  String get oneDarkTheme => 'One Dark';
+
+  @override
+  String get catppuccinTheme => 'Catppuccin';
+
+  @override
+  String get nordLightTheme => 'Nord Light';
+
+  @override
+  String get gruvboxLightTheme => 'Gruvbox Light';
+
+  @override
   String get next => 'अगला';
 
   @override
   String get back => 'वापस';
+
+  @override
+  String get skip => 'Skip';
 
   @override
   String get getStarted => 'शुरू करें';
@@ -542,4 +575,28 @@ class AppLocalizationsHi extends AppLocalizations {
   String months_ago(int months) {
     return '$months महीने पहले';
   }
+
+  @override
+  String get update1 => 'बेहतर थीम सिस्टम';
+
+  @override
+  String get update1desc => 'अधिक रंग विकल्पों और बेहतर डार्क मोड समर्थन के साथ नई थीम प्रणाली';
+
+  @override
+  String get update2 => 'प्रदर्शन में सुधार';
+
+  @override
+  String get update2desc => 'तेज़ पेज लोडिंग और बेहतर स्क्रॉलिंग अनुभव';
+
+  @override
+  String get update3 => 'नई गोपनीयता सुविधाएं';
+
+  @override
+  String get update3desc => 'बेहतर ट्रैकिंग सुरक्षा और गुप्त मोड में सुधार';
+
+  @override
+  String get update4 => 'यूआई में सुधार';
+
+  @override
+  String get update4desc => 'बेहतर नेविगेशन और पहुंच के साथ बेहतर यूजर इंटरफेस';
 }

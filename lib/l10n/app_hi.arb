@@ -212,5 +212,37 @@
   "new_incognito_tab": "नया गुप्त टैब",
   "@new_incognito_tab": {
     "description": "Label for new incognito tab button"
+  },
+  "update1": "बेहतर थीम सिस्टम",
+  "@update1": {
+    "description": "Title for first update note"
+  },
+  "update1desc": "अधिक रंग विकल्पों और बेहतर डार्क मोड समर्थन के साथ नई थीम प्रणाली",
+  "@update1desc": {
+    "description": "Description for first update"
+  },
+  "update2": "प्रदर्शन में सुधार",
+  "@update2": {
+    "description": "Title for second update note"
+  },
+  "update2desc": "तेज़ पेज लोडिंग और बेहतर स्क्रॉलिंग अनुभव",
+  "@update2desc": {
+    "description": "Description for second update"
+  },
+  "update3": "नई गोपनीयता सुविधाएं",
+  "@update3": {
+    "description": "Title for third update note"
+  },
+  "update3desc": "बेहतर ट्रैकिंग सुरक्षा और गुप्त मोड में सुधार",
+  "@update3desc": {
+    "description": "Description for third update"
+  },
+  "update4": "यूआई में सुधार",
+  "@update4": {
+    "description": "Title for fourth update note"
+  },
+  "update4desc": "बेहतर नेविगेशन और पहुंच के साथ बेहतर यूजर इंटरफेस",
+  "@update4desc": {
+    "description": "Description for fourth update"
   }
 } 
