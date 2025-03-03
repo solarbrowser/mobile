@@ -757,82 +757,108 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
 
   Future<void> _initializeWebView() async {
-    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
-      controller = WebViewController.fromPlatformCreationParams(
-        WebKitWebViewControllerCreationParams(
-          allowsInlineMediaPlayback: true,
-          mediaTypesRequiringUserAction: const {},
-        ),
-      );
-    } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
-      controller = WebViewController();
-      final androidController = controller.platform as AndroidWebViewController;
-      await androidController.setBackgroundColor(Colors.transparent);
+    controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0x00000000))
+      ..enableZoom(false);
+
+    // Set cookie manager based on incognito mode
+    if (tabs[currentTabIndex].isIncognito) {
+      print('📱 Initializing WebView in incognito mode');
+      controller
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onNavigationRequest: (NavigationRequest request) async {
+              // Block all cookie storage in incognito mode
+              await controller.runJavaScript('''
+                document.cookie = "";
+                localStorage.clear();
+                sessionStorage.clear();
+                caches.keys().then(keys => keys.forEach(key => caches.delete(key)));
+                indexedDB.databases().then(dbs => dbs.forEach(db => indexedDB.deleteDatabase(db.name)));
+              ''');
+              
+              final url = request.url.toLowerCase();
+              if (_isDownloadUrl(url)) {
+                await _handleDownload(request.url);
+                return NavigationDecision.prevent;
+              }
+              return NavigationDecision.navigate;
+            },
+            onPageStarted: (String url) async {
+              if (!mounted) return;
+              setState(() => isLoading = true);
+              // Clear cookies and storage on each page load in incognito
+              await controller.runJavaScript('''
+                document.cookie = "";
+                localStorage.clear();
+                sessionStorage.clear();
+                caches.keys().then(keys => keys.forEach(key => caches.delete(key)));
+                indexedDB.databases().then(dbs => dbs.forEach(db => indexedDB.deleteDatabase(db.name)));
+                window.navigator.serviceWorker.getRegistrations().then(registrations => {
+                  registrations.forEach(registration => registration.unregister());
+                });
+              ''');
+            },
+            onPageFinished: (String url) async {
+              if (!mounted) return;
+              print('=== PAGE FINISHED LOADING (INCOGNITO) ===');
+              final title = await controller.getTitle() ?? _displayUrl;
+              _updateUrl(url);
+              setState(() {
+                isLoading = false;
+                if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+                  tabs[currentTabIndex].title = title;
+                  tabs[currentTabIndex].url = url;
+                }
+              });
+              // Skip history saving in incognito
+              await _injectImageContextMenuJS();
+            },
+            onWebResourceError: (WebResourceError error) {
+              if (!mounted) return;
+              setState(() => isLoading = false);
+              print('Web resource error: ${error.description}');
+            },
+          ),
+        );
     } else {
-      controller = WebViewController();
-    }
-
-    await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-    await controller.setBackgroundColor(const Color(0x00000000));
-    await controller.enableZoom(false);
-    
-    await controller.setNavigationDelegate(NavigationDelegate(
-      onNavigationRequest: (NavigationRequest request) async {
-        final url = request.url.toLowerCase();
-        if (_isDownloadUrl(url)) {
-          await _handleDownload(request.url);
-          return NavigationDecision.prevent;
-        }
-        return NavigationDecision.navigate;
-      },
-      onPageStarted: _handlePageStarted,
-      onPageFinished: (String url) async {
-        if (!mounted) return;
-        print('=== PAGE FINISHED LOADING ==='); // Debug log
-        print('URL: $url'); // Debug log
-        final title = await controller.getTitle() ?? _displayUrl;
-        print('Title: $title'); // Debug log
-        _updateUrl(url);
-        setState(() {
-          isLoading = false;
-          if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-            tabs[currentTabIndex].title = title;
-            tabs[currentTabIndex].url = url;
+      // Normal mode with regular cookie handling
+      controller.setNavigationDelegate(NavigationDelegate(
+        onNavigationRequest: (NavigationRequest request) async {
+          final url = request.url.toLowerCase();
+          if (_isDownloadUrl(url)) {
+            await _handleDownload(request.url);
+            return NavigationDecision.prevent;
           }
-        });
-
-        // Save to history first, before any potentially failing operations
-        print('Calling _saveToHistory...'); // Debug log
-        try {
-          await _saveToHistory(url, title);
-          print('_saveToHistory completed'); // Debug log
-        } catch (e) {
-          print('Error in _saveToHistory: $e'); // Debug log
-          print(e.toString());
-          print('Stack trace:');
-          print('${StackTrace.current}');
-        }
-
-        // Continue with other operations that might fail
-        try {
+          return NavigationDecision.navigate;
+        },
+        onPageStarted: _handlePageStarted,
+        onPageFinished: (String url) async {
+          if (!mounted) return;
+          print('=== PAGE FINISHED LOADING ===');
+          final title = await controller.getTitle() ?? _displayUrl;
+          _updateUrl(url);
+          setState(() {
+            isLoading = false;
+            if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+              tabs[currentTabIndex].title = title;
+              tabs[currentTabIndex].url = url;
+            }
+          });
           await _updateNavigationState();
           await _optimizationEngine.onPageFinishLoad(url);
           await _updateFavicon(url);
+          await _saveToHistory(url, title);
           await _injectImageContextMenuJS();
-        } catch (e) {
-          print('Error in page finish operations: $e');
-        }
-        
-        print('=== PAGE LOAD COMPLETE ==='); // Debug log
-      },
-      onWebResourceError: (WebResourceError error) {
-        if (!mounted) return;
-        setState(() {
-          isLoading = false;
-        });
-        print('Web resource error: ${error.description}');
-      },
-    ));
+        },
+        onWebResourceError: (WebResourceError error) {
+          if (!mounted) return;
+          setState(() => isLoading = false);
+          print('Web resource error: ${error.description}');
+        },
+      ));
+    }
   }
 
   bool _isDownloadUrl(String url) {
