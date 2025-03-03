@@ -405,6 +405,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
     // Initialize scroll detection
     _setupScrollHandling();
+
+    // Add this line after controller initialization
+    _injectImageContextMenuJS();
   }
 
   Future<void> _handleIncomingIntents() async {
@@ -763,25 +766,15 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       );
     } else if (WebViewPlatform.instance is AndroidWebViewPlatform) {
       controller = WebViewController();
+      final androidController = controller.platform as AndroidWebViewController;
+      await androidController.setBackgroundColor(Colors.transparent);
     } else {
       controller = WebViewController();
     }
 
     await controller.setJavaScriptMode(JavaScriptMode.unrestricted);
-    await controller.setBackgroundColor(Colors.transparent);
+    await controller.setBackgroundColor(const Color(0x00000000));
     await controller.enableZoom(false);
-    
-    // Add JavaScript for handling images
-    await controller.runJavaScript('''
-      (function() {
-        // Prevent default context menu on images
-        document.addEventListener('contextmenu', function(e) {
-          if (e.target.tagName === 'IMG') {
-            e.preventDefault();
-          }
-        }, true);
-      })();
-    ''');
     
     await controller.setNavigationDelegate(NavigationDelegate(
       onNavigationRequest: (NavigationRequest request) async {
@@ -795,7 +788,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       onPageStarted: _handlePageStarted,
       onPageFinished: (String url) async {
         if (!mounted) return;
+        print('=== PAGE FINISHED LOADING ==='); // Debug log
+        print('URL: $url'); // Debug log
         final title = await controller.getTitle() ?? _displayUrl;
+        print('Title: $title'); // Debug log
         _updateUrl(url);
         setState(() {
           isLoading = false;
@@ -804,10 +800,30 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             tabs[currentTabIndex].url = url;
           }
         });
-        await _updateNavigationState();
-        await _optimizationEngine.onPageFinishLoad(url);
-        await _updateFavicon(url);
-        await _saveToHistory(url, title); // Add this line to save history
+
+        // Save to history first, before any potentially failing operations
+        print('Calling _saveToHistory...'); // Debug log
+        try {
+          await _saveToHistory(url, title);
+          print('_saveToHistory completed'); // Debug log
+        } catch (e) {
+          print('Error in _saveToHistory: $e'); // Debug log
+          print(e.toString());
+          print('Stack trace:');
+          print('${StackTrace.current}');
+        }
+
+        // Continue with other operations that might fail
+        try {
+          await _updateNavigationState();
+          await _optimizationEngine.onPageFinishLoad(url);
+          await _updateFavicon(url);
+          await _injectImageContextMenuJS();
+        } catch (e) {
+          print('Error in page finish operations: $e');
+        }
+        
+        print('=== PAGE LOAD COMPLETE ==='); // Debug log
       },
       onWebResourceError: (WebResourceError error) {
         if (!mounted) return;
@@ -817,32 +833,6 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         print('Web resource error: ${error.description}');
       },
     ));
-
-    // Initialize the optimization engine after controller setup
-    await _initializeOptimizationEngine();
-
-    // Add JavaScript for handling downloads
-    await controller.runJavaScript('''
-      document.addEventListener('click', function(e) {
-        var link = e.target.closest('a');
-        if (link) {
-          var href = link.getAttribute('href');
-          if (href) {
-            var isDownload = link.hasAttribute('download') || 
-                            link.getAttribute('type') === 'application/octet-stream' ||
-                            /\\.(pdf|doc|docx|xls|xlsx|ppt|pptx|zip|rar|7z|mp3|mp4|exe|apk)\$/i.test(href);
-            if (isDownload) {
-              e.preventDefault();
-              window.flutter_inappwebview.callHandler('onDownloadStart', href);
-            }
-          }
-        }
-      });
-    ''');
-
-    await _setupUrlMonitoring();
-    await _setupWebViewCallbacks();
-    await _updateNavigationState();
   }
 
   bool _isDownloadUrl(String url) {
@@ -1045,7 +1035,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       onPageStarted: _handlePageStarted,
       onPageFinished: (String url) async {
         if (!mounted) return;
+        print('=== PAGE FINISHED LOADING ==='); // Debug log
+        print('URL: $url'); // Debug log
         final title = await controller.getTitle() ?? _displayUrl;
+        print('Title: $title'); // Debug log
         _updateUrl(url);
         setState(() {
           isLoading = false;
@@ -1057,7 +1050,20 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         await _updateNavigationState();
         await _optimizationEngine.onPageFinishLoad(url);
         await _updateFavicon(url);
-        await _saveToHistory(url, title);
+        
+        print('Calling _saveToHistory...'); // Debug log
+        try {
+          await _saveToHistory(url, title);
+          print('_saveToHistory completed'); // Debug log
+        } catch (e) {
+          print('Error in _saveToHistory: $e'); // Debug log
+          print(e.toString());
+          print('Stack trace:');
+          print('${StackTrace.current}');
+        }
+        
+        await _injectImageContextMenuJS();
+        print('=== PAGE LOAD COMPLETE ==='); // Debug log
       },
       onWebResourceError: (WebResourceError error) {
         if (!mounted) return;
@@ -1070,75 +1076,88 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
 
   Future<void> _saveToHistory(String url, String title) async {
-    print('Attempting to save history for URL: $url'); // Debug log
+    print('🔍 Attempting to save history...');
+    print('URL: $url');
+    print('Title: $title');
     
-    // Skip saving history in incognito mode or for special URLs
-    if (tabs[currentTabIndex].isIncognito ||
-        url.isEmpty || 
+    // Skip saving history for special cases
+    if (url.isEmpty || 
         url == 'about:blank' ||
         url.startsWith('file://') ||
         url.contains('file:///') ||
-        url.endsWith('main.html')) {
-      print('Skipping history save - special URL or incognito mode'); // Debug log
+        url.endsWith('main.html') ||
+        url.contains('ERR_') ||  // Skip error pages
+        title.toLowerCase().contains('error') ||
+        !url.startsWith('http')) {
+      print('⚠️ Skipping history save - special URL or error page');
       return;
     }
 
-    // Only save if it's a valid web URL
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      print('Skipping history save - not a valid web URL'); // Debug log
-      return;
-    }
+    try {
+      print('📝 Creating history entry...');
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Create history entry with safe fallbacks
+      final String entry = json.encode({
+        'url': url,
+        'title': title.isNotEmpty ? title : url,
+        'favicon': null,  // Skip favicon for now to avoid errors
+        'timestamp': DateTime.now().toIso8601String(),
+      });
+      print('Entry created: $entry');
 
-    if (mounted) {
+      // Get existing history safely
+      List<String> history = [];
       try {
-        print('Saving history entry...'); // Debug log
-        final prefs = await SharedPreferences.getInstance();
-        final String entry = json.encode({
-          'url': url,
-          'title': title.isEmpty ? _getDisplayUrl(url) : title,
-          'favicon': tabs[currentTabIndex].favicon,
-          'timestamp': DateTime.now().toIso8601String(),
-        });
+        history = prefs.getStringList('history') ?? [];
+      } catch (e) {
+        print('Error loading existing history: $e');
+      }
+      print('Current history size: ${history.length}');
 
-        List<String> history = prefs.getStringList('history') ?? [];
-        print('Current history size: ${history.length}'); // Debug log
-        
-        // Remove existing entry with same URL if it exists
-        history.removeWhere((item) {
-          try {
-            final Map<String, dynamic> decoded = json.decode(item);
-            return decoded['url'] == url;
-          } catch (e) {
-            return false;
-          }
-        });
+      // Add new entry at the beginning
+      history.insert(0, entry);
+      print('Added new entry to history');
 
-        // Add new entry at the beginning
-        history.insert(0, entry);
+      // Save back to SharedPreferences
+      final success = await prefs.setStringList('history', history);
+      print('Save to SharedPreferences result: $success');
 
-        // Limit history size to prevent excessive storage use
-        if (history.length > 1000) {
-          history.removeRange(1000, history.length);
-        }
-
-        await prefs.setStringList('history', history);
-        print('History saved to SharedPreferences'); // Debug log
-        
-        // Update the loaded history in memory
+      // Update in-memory history if still mounted
+      if (mounted) {
         setState(() {
           _loadedHistory = history.map((e) {
             try {
               return Map<String, dynamic>.from(json.decode(e));
             } catch (e) {
+              print('Error parsing history entry: $e');
               return null;
             }
           }).whereType<Map<String, dynamic>>().toList();
         });
-        print('In-memory history updated'); // Debug log
-
-      } catch (e) {
-        print('Error saving history: $e'); // Debug log
+        print('Updated in-memory history. New size: ${_loadedHistory.length}');
       }
+    } catch (e) {
+      print('❌ Error saving history: $e');
+      print(e.toString());
+    }
+  }
+
+  Future<void> _loadHistory() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final history = prefs.getStringList('history') ?? [];
+      setState(() {
+        _loadedHistory = history.map((e) {
+          try {
+            return Map<String, dynamic>.from(json.decode(e));
+          } catch (e) {
+            return null;
+          }
+        }).whereType<Map<String, dynamic>>().toList();
+      });
+    } catch (e) {
+      print('Error loading history: $e');
     }
   }
 
@@ -3718,46 +3737,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   // Add isHistoryVisible state variable at the top of the class
   bool isHistoryVisible = false;
 
-  Future<void> _loadHistory() async {
-    if (!mounted) return;
-    
-    try {
-      print('Loading history...'); // Debug log
-      final prefs = await SharedPreferences.getInstance();
-      final history = prefs.getStringList('history') ?? [];
-      print('Found ${history.length} history items'); // Debug log
-      
-      setState(() {
-        _loadedHistory = history.map((e) {
-          try {
-            return Map<String, dynamic>.from(json.decode(e));
-          } catch (e) {
-            print('Error parsing history item: $e'); // Debug log
-            return null;
-          }
-        }).whereType<Map<String, dynamic>>().toList();
-        _currentHistoryPage = 0;
-      });
-      print('History loaded successfully with ${_loadedHistory.length} items'); // Debug log
-    } catch (e) {
-      print('Error loading history: $e'); // Debug log
-    }
-  }
-
-  Future<void> _clearHistory() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setStringList('history', []);
-      setState(() {
-        _loadedHistory = [];
-        _currentHistoryPage = 0;
-      });
-    } catch (e) {
-      print('Error clearing history: $e');
-    }
-  }
-
   void _showHistoryPanel() {
+    print('Opening history panel...');
     _loadHistory(); // Refresh history when panel is opened
     showModalBottomSheet(
       context: context,
@@ -3774,71 +3755,93 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             Container(
               height: 96 + MediaQuery.of(context).padding.top,
               padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-              color: ThemeManager.backgroundColor(),
               child: Column(
                 children: [
                   SizedBox(
                     height: 56,
                     child: Row(
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          Icons.arrow_back,
-                          color: ThemeManager.textColor(),
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.close, color: ThemeManager.textColor()),
+                          onPressed: () => Navigator.pop(context),
                         ),
-                        onPressed: () => Navigator.pop(context),
-                      ),
-                      Expanded(
-                        child: Text(
-                          'History',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: ThemeManager.textColor(),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '${_loadedHistory.length} ${_loadedHistory.length == 1 ? 'page' : 'pages'}',
-                  style: TextStyle(
-                              color: ThemeManager.textSecondaryColor(),
-                    fontSize: 14,
-                  ),
-                          ),
-                        TextButton.icon(
-                          onPressed: () => _clearHistory(),
-                          icon: Icon(
-                                  Icons.delete_outline,
-                                  color: ThemeManager.errorColor(),
-                                  size: 20,
-                                ),
-                          label: Text(
-                                  AppLocalizations.of(context)!.clear_all,
-                  style: TextStyle(
-                                    color: ThemeManager.errorColor(),
-                                    fontSize: 14,
-                                  ),
-                                ),
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
+                        Expanded(
+                          child: Text(
+                            'History',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: ThemeManager.textColor(),
                             ),
                           ),
-                        ],
-                      ),
-                  ),
-                ],
+                        ),
+                        if (_loadedHistory.isNotEmpty)
+                          IconButton(
+                            icon: Icon(Icons.delete_outline, color: ThemeManager.textColor()),
+                            onPressed: () {
+                              _clearHistory();
+                              Navigator.pop(context);
+                            },
+                          ),
+                      ],
                     ),
                   ),
-                  Expanded(
-              child: _buildHistoryList(),
+                ],
+              ),
+            ),
+            Expanded(
+              child: _loadedHistory.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.history,
+                          size: 48,
+                          color: ThemeManager.textSecondaryColor(),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No History',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: ThemeManager.textSecondaryColor(),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _loadedHistory.length,
+                    itemBuilder: (context, index) {
+                      final item = _loadedHistory[index];
+                      return ListTile(
+                        leading: item['favicon'] != null
+                          ? Image.memory(base64Decode(item['favicon']), width: 16, height: 16)
+                          : Icon(Icons.history, size: 16, color: ThemeManager.textSecondaryColor()),
+                        title: Text(
+                          item['title'] ?? item['url'],
+                          style: TextStyle(color: ThemeManager.textColor()),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          item['url'],
+                          style: TextStyle(color: ThemeManager.textSecondaryColor()),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: Text(
+                          _formatDate(DateTime.parse(item['timestamp'])),
+                          style: TextStyle(color: ThemeManager.textSecondaryColor()),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          _loadUrl(item['url']);
+                        },
+                      );
+                    },
+                  ),
             ),
           ],
         ),
@@ -4604,7 +4607,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
 
   Future<WebViewController> _createWebViewController() async {
-    return await _initializeWebViewController();
+    final controller = await _initializeWebViewController();
+    
+    // Initialize JavaScript after controller is ready
+    await _injectImageContextMenuJS();
+    
+    return controller;
   }
 
   DateTime? _lastBackPressTime;
@@ -4645,9 +4653,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
-    _updateSystemBars();
     final statusBarHeight = MediaQuery.of(context).padding.top;
-    final screenWidth = MediaQuery.of(context).size.width;
     
     // Force show URL bar when any panel is visible
     if ((isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible) && _hideUrlBar) {
@@ -4680,9 +4686,38 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     });
                   }
                 },
-                child: IgnorePointer(
-                  ignoring: isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible,
-                  child: WebViewWidget(controller: controller),
+                onLongPressStart: (details) async {
+                  print("Long press detected at: ${details.globalPosition}");
+                  try {
+                    final String js = '''
+                      (function() {
+                        const x = ${details.localPosition.dx};
+                        const y = ${details.localPosition.dy};
+                        const element = document.elementFromPoint(x, y);
+                        if (element && element.tagName === 'IMG') {
+                          return element.src;
+                        }
+                        const img = element ? element.closest('img') : null;
+                        return img ? img.src : null;
+                      })()
+                    ''';
+                    
+                    final result = await controller.runJavaScriptReturningResult(js);
+                    print("JavaScript result: $result");
+                    
+                    if (result != null && result.toString() != 'null') {
+                      final imageUrl = result.toString().replaceAll('"', '');
+                      if (imageUrl.isNotEmpty) {
+                        print("Found image URL: $imageUrl");
+                        _showImageContextMenu(imageUrl, details.globalPosition);
+                      }
+                    }
+                  } catch (e) {
+                    print("Error in long press handler: $e");
+                  }
+                },
+                child: WebViewWidget(
+                  controller: controller,
                 ),
               ),
             ),
@@ -4752,12 +4787,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                     // Handle indicator
                                     GestureDetector(
                                       onVerticalDragUpdate: (details) {
-                                        if (details.delta.dy > 2) { // Reduced from 5 to 2
+                                        if (details.delta.dy > 2) {
                                           _handleSlideUpPanelVisibility(false);
                                         }
                                       },
                                       onVerticalDragEnd: (details) {
-                                        if (details.primaryVelocity != null && details.primaryVelocity! > 50) { // Reduced from 100 to 50
+                                        if (details.primaryVelocity != null && details.primaryVelocity! > 50) {
                                           _handleSlideUpPanelVisibility(false);
                                         }
                                       },
@@ -4934,6 +4969,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         await _optimizationEngine.onPageFinishLoad(url);
         await _updateFavicon(url);
         await _saveToHistory(url, title);
+        await _injectImageContextMenuJS(); // Inject JavaScript after page load
       },
       onWebResourceError: (WebResourceError error) {
         if (!mounted) return;
@@ -5713,69 +5749,68 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   double _urlBarSlideOffset = 0.0;
 
   void _showImageOptions(String imageUrl) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        margin: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: isDarkMode ? Colors.grey[900] : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(
-                Icons.download_rounded,
-                color: ThemeManager.textSecondaryColor(),
-              ),
-              title: Text(
-                AppLocalizations.of(context)!.download_image,
-                style: TextStyle(
-                  color: ThemeManager.textColor(),
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _handleDownload(imageUrl);
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                Icons.share_rounded,
-                color: ThemeManager.textSecondaryColor(),
-              ),
-              title: Text(
-                AppLocalizations.of(context)!.share_image,
-                style: TextStyle(
-                  color: ThemeManager.textColor(),
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Share.share(imageUrl);
-              },
-            ),
-            ListTile(
-              leading: Icon(
-                Icons.open_in_new_rounded,
-                color: ThemeManager.textSecondaryColor(),
-              ),
-              title: Text(
-                AppLocalizations.of(context)!.open_in_new_tab,
-                style: TextStyle(
-                  color: ThemeManager.textColor(),
-                ),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                _createNewTab(imageUrl);
-              },
-            ),
-          ],
-        ),
+    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final RelativeRect positionRect = RelativeRect.fromRect(
+      Rect.fromPoints(
+        Offset.zero,
+        Offset(40, 40), // Give some space for the menu
       ),
+      Offset.zero & overlay.size,
+    );
+
+    showMenu(
+      context: context,
+      color: ThemeManager.backgroundColor(),
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      position: positionRect,
+      items: [
+        PopupMenuItem(
+          child: Row(
+            children: [
+              Icon(Icons.image, color: ThemeManager.textColor()),
+              const SizedBox(width: 8),
+              Text(
+                AppLocalizations.of(context)!.open_in_new_tab,
+                style: TextStyle(color: ThemeManager.textColor()),
+              ),
+            ],
+          ),
+          onTap: () {
+            _loadUrl(imageUrl);
+          },
+        ),
+        PopupMenuItem(
+          child: Row(
+            children: [
+              Icon(Icons.download, color: ThemeManager.textColor()),
+              const SizedBox(width: 8),
+              Text(
+                AppLocalizations.of(context)!.downloads,
+                style: TextStyle(color: ThemeManager.textColor()),
+              ),
+            ],
+          ),
+          onTap: () {
+            _handleDownload(imageUrl);
+          },
+        ),
+        PopupMenuItem(
+          child: Row(
+            children: [
+              Icon(Icons.share, color: ThemeManager.textColor()),
+              const SizedBox(width: 8),
+              Text(
+                AppLocalizations.of(context)!.share,
+                style: TextStyle(color: ThemeManager.textColor()),
+              ),
+            ],
+          ),
+          onTap: () async {
+            await Share.share(imageUrl);
+          },
+        ),
+      ],
     );
   }
 
@@ -6549,6 +6584,168 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       isSettingsVisible = false;
       isBookmarksVisible = false;
     });
+  }
+
+  // Add these variables at the top with other state variables
+  Offset? _longPressPosition;
+  String? _selectedImageUrl;
+
+  // Add this method to inject the JavaScript code
+  Future<void> _injectImageContextMenuJS() async {
+    await controller.runJavaScript('''
+      console.log('Injecting image context menu JS');
+      window.findImageAtPoint = function(x, y) {
+        console.log('Finding image at point:', x, y);
+        try {
+          const element = document.elementFromPoint(x, y);
+          console.log('Found element:', element);
+          if (!element) return null;
+          
+          if (element.tagName === 'IMG') {
+            console.log('Direct image found:', element.src);
+            return element.src;
+          }
+          
+          const img = element.querySelector('img') || element.closest('img');
+          if (img) {
+            console.log('Parent/child image found:', img.src);
+            return img.src;
+          }
+          
+          const style = window.getComputedStyle(element);
+          if (style.backgroundImage && style.backgroundImage !== 'none') {
+            const url = style.backgroundImage.slice(4, -1).replace(/["']/g, '');
+            console.log('Background image found:', url);
+            return url;
+          }
+          
+          console.log('No image found');
+          return null;
+        } catch (e) {
+          console.error('Error finding image:', e);
+          return null;
+        }
+      };
+
+      // Add touch event handlers
+      document.addEventListener('touchstart', function(e) {
+        console.log('Touch start event:', e);
+        if (e.target.tagName === 'IMG' || e.target.closest('img')) {
+          console.log('Touch started on image');
+          let startTime = Date.now();
+          let moved = false;
+          
+          const handleTouchEnd = function() {
+            const duration = Date.now() - startTime;
+            console.log('Touch duration:', duration);
+            if (duration > 500 && !moved) {
+              console.log('Long press detected');
+              const rect = e.target.getBoundingClientRect();
+              const imageUrl = e.target.tagName === 'IMG' ? e.target.src : e.target.closest('img').src;
+              console.log('Image URL:', imageUrl);
+              ImageLongPress.postMessage(JSON.stringify({
+                url: imageUrl,
+                x: e.touches[0].clientX,
+                y: e.touches[0].clientY + window.scrollY
+              }));
+              e.preventDefault();
+            }
+          };
+          
+          const handleTouchMove = function() {
+            moved = true;
+            cleanup();
+          };
+          
+          const cleanup = function() {
+            document.removeEventListener('touchend', handleTouchEnd);
+            document.removeEventListener('touchmove', handleTouchMove);
+          };
+          
+          document.addEventListener('touchend', handleTouchEnd, { once: true });
+          document.addEventListener('touchmove', handleTouchMove, { once: true });
+        }
+      }, { passive: false });
+    ''');
+  }
+
+  void _showImageContextMenu(String imageUrl, Offset position) {
+    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    final RelativeRect positionRect = RelativeRect.fromRect(
+      Rect.fromPoints(
+        position,
+        position.translate(40, 40), // Give some space for the menu
+      ),
+      Offset.zero & overlay.size,
+    );
+
+    showMenu(
+      context: context,
+      color: ThemeManager.backgroundColor(),
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      position: positionRect,
+      items: [
+        PopupMenuItem(
+          child: Row(
+            children: [
+              Icon(Icons.image, color: ThemeManager.textColor()),
+              const SizedBox(width: 8),
+              Text(
+                AppLocalizations.of(context)!.open_in_new_tab,
+                style: TextStyle(color: ThemeManager.textColor()),
+              ),
+            ],
+          ),
+          onTap: () {
+            _loadUrl(imageUrl);
+          },
+        ),
+        PopupMenuItem(
+          child: Row(
+            children: [
+              Icon(Icons.download, color: ThemeManager.textColor()),
+              const SizedBox(width: 8),
+              Text(
+                AppLocalizations.of(context)!.downloads,
+                style: TextStyle(color: ThemeManager.textColor()),
+              ),
+            ],
+          ),
+          onTap: () {
+            _handleDownload(imageUrl);
+          },
+        ),
+        PopupMenuItem(
+          child: Row(
+            children: [
+              Icon(Icons.share, color: ThemeManager.textColor()),
+              const SizedBox(width: 8),
+              Text(
+                AppLocalizations.of(context)!.share,
+                style: TextStyle(color: ThemeManager.textColor()),
+              ),
+            ],
+          ),
+          onTap: () async {
+            await Share.share(imageUrl);
+          },
+        ),
+      ],
+    );
+  }
+
+  Future<void> _clearHistory() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('history', []);
+      setState(() {
+        _loadedHistory = [];
+      });
+      print('History cleared successfully');
+    } catch (e) {
+      print('Error clearing history: $e');
+    }
   }
 }
 
