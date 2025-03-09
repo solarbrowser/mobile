@@ -243,5 +243,7 @@
   "update4desc": "Verbesserte Benutzeroberfläche mit besserer Navigation und Zugänglichkeit",
   "@update4desc": {
     "description": "Description for fourth update"
-  }
+  },
+  "searchTheWeb": "Im Web suchen",
+  "recentSearches": "Letzte Suchen"
 } 

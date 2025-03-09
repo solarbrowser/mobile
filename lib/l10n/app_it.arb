@@ -243,5 +243,11 @@
   "update4desc": "Interfaccia utente migliorata con navigazione e accessibilità migliori",
   "@update4desc": {
     "description": "Description for fourth update"
-  }
+  },
+  "searchTheWeb": "Cerca nel web",
+  "recentSearches": "Ricerche recenti",
+  "storage_permission_granted": "Autorizzazione di archiviazione concessa",
+  
+  "summary_length": "Lunghezza del riassunto",
+  "summary_language": "Lingua del riassunto"
 } 

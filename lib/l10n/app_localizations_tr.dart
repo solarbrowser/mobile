@@ -491,7 +491,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get storage_permission_required => 'Depolama izni gerekli';
 
   @override
-  String get storage_permission_granted => 'Storage Permission Granted';
+  String get storage_permission_granted => 'Depolama izni verildi';
 
   @override
   String get storage_permission_description => 'Solar needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
@@ -599,4 +599,55 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get update4desc => 'Daha iyi gezinme ve erişilebilirlik ile geliştirilmiş arayüz';
+
+  @override
+  String get searchTheWeb => 'Web\'de ara';
+
+  @override
+  String get recentSearches => 'Son Aramalar';
+
+  @override
+  String get previous_summaries => 'Önceki Özetler';
+
+  @override
+  String get summarize_selected => 'Seçili Metni Özetle';
+
+  @override
+  String get summarize_page => 'Sayfayı Özetle';
+
+  @override
+  String get ai_preferences => 'Yapay Zeka Ayarları';
+
+  @override
+  String get ai_provider => 'AI Provider';
+
+  @override
+  String get summary_length => 'Özet Uzunluğu';
+
+  @override
+  String get summary_language => 'Özet Dili';
+
+  @override
+  String get length_short => 'Short';
+
+  @override
+  String get length_medium => 'Medium';
+
+  @override
+  String get length_long => 'Long';
+
+  @override
+  String get summary_length_short => 'Kısa (75 kelime)';
+
+  @override
+  String get summary_length_medium => 'Orta (150 kelime)';
+
+  @override
+  String get summary_length_long => 'Uzun (250 kelime)';
+
+  @override
+  String get summary_language_english => 'İngilizce';
+
+  @override
+  String get summary_language_turkish => 'Türkçe';
 }

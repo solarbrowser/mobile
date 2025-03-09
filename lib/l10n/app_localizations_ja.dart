@@ -491,7 +491,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get storage_permission_required => 'Storage Permission Required';
 
   @override
-  String get storage_permission_granted => 'Storage Permission Granted';
+  String get storage_permission_granted => 'ストレージ権限が付与されました';
 
   @override
   String get storage_permission_description => 'Solar needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
@@ -599,4 +599,55 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get update4desc => 'より良いナビゲーションとアクセシビリティを備えた改善されたユーザーインターフェース';
+
+  @override
+  String get searchTheWeb => 'ウェブを検索';
+
+  @override
+  String get recentSearches => '最近の検索';
+
+  @override
+  String get previous_summaries => 'Previous Summaries';
+
+  @override
+  String get summarize_selected => 'Summarize Selected';
+
+  @override
+  String get summarize_page => 'Summarize Page';
+
+  @override
+  String get ai_preferences => 'AI Preferences';
+
+  @override
+  String get ai_provider => 'AI Provider';
+
+  @override
+  String get summary_length => '要約の長さ';
+
+  @override
+  String get summary_language => '要約の言語';
+
+  @override
+  String get length_short => 'Short';
+
+  @override
+  String get length_medium => 'Medium';
+
+  @override
+  String get length_long => 'Long';
+
+  @override
+  String get summary_length_short => 'Short (75 words)';
+
+  @override
+  String get summary_length_medium => 'Medium (150 words)';
+
+  @override
+  String get summary_length_long => 'Long (250 words)';
+
+  @override
+  String get summary_language_english => 'English';
+
+  @override
+  String get summary_language_turkish => 'Türkçe';
 }

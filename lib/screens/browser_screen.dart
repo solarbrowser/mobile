@@ -33,6 +33,7 @@ import 'package:path/path.dart' as path;
 import 'package:solar/theme/theme_manager.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:solar/services/notification_service.dart';
+import 'package:solar/services/ai_manager.dart';
 
 class Debouncer {
   final int milliseconds;
@@ -343,6 +344,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
+    // Initialize with a default tab
+    tabs = [BrowserTab(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      url: 'file:///android_asset/main.html', 
+      title: 'New Tab'
+    )];
     _initializeControllers();
     _urlController = TextEditingController();
     _urlFocusNode = FocusNode();
@@ -373,41 +380,6 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     if (Platform.isAndroid) {
       _handleIncomingIntents();
     }
-
-    // Set up URL focus listener
-    _urlFocusNode.addListener(() {
-      if (!_urlFocusNode.hasFocus) {
-        setState(() {
-          _urlController.text = _formatUrl(_displayUrl);
-        });
-      }
-    });
-
-    _updateSystemBars();
-
-    _hideUrlBarController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-    );
-    
-    _hideUrlBarAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: const Offset(0, 1.5),
-    ).animate(CurvedAnimation(
-      parent: _hideUrlBarController,
-      curve: Curves.easeOutCubic,
-    ));
-
-    _slideUpController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-    );
-
-    // Initialize scroll detection
-    _setupScrollHandling();
-
-    // Add this line after controller initialization
-    _injectImageContextMenuJS();
   }
 
   Future<void> _handleIncomingIntents() async {
@@ -757,108 +729,82 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
 
   Future<void> _initializeWebView() async {
+    if (tabs.isEmpty) {
+      setState(() {
+        tabs = [BrowserTab(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          url: 'file:///android_asset/main.html', 
+          title: 'New Tab'
+        )];
+        currentTabIndex = 0;
+      });
+    }
+
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
-      ..enableZoom(false);
-
-    // Set cookie manager based on incognito mode
-    if (tabs[currentTabIndex].isIncognito) {
-      print('📱 Initializing WebView in incognito mode');
-      controller
-        ..setNavigationDelegate(
-          NavigationDelegate(
-            onNavigationRequest: (NavigationRequest request) async {
-              // Block all cookie storage in incognito mode
-              await controller.runJavaScript('''
-                document.cookie = "";
-                localStorage.clear();
-                sessionStorage.clear();
-                caches.keys().then(keys => keys.forEach(key => caches.delete(key)));
-                indexedDB.databases().then(dbs => dbs.forEach(db => indexedDB.deleteDatabase(db.name)));
-              ''');
-              
-              final url = request.url.toLowerCase();
-              if (_isDownloadUrl(url)) {
-                await _handleDownload(request.url);
-                return NavigationDecision.prevent;
-              }
-              return NavigationDecision.navigate;
-            },
-            onPageStarted: (String url) async {
-              if (!mounted) return;
-              setState(() => isLoading = true);
-              // Clear cookies and storage on each page load in incognito
-              await controller.runJavaScript('''
-                document.cookie = "";
-                localStorage.clear();
-                sessionStorage.clear();
-                caches.keys().then(keys => keys.forEach(key => caches.delete(key)));
-                indexedDB.databases().then(dbs => dbs.forEach(db => indexedDB.deleteDatabase(db.name)));
-                window.navigator.serviceWorker.getRegistrations().then(registrations => {
-                  registrations.forEach(registration => registration.unregister());
-                });
-              ''');
-            },
-            onPageFinished: (String url) async {
-              if (!mounted) return;
-              print('=== PAGE FINISHED LOADING (INCOGNITO) ===');
-              final title = await controller.getTitle() ?? _displayUrl;
-              _updateUrl(url);
-              setState(() {
-                isLoading = false;
-                if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-                  tabs[currentTabIndex].title = title;
-                  tabs[currentTabIndex].url = url;
-                }
-              });
-              // Skip history saving in incognito
-              await _injectImageContextMenuJS();
-            },
-            onWebResourceError: (WebResourceError error) {
-              if (!mounted) return;
-              setState(() => isLoading = false);
-              print('Web resource error: ${error.description}');
-            },
-          ),
-        );
-    } else {
-      // Normal mode with regular cookie handling
-      controller.setNavigationDelegate(NavigationDelegate(
-        onNavigationRequest: (NavigationRequest request) async {
-          final url = request.url.toLowerCase();
-          if (_isDownloadUrl(url)) {
-            await _handleDownload(request.url);
-            return NavigationDecision.prevent;
-          }
-          return NavigationDecision.navigate;
-        },
-        onPageStarted: _handlePageStarted,
-        onPageFinished: (String url) async {
-          if (!mounted) return;
-          print('=== PAGE FINISHED LOADING ===');
-          final title = await controller.getTitle() ?? _displayUrl;
-          _updateUrl(url);
-          setState(() {
-            isLoading = false;
-            if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-              tabs[currentTabIndex].title = title;
-              tabs[currentTabIndex].url = url;
+      ..enableZoom(false)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onNavigationRequest: (NavigationRequest request) async {
+            final url = request.url.toLowerCase();
+            if (_isDownloadUrl(url)) {
+              await _handleDownload(request.url);
+              return NavigationDecision.prevent;
             }
-          });
-          await _updateNavigationState();
-          await _optimizationEngine.onPageFinishLoad(url);
-          await _updateFavicon(url);
-          await _saveToHistory(url, title);
-          await _injectImageContextMenuJS();
-        },
-        onWebResourceError: (WebResourceError error) {
-          if (!mounted) return;
-          setState(() => isLoading = false);
-          print('Web resource error: ${error.description}');
-        },
-      ));
+            return NavigationDecision.navigate;
+          },
+          onPageStarted: (String url) async {
+            if (!mounted) return;
+            setState(() {
+              isLoading = true;
+              _displayUrl = url;
+              _urlController.text = _formatUrl(url);
+            });
+          },
+          onPageFinished: (String url) async {
+            if (!mounted) return;
+            print('=== PAGE FINISHED LOADING ===');
+            final title = await controller.getTitle() ?? _displayUrl;
+            setState(() {
+              isLoading = false;
+              _displayUrl = url;
+              _urlController.text = _formatUrl(url);
+              if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+                tabs[currentTabIndex].title = title;
+                tabs[currentTabIndex].url = url;
+              }
+            });
+            await _updateNavigationState();
+            await _setupUrlMonitoring();
+            if (!tabs[currentTabIndex].isIncognito) {
+              await _saveToHistory(url, title);
+            }
+          },
+          onUrlChange: (UrlChange change) {
+            if (!mounted) return;
+            final url = change.url ?? '';
+            setState(() {
+              _displayUrl = url;
+              _urlController.text = _formatUrl(url);
+              if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+                tabs[currentTabIndex].url = url;
+              }
+            });
+          },
+          onWebResourceError: (WebResourceError error) {
+            if (!mounted) return;
+            setState(() => isLoading = false);
+            print('Web resource error: ${error.description}');
+          },
+        ),
+      );
+
+    if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+      await controller.loadRequest(Uri.parse(tabs[currentTabIndex].url));
     }
+
+    await _setupUrlMonitoring();
   }
 
   bool _isDownloadUrl(String url) {
@@ -900,21 +846,40 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     await controller.runJavaScript('''
       (function() {
         let lastUrl = window.location.href;
+        let lastTitle = document.title;
         
         function notifyUrlChanged() {
           const currentUrl = window.location.href;
-          if (currentUrl !== lastUrl) {
-            lastUrl = currentUrl;
-            if (window.UrlChanged && window.UrlChanged.postMessage) {
-              window.UrlChanged.postMessage(currentUrl);
-            }
+          const currentTitle = document.title;
+          
+          // Always notify on navigation events
+          if (window.UrlChanged && window.UrlChanged.postMessage) {
+            window.UrlChanged.postMessage(JSON.stringify({
+              url: currentUrl,
+              title: currentTitle
+            }));
           }
+          
+          lastUrl = currentUrl;
+          lastTitle = currentTitle;
         }
 
-        // Monitor navigation events
-        window.addEventListener('popstate', notifyUrlChanged);
-        window.addEventListener('hashchange', notifyUrlChanged);
-        window.addEventListener('load', notifyUrlChanged);
+        // Monitor all possible navigation events
+        window.addEventListener('popstate', notifyUrlChanged, true);
+        window.addEventListener('hashchange', notifyUrlChanged, true);
+        window.addEventListener('load', notifyUrlChanged, true);
+        window.addEventListener('navigate', notifyUrlChanged, true);
+        
+        // Monitor clicks on all links
+        document.addEventListener('click', function(e) {
+          const link = e.target.closest('a');
+          if (link && link.href) {
+            setTimeout(notifyUrlChanged, 100);
+          }
+        }, true);
+        
+        // Monitor form submissions
+        document.addEventListener('submit', notifyUrlChanged, true);
         
         // Monitor programmatic changes
         const originalPushState = history.pushState;
@@ -922,16 +887,29 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         
         history.pushState = function() {
           originalPushState.apply(this, arguments);
-          notifyUrlChanged();
+          setTimeout(notifyUrlChanged, 100);
         };
         
         history.replaceState = function() {
           originalReplaceState.apply(this, arguments);
-          notifyUrlChanged();
+          setTimeout(notifyUrlChanged, 100);
         };
         
-        // Check more frequently for URL changes
-        setInterval(notifyUrlChanged, 50);
+        // Monitor title changes
+        const observer = new MutationObserver(() => setTimeout(notifyUrlChanged, 100));
+        if (document.querySelector('title')) {
+          observer.observe(document.querySelector('title'), { 
+            subtree: true, 
+            characterData: true, 
+            childList: true 
+          });
+        }
+        
+        // Check frequently for URL changes
+        setInterval(notifyUrlChanged, 300);
+        
+        // Initial check
+        notifyUrlChanged();
       })();
     ''');
 
@@ -939,9 +917,24 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       'UrlChanged',
       onMessageReceived: (JavaScriptMessage message) {
         if (mounted) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            _updateUrl(message.message);
-          });
+          try {
+            final data = json.decode(message.message);
+            final url = data['url'] as String;
+            final title = data['title'] as String;
+            
+            setState(() {
+              _displayUrl = url;
+              _urlController.text = _formatUrl(url);
+              if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+                tabs[currentTabIndex].url = url;
+                tabs[currentTabIndex].title = title;
+              }
+            });
+            
+            _updateNavigationState();
+          } catch (e) {
+            print('Error handling URL change: $e');
+          }
         }
       },
     );
@@ -953,16 +946,22 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     try {
       final canGoBackValue = await controller.canGoBack();
       final canGoForwardValue = await controller.canGoForward();
+      final currentUrl = await controller.currentUrl() ?? '';
       
       if (mounted) {
         setState(() {
           canGoBack = canGoBackValue;
           canGoForward = canGoForwardValue;
           
+          // Update URL display and controller
+          _displayUrl = currentUrl;
+          _urlController.text = _formatUrl(currentUrl);
+          
           // Update the current tab's navigation state
           if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
             tabs[currentTabIndex].canGoBack = canGoBackValue;
             tabs[currentTabIndex].canGoForward = canGoForwardValue;
+            tabs[currentTabIndex].url = currentUrl;
           }
         });
       }
@@ -1124,48 +1123,35 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       final prefs = await SharedPreferences.getInstance();
       
       // Create history entry with safe fallbacks
-      final String entry = json.encode({
+      final newEntry = {
         'url': url,
         'title': title.isNotEmpty ? title : url,
         'favicon': null,  // Skip favicon for now to avoid errors
         'timestamp': DateTime.now().toIso8601String(),
-      });
-      print('Entry created: $entry');
-
+      };
+      
       // Get existing history safely
-      List<String> history = [];
-      try {
-        history = prefs.getStringList('history') ?? [];
-      } catch (e) {
-        print('Error loading existing history: $e');
-      }
-      print('Current history size: ${history.length}');
-
+      List<String> history = prefs.getStringList('history') ?? [];
+      
+      // Remove any existing entries with the same URL to prevent duplicates
+      history.removeWhere((item) {
+        try {
+          final Map<String, dynamic> existingEntry = json.decode(item);
+          return existingEntry['url'] == url;
+        } catch (e) {
+          return false;
+        }
+      });
+      
       // Add new entry at the beginning
-      history.insert(0, entry);
-      print('Added new entry to history');
+      history.insert(0, json.encode(newEntry));
+      
+      // Save updated history
+      await prefs.setStringList('history', history);
+      print('✅ History saved successfully');
 
-      // Save back to SharedPreferences
-      final success = await prefs.setStringList('history', history);
-      print('Save to SharedPreferences result: $success');
-
-      // Update in-memory history if still mounted
-      if (mounted) {
-        setState(() {
-          _loadedHistory = history.map((e) {
-            try {
-              return Map<String, dynamic>.from(json.decode(e));
-            } catch (e) {
-              print('Error parsing history entry: $e');
-              return null;
-            }
-          }).whereType<Map<String, dynamic>>().toList();
-        });
-        print('Updated in-memory history. New size: ${_loadedHistory.length}');
-      }
     } catch (e) {
       print('❌ Error saving history: $e');
-      print(e.toString());
     }
   }
 
@@ -2090,6 +2076,202 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     );
   }
 
+  void _showAISettings() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: ThemeManager.backgroundColor(),
+          appBar: AppBar(
+            backgroundColor: ThemeManager.backgroundColor(),
+            elevation: 0,
+            systemOverlayStyle: _transparentNavBar,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: ThemeManager.textColor(),
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              AppLocalizations.of(context)!.ai_preferences,
+              style: TextStyle(
+                color: ThemeManager.textColor(),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          body: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              _buildSettingsSection(
+                title: AppLocalizations.of(context)!.ai_preferences,
+                children: [
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.summary_length,
+                    trailing: Icon(
+                      Icons.chevron_right,
+                      color: ThemeManager.textSecondaryColor(),
+                      size: 20,
+                    ),
+                    onTap: () => _showSummaryLengthSelection(),
+                    isFirst: true,
+                  ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.summary_language,
+                    trailing: Icon(
+                      Icons.chevron_right,
+                      color: ThemeManager.textSecondaryColor(),
+                      size: 20,
+                    ),
+                    onTap: () => _showSummaryLanguageSelection(),
+                    isLast: true,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showSummaryLengthSelection() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: ThemeManager.backgroundColor(),
+          appBar: AppBar(
+            backgroundColor: ThemeManager.backgroundColor(),
+            elevation: 0,
+            systemOverlayStyle: _transparentNavBar,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: ThemeManager.textColor(),
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              AppLocalizations.of(context)!.summary_length,
+              style: TextStyle(
+                color: ThemeManager.textColor(),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          body: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              _buildSettingsSection(
+                title: AppLocalizations.of(context)!.summary_length,
+                children: [
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.summary_length_short,
+                    onTap: () async {
+                      await AIManager.setSummaryLength(SummaryLength.short);
+                      if (!mounted) return;
+                      Navigator.pop(context);
+                    },
+                    trailing: AIManager.getCurrentSummaryLength() == SummaryLength.short
+                      ? Icon(Icons.check, color: ThemeManager.primaryColor())
+                      : null,
+                    isFirst: true,
+                  ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.summary_length_medium,
+                    onTap: () async {
+                      await AIManager.setSummaryLength(SummaryLength.medium);
+                      if (!mounted) return;
+                      Navigator.pop(context);
+                    },
+                    trailing: AIManager.getCurrentSummaryLength() == SummaryLength.medium
+                      ? Icon(Icons.check, color: ThemeManager.primaryColor())
+                      : null,
+                  ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.summary_length_long,
+                    onTap: () async {
+                      await AIManager.setSummaryLength(SummaryLength.long);
+                      if (!mounted) return;
+                      Navigator.pop(context);
+                    },
+                    trailing: AIManager.getCurrentSummaryLength() == SummaryLength.long
+                      ? Icon(Icons.check, color: ThemeManager.primaryColor())
+                      : null,
+                    isLast: true,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showSummaryLanguageSelection() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: ThemeManager.backgroundColor(),
+          appBar: AppBar(
+            backgroundColor: ThemeManager.backgroundColor(),
+            elevation: 0,
+            systemOverlayStyle: _transparentNavBar,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: ThemeManager.textColor(),
+              ),
+              onPressed: () => Navigator.pop(context),
+            ),
+            title: Text(
+              AppLocalizations.of(context)!.summary_language,
+              style: TextStyle(
+                color: ThemeManager.textColor(),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          body: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              _buildSettingsSection(
+                title: AppLocalizations.of(context)!.summary_language,
+                children: [
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.summary_language_english,
+                    onTap: () async {
+                      await AIManager.setSummaryLanguage(SummaryLanguage.english);
+                      if (!mounted) return;
+                      Navigator.pop(context);
+                    },
+                    trailing: AIManager.getCurrentSummaryLanguage() == SummaryLanguage.english
+                      ? Icon(Icons.check, color: ThemeManager.primaryColor())
+                      : null,
+                    isFirst: true,
+                  ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.summary_language_turkish,
+                    onTap: () async {
+                      await AIManager.setSummaryLanguage(SummaryLanguage.turkish);
+                      if (!mounted) return;
+                      Navigator.pop(context);
+                    },
+                    trailing: AIManager.getCurrentSummaryLanguage() == SummaryLanguage.turkish
+                      ? Icon(Icons.check, color: ThemeManager.primaryColor())
+                      : null,
+                    isLast: true,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showHelpPage() {
     controller.loadRequest(Uri.parse('https://github.com/solarbrowser/mobile/wiki'));
     setState(() {
@@ -2172,7 +2354,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   ),
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.engine_version,
-                    subtitle: 'MRE4.7.0, ARE4.3.2',
+                    subtitle: 'MRE4.7.0, ARE4.3.3',
                     isFirst: false,
                     isLast: true,
                   ),
@@ -4055,7 +4237,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   children: [
                     _buildSettingsButton('general', () => _showGeneralSettings()),
                     _buildSettingsButton('appearance', () => _showAppearanceSettings()),
-                    _buildSettingsButton('downloads', () => _showDownloadsSettings()),
+                    _buildSettingsButton('downloads', () => _showDownloadsSettings(), isLast: false),
+                    _buildSettingsButton('ai_preferences', () => _showAISettings(), isLast: true),
                   ],
                 ),
                 _buildSettingsSection(
@@ -4110,6 +4293,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         case 'privacy_policy': return AppLocalizations.of(context)!.privacy_policy;
         case 'terms_of_use': return AppLocalizations.of(context)!.terms_of_use;
         case 'about': return AppLocalizations.of(context)!.about;
+        case 'ai_preferences': return AppLocalizations.of(context)!.ai_preferences;
         default: return label;
       }
     }
@@ -4602,23 +4786,32 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                             },
                           ),
                         ),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 1.0),
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.auto_awesome,
+                              size: 20,
+                              color: ThemeManager.textColor(),
+                            ),
+                            onPressed: _showSummaryOptions,
+                          ),
+                        ),
                         IconButton(
                           icon: Icon(
                             _urlFocusNode.hasFocus ? Icons.close : Icons.refresh,
                             color: ThemeManager.textColor(),
                           ),
-                          onPressed: () {
-                            if (_urlFocusNode.hasFocus) {
-                              _urlFocusNode.unfocus();
-                              setState(() {
-                                _urlController.clear();
-                                _urlController.text = _formatUrl(_displayUrl);
-                                _urlController.selection = const TextSelection.collapsed(offset: -1);
-                              });
-                            } else if (controller != null) {
-                              controller.reload();
-                            }
-                          },
+                          onPressed: _urlFocusNode.hasFocus
+                            ? () {
+                                _urlFocusNode.unfocus();
+                                setState(() {
+                                  _urlController.text = _formatUrl(_displayUrl);
+                                });
+                              }
+                            : () {
+                                controller.reload();
+                              },
                         ),
                       ],
                     ),
@@ -6773,6 +6966,486 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       print('Error clearing history: $e');
     }
   }
+
+  void _showSummaryOptions() {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final menuWidth = 220.0;
+    final rightMargin = 20.0;
+    final menuHeight = 150.0;
+    final urlBarHeight = 60.0;
+    final spacing = 8.0;
+    
+    showMenu(
+      context: context,
+      color: ThemeManager.backgroundColor(),
+      elevation: 8,
+      position: RelativeRect.fromLTRB(
+        screenWidth - menuWidth - rightMargin,
+        screenHeight - menuHeight - urlBarHeight - spacing - MediaQuery.of(context).padding.bottom,
+        screenWidth - rightMargin,
+        screenHeight - urlBarHeight - MediaQuery.of(context).padding.bottom,
+      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      items: [
+        PopupMenuItem(
+          height: 40,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.history_rounded,
+                size: 20,
+                color: ThemeManager.textColor(),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                AppLocalizations.of(context)!.previous_summaries,
+                style: TextStyle(
+                  color: ThemeManager.textColor(),
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          onTap: () async {
+            // Wait for menu to close
+            await Future.delayed(const Duration(milliseconds: 200));
+            if (!mounted) return;
+            _showPreviousSummariesModal();
+          },
+        ),
+        PopupMenuItem(
+          height: 40,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.content_copy_rounded,
+                size: 20,
+                color: ThemeManager.textColor(),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                AppLocalizations.of(context)!.summarize_selected,
+                style: TextStyle(
+                  color: ThemeManager.textColor(),
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          onTap: () {
+            // Handle summarize selected
+          },
+        ),
+        PopupMenuItem(
+          height: 40,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.description_rounded,
+                size: 20,
+                color: ThemeManager.textColor(),
+              ),
+              const SizedBox(width: 12),
+              Text(
+                AppLocalizations.of(context)!.summarize_page,
+                style: TextStyle(
+                  color: ThemeManager.textColor(),
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          onTap: () async {
+            // Wait for menu to close
+            await Future.delayed(const Duration(milliseconds: 200));
+            if (!mounted) return;
+            
+            // Get page content and summarize
+            final content = await controller.runJavaScriptReturningResult(
+              'document.body.innerText'
+            ) as String;
+            
+            try {
+              final summary = await AIManager.summarizeText(content, isFullPage: true);
+              if (!mounted) return;
+              
+              _showSummaryModal(summary, url: currentUrl);
+            } catch (e) {
+              if (!mounted) return;
+              _showNotification(
+                Text(
+                  'Failed to summarize page: ${e.toString()}',
+                  style: TextStyle(
+                    color: ThemeManager.errorColor(),
+                  ),
+                ),
+                duration: const Duration(seconds: 4),
+              );
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  void _showPreviousSummariesModal() async {
+    final summaries = await AIManager.getPreviousSummaries();
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: BoxDecoration(
+          color: ThemeManager.backgroundColor(),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: ThemeManager.textSecondaryColor().withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    AppLocalizations.of(context)!.previous_summaries,
+                    style: TextStyle(
+                      color: ThemeManager.textColor(),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  if (summaries.isNotEmpty)
+                    TextButton(
+                      onPressed: () async {
+                        await AIManager.deleteAllSummaries();
+                        if (!mounted) return;
+                        Navigator.pop(context);
+                      },
+                      child: Text(
+                        AppLocalizations.of(context)!.clear_all,
+                        style: TextStyle(
+                          color: ThemeManager.errorColor(),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: summaries.isEmpty
+                ? Center(
+                    child: Text(
+                      'No summaries yet',
+                      style: TextStyle(
+                        color: ThemeManager.textSecondaryColor(),
+                        fontSize: 14,
+                      ),
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: summaries.length,
+                    itemBuilder: (context, index) {
+                      final summary = summaries[index];
+                      final date = DateTime.parse(summary['date'] as String);
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        decoration: BoxDecoration(
+                          color: ThemeManager.surfaceColor(),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          summary['url'] != null ? _extractDomain(summary['url'] as String) : 'Unknown Source',
+                                          style: TextStyle(
+                                            color: ThemeManager.primaryColor(),
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(
+                                              Icons.copy_rounded,
+                                              size: 20,
+                                              color: ThemeManager.textSecondaryColor(),
+                                            ),
+                                            onPressed: () async {
+                                              await AIManager.copyToClipboard(summary['text'] as String);
+                                              if (!mounted) return;
+                                              Navigator.pop(context);
+                                              _showNotification(
+                                                Text(
+                                                  'Summary copied to clipboard',
+                                                  style: TextStyle(
+                                                    color: ThemeManager.textColor(),
+                                                  ),
+                                                ),
+                                                duration: const Duration(seconds: 2),
+                                              );
+                                            },
+                                          ),
+                                          IconButton(
+                                            icon: Icon(
+                                              Icons.delete_outline,
+                                              size: 20,
+                                              color: ThemeManager.textSecondaryColor(),
+                                            ),
+                                            onPressed: () async {
+                                              await AIManager.deleteSummary(index);
+                                              if (!mounted) return;
+                                              Navigator.pop(context);
+                                              _showPreviousSummariesModal(); // Refresh the list
+                                              _showNotification(
+                                                Text(
+                                                  'Summary deleted',
+                                                  style: TextStyle(
+                                                    color: ThemeManager.textColor(),
+                                                  ),
+                                                ),
+                                                duration: const Duration(seconds: 2),
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        _formatDate(date),
+                                        style: TextStyle(
+                                          color: ThemeManager.textSecondaryColor(),
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: ThemeManager.primaryColor().withOpacity(0.1),
+                                          borderRadius: BorderRadius.circular(12),
+                                        ),
+                                        child: Text(
+                                          summary['model'] as String,
+                                          style: TextStyle(
+                                            color: ThemeManager.primaryColor(),
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                              child: Text(
+                                summary['text'] as String,
+                                style: TextStyle(
+                                  color: ThemeManager.textColor(),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSummaryModal(String summary, {String? url}) async {
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.7,
+        decoration: BoxDecoration(
+          color: ThemeManager.backgroundColor(),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: ThemeManager.textSecondaryColor().withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Page Summary',
+                    style: TextStyle(
+                      color: ThemeManager.textColor(),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                children: [
+                  Container(
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    decoration: BoxDecoration(
+                      color: ThemeManager.surfaceColor(),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      url != null ? _extractDomain(url) : 'Current Page',
+                                      style: TextStyle(
+                                        color: ThemeManager.primaryColor(),
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.copy_rounded,
+                                          size: 20,
+                                          color: ThemeManager.textSecondaryColor(),
+                                        ),
+                                        onPressed: () async {
+                                          await AIManager.copyToClipboard(summary);
+                                          if (!mounted) return;
+                                          Navigator.pop(context);
+                                          _showNotification(
+                                            Text(
+                                              'Summary copied to clipboard',
+                                              style: TextStyle(
+                                                color: ThemeManager.textColor(),
+                                              ),
+                                            ),
+                                            duration: const Duration(seconds: 2),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Text(
+                                    _formatDate(DateTime.now()),
+                                    style: TextStyle(
+                                      color: ThemeManager.textSecondaryColor(),
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: ThemeManager.primaryColor().withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      AIManager.getCurrentProvider() == AIProvider.openai ? 'GPT-3.5 Turbo' : 'Gemini 2.0-Flash',
+                                      style: TextStyle(
+                                        color: ThemeManager.primaryColor(),
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                          child: Text(
+                            summary,
+                            style: TextStyle(
+                              color: ThemeManager.textColor(),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class ThemeColors {
@@ -6789,4 +7462,4 @@ class ThemeColors {
     required this.textSecondary,
     required this.border,
   });
-} 
+}

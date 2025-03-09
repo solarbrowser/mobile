@@ -227,5 +227,11 @@
   "update4desc": "Улучшенный пользовательский интерфейс с более удобной навигацией и доступностью",
   "@update4desc": {
     "description": "Description for fourth update"
-  }
+  },
+  "searchTheWeb": "Поиск в интернете",
+  "recentSearches": "Недавние поиски",
+  "storage_permission_granted": "Разрешение на хранение предоставлено",
+  
+  "summary_length": "Длина сводки",
+  "summary_language": "Язык сводки"
 } 

@@ -8,14 +8,17 @@ import android.os.Environment
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import android.os.Bundle
 
 class MainActivity: FlutterActivity() {
-    private val CHANNEL = "com.vertex.solar/app"
+    private val CHANNEL = "com.vertex.solar/search"
+    private val FILE_CHANNEL = "com.vertex.solar/app"
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+        // File operations channel
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, FILE_CHANNEL).setMethodCallHandler { call, result ->
             when (call.method) {
                 "scanFile" -> {
                     val path = call.argument<String>("path")
@@ -45,6 +48,57 @@ class MainActivity: FlutterActivity() {
                     }
                 }
                 else -> result.notImplemented()
+            }
+        }
+
+        // Search channel
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "getLocalizedStrings" -> {
+                    result.success(mapOf(
+                        "searchTheWeb" to "Search the web",
+                        "recentSearches" to "Recent Searches"
+                    ))
+                }
+                else -> result.notImplemented()
+            }
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        handleIntent(intent)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        if (intent == null) return
+
+        when (intent.action) {
+            Intent.ACTION_VIEW -> {
+                val uri = intent.data
+                if (uri?.scheme == "search") {
+                    // Handle search:// URLs
+                    val query = uri.schemeSpecificPart?.removePrefix("//")?.let { Uri.decode(it) }
+                    if (!query.isNullOrEmpty()) {
+                        MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, CHANNEL)
+                            .invokeMethod("openNewTabWithSearch", query)
+                    }
+                }
+            }
+            Intent.ACTION_MAIN -> {
+                // Handle explicit search intents
+                if (intent.getBooleanExtra("openNewTab", false)) {
+                    intent.getStringExtra("searchQuery")?.let { query ->
+                        MethodChannel(flutterEngine!!.dartExecutor.binaryMessenger, CHANNEL)
+                            .invokeMethod("openNewTabWithSearch", query)
+                    }
+                }
             }
         }
     }

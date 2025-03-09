@@ -243,5 +243,52 @@
   "update4desc": "Daha iyi gezinme ve erişilebilirlik ile geliştirilmiş arayüz",
   "@update4desc": {
     "description": "Description for fourth update"
-  }
+  },
+  "searchTheWeb": "Web'de ara",
+  "recentSearches": "Son Aramalar",
+  "ai_preferences": "Yapay Zeka Ayarları",
+  "@ai_preferences": {
+    "description": "Label for AI preferences section"
+  },
+  "summary_length": "Özet Uzunluğu",
+  "@summary_length": {
+    "description": "Label for summary length selection"
+  },
+  "summary_language": "Özet Dili",
+  "@summary_language": {
+    "description": "Label for summary language selection"
+  },
+  "summary_length_short": "Kısa (75 kelime)",
+  "@summary_length_short": {
+    "description": "Label for short summary length with word count"
+  },
+  "summary_length_medium": "Orta (150 kelime)",
+  "@summary_length_medium": {
+    "description": "Label for medium summary length with word count"
+  },
+  "summary_length_long": "Uzun (250 kelime)",
+  "@summary_length_long": {
+    "description": "Label for long summary length with word count"
+  },
+  "summary_language_english": "İngilizce",
+  "@summary_language_english": {
+    "description": "Label for English language option"
+  },
+  "summary_language_turkish": "Türkçe",
+  "@summary_language_turkish": {
+    "description": "Label for Turkish language option"
+  },
+  "summarize_selected": "Seçili Metni Özetle",
+  "@summarize_selected": {
+    "description": "Label for summarizing selected text"
+  },
+  "summarize_page": "Sayfayı Özetle",
+  "@summarize_page": {
+    "description": "Label for summarizing the entire page"
+  },
+  "previous_summaries": "Önceki Özetler",
+  "@previous_summaries": {
+    "description": "Label for accessing previously generated summaries"
+  },
+  "storage_permission_granted": "Depolama izni verildi"
 } 

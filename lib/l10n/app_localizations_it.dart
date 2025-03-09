@@ -491,7 +491,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get storage_permission_required => 'Autorizzazione di archiviazione richiesta';
 
   @override
-  String get storage_permission_granted => 'Storage Permission Granted';
+  String get storage_permission_granted => 'Autorizzazione di archiviazione concessa';
 
   @override
   String get storage_permission_description => 'Solar needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
@@ -599,4 +599,55 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get update4desc => 'Interfaccia utente migliorata con navigazione e accessibilità migliori';
+
+  @override
+  String get searchTheWeb => 'Cerca nel web';
+
+  @override
+  String get recentSearches => 'Ricerche recenti';
+
+  @override
+  String get previous_summaries => 'Previous Summaries';
+
+  @override
+  String get summarize_selected => 'Summarize Selected';
+
+  @override
+  String get summarize_page => 'Summarize Page';
+
+  @override
+  String get ai_preferences => 'AI Preferences';
+
+  @override
+  String get ai_provider => 'AI Provider';
+
+  @override
+  String get summary_length => 'Lunghezza del riassunto';
+
+  @override
+  String get summary_language => 'Lingua del riassunto';
+
+  @override
+  String get length_short => 'Short';
+
+  @override
+  String get length_medium => 'Medium';
+
+  @override
+  String get length_long => 'Long';
+
+  @override
+  String get summary_length_short => 'Short (75 words)';
+
+  @override
+  String get summary_length_medium => 'Medium (150 words)';
+
+  @override
+  String get summary_length_long => 'Long (250 words)';
+
+  @override
+  String get summary_language_english => 'English';
+
+  @override
+  String get summary_language_turkish => 'Türkçe';
 }

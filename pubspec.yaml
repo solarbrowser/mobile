@@ -14,7 +14,7 @@ dependencies:
   webview_flutter_android: ^4.3.2
   webview_flutter_wkwebview: ^3.9.4
   webview_flutter_platform_interface: ^2.6.0
-  shared_preferences: ^2.2.2
+  shared_preferences: 2.5.2
   url_launcher: ^6.2.1
   permission_handler: ^11.0.1
   intl: ^0.19.0
@@ -32,6 +32,7 @@ dependencies:
   app_settings: ^5.2.0
   device_info_plus: ^11.3.0
   flutter_local_notifications: ^18.0.1
+  dart_openai: ^4.1.4
 
 dev_dependencies:
   flutter_test:

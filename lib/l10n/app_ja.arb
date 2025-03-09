@@ -221,5 +221,10 @@
   "update4desc": "より良いナビゲーションとアクセシビリティを備えた改善されたユーザーインターフェース",
   "@update4desc": {
     "description": "Description for fourth update"
-  }
+  },
+  "searchTheWeb": "ウェブを検索",
+  "recentSearches": "最近の検索",
+  "storage_permission_granted": "ストレージ権限が付与されました",
+  "summary_length": "要約の長さ",
+  "summary_language": "要約の言語"
 } 

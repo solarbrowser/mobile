@@ -8,9 +8,13 @@ import 'screens/browser_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/update_screen.dart';
 import 'utils/theme_manager.dart';
+import 'services/ai_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize AI Manager
+  await AIManager.initialize();
   
   // Load preferences
   final prefs = await SharedPreferences.getInstance();

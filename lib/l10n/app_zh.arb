@@ -227,5 +227,11 @@
   "update4desc": "改进的用户界面，提供更好的导航和无障碍功能",
   "@update4desc": {
     "description": "Description for fourth update"
-  }
+  },
+  "searchTheWeb": "搜索网页",
+  "recentSearches": "最近搜索",
+  "storage_permission_granted": "已授予存储权限",
+  
+  "summary_length": "摘要长度",
+  "summary_language": "摘要语言"
 } 

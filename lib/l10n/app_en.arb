@@ -248,7 +248,7 @@
   },
   "storage_permission_granted": "Storage Permission Granted",
   "@storage_permission_granted": {
-    "description": "Title shown when storage permission is granted"
+    "description": "Message shown when storage permission is granted"
   },
   "storage_permission_description": "Solar needs storage permission to download files and save them to your device. This allows you to access your downloads later.",
   "@storage_permission_description": {
@@ -381,5 +381,73 @@
   "update4desc": "Polished interface with better navigation and accessibility",
   "@update4desc": {
     "description": "Description for fourth update"
+  },
+  "searchTheWeb": "Search the web",
+  "@searchTheWeb": {
+    "description": "Hint text shown in the search box"
+  },
+  "recentSearches": "Recent Searches",
+  "@recentSearches": {
+    "description": "Title for the list of recent searches"
+  },
+  "previous_summaries": "Previous Summaries",
+  "@previous_summaries": {
+    "description": "Label for accessing previously generated summaries"
+  },
+  "summarize_selected": "Summarize Selected",
+  "@summarize_selected": {
+    "description": "Label for summarizing selected text"
+  },
+  "summarize_page": "Summarize Page",
+  "@summarize_page": {
+    "description": "Label for summarizing the entire page"
+  },
+  "ai_preferences": "AI Preferences",
+  "@ai_preferences": {
+    "description": "Label for AI preferences section"
+  },
+  "ai_provider": "AI Provider",
+  "@ai_provider": {
+    "description": "Label for AI provider selection"
+  },
+  "summary_length": "Summary Length",
+  "@summary_length": {
+    "description": "Label for AI summary length preference"
+  },
+  "summary_language": "Summary Language",
+  "@summary_language": {
+    "description": "Label for AI summary language preference"
+  },
+  "length_short": "Short",
+  "@length_short": {
+    "description": "Label for short summary length"
+  },
+  "length_medium": "Medium",
+  "@length_medium": {
+    "description": "Label for medium summary length"
+  },
+  "length_long": "Long",
+  "@length_long": {
+    "description": "Label for long summary length"
+  },
+  "summary_length_short": "Short (75 words)",
+  "@summary_length_short": {
+    "description": "Label for short summary length with word count"
+  },
+  "summary_length_medium": "Medium (150 words)",
+  "@summary_length_medium": {
+    "description": "Label for medium summary length with word count"
+  },
+  "summary_length_long": "Long (250 words)",
+  "@summary_length_long": {
+    "description": "Label for long summary length with word count"
+  },
+  "summary_language_english": "English",
+  "@summary_language_english": {
+    "description": "Label for English language option"
+  },
+  "summary_language_turkish": "Türkçe",
+  "@summary_language_turkish": {
+    "description": "Label for Turkish language option"
   }
 } 

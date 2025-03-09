@@ -220,5 +220,11 @@
   "update4desc": "더 나은 탐색과 접근성을 갖춘 개선된 사용자 인터페이스",
   "@update4desc": {
     "description": "Description for fourth update"
-  }
+  },
+  "searchTheWeb": "웹 검색",
+  "recentSearches": "최근 검색",
+  "storage_permission_granted": "저장소 권한이 승인되었습니다",
+  
+  "summary_length": "요약 길이",
+  "summary_language": "요약 언어"
 } 

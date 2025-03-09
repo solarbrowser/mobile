@@ -244,5 +244,7 @@
   "update4desc": "बेहतर नेविगेशन और पहुंच के साथ बेहतर यूजर इंटरफेस",
   "@update4desc": {
     "description": "Description for fourth update"
-  }
+  },
+  "searchTheWeb": "वेब खोजें",
+  "recentSearches": "हाल की खोजें"
 } 

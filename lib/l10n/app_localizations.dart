@@ -1065,7 +1065,7 @@ abstract class AppLocalizations {
   /// **'Storage Permission Required'**
   String get storage_permission_required;
 
-  /// Title shown when storage permission is granted
+  /// Message shown when storage permission is granted
   ///
   /// In en, this message translates to:
   /// **'Storage Permission Granted'**
@@ -1268,6 +1268,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Polished interface with better navigation and accessibility'**
   String get update4desc;
+
+  /// Hint text shown in the search box
+  ///
+  /// In en, this message translates to:
+  /// **'Search the web'**
+  String get searchTheWeb;
+
+  /// Title for the list of recent searches
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Searches'**
+  String get recentSearches;
+
+  /// Label for accessing previously generated summaries
+  ///
+  /// In en, this message translates to:
+  /// **'Previous Summaries'**
+  String get previous_summaries;
+
+  /// Label for summarizing selected text
+  ///
+  /// In en, this message translates to:
+  /// **'Summarize Selected'**
+  String get summarize_selected;
+
+  /// Label for summarizing the entire page
+  ///
+  /// In en, this message translates to:
+  /// **'Summarize Page'**
+  String get summarize_page;
+
+  /// Label for AI preferences section
+  ///
+  /// In en, this message translates to:
+  /// **'AI Preferences'**
+  String get ai_preferences;
+
+  /// Label for AI provider selection
+  ///
+  /// In en, this message translates to:
+  /// **'AI Provider'**
+  String get ai_provider;
+
+  /// Label for AI summary length preference
+  ///
+  /// In en, this message translates to:
+  /// **'Summary Length'**
+  String get summary_length;
+
+  /// Label for AI summary language preference
+  ///
+  /// In en, this message translates to:
+  /// **'Summary Language'**
+  String get summary_language;
+
+  /// Label for short summary length
+  ///
+  /// In en, this message translates to:
+  /// **'Short'**
+  String get length_short;
+
+  /// Label for medium summary length
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get length_medium;
+
+  /// Label for long summary length
+  ///
+  /// In en, this message translates to:
+  /// **'Long'**
+  String get length_long;
+
+  /// Label for short summary length with word count
+  ///
+  /// In en, this message translates to:
+  /// **'Short (75 words)'**
+  String get summary_length_short;
+
+  /// Label for medium summary length with word count
+  ///
+  /// In en, this message translates to:
+  /// **'Medium (150 words)'**
+  String get summary_length_medium;
+
+  /// Label for long summary length with word count
+  ///
+  /// In en, this message translates to:
+  /// **'Long (250 words)'**
+  String get summary_length_long;
+
+  /// Label for English language option
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get summary_language_english;
+
+  /// Label for Turkish language option
+  ///
+  /// In en, this message translates to:
+  /// **'Türkçe'**
+  String get summary_language_turkish;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

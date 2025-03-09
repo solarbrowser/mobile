@@ -599,4 +599,55 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get update4desc => 'बेहतर नेविगेशन और पहुंच के साथ बेहतर यूजर इंटरफेस';
+
+  @override
+  String get searchTheWeb => 'वेब खोजें';
+
+  @override
+  String get recentSearches => 'हाल की खोजें';
+
+  @override
+  String get previous_summaries => 'Previous Summaries';
+
+  @override
+  String get summarize_selected => 'Summarize Selected';
+
+  @override
+  String get summarize_page => 'Summarize Page';
+
+  @override
+  String get ai_preferences => 'AI Preferences';
+
+  @override
+  String get ai_provider => 'AI Provider';
+
+  @override
+  String get summary_length => 'Summary Length';
+
+  @override
+  String get summary_language => 'Summary Language';
+
+  @override
+  String get length_short => 'Short';
+
+  @override
+  String get length_medium => 'Medium';
+
+  @override
+  String get length_long => 'Long';
+
+  @override
+  String get summary_length_short => 'Short (75 words)';
+
+  @override
+  String get summary_length_medium => 'Medium (150 words)';
+
+  @override
+  String get summary_length_long => 'Long (250 words)';
+
+  @override
+  String get summary_language_english => 'English';
+
+  @override
+  String get summary_language_turkish => 'Türkçe';
 }
