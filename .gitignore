@@ -44,5 +44,5 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-lib/services/ai_service.dart
-lib/services/gemini_service.dart
+#lib/services/ai_service.dart
+#lib/services/gemini_service.dart
