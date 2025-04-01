@@ -200,6 +200,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   String _displayUrl = '';
   bool _isUrlBarExpanded = false;
   bool isSecurityPanelVisible = false;
+  bool _isClassicMode = false; // Add declaration for classic mode
   String securityMessage = '';
   String currentLanguage = 'en';
   DateTime lastScrollEvent = DateTime.now();
@@ -344,36 +345,43 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   @override
   void initState() {
     super.initState();
+    
+    // Start by initializing controllers
+    _initializeControllers();
+    
     // Initialize with a default tab
     tabs = [BrowserTab(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       url: 'file:///android_asset/main.html', 
       title: 'New Tab'
     )];
-    _initializeControllers();
+    
     _urlController = TextEditingController();
     _urlFocusNode = FocusNode();
-    _loadPreferences();
-    _loadBookmarks();
-    _loadDownloads();
-    _loadHistory();
-    _loadUrlBarPosition();
-    _loadSettings();
-    _loadSearchEngines();
     
-    // Load saved theme
-    SharedPreferences.getInstance().then((prefs) {
-      final savedTheme = prefs.getString('selectedTheme');
-      if (savedTheme != null) {
-        try {
-          final theme = ThemeType.values.firstWhere((t) => t.name == savedTheme);
-          setState(() {
-            isDarkMode = theme.isDark;
-          });
-          ThemeManager.setTheme(theme);
-          _updateSystemBars();
-        } catch (_) {}
+    // Add listener for keyboard focus changes
+    _urlFocusNode.addListener(() {
+      if (_urlFocusNode.hasFocus) {
+        setState(() {
+          // Make sure panels are hidden when keyboard appears
+          _isSlideUpPanelVisible = false;
+          _slideUpController.reverse();
+          // Ensure URL bar is visible
+          _hideUrlBar = false;
+          _hideUrlBarController.reverse();
+        });
       }
+    });
+    
+    // Load preferences first to ensure theme is applied early
+    _loadPreferences().then((_) {
+      // Load other data after preferences
+      _loadBookmarks();
+      _loadDownloads();
+      _loadHistory();
+      _loadUrlBarPosition();
+      _loadSettings();
+      _loadSearchEngines();
     });
     
     // Handle incoming intents
@@ -424,6 +432,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
 
   void _toggleTheme(bool darkMode) async {
+    // Set theme in the ThemeManager first for consistent appearance
+    final theme = darkMode ? ThemeType.dark : ThemeType.light;
+    await ThemeManager.setTheme(theme);
+    
     setState(() {
       isDarkMode = darkMode;
     });
@@ -433,10 +445,18 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     // Save theme preference
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('darkMode', darkMode);
+    await prefs.setString('selectedTheme', theme.name);
     
     if (widget.onThemeChange != null) {
       widget.onThemeChange!(darkMode);
     }
+  }
+
+  void _toggleClassicMode(bool classicMode) async {
+    setState(() {
+      _isClassicMode = classicMode;
+    });
+    await _savePreferences();
   }
 
   @override
@@ -531,13 +551,37 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
+    
+    // Load theme settings
+    final savedThemeName = prefs.getString('selectedTheme');
+    ThemeType theme;
+    
+    if (savedThemeName != null) {
+      try {
+        theme = ThemeType.values.firstWhere((t) => t.name == savedThemeName);
+      } catch (_) {
+        theme = ThemeType.light;
+      }
+    } else {
+      // Fallback to darkMode preference if no theme is saved
+      final isDark = prefs.getBool('darkMode') ?? false;
+      theme = isDark ? ThemeType.dark : ThemeType.light;
+    }
+    
+    // Apply theme
+    await ThemeManager.setTheme(theme);
+    
     setState(() {
-      isDarkMode = prefs.getBool('darkMode') ?? false;
+      isDarkMode = theme.isDark;
       textScale = prefs.getDouble('textScale') ?? 1.0;
       showImages = prefs.getBool('showImages') ?? true;
       currentSearchEngine = prefs.getString('searchEngine') ?? 'Google';
       currentLanguage = prefs.getString('language') ?? 'en';
+      _isClassicMode = prefs.getBool('isClassicMode') ?? false; // Load classic mode preference
     });
+    
+    // Update UI to reflect theme
+    _updateSystemBars();
   }
 
   Future<void> _savePreferences() async {
@@ -545,6 +589,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     await prefs.setBool('darkMode', isDarkMode);
     await prefs.setString('homeUrl', _homeUrl);
     await prefs.setString('searchEngine', _searchEngine);
+    await prefs.setBool('isClassicMode', _isClassicMode); // Save classic mode preference
   }
 
   Future<void> _initializeOptimizationEngine() async {
@@ -1111,6 +1156,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         url.startsWith('file://') ||
         url.contains('file:///') ||
         url.endsWith('main.html') ||
+        url == _homeUrl ||  // Explicitly exclude home URL
         url.contains('ERR_') ||  // Skip error pages
         title.toLowerCase().contains('error') ||
         !url.startsWith('http')) {
@@ -1785,11 +1831,31 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     onTap: () {
                       // TODO: Implement app icon selection
                     },
+                  ),
+                  _buildSettingsItem(
+                    title: 'Classic Mode',
+                    subtitle: 'Show classic navigation buttons at the bottom',
+                    trailing: Switch(
+                      value: _isClassicMode,
+                      onChanged: (value) {
+                        setState(() {
+                          _isClassicMode = value;
+                          _savePreferences();
+                        });
+                      },
+                      activeColor: ThemeManager.primaryColor(),
+                    ),
+                    onTap: () {
+                      setState(() {
+                        _isClassicMode = !_isClassicMode;
+                        _savePreferences();
+                      });
+                    },
                     isLast: true,
-        ),
-      ],
                   ),
                 ],
+              ),
+            ],
           ),
         ),
       ),
@@ -1882,7 +1948,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                         // Save and apply theme
                         await ThemeManager.setTheme(theme);
                         
-                        // Update dark mode state
+                        // Update dark mode state and trigger UI refresh
                         setState(() {
                           isDarkMode = theme.isDark;
                         });
@@ -1890,8 +1956,18 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                           isDarkMode = theme.isDark;
                         });
                         
+                        // Also save theme preferences to SharedPreferences directly
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setString('selectedTheme', theme.name);
+                        await prefs.setBool('darkMode', theme.isDark);
+                        
                         // Update system bars
                         _updateSystemBars();
+                        
+                        // Notify any listeners about theme change
+                        if (widget.onThemeChange != null) {
+                          widget.onThemeChange!(theme.isDark);
+                        }
                         
                         // Pop both theme selection and appearance settings screens
                         Navigator.of(context)
@@ -4689,135 +4765,153 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   Widget _buildUrlBar() {
     final displayUrl = _urlFocusNode.hasFocus ? _displayUrl : _formatUrl(_displayUrl);
     final width = MediaQuery.of(context).size.width - 32;
+    final keyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
     
     return Container(
       width: width,
-      margin: const EdgeInsets.only(bottom: 8),
+      margin: EdgeInsets.only(bottom: _isClassicMode ? 0 : 8), // Removed 'const' keyword
       child: SlideTransition(
         position: _hideUrlBarAnimation,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onHorizontalDragUpdate: (details) {
-            setState(() {
-              _urlBarSlideOffset += details.delta.dx;
-            });
-          },
-          onHorizontalDragEnd: (details) async {
-            if (_urlBarSlideOffset.abs() > 50) {
-              if (_urlBarSlideOffset < 0 && canGoBack) {
-                await _goBack();
-              } else if (_urlBarSlideOffset > 0 && canGoForward) {
-                await _goForward();
-              }
-            }
-            setState(() {
-              _urlBarSlideOffset = 0;
-            });
-          },
-          child: Transform.translate(
-            offset: Offset(_urlBarSlideOffset, 0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(28),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                child: Container(
-                  width: width,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(28),
-                    color: ThemeManager.backgroundColor().withOpacity(0.7),
-                    border: Border.all(
-                      color: ThemeManager.textColor().withOpacity(0.1),
-                      width: 1,
+        child: _isClassicMode 
+          ? Transform.translate(
+              offset: Offset(0, 0), // No sliding in classic mode
+              child: _buildUrlBarContent(width, keyboardVisible)
+            )
+          : GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onHorizontalDragUpdate: (details) {
+                setState(() {
+                  _urlBarSlideOffset += details.delta.dx;
+                });
+              },
+              onHorizontalDragEnd: (details) async {
+                if (_urlBarSlideOffset.abs() > 50) {
+                  if (_urlBarSlideOffset < 0 && canGoBack) {
+                    await _goBack();
+                  } else if (_urlBarSlideOffset > 0 && canGoForward) {
+                    await _goForward();
+                  }
+                }
+                setState(() {
+                  _urlBarSlideOffset = 0;
+                });
+              },
+              child: Transform.translate(
+                offset: Offset(_urlBarSlideOffset, 0),
+                child: _buildUrlBarContent(width, keyboardVisible)
+              ),
+            ),
+      ),
+    );
+  }
+
+  Widget _buildUrlBarContent(double width, bool keyboardVisible) {
+    // Determine if current page is home page
+    final isHomePage = _displayUrl == 'file:///android_asset/main.html' || _displayUrl == _homeUrl;
+    
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(28),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          width: width,
+          height: 48,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(28),
+            color: (_isClassicMode || keyboardVisible) 
+                ? ThemeManager.surfaceColor().withOpacity(0.95) // More opaque when keyboard is visible
+                : ThemeManager.backgroundColor().withOpacity(0.7),
+            border: Border.all(
+              color: ThemeManager.textColor().withOpacity(_isClassicMode ? 0.05 : 0.1),
+              width: 1, // Consistent border width regardless of keyboard
+            ),
+            // No shadow
+          ),
+          child: Material(
+            type: MaterialType.transparency,
+            child: Row(
+              children: [
+                const SizedBox(width: 16),
+                Icon(
+                  // Show home icon for homepage, otherwise show secure/warning icon
+                  isHomePage ? Icons.home_rounded :
+                  (isSecure ? Icons.shield : Icons.warning_amber_rounded),
+                  size: 16,
+                  color: ThemeManager.textColor(),
+                  semanticLabel: isHomePage ? 'Home' : 
+                    (isSecure ? AppLocalizations.of(context)!.secure_connection : 
+                    AppLocalizations.of(context)!.insecure_connection),
+                ),
+                Expanded(
+                  child: TextField(
+                    controller: _urlController,
+                    focusNode: _urlFocusNode,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: ThemeManager.textColor(),
+                      fontSize: 16,
                     ),
-                  ),
-                  child: Material(
-                    type: MaterialType.transparency,
-                    child: Row(
-                      children: [
-                        const SizedBox(width: 16),
-                        Icon(
-                          isSecure ? Icons.shield : Icons.warning_amber_rounded,
-                          size: 16,
-                          color: ThemeManager.textColor(),
-                          semanticLabel: isSecure ? 
-                            AppLocalizations.of(context)!.secure_connection : 
-                            AppLocalizations.of(context)!.insecure_connection,
-                        ),
-                        Expanded(
-                          child: TextField(
-                            controller: _urlController,
-                            focusNode: _urlFocusNode,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: ThemeManager.textColor(),
-                              fontSize: 16,
-                            ),
-                            decoration: InputDecoration(
-                              hintText: AppLocalizations.of(context)!.search_or_type_url,
-                              hintStyle: TextStyle(
-                                color: ThemeManager.textColor().withOpacity(0.5),
-                              ),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                            ),
-                            onTap: () {
-                              if (!_urlFocusNode.hasFocus) {
-                                setState(() {
-                                  if (_displayUrl == 'file:///android_asset/main.html' || _displayUrl == _homeUrl) {
-                                    _urlController.text = '';
-                                  } else {
-                                    _urlController.text = _displayUrl;
-                                  }
-                                  _urlController.selection = TextSelection(
-                                    baseOffset: 0,
-                                    extentOffset: _urlController.text.length,
-                                  );
-                                });
-                              }
-                            },
-                            onSubmitted: (value) {
-                              _loadUrl(value);
-                              _urlFocusNode.unfocus();
-                              setState(() {
-                                _urlController.text = _formatUrl(_displayUrl);
-                                _urlController.selection = const TextSelection.collapsed(offset: -1);
-                              });
-                            },
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 1.0),
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.auto_awesome,
-                              size: 20,
-                              color: ThemeManager.textColor(),
-                            ),
-                            onPressed: _showSummaryOptions,
-                          ),
-                        ),
-                        IconButton(
-                          icon: Icon(
-                            _urlFocusNode.hasFocus ? Icons.close : Icons.refresh,
-                            color: ThemeManager.textColor(),
-                          ),
-                          onPressed: _urlFocusNode.hasFocus
-                            ? () {
-                                _urlFocusNode.unfocus();
-                                setState(() {
-                                  _urlController.text = _formatUrl(_displayUrl);
-                                });
-                              }
-                            : () {
-                                controller.reload();
-                              },
-                        ),
-                      ],
+                    decoration: InputDecoration(
+                      hintText: AppLocalizations.of(context)!.search_or_type_url,
+                      hintStyle: TextStyle(
+                        color: ThemeManager.textColor().withOpacity(0.5),
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                     ),
+                    onTap: () {
+                      if (!_urlFocusNode.hasFocus) {
+                        setState(() {
+                          if (_displayUrl == 'file:///android_asset/main.html' || _displayUrl == _homeUrl) {
+                            _urlController.text = '';
+                          } else {
+                            _urlController.text = _displayUrl;
+                          }
+                          _urlController.selection = TextSelection(
+                            baseOffset: 0,
+                            extentOffset: _urlController.text.length,
+                          );
+                        });
+                      }
+                    },
+                    onSubmitted: (value) {
+                      _loadUrl(value);
+                      _urlFocusNode.unfocus();
+                      setState(() {
+                        _urlController.text = _formatUrl(_displayUrl);
+                        _urlController.selection = const TextSelection.collapsed(offset: -1);
+                      });
+                    },
                   ),
                 ),
-              ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 1.0),
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.auto_awesome,
+                      size: 20,
+                      color: ThemeManager.textColor(),
+                    ),
+                    onPressed: _showSummaryOptions,
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(
+                    _urlFocusNode.hasFocus ? Icons.close : Icons.refresh,
+                    color: ThemeManager.textColor(),
+                  ),
+                  onPressed: _urlFocusNode.hasFocus
+                    ? () {
+                        _urlFocusNode.unfocus();
+                        setState(() {
+                          _urlController.text = _formatUrl(_displayUrl);
+                        });
+                      }
+                    : () {
+                        controller.reload();
+                      },
+                ),
+              ],
             ),
           ),
         ),
@@ -4873,6 +4967,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   @override
   Widget build(BuildContext context) {
     final statusBarHeight = MediaQuery.of(context).padding.top;
+    final keyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     
     // Force show URL bar when any panel is visible
     if ((isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible) && _hideUrlBar) {
@@ -4886,73 +4982,88 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         backgroundColor: ThemeManager.backgroundColor(),
         extendBody: true,
         extendBodyBehindAppBar: true,
+        resizeToAvoidBottomInset: false, // Prevent automatic resizing when keyboard appears
         body: Stack(
           children: [
-            // WebView with proper padding
+            // WebView with proper padding - Fixed position regardless of keyboard
             Positioned(
               top: statusBarHeight,
               left: 0,
               right: 0,
-              bottom: 0,
-              child: GestureDetector(
-                onTap: () {
-                  if (_isSlideUpPanelVisible) {
-                    setState(() {
-                      _isSlideUpPanelVisible = false;
-                      _slideUpController.reverse();
-                      _hideUrlBar = false;
-                      _hideUrlBarController.reverse();
-                    });
-                  }
-                },
-                onLongPressStart: (details) async {
-                  print("Long press detected at: ${details.globalPosition}");
-                  try {
-                    final String js = '''
-                      (function() {
-                        const x = ${details.localPosition.dx};
-                        const y = ${details.localPosition.dy};
-                        const element = document.elementFromPoint(x, y);
-                        if (element && element.tagName === 'IMG') {
-                          return element.src;
-                        }
-                        const img = element ? element.closest('img') : null;
-                        return img ? img.src : null;
-                      })()
-                    ''';
-                    
-                    final result = await controller.runJavaScriptReturningResult(js);
-                    print("JavaScript result: $result");
-                    
-                    if (result != null && result.toString() != 'null') {
-                      final imageUrl = result.toString().replaceAll('"', '');
-                      if (imageUrl.isNotEmpty) {
-                        print("Found image URL: $imageUrl");
-                        _showImageContextMenu(imageUrl, details.globalPosition);
-                      }
+              bottom: 0, // Always extend to bottom of screen
+              child: IgnorePointer(
+                // Ignore pointer events when keyboard is open to prevent WebView from interfering with URL bar
+                ignoring: keyboardVisible,
+                child: GestureDetector(
+                  onTap: () {
+                    if (_isSlideUpPanelVisible) {
+                      setState(() {
+                        _isSlideUpPanelVisible = false;
+                        _slideUpController.reverse();
+                        _hideUrlBar = false;
+                        _hideUrlBarController.reverse();
+                      });
                     }
-                  } catch (e) {
-                    print("Error in long press handler: $e");
-                  }
-                },
-                child: WebViewWidget(
-                  controller: controller,
+                  },
+                  onLongPressStart: (details) async {
+                    print("Long press detected at: ${details.globalPosition}");
+                    try {
+                      final String js = '''
+                        (function() {
+                          const x = ${details.localPosition.dx};
+                          const y = ${details.localPosition.dy};
+                          const element = document.elementFromPoint(x, y);
+                          if (element && element.tagName === 'IMG') {
+                            return element.src;
+                          }
+                          const img = element ? element.closest('img') : null;
+                          return img ? img.src : null;
+                        })()
+                      ''';
+                      
+                      final result = await controller.runJavaScriptReturningResult(js);
+                      print("JavaScript result: $result");
+                      
+                      if (result != null && result.toString() != 'null') {
+                        final imageUrl = result.toString().replaceAll('"', '');
+                        if (imageUrl.isNotEmpty) {
+                          print("Found image URL: $imageUrl");
+                          _showImageContextMenu(imageUrl, details.globalPosition);
+                        }
+                      }
+                    } catch (e) {
+                      print("Error in long press handler: $e");
+                    }
+                  },
+                  child: Container(
+                    // Use Container with color to cover entire area including where keyboard would be
+                    color: ThemeManager.backgroundColor(),
+                    child: WebViewWidget(
+                      controller: controller,
+                    ),
+                  ),
                 ),
               ),
             ),
 
-            // WebView scroll detector with padding
+            // WebView scroll detector with padding - Fixed position
             if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
             Positioned(
               top: statusBarHeight,
               left: 0,
               right: 0,
-              bottom: 60, // URL bar height
+              // Adjust bottom position to account for keyboard and buttons
+              bottom: keyboardVisible 
+                ? keyboardHeight + 120 // Ensure enough space for URL bar and buttons when keyboard is visible
+                : (_isClassicMode ? 116 : 60), // Fixed bottom padding based on mode
               child: IgnorePointer(
-                ignoring: _isSlideUpPanelVisible,
+                ignoring: _isSlideUpPanelVisible || keyboardVisible,
                 child: Listener(
                   behavior: HitTestBehavior.translucent,
                   onPointerMove: (PointerMoveEvent event) {
+                    // Don't allow URL bar hide/show when keyboard is visible
+                    if (keyboardVisible) return;
+                    
                     if (!_isSlideUpPanelVisible && event.delta.dy.abs() > 5) {
                       if (event.delta.dx.abs() < event.delta.dy.abs()) {
                         if (event.delta.dy < 0) { // Scrolling up = hide URL bar
@@ -4977,101 +5088,142 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               ),
             ),
 
-            // Bottom controls (URL bar and panels)
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: MediaQuery.of(context).padding.bottom + 16,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Quick actions and navigation panels
-                  if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
-                    AnimatedBuilder(
-                      animation: _slideUpController,
-                      builder: (context, child) {
-                        final slideValue = _slideUpController.value;
-                        return Visibility(
-                          visible: slideValue > 0,
-                          maintainState: false,
-                          child: Transform.translate(
-                            offset: Offset(0, 60 + (1 - slideValue) * 60),
-                            child: Opacity(
-                              opacity: slideValue,
-                              child: Material(
-                                color: Colors.transparent,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    // Handle indicator
-                                    GestureDetector(
-                                      onVerticalDragUpdate: (details) {
-                                        if (details.delta.dy > 2) {
-                                          _handleSlideUpPanelVisibility(false);
-                                        }
-                                      },
-                                      onVerticalDragEnd: (details) {
-                                        if (details.primaryVelocity != null && details.primaryVelocity! > 50) {
-                                          _handleSlideUpPanelVisibility(false);
-                                        }
-                                      },
-                                      child: Container(
-                                        width: 32,
-                                        height: 4,
-                                        margin: const EdgeInsets.only(bottom: 8),
-                                        decoration: BoxDecoration(
-                                          color: ThemeManager.textColor().withOpacity(0.2),
-                                          borderRadius: BorderRadius.circular(2),
-                                        ),
-                                      ),
-                                    ),
-                                    _buildQuickActionsPanel(),
-                                    const SizedBox(height: 8),
-                                    _buildNavigationPanel(),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-
-                  // URL bar with gesture detection
-                  SlideTransition(
-                    position: _hideUrlBarAnimation,
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.opaque,
-                      onVerticalDragUpdate: (details) {
-                        if (!_isSlideUpPanelVisible) {
-                          if (details.delta.dy < -5) {
-                            _handleSlideUpPanelVisibility(true);
-                          }
-                        } else {
-                          if (details.delta.dy > 5) {
-                            _handleSlideUpPanelVisibility(false);
-                          }
-                        }
-                      },
-                      onVerticalDragEnd: (details) {
-                        if (details.primaryVelocity != null) {
-                          if (!_isSlideUpPanelVisible && details.primaryVelocity! < -100) {
-                            _handleSlideUpPanelVisibility(true);
-                          } else if (_isSlideUpPanelVisible && details.primaryVelocity! > 100) {
-                            _handleSlideUpPanelVisibility(false);
-                          }
-                        }
-                      },
-                      child: _buildUrlBar(),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
             // Overlay panels (tabs, settings, etc.)
             if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible)
               _buildOverlayPanel(),
+              
+            // Classic mode navigation panel with background that extends up to the URL bar
+              if (_isClassicMode && !isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible) 
+                SlideTransition(
+                  position: _hideUrlBarAnimation, // Use the same animation as URL bar
+                  child: Stack(
+                    children: [
+                      // Create a background panel that extends up to include the URL bar
+                      Positioned(
+                        bottom: keyboardVisible ? keyboardHeight : 0, // Position above keyboard when visible
+                        left: 0,
+                        right: 0,
+                        height: 48 + MediaQuery.of(context).padding.bottom + 60 + 24, // Fixed height
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: ThemeManager.backgroundColor(), // Fully opaque
+                            borderRadius: BorderRadius.vertical(top: Radius.circular(16)), // Rounded top corners
+                          ),
+                        ),
+                      ),
+                      // Add the navigation buttons
+                      _buildClassicModePanel(),
+                    ],
+                  ),
+                ),
+              
+            // Bottom controls (URL bar and panels) - only show when no panels are visible
+            if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
+              Positioned(
+                left: 0,
+                right: 0,
+                // Position the URL bar above the keyboard and above navigation buttons when visible
+                bottom: keyboardVisible ? 
+                   (_isClassicMode ?
+                      (keyboardHeight + 65) : // Classic mode - position above keyboard and buttons
+                      (keyboardHeight + 8)) : // Non-classic mode - small spacing above keyboard
+                   (_isClassicMode ? 
+                      70 + MediaQuery.of(context).padding.bottom : // Classic mode fixed position
+                      MediaQuery.of(context).padding.bottom + 16), // Regular mode fixed position
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Quick actions and navigation panels - hide when keyboard is visible
+                    if (!keyboardVisible)
+                      AnimatedBuilder(
+                        animation: _slideUpController,
+                        builder: (context, child) {
+                          final slideValue = _slideUpController.value;
+                          return Visibility(
+                            visible: slideValue > 0,
+                            maintainState: false,
+                            child: Transform.translate(
+                              offset: Offset(0, 60 + (1 - slideValue) * 60),
+                              child: Opacity(
+                                opacity: slideValue,
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // Handle indicator
+                                      GestureDetector(
+                                        onVerticalDragUpdate: (details) {
+                                          if (details.delta.dy > 2) {
+                                            _handleSlideUpPanelVisibility(false);
+                                          }
+                                        },
+                                        onVerticalDragEnd: (details) {
+                                          if (details.primaryVelocity != null && details.primaryVelocity! > 50) {
+                                            _handleSlideUpPanelVisibility(false);
+                                          }
+                                        },
+                                        child: Container(
+                                          width: 32,
+                                          height: 4,
+                                          margin: const EdgeInsets.only(bottom: 8),
+                                          decoration: BoxDecoration(
+                                            color: ThemeManager.textColor().withOpacity(0.2),
+                                            borderRadius: BorderRadius.circular(2),
+                                          ),
+                                        ),
+                                      ),
+                                      _buildQuickActionsPanel(),
+                                      const SizedBox(height: 8),
+                                      _buildNavigationPanel(),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+
+                    // URL bar with gesture detection
+                    SlideTransition(
+                      position: _hideUrlBarAnimation,
+                      child: _isClassicMode
+                          ? _buildUrlBar() // No gesture detection in classic mode
+                          : GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onVerticalDragUpdate: (details) {
+                                // Disable vertical drag gestures when keyboard is visible
+                                if (keyboardVisible) return;
+                                
+                                if (!_isSlideUpPanelVisible) {
+                                  if (details.delta.dy < -5) {
+                                    _handleSlideUpPanelVisibility(true);
+                                  }
+                                } else {
+                                  if (details.delta.dy > 5) {
+                                    _handleSlideUpPanelVisibility(false);
+                                  }
+                                }
+                              },
+                              onVerticalDragEnd: (details) {
+                                // Disable vertical drag gestures when keyboard is visible
+                                if (keyboardVisible) return;
+                                
+                                if (details.primaryVelocity != null) {
+                                  if (!_isSlideUpPanelVisible && details.primaryVelocity! < -100) {
+                                    _handleSlideUpPanelVisibility(true);
+                                  } else if (_isSlideUpPanelVisible && details.primaryVelocity! > 100) {
+                                    _handleSlideUpPanelVisibility(false);
+                                  }
+                                }
+                              },
+                              child: _buildUrlBar(),
+                            ),
+                    ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
@@ -7021,30 +7173,6 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Icon(
-                Icons.content_copy_rounded,
-                size: 20,
-                color: ThemeManager.textColor(),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                AppLocalizations.of(context)!.summarize_selected,
-                style: TextStyle(
-                  color: ThemeManager.textColor(),
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-          onTap: () {
-            // Handle summarize selected
-          },
-        ),
-        PopupMenuItem(
-          height: 40,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Icon(
                 Icons.description_rounded,
                 size: 20,
                 color: ThemeManager.textColor(),
@@ -7445,6 +7573,100 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         ),
       ),
     );
+  }
+
+  Widget _buildClassicModePanel() {
+    final keyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    
+    return Positioned(
+      // Position above keyboard when keyboard is visible
+      bottom: keyboardVisible ? keyboardHeight + 8 : MediaQuery.of(context).padding.bottom + 8,
+      left: 0,
+      right: 0,
+      // Don't let this be covered by the keyboard
+      child: Container(
+        height: 48, // Fixed height
+        decoration: BoxDecoration(
+          color: ThemeManager.backgroundColor().withOpacity(0.95), // More opaque for visibility
+          // No shadow or border
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.chevron_left_rounded, size: 28),
+              color: canGoBack ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
+              onPressed: canGoBack ? () {
+                _goBack();
+                if (_hideUrlBar) {
+                  setState(() {
+                    _hideUrlBar = false;
+                    _hideUrlBarController.reverse();
+                  });
+                }
+              } : null,
+            ),
+            IconButton(
+              icon: const Icon(Icons.chevron_right_rounded, size: 28),
+              color: canGoForward ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
+              onPressed: canGoForward ? () {
+                _goForward();
+                if (_hideUrlBar) {
+                  setState(() {
+                    _hideUrlBar = false;
+                    _hideUrlBarController.reverse();
+                  });
+                }
+              } : null,
+            ),
+            IconButton(
+              icon: Icon(
+                isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
+                size: 24,
+              ),
+              color: ThemeManager.textSecondaryColor(),
+              onPressed: () => _addBookmark(),
+            ),
+            IconButton(
+              icon: const Icon(Icons.ios_share_rounded, size: 24),
+              color: ThemeManager.textSecondaryColor(),
+              onPressed: () async {
+                if (currentUrl.isNotEmpty) {
+                  await Share.share(currentUrl);
+                }
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.menu, size: 24),
+              color: ThemeManager.textSecondaryColor(),
+              onPressed: () {
+                setState(() {
+                  isSettingsVisible = true;
+                });
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Handle focus change to prevent layout shifts with keyboard
+  void _handleFocusChange() {
+    // When focus changes, we don't need to adjust layouts
+    // The fixed positioning will take care of everything
+    if (_urlFocusNode.hasFocus) {
+      // Keyboard is about to show, make sure UI is ready
+      setState(() {
+        // Hide any panels that might interfere with typing
+        _isSlideUpPanelVisible = false;
+        _slideUpController.reverse();
+        // Make sure URL bar is visible
+        _hideUrlBar = false;
+        _hideUrlBarController.reverse();
+      });
+    }
   }
 }
 
