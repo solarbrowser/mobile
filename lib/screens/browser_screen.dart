@@ -2845,7 +2845,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               children: [
                 IconButton(
                   icon: Icon(
-                    Icons.arrow_back,
+                    Icons.chevron_left,
                     color: ThemeManager.textColor(),
                   ),
                   onPressed: () => setState(() => isDownloadsVisible = false),
@@ -3230,7 +3230,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               children: [
                 IconButton(
                   icon: Icon(
-                    Icons.arrow_back,
+                    Icons.chevron_left,
                     color: ThemeManager.textColor(),
                   ),
                   onPressed: () {
@@ -3708,7 +3708,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               children: [
                 IconButton(
                   icon: Icon(
-                    Icons.arrow_back,
+                    Icons.chevron_left,
                     color: ThemeManager.textColor(),
                     size: 22,
                   ),
@@ -7641,10 +7641,88 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               icon: const Icon(Icons.menu, size: 24),
               color: ThemeManager.textSecondaryColor(),
               onPressed: () {
-                setState(() {
-                  isSettingsVisible = true;
-                });
+                _showQuickActionsModal();
               },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showQuickActionsModal() {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final modalHeight = 49 + bottomPadding + 60 + 24; // Match classic mode panel height
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: modalHeight,
+        decoration: BoxDecoration(
+          color: ThemeManager.backgroundColor(),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: ThemeManager.textSecondaryColor().withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(bottom: 16), // Add bottom padding
+                child: Center( // Center the row vertically
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildQuickActionButton(
+                          AppLocalizations.of(context)!.settings,
+                          Icons.settings_rounded,
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _showSettingsPanel();
+                          },
+                        ),
+                        _buildQuickActionButton(
+                          AppLocalizations.of(context)!.downloads,
+                          Icons.download_rounded,
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _showDownloadsPanel();
+                          },
+                        ),
+                        _buildQuickActionButton(
+                          AppLocalizations.of(context)!.tabs,
+                          Icons.tab_rounded,
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _showTabsPanel();
+                          },
+                        ),
+                        _buildQuickActionButton(
+                          AppLocalizations.of(context)!.bookmarks,
+                          Icons.bookmark_rounded,
+                          onPressed: () {
+                            Navigator.pop(context);
+                            _showBookmarksPanel();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
           ],
         ),
