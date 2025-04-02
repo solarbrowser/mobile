@@ -937,17 +937,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
 
   Future<void> _initializeWebView() async {
-    if (tabs.isEmpty) {
-      setState(() {
-        tabs = [BrowserTab(
-          id: DateTime.now().millisecondsSinceEpoch.toString(),
-          url: 'file:///android_asset/main.html', 
-          title: 'New Tab'
-        )];
-        currentTabIndex = 0;
-      });
-    }
-
+    print("Initializing WebView..."); // Debug print
+    
     // Initialize a dummy optimization engine to prevent LateInitializationError
     _optimizationEngine = OptimizationEngine();
 
@@ -959,6 +950,22 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         NavigationDelegate(
           onNavigationRequest: (NavigationRequest request) async {
             final url = request.url.toLowerCase();
+            
+            // Handle search:// protocol
+            if (url.startsWith('search://')) {
+              // Extract search term and search directly
+              final searchTerm = url.substring(9).trim();
+              if (searchTerm.isNotEmpty) {
+                // Use search engine directly
+                final engine = searchEngines[currentSearchEngine] ?? searchEngines['Google']!;
+                final searchUrl = engine.replaceAll('{query}', Uri.encodeComponent(searchTerm));
+                
+                // Load the search URL directly
+                await controller.loadRequest(Uri.parse(searchUrl));
+                return NavigationDecision.prevent;
+              }
+            }
+            
             if (_isDownloadUrl(url)) {
               await _handleDownload(request.url);
               return NavigationDecision.prevent;
@@ -1039,6 +1046,24 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           },
         ),
       );
+    
+    // Add JavaScript channel for search handling
+    await controller.addJavaScriptChannel(
+      'SearchHandler',
+      onMessageReceived: (JavaScriptMessage message) {
+        if (mounted) {
+          final searchQuery = message.message;
+          if (searchQuery.isNotEmpty) {
+            // Use the search engine to perform the search
+            final engine = searchEngines[currentSearchEngine] ?? searchEngines['Google']!;
+            final searchUrl = engine.replaceAll('{query}', Uri.encodeComponent(searchQuery));
+            
+            // Load the search URL
+            controller.loadRequest(Uri.parse(searchUrl));
+          }
+        }
+      },
+    );
 
     if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
       await controller.loadRequest(Uri.parse(tabs[currentTabIndex].url));
@@ -1269,12 +1294,17 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         
         // Handle search:// protocol
         if (url.startsWith('search://')) {
-          final query = url.substring(9); // Remove 'search://' prefix
-          final decodedQuery = Uri.decodeComponent(query);
-          final engine = searchEngines[currentSearchEngine] ?? searchEngines['Google']!;
-          final searchUrl = engine.replaceAll('{query}', Uri.encodeComponent(decodedQuery));
-          await controller.loadRequest(Uri.parse(searchUrl));
-          return NavigationDecision.prevent;
+          // Extract search term and search directly
+          final searchTerm = url.substring(9).trim();
+          if (searchTerm.isNotEmpty) {
+            // Use search engine directly instead of calling _loadUrl
+            final engine = searchEngines[currentSearchEngine] ?? searchEngines['Google']!;
+            final searchUrl = engine.replaceAll('{query}', Uri.encodeComponent(searchTerm));
+            
+            // Load the search URL directly
+            await controller.loadRequest(Uri.parse(searchUrl));
+            return NavigationDecision.prevent;
+          }
         }
         
         // Handle downloads
@@ -1448,7 +1478,23 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     
     // Process the URL/query
     String urlToLoad;
-    if (trimmedQuery.startsWith('http://') || trimmedQuery.startsWith('https://')) {
+    
+    // Handle search:// protocol - always treat content after search:// as a search query
+    if (trimmedQuery.startsWith('search://')) {
+      // Remove the search:// prefix and use as search term
+      final searchTerm = trimmedQuery.substring(9).trim();
+      if (searchTerm.isNotEmpty) {
+        // Use search engine for all search:// URLs
+        final engine = searchEngines[currentSearchEngine] ?? searchEngines['Google']!;
+        urlToLoad = engine.replaceAll('{query}', Uri.encodeComponent(searchTerm));
+      } else {
+        // Empty search term, return early
+        setState(() {
+          isLoading = false;
+        });
+        return;
+      }
+    } else if (trimmedQuery.startsWith('http://') || trimmedQuery.startsWith('https://')) {
       // Direct URL loading
       urlToLoad = trimmedQuery;
     } else if (trimmedQuery.contains('.') && !trimmedQuery.contains(' ')) {
@@ -5581,6 +5627,21 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       onNavigationRequest: (NavigationRequest request) async {
         final url = request.url.toLowerCase();
         
+        // Handle search:// protocol
+        if (url.startsWith('search://')) {
+          // Extract search term and search directly
+          final searchTerm = url.substring(9).trim();
+          if (searchTerm.isNotEmpty) {
+            // Use search engine directly instead of calling _loadUrl
+            final engine = searchEngines[currentSearchEngine] ?? searchEngines['Google']!;
+            final searchUrl = engine.replaceAll('{query}', Uri.encodeComponent(searchTerm));
+            
+            // Load the search URL directly
+            await controller.loadRequest(Uri.parse(searchUrl));
+            return NavigationDecision.prevent;
+          }
+        }
+        
         // Check if URL is a direct file download
         if (_isDownloadUrl(url)) {
           _handleDownload(request.url);
@@ -5687,6 +5748,16 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     
     if (url.startsWith('file:///')) {
       return '';
+    }
+    
+    // Handle search:// protocol
+    if (url.startsWith('search://')) {
+      // If the URL bar has focus, show the full URL
+      if (_urlFocusNode.hasFocus || showFull) {
+        return url;
+      }
+      // Otherwise, remove search:// prefix and format as normal
+      return _formatUrl(url.substring(9), showFull: showFull);
     }
     
     // If URL bar has focus or showFull is explicitly requested, show the full URL

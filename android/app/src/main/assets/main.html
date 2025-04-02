@@ -245,8 +245,20 @@
                         // If it's a URL, add https:// if needed
                         window.location.href = query.startsWith('http') ? query : `https://${query}`;
                     } else {
-                        // If it's a search query, use the search:// protocol
-                        window.location.href = `search://${encodeURIComponent(query)}`;
+                        try {
+                            // Check if SearchHandler JavaScript channel is available
+                            if (window.SearchHandler) {
+                                // Use the JavaScriptChannel to send the search query to Flutter
+                                window.SearchHandler.postMessage(query);
+                            } else {
+                                // Fallback to direct Google search if channel isn't available
+                                window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                            }
+                        } catch (error) {
+                            console.error('Search error:', error);
+                            // Fallback to direct Google search
+                            window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                        }
                     }
                 }
             }
