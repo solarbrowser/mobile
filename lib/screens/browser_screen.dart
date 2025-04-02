@@ -36,6 +36,7 @@ import 'package:solar/services/notification_service.dart';
 import 'package:solar/services/ai_manager.dart';
 import 'package:solar/services/pwa_manager.dart';
 import 'package:solar/screens/pwa_screen.dart';
+import 'package:flutter/services.dart'; // For rootBundle
 
 class Debouncer {
   final int milliseconds;
@@ -1039,10 +1040,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             // Use central helper method for consistent URL handling
             _handleUrlUpdate(url);
           },
-          onWebResourceError: (WebResourceError error) {
+          onWebResourceError: (WebResourceError error) async {
             if (!mounted) return;
-            setState(() => isLoading = false);
-            print('Web resource error: ${error.description}');
+            final currentUrl = await controller.currentUrl() ?? _displayUrl;
+            await _handleWebResourceError(error, currentUrl);
           },
         ),
       );
@@ -1348,12 +1349,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         await _injectImageContextMenuJS();
         print('=== PAGE LOAD COMPLETE ==='); // Debug log
       },
-      onWebResourceError: (WebResourceError error) {
+      onWebResourceError: (WebResourceError error) async {
         if (!mounted) return;
-        setState(() {
-          isLoading = false;
-        });
-        print('Web resource error: ${error.description}');
+        final currentUrl = await controller.currentUrl() ?? _displayUrl;
+        await _handleWebResourceError(error, currentUrl);
       },
     ));
   }
@@ -5704,12 +5703,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         await _saveToHistory(url, title);
         await _injectImageContextMenuJS();
       },
-      onWebResourceError: (WebResourceError error) {
+      onWebResourceError: (WebResourceError error) async {
         if (!mounted) return;
-        setState(() {
-          isLoading = false;
-        });
-        print('Web resource error: ${error.description}');
+        final currentUrl = await controller.currentUrl() ?? _displayUrl;
+        await _handleWebResourceError(error, currentUrl);
       },
     );
   }
@@ -8419,6 +8416,348 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         }
       });
     }
+  }
+
+  Future<void> _handleWebResourceError(WebResourceError error, String url) async {
+    if (!mounted) return;
+    
+    setState(() {
+      isLoading = false;
+    });
+    
+    // Log the error details
+    print('Web resource error: ${error.description}');
+    print('Error code: ${error.errorCode}');
+    print('Error type: ${error.errorType}');
+    print('Failed URL: $url');
+    
+    // Get error message and title based on error type
+    String errorTitle = 'Error Loading Page';
+    String errorMessage = 'The page could not be loaded.';
+    String errorCode = 'ERROR_UNKNOWN';
+    
+    // Extract error code from description if available
+    final errorCodeRegex = RegExp(r'ERR_\w+');
+    final match = errorCodeRegex.firstMatch(error.description);
+    if (match != null) {
+      errorCode = match.group(0) ?? 'ERROR_UNKNOWN';
+    }
+    
+    // Set more specific error messages based on error type
+    switch (error.errorType) {
+      case WebResourceErrorType.hostLookup:
+        errorTitle = 'Cannot Find Server';
+        errorMessage = 'Check your internet connection and try again.';
+        break;
+      case WebResourceErrorType.unsupportedScheme:
+        errorTitle = 'Unsupported Protocol';
+        errorMessage = 'The URL scheme is not supported.';
+        break;
+      case WebResourceErrorType.authentication:
+        errorTitle = 'Authentication Required';
+        errorMessage = 'The website requires authentication.';
+        break;
+      case WebResourceErrorType.tooManyRequests:
+        errorTitle = 'Too Many Requests';
+        errorMessage = 'This website is temporarily unavailable due to too many requests.';
+        break;
+      case WebResourceErrorType.badUrl:
+        errorTitle = 'Invalid URL';
+        errorMessage = 'The URL is malformed or invalid.';
+        break;
+      case WebResourceErrorType.unsafeResource:
+        errorTitle = 'Unsafe Resource';
+        errorMessage = 'This resource has been blocked for security reasons.';
+        break;
+      case WebResourceErrorType.webContentProcessTerminated:
+        errorTitle = 'Process Terminated';
+        errorMessage = 'The browser process was terminated unexpectedly.';
+        break;
+      default:
+        // Use generic error message
+        break;
+    }
+    
+    // If we have a specific error code in the description, use a more specific message
+    if (error.description.contains('ERR_NAME_NOT_RESOLVED')) {
+      errorTitle = 'Server Not Found';
+      errorMessage = 'The website address does not exist.';
+    } else if (error.description.contains('ERR_CONNECTION_REFUSED')) {
+      errorTitle = 'Connection Refused';
+      errorMessage = 'The server refused the connection.';
+    } else if (error.description.contains('ERR_CONNECTION_TIMED_OUT')) {
+      errorTitle = 'Connection Timeout';
+      errorMessage = 'The connection to the server timed out.';
+    } else if (error.description.contains('ERR_INTERNET_DISCONNECTED')) {
+      errorTitle = 'No Internet Connection';
+      errorMessage = 'Please check your internet connection and try again.';
+    } else if (error.description.contains('ERR_SSL_PROTOCOL_ERROR')) {
+      errorTitle = 'SSL Error';
+      errorMessage = 'There was a problem with the website\'s security certificate.';
+    } else if (error.description.contains('ERR_UNKNOWN_URL_SCHEME')) {
+      errorTitle = 'Unknown URL Scheme';
+      errorMessage = 'The URL scheme is not recognized.';
+    }
+    
+    try {
+      // Get the error template content directly instead of loading from assets
+      final html = getErrorHtml();
+      
+      // Replace placeholders with actual error details
+      final formattedHtml = html
+          .replaceAll('PAGE_TITLE', errorTitle)
+          .replaceAll('ERROR_MESSAGE', errorMessage)
+          .replaceAll('URL_PLACEHOLDER', url)
+          .replaceAll('ERROR_CODE_PLACEHOLDER', errorCode);
+      
+      // Load the error page
+      await controller.loadHtmlString(formattedHtml, baseUrl: 'file:///android_asset/main.html');
+      
+      // Update the tab info
+      if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+        setState(() {
+          tabs[currentTabIndex].title = errorTitle;
+        });
+      }
+    } catch (e) {
+      print('Error loading error page: $e');
+    }
+  }
+
+  String getErrorHtml() {
+    return '''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #333;
+            background-color: #f8f9fa;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dark-mode {
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 540px;
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .dark-mode .container {
+            background-color: #2a2a2a;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+        }
+
+        .error-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .error-message {
+            font-size: 16px;
+            margin-bottom: 24px;
+            opacity: 0.8;
+        }
+
+        .error-url {
+            font-size: 14px;
+            word-break: break-all;
+            margin-bottom: 16px;
+            opacity: 0.7;
+            padding: 12px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .dark-mode .error-url {
+            background-color: #333;
+        }
+
+        .error-code {
+            font-family: monospace;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 32px;
+            font-size: 14px;
+            text-align: left;
+        }
+
+        .dark-mode .error-code {
+            background-color: #333;
+        }
+        
+        .copied {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .btn-primary {
+            background-color: #4285f4;
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: #f2f2f2;
+            color: #333;
+        }
+
+        .dark-mode .btn-secondary {
+            background-color: #3a3a3a;
+            color: #f0f0f0;
+        }
+
+        .btn-primary:hover {
+            background-color: #2b76f5;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e5e5e5;
+        }
+
+        .dark-mode .btn-secondary:hover {
+            background-color: #444;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 24px 16px;
+            }
+            
+            .error-title {
+                font-size: 20px;
+            }
+            
+            .error-message {
+                font-size: 14px;
+            }
+            
+            .btn {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="error-title">PAGE_TITLE</h1>
+        <p class="error-message">ERROR_MESSAGE</p>
+        <div class="error-url" id="url-box" title="Click to copy">URL_PLACEHOLDER</div>
+        <div class="error-code">ERROR_CODE_PLACEHOLDER</div>
+        <div class="action-buttons">
+            <button class="btn btn-secondary" id="new-tab-button">New Tab</button>
+            <button class="btn btn-primary" id="try-again-button">Try Again</button>
+        </div>
+    </div>
+    
+    <div class="copied" id="copied-notification">URL copied!</div>
+
+    <script>
+        // Check if dark mode should be applied
+        function checkDarkMode() {
+            // Try to get theme from localStorage
+            const theme = localStorage.getItem('theme');
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+        }
+        
+        // Apply dark mode if needed
+        checkDarkMode();
+        
+        // Make URL box copyable
+        document.getElementById('url-box').addEventListener('click', function() {
+            const text = this.textContent;
+            navigator.clipboard.writeText(text).then(function() {
+                // Show copied notification
+                const notification = document.getElementById('copied-notification');
+                notification.style.opacity = '1';
+                setTimeout(function() {
+                    notification.style.opacity = '0';
+                }, 2000);
+            });
+        });
+        
+        // New Tab button - open homepage in a new tab
+        document.getElementById('new-tab-button').addEventListener('click', function() {
+            window.location.href = 'file:///android_asset/main.html';
+        });
+        
+        // Try Again button - reload with the problematic URL directly
+        document.getElementById('try-again-button').addEventListener('click', function() {
+            const urlElement = document.getElementById('url-box');
+            const url = urlElement.textContent.trim();
+            
+            if (url && url !== 'URL_PLACEHOLDER') {
+                // Try to fix scheme issues by adding https://
+                let fixedUrl = url;
+                if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('file://')) {
+                    fixedUrl = 'https://' + url.replace('://', '');
+                }
+                window.location.href = fixedUrl;
+            } else {
+                window.location.reload();
+            }
+        });
+    </script>
+</body>
+</html>''';
   }
 }
 

@@ -52,6 +52,9 @@ flutter:
     - assets/
     - assets/main.html
     - assets/svg/
+    - assets/errors/
+    - assets/errors/error_template.html
+    - android/app/src/main/assets/errors/
 
 flutter_intl:
   enabled: true
