@@ -15,6 +15,10 @@
     <!-- Permission for all file types access -->
     <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
     
+    <!-- Permissions for creating shortcuts -->
+    <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
+    <uses-permission android:name="com.android.launcher.permission.UNINSTALL_SHORTCUT" />
+    
     <application
          android:label="Solar"
          android:name="${applicationName}"
@@ -52,6 +56,13 @@
                 <data android:scheme="javascript" />
                 <data android:scheme="file" />
                 <data android:scheme="content" />
+            </intent-filter>
+            <!-- PWA shortcut intent filter -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="pwa" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />

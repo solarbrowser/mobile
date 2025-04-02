@@ -653,4 +653,31 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get summary_language_turkish => 'Türkçe';
+
+  @override
+  String get add_to_pwa => 'Add to PWA';
+
+  @override
+  String get remove_from_pwa => 'Remove from PWA';
+
+  @override
+  String get added_to_pwa => 'Added to PWA';
+
+  @override
+  String get removed_from_pwa => 'Removed from PWA';
+
+  @override
+  String get pwa_info => 'Progressive Web Apps run like installed apps without browser controls';
+
+  @override
+  String get create_shortcut => 'Create Shortcut';
+
+  @override
+  String get enter_shortcut_name => 'Enter a name for this shortcut:';
+
+  @override
+  String get shortcut_name => 'Shortcut name';
+
+  @override
+  String get add => 'ADD';
 }

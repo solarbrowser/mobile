@@ -51,7 +51,6 @@ flutter:
   assets:
     - assets/
     - assets/main.html
-    - assets/icons/
     - assets/svg/
 
 flutter_intl:

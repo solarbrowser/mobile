@@ -7,8 +7,10 @@ import 'l10n/app_localizations.dart';
 import 'screens/browser_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/update_screen.dart';
+import 'screens/pwa_screen.dart';
 import 'utils/theme_manager.dart';
 import 'services/ai_manager.dart';
+import 'services/pwa_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,6 +31,15 @@ void main() async {
   final lastVersion = prefs.getString('last_version') ?? '0.0.0';
   final packageInfo = await PackageInfo.fromPlatform();
   final currentVersion = packageInfo.version;
+  
+  // Check for initial deep link
+  String? initialUrl;
+  try {
+    final platform = MethodChannel('com.solar.browser/shortcuts');
+    initialUrl = await platform.invokeMethod('getInitialUrl');
+  } catch (e) {
+    print('Error getting initial URL: $e');
+  }
   
   // Set default preferences if first start
   if (isFirstStart) {
@@ -52,6 +63,7 @@ void main() async {
     currentVersion: currentVersion,
     initialLocale: prefs.getString('language') ?? systemLocale,
     initialDarkMode: prefs.getBool('darkMode') ?? systemDarkMode,
+    initialUrl: initialUrl,
   ));
 }
 
@@ -61,6 +73,7 @@ class MyApp extends StatefulWidget {
   final String currentVersion;
   final String initialLocale;
   final bool initialDarkMode;
+  final String? initialUrl;
 
   const MyApp({
     Key? key,
@@ -69,6 +82,7 @@ class MyApp extends StatefulWidget {
     required this.currentVersion,
     required this.initialLocale,
     required this.initialDarkMode,
+    this.initialUrl,
   }) : super(key: key);
 
   @override
@@ -79,6 +93,10 @@ class _MyAppState extends State<MyApp> {
   late Locale _locale;
   late bool _isDarkMode;
   late String _searchEngine;
+  bool _initialCheckDone = false;
+  String? _initialPwaUrl;
+  String? _initialPwaTitle;
+  String? _initialPwaFavicon;
 
   @override
   void initState() {
@@ -86,6 +104,7 @@ class _MyAppState extends State<MyApp> {
     _locale = Locale(widget.initialLocale);
     _isDarkMode = widget.initialDarkMode;
     _loadPreferences();
+    _checkForPwaDeepLink();
   }
 
   Future<void> _loadPreferences() async {
@@ -93,6 +112,37 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _searchEngine = prefs.getString('searchEngine') ?? 'google';
     });
+  }
+
+  Future<void> _checkForPwaDeepLink() async {
+    if (widget.initialUrl != null && widget.initialUrl!.startsWith('pwa://')) {
+      final pwaUrl = widget.initialUrl!.replaceFirst('pwa://', '');
+      
+      // Check if this URL is in our PWA list
+      final pwaList = await PWAManager.getAllPWAs();
+      final matchingPwa = pwaList.firstWhere(
+        (pwa) => pwa['url'] == pwaUrl,
+        orElse: () => <String, dynamic>{},
+      );
+      
+      if (matchingPwa.isNotEmpty) {
+        // If found, store the values for use in our initial route
+        setState(() {
+          _initialPwaUrl = matchingPwa['url'] as String;
+          _initialPwaTitle = matchingPwa['title'] as String;
+          _initialPwaFavicon = matchingPwa['favicon'] as String?;
+          _initialCheckDone = true;
+        });
+      } else {
+        setState(() {
+          _initialCheckDone = true;
+        });
+      }
+    } else {
+      setState(() {
+        _initialCheckDone = true;
+      });
+    }
   }
 
   void _handleLocaleChange(String localeStr) {
@@ -116,6 +166,33 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    // If we're still checking for PWA deep links, show loading
+    if (!_initialCheckDone) {
+      return MaterialApp(
+        title: 'Solar',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.light(
+            primary: Colors.blue,
+            secondary: Colors.blueAccent,
+          ),
+        ),
+        darkTheme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.dark(
+            primary: Colors.blue,
+            secondary: Colors.blueAccent,
+          ),
+        ),
+        home: Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
+    }
+
     return MaterialApp(
       title: 'Solar',
       debugShowCheckedModeBanner: false,
@@ -138,6 +215,16 @@ class _MyAppState extends State<MyApp> {
       locale: _locale,
       home: Builder(
         builder: (context) {
+          // Handle PWA deep link if present
+          if (_initialPwaUrl != null) {
+            return PWAScreen(
+              url: _initialPwaUrl!,
+              title: _initialPwaTitle!,
+              favicon: _initialPwaFavicon,
+            );
+          }
+          
+          // Normal app startup flow
           if (widget.isFirstStart) {
             return WelcomeScreen(
               onLocaleChange: _handleLocaleChange,

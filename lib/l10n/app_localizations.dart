@@ -1376,6 +1376,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Türkçe'**
   String get summary_language_turkish;
+
+  /// Option to add current website as a PWA
+  ///
+  /// In en, this message translates to:
+  /// **'Add to PWA'**
+  String get add_to_pwa;
+
+  /// Option to remove website from PWA list
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from PWA'**
+  String get remove_from_pwa;
+
+  /// Confirmation message when site is added as PWA
+  ///
+  /// In en, this message translates to:
+  /// **'Added to PWA'**
+  String get added_to_pwa;
+
+  /// Confirmation message when site is removed from PWA list
+  ///
+  /// In en, this message translates to:
+  /// **'Removed from PWA'**
+  String get removed_from_pwa;
+
+  /// Information about what PWAs are
+  ///
+  /// In en, this message translates to:
+  /// **'Progressive Web Apps run like installed apps without browser controls'**
+  String get pwa_info;
+
+  /// Title for the shortcut creation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Create Shortcut'**
+  String get create_shortcut;
+
+  /// Prompt for entering the shortcut name
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a name for this shortcut:'**
+  String get enter_shortcut_name;
+
+  /// Hint for the shortcut name input field
+  ///
+  /// In en, this message translates to:
+  /// **'Shortcut name'**
+  String get shortcut_name;
+
+  /// Add button text
+  ///
+  /// In en, this message translates to:
+  /// **'ADD'**
+  String get add;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

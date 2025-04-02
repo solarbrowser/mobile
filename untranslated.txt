@@ -32,7 +32,16 @@
     "summary_length_medium",
     "summary_length_long",
     "summary_language_english",
-    "summary_language_turkish"
+    "summary_language_turkish",
+    "add_to_pwa",
+    "remove_from_pwa",
+    "added_to_pwa",
+    "removed_from_pwa",
+    "pwa_info",
+    "create_shortcut",
+    "enter_shortcut_name",
+    "shortcut_name",
+    "add"
   ],
 
   "de": [
@@ -66,7 +75,16 @@
     "summary_length_medium",
     "summary_length_long",
     "summary_language_english",
-    "summary_language_turkish"
+    "summary_language_turkish",
+    "add_to_pwa",
+    "remove_from_pwa",
+    "added_to_pwa",
+    "removed_from_pwa",
+    "pwa_info",
+    "create_shortcut",
+    "enter_shortcut_name",
+    "shortcut_name",
+    "add"
   ],
 
   "es": [
@@ -99,7 +117,16 @@
     "summary_length_medium",
     "summary_length_long",
     "summary_language_english",
-    "summary_language_turkish"
+    "summary_language_turkish",
+    "add_to_pwa",
+    "remove_from_pwa",
+    "added_to_pwa",
+    "removed_from_pwa",
+    "pwa_info",
+    "create_shortcut",
+    "enter_shortcut_name",
+    "shortcut_name",
+    "add"
   ],
 
   "fr": [
@@ -132,7 +159,16 @@
     "summary_length_medium",
     "summary_length_long",
     "summary_language_english",
-    "summary_language_turkish"
+    "summary_language_turkish",
+    "add_to_pwa",
+    "remove_from_pwa",
+    "added_to_pwa",
+    "removed_from_pwa",
+    "pwa_info",
+    "create_shortcut",
+    "enter_shortcut_name",
+    "shortcut_name",
+    "add"
   ],
 
   "hi": [
@@ -168,7 +204,16 @@
     "summary_length_medium",
     "summary_length_long",
     "summary_language_english",
-    "summary_language_turkish"
+    "summary_language_turkish",
+    "add_to_pwa",
+    "remove_from_pwa",
+    "added_to_pwa",
+    "removed_from_pwa",
+    "pwa_info",
+    "create_shortcut",
+    "enter_shortcut_name",
+    "shortcut_name",
+    "add"
   ],
 
   "it": [
@@ -202,7 +247,16 @@
     "summary_length_medium",
     "summary_length_long",
     "summary_language_english",
-    "summary_language_turkish"
+    "summary_language_turkish",
+    "add_to_pwa",
+    "remove_from_pwa",
+    "added_to_pwa",
+    "removed_from_pwa",
+    "pwa_info",
+    "create_shortcut",
+    "enter_shortcut_name",
+    "shortcut_name",
+    "add"
   ],
 
   "ja": [
@@ -257,7 +311,16 @@
     "summary_length_medium",
     "summary_length_long",
     "summary_language_english",
-    "summary_language_turkish"
+    "summary_language_turkish",
+    "add_to_pwa",
+    "remove_from_pwa",
+    "added_to_pwa",
+    "removed_from_pwa",
+    "pwa_info",
+    "create_shortcut",
+    "enter_shortcut_name",
+    "shortcut_name",
+    "add"
   ],
 
   "ko": [
@@ -312,7 +375,16 @@
     "summary_length_medium",
     "summary_length_long",
     "summary_language_english",
-    "summary_language_turkish"
+    "summary_language_turkish",
+    "add_to_pwa",
+    "remove_from_pwa",
+    "added_to_pwa",
+    "removed_from_pwa",
+    "pwa_info",
+    "create_shortcut",
+    "enter_shortcut_name",
+    "shortcut_name",
+    "add"
   ],
 
   "pt": [
@@ -344,7 +416,16 @@
     "summary_length_medium",
     "summary_length_long",
     "summary_language_english",
-    "summary_language_turkish"
+    "summary_language_turkish",
+    "add_to_pwa",
+    "remove_from_pwa",
+    "added_to_pwa",
+    "removed_from_pwa",
+    "pwa_info",
+    "create_shortcut",
+    "enter_shortcut_name",
+    "shortcut_name",
+    "add"
   ],
 
   "ru": [
@@ -397,7 +478,16 @@
     "summary_length_medium",
     "summary_length_long",
     "summary_language_english",
-    "summary_language_turkish"
+    "summary_language_turkish",
+    "add_to_pwa",
+    "remove_from_pwa",
+    "added_to_pwa",
+    "removed_from_pwa",
+    "pwa_info",
+    "create_shortcut",
+    "enter_shortcut_name",
+    "shortcut_name",
+    "add"
   ],
 
   "tr": [
@@ -422,7 +512,16 @@
     "ai_provider",
     "length_short",
     "length_medium",
-    "length_long"
+    "length_long",
+    "add_to_pwa",
+    "remove_from_pwa",
+    "added_to_pwa",
+    "removed_from_pwa",
+    "pwa_info",
+    "create_shortcut",
+    "enter_shortcut_name",
+    "shortcut_name",
+    "add"
   ],
 
   "zh": [
@@ -475,6 +574,15 @@
     "summary_length_medium",
     "summary_length_long",
     "summary_language_english",
-    "summary_language_turkish"
+    "summary_language_turkish",
+    "add_to_pwa",
+    "remove_from_pwa",
+    "added_to_pwa",
+    "removed_from_pwa",
+    "pwa_info",
+    "create_shortcut",
+    "enter_shortcut_name",
+    "shortcut_name",
+    "add"
   ]
 }

@@ -34,6 +34,8 @@ import 'package:solar/theme/theme_manager.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:solar/services/notification_service.dart';
 import 'package:solar/services/ai_manager.dart';
+import 'package:solar/services/pwa_manager.dart';
+import 'package:solar/screens/pwa_screen.dart';
 
 class Debouncer {
   final int milliseconds;
@@ -167,6 +169,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   bool allowHttp = true;
   bool isLoading = false;
   String? _currentFaviconUrl;
+  
+  // Platform channel for native communication
+  final MethodChannel _platform = const MethodChannel('com.solar.browser/shortcuts');
+  
+  // Intent data handling
+  String? _lastProcessedIntentUrl;
+  bool _isLoadingIntentUrl = false;
   
   // URL Bar Animation State
   late AnimationController _hideUrlBarController;
@@ -404,6 +413,16 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       }
     });
     
+    // Listen for PWA direct opening events
+    _platform.setMethodCallHandler((call) async {
+      if (call.method == 'openPwaDirectly') {
+        final pwaUrl = call.arguments as String;
+        await _openPwaDirectly(pwaUrl);
+        return true;
+      }
+      return null;
+    });
+    
     // Load preferences and other data
     _loadPreferences().then((_) {
       _loadBookmarks();
@@ -460,6 +479,32 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     
     // Start the first attempt
     tryGetUrl();
+  }
+  
+  // Open PWA directly from app shortcut
+  Future<void> _openPwaDirectly(String url) async {
+    try {
+      final pwaList = await PWAManager.getAllPWAs();
+      final matchingPwa = pwaList.firstWhere(
+        (pwa) => pwa['url'] == url,
+        orElse: () => <String, dynamic>{},
+      );
+      
+      if (matchingPwa.isNotEmpty && mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PWAScreen(
+              url: matchingPwa['url'] as String,
+              title: matchingPwa['title'] as String,
+              favicon: matchingPwa['favicon'] as String?,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error opening PWA directly: $e');
+    }
   }
 
   Future<void> _handleIncomingIntents() async {
@@ -614,6 +659,26 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       if (mounted) {
         setState(() {
           _isUrlBarExpanded = _urlFocusNode.hasFocus;
+          
+          // When focus gained, show the full URL
+          if (_urlFocusNode.hasFocus) {
+            if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+              // Get the current tab's full URL and show it
+              final fullUrl = tabs[currentTabIndex].url;
+              _urlController.text = fullUrl;
+              
+              // Position cursor at the end
+              _urlController.selection = TextSelection.fromPosition(
+                TextPosition(offset: _urlController.text.length),
+              );
+            }
+          } else {
+            // When focus is lost, reformat to domain-only if we have a current tab
+            if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+              final currentUrl = tabs[currentTabIndex].url;
+              _urlController.text = _formatUrl(currentUrl);
+            }
+          }
         });
       }
     });
@@ -822,6 +887,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       await androidController.setMediaPlaybackRequiresUserGesture(false);
       await androidController.setBackgroundColor(Colors.transparent);
       
+      // Set Chrome-like user agent to fix Google sign-in issues
+      await androidController.setUserAgent(
+        'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36'
+      );
+      
       // Enable hardware acceleration
       await webViewController.runJavaScript('''
         document.body.style.setProperty('-webkit-transform', 'translate3d(0,0,0)');
@@ -831,6 +901,27 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         document.body.style.setProperty('-webkit-backface-visibility', 'hidden');
       ''');
     }
+
+    // Add JavaScript to help with browser verification for Google sign-in
+    await webViewController.runJavaScript('''
+      function enhanceBrowserVerification() {
+        Object.defineProperty(navigator, 'vendor', {
+          get: function() { return 'Google Inc.'; }
+        });
+        
+        // Fix for Google's secure browser verification
+        Object.defineProperty(window, 'chrome', {
+          value: {
+            app: {
+              isInstalled: false
+            },
+            runtime: {}
+          },
+          writable: true
+        });
+      }
+      enhanceBrowserVerification();
+    ''');
 
     return webViewController;
   }
@@ -911,22 +1002,15 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             if (!mounted) return;
             print('=== PAGE FINISHED LOADING ===');
             final title = await controller.getTitle() ?? _displayUrl;
+            
+            // Use our central handler to consistently update URLs
+            _handleUrlUpdate(url, title: title);
+            
+            // Update loading state
             setState(() {
               isLoading = false;
-              _displayUrl = url;
-              _urlController.text = _formatUrl(url);
-              if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-                tabs[currentTabIndex].title = title;
-                tabs[currentTabIndex].url = url;
-              }
-              // Update secure indicator based on final URL
-              try {
-                final uri = Uri.parse(url);
-                isSecure = uri.scheme == 'https';
-              } catch (e) {
-                isSecure = false;
-              }
             });
+            
             await _updateNavigationState();
             await _setupUrlMonitoring();
             
@@ -944,20 +1028,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           onUrlChange: (UrlChange change) {
             if (!mounted) return;
             final url = change.url ?? '';
-            setState(() {
-              _displayUrl = url;
-              _urlController.text = _formatUrl(url);
-              if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-                tabs[currentTabIndex].url = url;
-              }
-              // Update secure indicator on URL change
-              try {
-                final uri = Uri.parse(url);
-                isSecure = uri.scheme == 'https';
-              } catch (e) {
-                isSecure = false;
-              }
-            });
+            
+            // Use central helper method for consistent URL handling
+            _handleUrlUpdate(url);
           },
           onWebResourceError: (WebResourceError error) {
             if (!mounted) return;
@@ -1089,14 +1162,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             final url = data['url'] as String;
             final title = data['title'] as String;
             
-            setState(() {
-              _displayUrl = url;
-              _urlController.text = _formatUrl(url);
-              if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-                tabs[currentTabIndex].url = url;
-                tabs[currentTabIndex].title = title;
-              }
-            });
+            // Use central helper method for consistent URL handling
+            _handleUrlUpdate(url, title: title);
             
             _updateNavigationState();
           } catch (e) {
@@ -1119,18 +1186,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         setState(() {
           canGoBack = canGoBackValue;
           canGoForward = canGoForwardValue;
-          
-          // Update URL display and controller
-          _displayUrl = currentUrl;
-          _urlController.text = _formatUrl(currentUrl);
-          
-          // Update the current tab's navigation state
-          if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-            tabs[currentTabIndex].canGoBack = canGoBackValue;
-            tabs[currentTabIndex].canGoForward = canGoForwardValue;
-            tabs[currentTabIndex].url = currentUrl;
-          }
         });
+        
+        // Use the central helper method to update URLs consistently
+        if (currentUrl.isNotEmpty) {
+          _handleUrlUpdate(currentUrl);
+        }
       }
     } catch (e) {
       print('Error updating navigation state: $e');
@@ -1377,127 +1438,40 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     }
   }
 
-  Future<void> _loadUrl(String url) async {
-    print("\n===== EXTERNAL URL LOADING REQUEST =====");
-    print("🌐 Attempting to load URL: $url");
-    print("📱 Current tab index: $currentTabIndex");
-    if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-      print("📄 Current tab URL: ${tabs[currentTabIndex].url}");
-      print("📑 Current tab title: ${tabs[currentTabIndex].title}");
-    }
-    
-    if (!mounted) {
-      print("❌ Widget not mounted, cannot load URL");
-      _confirmUrlLoaded(url, false);
-      return;
-    }
-
-    // Ensure URL is not null or empty
-    if (url == null || url.isEmpty) {
-      print("Error: received null or empty URL"); // Debug print
-      _confirmUrlLoaded(url, false);
-      return;
-    }
-
-    String formattedUrl = url.trim();
-    
-    // FORCE URL to be properly formatted
-    if (!formattedUrl.startsWith('http://') && 
-        !formattedUrl.startsWith('https://') && 
-        !formattedUrl.startsWith('file://')) {
-      
-      if (formattedUrl.contains('.') && !formattedUrl.contains(' ')) {
-        formattedUrl = 'https://$formattedUrl';
-        print("URL formatted to: $formattedUrl"); // Debug print
-      } else {
-        final engine = searchEngines[currentSearchEngine] ?? searchEngines['Google']!;
-        formattedUrl = engine.replaceAll('{query}', Uri.encodeComponent(formattedUrl));
-        print("URL treated as search: $formattedUrl"); // Debug print
-      }
-    }
-    
-    print("Formatted URL: $formattedUrl"); // Debug print
-    
-    // Create a new tab or reuse current tab based on situation
-    BrowserTab targetTab;
-    
-    // If we're on a blank or home page, use current tab
-    // otherwise create a new tab for the URL
-    if (tabs[currentTabIndex].url == 'file:///android_asset/main.html' ||
-        tabs[currentTabIndex].url.isEmpty) {
-      print("Using current tab for URL"); // Debug print
-      targetTab = tabs[currentTabIndex];
-    } else {
-      print("Creating new tab for URL"); // Debug print
-      _addNewTab(url: formattedUrl);
-      _confirmUrlLoaded(formattedUrl, true);
-      print("===== EXTERNAL URL LOADING COMPLETED =====\n");
-      return; // _addNewTab will handle loading the URL
-    }
+  Future<void> _loadUrl(String query) async {
+    final trimmedQuery = query.trim();
+    if (trimmedQuery.isEmpty) return;
     
     setState(() {
       isLoading = true;
-      _displayUrl = formattedUrl;
-      _urlController.text = _formatUrl(formattedUrl);
     });
     
-    bool loadSuccessful = false;
-    
-    // Try method 1: Regular webview loadRequest 
-    try {
-      print("Method 1: Using loadRequest for URL"); // Debug print
-      
-      // Validate URL is properly formatted
-      final uri = Uri.parse(formattedUrl);
-      print("Parsed URI: scheme=${uri.scheme}, host=${uri.host}, path=${uri.path}"); // Debug print
-      
-      await controller.loadRequest(Uri.parse(formattedUrl));
-      _updateUrl(formattedUrl);
-      print("URL loaded successfully with method 1"); // Debug print
-      loadSuccessful = true;
-    } catch (e) {
-      print('Error with method 1: $e'); // Debug print
-      
-      // Method 2: JavaScript navigation
-      try {
-        print("Method 2: Using JavaScript navigation"); // Debug print
-        await controller.runJavaScript("window.location.href = '$formattedUrl';");
-        print("JavaScript navigation successful"); // Debug print
-        loadSuccessful = true;
-      } catch (jsError) {
-        print('Error with method 2: $jsError'); // Debug print
-        
-        // Method 3: Try loading directly into the tab's controller
-        try {
-          print("Method 3: Loading directly into tab controller"); // Debug print
-          targetTab.controller.loadRequest(Uri.parse(formattedUrl));
-          targetTab.url = formattedUrl;
-          print("Direct tab controller loading initiated"); // Debug print
-          loadSuccessful = true;
-        } catch (tabError) {
-          print('Error with method 3: $tabError'); // Debug print
-          
-          // Method 4: Create a completely new tab as last resort
-          try {
-            print("Method 4: Creating new tab as last resort"); // Debug print
-            _addNewTab(url: formattedUrl);
-            loadSuccessful = true;
-          } catch (newTabError) {
-            print('Error with method 4: $newTabError'); // Debug print
-          }
-        }
-      }
-    } finally {
-      if (!loadSuccessful) {
-        setState(() {
-          isLoading = false;
-        });
-      }
+    // Process the URL/query
+    String urlToLoad;
+    if (trimmedQuery.startsWith('http://') || trimmedQuery.startsWith('https://')) {
+      // Direct URL loading
+      urlToLoad = trimmedQuery;
+    } else if (trimmedQuery.contains('.') && !trimmedQuery.contains(' ')) {
+      // Likely a domain - add https://
+      urlToLoad = 'https://$trimmedQuery';
+    } else {
+      // Search query - use search engine
+      final engine = searchEngines[currentSearchEngine] ?? searchEngines['Google']!;
+      urlToLoad = engine.replaceAll('{query}', Uri.encodeComponent(trimmedQuery));
     }
     
-    // Confirm URL loading to Android side
-    _confirmUrlLoaded(formattedUrl, loadSuccessful);
-    print("===== EXTERNAL URL LOADING COMPLETED =====\n");
+    // Update the tab data through our central handler (without UI updates yet)
+    _handleUrlUpdate(urlToLoad);
+    
+    // Load the URL in the webview
+    try {
+      await controller.loadRequest(Uri.parse(urlToLoad));
+    } catch (e) {
+      debugPrint('Error loading URL: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   Future<void> _confirmUrlLoaded(String url, bool success) async {
@@ -2630,7 +2604,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                 children: [
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.app_name,
-                    subtitle: AppLocalizations.of(context)!.version('0.0.7'),
+                    subtitle: AppLocalizations.of(context)!.version('0.0.8'),
                     isFirst: true,
                     isLast: false,
                   ),
@@ -2642,7 +2616,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   ),
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.photoncore_version,
-                    subtitle: 'Photoncore 0.0.2A',
+                    subtitle: 'Photoncore 0.0.3',
                     isFirst: false,
                     isLast: false,
                   ),
@@ -5194,10 +5168,6 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     onSubmitted: (value) {
                       _loadUrl(value);
                       _urlFocusNode.unfocus();
-                      setState(() {
-                        _urlController.text = _formatUrl(_displayUrl);
-                        _urlController.selection = const TextSelection.collapsed(offset: -1);
-                      });
                     },
                   ),
                 ),
@@ -5719,17 +5689,22 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       return '';
     }
     
+    // If URL bar has focus or showFull is explicitly requested, show the full URL
+    if (_urlFocusNode.hasFocus || showFull) {
+      return url;
+    }
+    
     try {
       final uri = Uri.parse(url);
-      if (!showFull) {
-        String domain = uri.host;
-        if (domain.startsWith('www.')) {
-          domain = domain.substring(4);
-        }
-        return domain;
+      
+      // When not focused, always show domain only
+      String domain = uri.host;
+      if (domain.startsWith('www.')) {
+        domain = domain.substring(4);
       }
-      return url;
+      return domain;
     } catch (e) {
+      // If URL can't be parsed, show as is
       return url;
     }
   }
@@ -7455,7 +7430,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     final screenHeight = MediaQuery.of(context).size.height;
     final menuWidth = 220.0;
     final rightMargin = 20.0;
-    final menuHeight = 150.0;
+    final menuHeight = 200.0; // Increased height for the new PWA option
     final urlBarHeight = 60.0;
     final spacing = 8.0;
     
@@ -7544,6 +7519,92 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                 ),
                 duration: const Duration(seconds: 4),
               );
+            }
+          },
+        ),
+        PopupMenuItem(
+          height: 40,
+          child: FutureBuilder<bool>(
+            future: PWAManager.isPWA(_displayUrl),
+            builder: (context, snapshot) {
+              final isPWA = snapshot.data ?? false;
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Icon(
+                    isPWA ? Icons.delete_outline : Icons.add_to_home_screen,
+                    size: 20,
+                    color: ThemeManager.textColor(),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    isPWA 
+                      ? AppLocalizations.of(context)?.remove_from_pwa ?? 'Remove from PWA'
+                      : AppLocalizations.of(context)?.add_to_pwa ?? 'Add to PWA',
+                    style: TextStyle(
+                      color: ThemeManager.textColor(),
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              );
+            }
+          ),
+          onTap: () async {
+            // Wait for menu to close
+            await Future.delayed(const Duration(milliseconds: 200));
+            if (!mounted) return;
+            
+            final isPWA = await PWAManager.isPWA(_displayUrl);
+            
+            if (isPWA) {
+              // Remove from PWA
+              final success = await PWAManager.deletePWA(_displayUrl);
+              if (success && mounted) {
+                _showPWANotification(
+                  Row(
+                    children: [
+                      Icon(Icons.check_circle_outlined, color: Colors.white),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          AppLocalizations.of(context)?.removed_from_pwa ?? 'Removed from PWA',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  duration: const Duration(seconds: 2),
+                );
+              }
+            } else {
+              // Add to PWA
+              final title = await controller.getTitle() ?? _displayUrl;
+              final success = await PWAManager.savePWA(context, _displayUrl, title, tabs[currentTabIndex].favicon);
+              
+              if (success && mounted) {
+                _showPWANotification(
+                  Row(
+                    children: [
+                      Icon(Icons.add_to_home_screen, color: Colors.white),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          AppLocalizations.of(context)?.added_to_pwa ?? 'Added to PWA',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  duration: const Duration(seconds: 2),
+                );
+              }
             }
           },
         ),
@@ -8074,6 +8135,217 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         // Make sure URL bar is visible
         _hideUrlBar = false;
         _hideUrlBarController.reverse();
+      });
+    }
+  }
+
+  Future<void> _handleIntentData() async {
+    // If we're already processing an intent or the user is actively typing, don't interrupt
+    if (_isLoadingIntentUrl || _urlFocusNode.hasFocus) {
+      debugPrint('Ignoring intent while loading or URL bar has focus');
+      return;
+    }
+
+    try {
+      final String? initialUrl = await _platform.invokeMethod('getInitialUrl');
+      
+      // Ignore if URL is null, empty, or 'null' string
+      if (initialUrl == null || initialUrl.isEmpty || initialUrl == 'null') {
+        return;
+      }
+      
+      // Compare with the last processed URL - using exact comparison
+      if (initialUrl == _lastProcessedIntentUrl) {
+        debugPrint('Ignoring duplicate intent URL: $initialUrl');
+        return;
+      }
+      
+      // Update the last processed URL
+      _lastProcessedIntentUrl = initialUrl;
+      
+      // Set the loading flag to prevent multiple loads
+      _isLoadingIntentUrl = true;
+      
+      try {
+        // Check if this is a PWA launch with specific format
+        if (initialUrl.startsWith('pwa://')) {
+          // Handle PWA URLs
+          String pwaUrl = initialUrl.replaceFirst('pwa://', '');
+          
+          // Check if this is a redirect URL from a renamed PWA
+          if (pwaUrl.contains('#ts=')) {
+            // Extract the original URL
+            pwaUrl = pwaUrl.split('#ts=')[0];
+          }
+          
+          final pwaList = await PWAManager.getAllPWAs();
+          final matchingPwa = pwaList.firstWhere(
+            (pwa) => pwa['url'] == pwaUrl || pwa['redirect_url'] == initialUrl,
+            orElse: () => <String, dynamic>{},
+          );
+          
+          if (matchingPwa.isNotEmpty) {
+            // Launch as PWA
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PWAScreen(
+                  url: matchingPwa['url'] as String,
+                  title: matchingPwa['title'] as String,
+                  favicon: matchingPwa['favicon'] as String?,
+                ),
+              ),
+            );
+            return; // Exit early - PWA is handled
+          }
+        }
+        
+        // Normal URL handling - only update if different from current URL
+        final String currentUrl = tabs[currentTabIndex].url;
+        if (initialUrl != currentUrl) {
+          // Prevent UI updates if URL bar is in focus
+          if (!_urlFocusNode.hasFocus) {
+            // Safely update URL display
+            _updateUrlBarSafely(initialUrl);
+            
+            // Update tab URL
+            if (mounted) {
+              setState(() {
+                tabs[currentTabIndex].url = initialUrl;
+              });
+            }
+            
+            // Load the URL in WebView
+            try {
+              await controller.loadRequest(Uri.parse(initialUrl));
+              debugPrint('Successfully loaded URL from intent: $initialUrl');
+            } catch (e) {
+              debugPrint('Error loading URL in WebView: $e');
+            }
+          } else {
+            debugPrint('Not updating URL bar while it has focus');
+          }
+        } else {
+          debugPrint('URL from intent matches current URL, ignoring: $initialUrl');
+        }
+      } finally {
+        // Always reset the loading flag
+        _isLoadingIntentUrl = false;
+      }
+    } catch (e) {
+      _isLoadingIntentUrl = false;
+      debugPrint('Error handling intent data: $e');
+    }
+  }
+  
+  // Safe method to update URL bar without interrupting user typing
+  void _updateUrlBarSafely(String url) {
+    try {
+      // NEVER update if URL bar has focus - this is critical to fix the problem
+      if (_urlFocusNode.hasFocus) {
+        debugPrint('URL bar has focus, refusing to update text');
+        return; // Exit immediately, preserve user input
+      }
+      
+      // When not in focus, always update with formatted URL
+      // Update display URL
+      _displayUrl = url;
+      
+      // Format the URL according to rules (domain only when not focused)
+      final formattedUrl = _formatUrl(url);
+      
+      // Always update controller when not in focus
+      _urlController.text = formattedUrl;
+      
+      // Reset selection to end
+      _urlController.selection = TextSelection.collapsed(offset: _urlController.text.length);
+    } catch (e) {
+      debugPrint('Error updating URL bar safely: $e');
+    }
+  }
+
+  // Show a PWA-specific styled notification
+  void _showPWANotification(Widget content, {Duration? duration}) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+    
+    overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).padding.top,
+        left: 16,
+        right: 16,
+        child: Material(
+          color: Colors.transparent,
+          child: TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: 0.0, end: 1.0),
+            duration: const Duration(milliseconds: 300),
+            builder: (context, value, child) {
+              return Transform.translate(
+                offset: Offset(0, -50 * (1 - value)),
+                child: Opacity(
+                  opacity: value,
+                  child: child,
+                ),
+              );
+            },
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: ThemeManager.primaryColor(),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: ThemeManager.textColor().withOpacity(0.1),
+                    blurRadius: 10,
+                    spreadRadius: 0,
+                  ),
+                ],
+              ),
+              child: content,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+
+    Future.delayed(duration ?? const Duration(seconds: 2), () {
+      if (overlayEntry.mounted) {
+        overlayEntry.remove();
+      }
+    });
+  }
+
+  // Central method to handle URL updates consistently
+  void _handleUrlUpdate(String url, {String? title}) {
+    // Always update the tab data
+    if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+      setState(() {
+        tabs[currentTabIndex].url = url;
+        if (title != null) {
+          tabs[currentTabIndex].title = title;
+        }
+      });
+    }
+    
+    // Store the full URL for when focus is gained
+    _displayUrl = url;
+    
+    // Only update URL bar text if not currently focused
+    if (!_urlFocusNode.hasFocus && mounted) {
+      setState(() {
+        // Show domain-only when not focused
+        _urlController.text = _formatUrl(url);
+        
+        // Update secure status
+        try {
+          final uri = Uri.parse(url);
+          isSecure = uri.scheme == 'https';
+        } catch (e) {
+          isSecure = false;
+        }
       });
     }
   }

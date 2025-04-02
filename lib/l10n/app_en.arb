@@ -453,5 +453,41 @@
   "summary_language_turkish": "Türkçe",
   "@summary_language_turkish": {
     "description": "Label for Turkish language option"
+  },
+  "add_to_pwa": "Add to PWA",
+  "@add_to_pwa": {
+    "description": "Option to add current website as a PWA"
+  },
+  "remove_from_pwa": "Remove from PWA",
+  "@remove_from_pwa": {
+    "description": "Option to remove website from PWA list"
+  },
+  "added_to_pwa": "Added to PWA",
+  "@added_to_pwa": {
+    "description": "Confirmation message when site is added as PWA"
+  },
+  "removed_from_pwa": "Removed from PWA",
+  "@removed_from_pwa": {
+    "description": "Confirmation message when site is removed from PWA list"
+  },
+  "pwa_info": "Progressive Web Apps run like installed apps without browser controls",
+  "@pwa_info": {
+    "description": "Information about what PWAs are"
+  },
+  "create_shortcut": "Create Shortcut",
+  "@create_shortcut": {
+    "description": "Title for the shortcut creation dialog"
+  },
+  "enter_shortcut_name": "Enter a name for this shortcut:",
+  "@enter_shortcut_name": {
+    "description": "Prompt for entering the shortcut name"
+  },
+  "shortcut_name": "Shortcut name",
+  "@shortcut_name": {
+    "description": "Hint for the shortcut name input field"
+  },
+  "add": "ADD",
+  "@add": {
+    "description": "Add button text"
   }
 } 
