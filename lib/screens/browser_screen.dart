@@ -346,6 +346,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   void initState() {
     super.initState();
     
+    print("BrowserScreen initState called"); // Debug print
+    
     // Start by initializing controllers
     _initializeControllers();
     
@@ -359,35 +361,105 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     _urlController = TextEditingController();
     _urlFocusNode = FocusNode();
     
-    // Add listener for keyboard focus changes
-    _urlFocusNode.addListener(() {
-      if (_urlFocusNode.hasFocus) {
-        setState(() {
-          // Make sure panels are hidden when keyboard appears
-          _isSlideUpPanelVisible = false;
-          _slideUpController.reverse();
-          // Ensure URL bar is visible
-          _hideUrlBar = false;
-          _hideUrlBarController.reverse();
-        });
+    // Set up method channel for handling URLs
+    const platform = MethodChannel('app.channel.shared.data');
+    platform.setMethodCallHandler((call) async {
+      print("Received method call: ${call.method}"); // Debug print
+      
+      if (!mounted) {
+        print("Widget not mounted, ignoring method call"); // Debug print
+        return;
+      }
+      
+      switch (call.method) {
+        case 'loadUrl':
+          try {
+            final url = call.arguments as String;
+            print("Received URL to load: $url"); // Debug print
+            
+            // Wait a little to make sure everything is initialized
+            Future.delayed(Duration(milliseconds: 500), () {
+              if (mounted) {
+                _loadUrl(url);
+              }
+            });
+          } catch (e) {
+            print("Error processing loadUrl call: $e");
+          }
+          break;
+        case 'openNewTabWithSearch':
+          try {
+            final query = call.arguments as String;
+            print("Received search query: $query"); // Debug print
+            if (query != null && query.isNotEmpty) {
+              final engine = searchEngines[currentSearchEngine] ?? searchEngines['Google']!;
+              final searchUrl = engine.replaceAll('{query}', Uri.encodeComponent(query));
+              print("Opening new tab with search URL: $searchUrl"); // Debug print
+              _addNewTab(url: searchUrl);
+            }
+          } catch (e) {
+            print("Error processing search query: $e");
+          }
+          break;
       }
     });
     
-    // Load preferences first to ensure theme is applied early
+    // Load preferences and other data
     _loadPreferences().then((_) {
-      // Load other data after preferences
       _loadBookmarks();
       _loadDownloads();
       _loadHistory();
       _loadUrlBarPosition();
       _loadSettings();
       _loadSearchEngines();
+      
+      // Mark as initialized at the end of initialization
+      setState(() {
+        isInitialized = true;
+        print("BrowserScreen initialization completed"); // Debug print
+      });
+      
+      // Check for a shared URL after initialization with retry logic
+      _checkForSharedUrl();
     });
+  }
+  
+  // New helper method to check for shared URL with retries
+  void _checkForSharedUrl() {
+    print("Checking for pending URLs after initialization"); // Debug print
     
-    // Handle incoming intents
-    if (Platform.isAndroid) {
-      _handleIncomingIntents();
+    const platform = MethodChannel('app.channel.shared.data');
+    
+    // Try up to 3 times to get the shared URL
+    int retryCount = 0;
+    
+    void tryGetUrl() {
+      try {
+        platform.invokeMethod<String>('getSharedUrl')
+          .then((url) {
+            print("Got shared URL from platform: $url"); // Debug print
+            if (url != null && url.isNotEmpty && mounted) {
+              print("Loading shared URL: $url"); // Debug print
+              _loadUrl(url);
+            }
+          })
+          .catchError((error) {
+            print("Error getting shared URL: $error"); // Debug print
+            
+            // Retry if needed
+            retryCount++;
+            if (retryCount < 3) {
+              print("Retrying getSharedUrl (attempt $retryCount)"); // Debug print
+              Future.delayed(Duration(seconds: 1), tryGetUrl);
+            }
+          });
+      } catch (e) {
+        print("Exception when getting shared URL: $e"); // Debug print
+      }
     }
+    
+    // Start the first attempt
+    tryGetUrl();
   }
 
   Future<void> _handleIncomingIntents() async {
@@ -785,6 +857,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       });
     }
 
+    // Initialize a dummy optimization engine to prevent LateInitializationError
+    _optimizationEngine = OptimizationEngine();
+
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
@@ -797,6 +872,17 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               await _handleDownload(request.url);
               return NavigationDecision.prevent;
             }
+            
+            // Update secure indicator based on URL
+            setState(() {
+              try {
+                final uri = Uri.parse(request.url);
+                isSecure = uri.scheme == 'https';
+              } catch (e) {
+                isSecure = false;
+              }
+            });
+            
             return NavigationDecision.navigate;
           },
           onPageStarted: (String url) async {
@@ -805,7 +891,21 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               isLoading = true;
               _displayUrl = url;
               _urlController.text = _formatUrl(url);
+              // Update secure indicator based on URL
+              try {
+                final uri = Uri.parse(url);
+                isSecure = uri.scheme == 'https';
+              } catch (e) {
+                isSecure = false;
+              }
             });
+            await _updateNavigationState();
+            // Safely call optimization engine methods
+            try {
+              await _optimizationEngine.onPageStartLoad(url);
+            } catch (e) {
+              print("Error in optimization engine: $e");
+            }
           },
           onPageFinished: (String url) async {
             if (!mounted) return;
@@ -819,9 +919,24 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                 tabs[currentTabIndex].title = title;
                 tabs[currentTabIndex].url = url;
               }
+              // Update secure indicator based on final URL
+              try {
+                final uri = Uri.parse(url);
+                isSecure = uri.scheme == 'https';
+              } catch (e) {
+                isSecure = false;
+              }
             });
             await _updateNavigationState();
             await _setupUrlMonitoring();
+            
+            // Safely call optimization engine
+            try {
+              await _optimizationEngine.onPageFinishLoad(url);
+            } catch (e) {
+              print("Error in optimization engine (onPageFinish): $e");
+            }
+            
             if (!tabs[currentTabIndex].isIncognito) {
               await _saveToHistory(url, title);
             }
@@ -834,6 +949,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               _urlController.text = _formatUrl(url);
               if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
                 tabs[currentTabIndex].url = url;
+              }
+              // Update secure indicator on URL change
+              try {
+                final uri = Uri.parse(url);
+                isSecure = uri.scheme == 'https';
+              } catch (e) {
+                isSecure = false;
               }
             });
           },
@@ -1256,25 +1378,61 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
 
   Future<void> _loadUrl(String url) async {
-    if (currentSearchEngine.isEmpty) {
-      showCustomNotification(
-        context: context,
-        message: "Please select a search engine in settings first",
-        icon: Icons.warning,
-        iconColor: ThemeManager.warningColor(),
-        isDarkMode: isDarkMode,
-      );
+    print("\n===== EXTERNAL URL LOADING REQUEST =====");
+    print("🌐 Attempting to load URL: $url");
+    print("📱 Current tab index: $currentTabIndex");
+    if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+      print("📄 Current tab URL: ${tabs[currentTabIndex].url}");
+      print("📑 Current tab title: ${tabs[currentTabIndex].title}");
+    }
+    
+    if (!mounted) {
+      print("❌ Widget not mounted, cannot load URL");
+      _confirmUrlLoaded(url, false);
+      return;
+    }
+
+    // Ensure URL is not null or empty
+    if (url == null || url.isEmpty) {
+      print("Error: received null or empty URL"); // Debug print
+      _confirmUrlLoaded(url, false);
       return;
     }
 
     String formattedUrl = url.trim();
-    if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+    
+    // FORCE URL to be properly formatted
+    if (!formattedUrl.startsWith('http://') && 
+        !formattedUrl.startsWith('https://') && 
+        !formattedUrl.startsWith('file://')) {
+      
       if (formattedUrl.contains('.') && !formattedUrl.contains(' ')) {
         formattedUrl = 'https://$formattedUrl';
+        print("URL formatted to: $formattedUrl"); // Debug print
       } else {
         final engine = searchEngines[currentSearchEngine] ?? searchEngines['Google']!;
         formattedUrl = engine.replaceAll('{query}', Uri.encodeComponent(formattedUrl));
+        print("URL treated as search: $formattedUrl"); // Debug print
       }
+    }
+    
+    print("Formatted URL: $formattedUrl"); // Debug print
+    
+    // Create a new tab or reuse current tab based on situation
+    BrowserTab targetTab;
+    
+    // If we're on a blank or home page, use current tab
+    // otherwise create a new tab for the URL
+    if (tabs[currentTabIndex].url == 'file:///android_asset/main.html' ||
+        tabs[currentTabIndex].url.isEmpty) {
+      print("Using current tab for URL"); // Debug print
+      targetTab = tabs[currentTabIndex];
+    } else {
+      print("Creating new tab for URL"); // Debug print
+      _addNewTab(url: formattedUrl);
+      _confirmUrlLoaded(formattedUrl, true);
+      print("===== EXTERNAL URL LOADING COMPLETED =====\n");
+      return; // _addNewTab will handle loading the URL
     }
     
     setState(() {
@@ -1283,15 +1441,75 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       _urlController.text = _formatUrl(formattedUrl);
     });
     
+    bool loadSuccessful = false;
+    
+    // Try method 1: Regular webview loadRequest 
     try {
+      print("Method 1: Using loadRequest for URL"); // Debug print
+      
+      // Validate URL is properly formatted
+      final uri = Uri.parse(formattedUrl);
+      print("Parsed URI: scheme=${uri.scheme}, host=${uri.host}, path=${uri.path}"); // Debug print
+      
       await controller.loadRequest(Uri.parse(formattedUrl));
-      // Update URL immediately after load request
       _updateUrl(formattedUrl);
+      print("URL loaded successfully with method 1"); // Debug print
+      loadSuccessful = true;
     } catch (e) {
-      print('Error loading URL: $e');
-      setState(() {
-        isLoading = false;
+      print('Error with method 1: $e'); // Debug print
+      
+      // Method 2: JavaScript navigation
+      try {
+        print("Method 2: Using JavaScript navigation"); // Debug print
+        await controller.runJavaScript("window.location.href = '$formattedUrl';");
+        print("JavaScript navigation successful"); // Debug print
+        loadSuccessful = true;
+      } catch (jsError) {
+        print('Error with method 2: $jsError'); // Debug print
+        
+        // Method 3: Try loading directly into the tab's controller
+        try {
+          print("Method 3: Loading directly into tab controller"); // Debug print
+          targetTab.controller.loadRequest(Uri.parse(formattedUrl));
+          targetTab.url = formattedUrl;
+          print("Direct tab controller loading initiated"); // Debug print
+          loadSuccessful = true;
+        } catch (tabError) {
+          print('Error with method 3: $tabError'); // Debug print
+          
+          // Method 4: Create a completely new tab as last resort
+          try {
+            print("Method 4: Creating new tab as last resort"); // Debug print
+            _addNewTab(url: formattedUrl);
+            loadSuccessful = true;
+          } catch (newTabError) {
+            print('Error with method 4: $newTabError'); // Debug print
+          }
+        }
+      }
+    } finally {
+      if (!loadSuccessful) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+    
+    // Confirm URL loading to Android side
+    _confirmUrlLoaded(formattedUrl, loadSuccessful);
+    print("===== EXTERNAL URL LOADING COMPLETED =====\n");
+  }
+
+  Future<void> _confirmUrlLoaded(String url, bool success) async {
+    try {
+      const platform = MethodChannel('app.channel.shared.data');
+      await platform.invokeMethod('confirmUrlLoaded', {
+        'url': url,
+        'success': success
       });
+      print("Sent URL loading confirmation to Android: $success"); // Debug print
+    } catch (e) {
+      print("Error sending load confirmation: $e"); // Debug print
     }
   }
 
@@ -4308,6 +4526,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               physics: const BouncingScrollPhysics(),
               padding: EdgeInsets.zero,
               children: [
+                _buildPermissionBanner(),
                 _buildSettingsSection(
                   title: AppLocalizations.of(context)!.customize_browser,
                   children: [
@@ -4328,34 +4547,132 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   ],
                 ),
                 const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ThemeManager.errorColor().withOpacity(0.1),
-                      foregroundColor: ThemeManager.errorColor(),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    onPressed: () => _showResetConfirmation(),
-                    child: Text(
-                      AppLocalizations.of(context)!.reset_browser,
-                      style: TextStyle(
-                        color: ThemeManager.errorColor(),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
               ],
             ),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildPermissionBanner() {
+    return FutureBuilder<bool>(
+      future: _checkAllPermissions(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) return const SizedBox.shrink();
+        final bool hasAllPermissions = snapshot.data!;
+
+        return Container(
+          margin: const EdgeInsets.all(12),
+          height: 110,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: LinearGradient(
+                colors: hasAllPermissions 
+                  ? [Colors.green.withOpacity(0.8), Colors.green.withOpacity(0.6)]
+                  : [Colors.red.withOpacity(0.8), Colors.red.withOpacity(0.6)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: hasAllPermissions ? null : _requestAllPermissions,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              hasAllPermissions 
+                                ? AppLocalizations.of(context)!.storage_permission_granted
+                                : AppLocalizations.of(context)!.storage_permission_required,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              hasAllPermissions 
+                                ? AppLocalizations.of(context)!.app_should_work_normally
+                                : AppLocalizations.of(context)!.storage_permission_description,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (!hasAllPermissions)
+                        ElevatedButton(
+                          onPressed: _requestAllPermissions,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.red,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          ),
+                          child: Text(AppLocalizations.of(context)!.grant_permission),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<bool> _checkAllPermissions() async {
+    final androidInfo = await DeviceInfoPlugin().androidInfo;
+    final sdkInt = androidInfo.version.sdkInt;
+    
+    if (sdkInt >= 33) {
+      final photos = await Permission.photos.status;
+      final videos = await Permission.videos.status;
+      final audio = await Permission.audio.status;
+      final notifications = await Permission.notification.status;
+      return photos.isGranted && videos.isGranted && audio.isGranted && notifications.isGranted;
+    } else {
+      final storage = await Permission.storage.status;
+      final notifications = await Permission.notification.status;
+      return storage.isGranted && notifications.isGranted;
+    }
+  }
+
+  Future<void> _requestAllPermissions() async {
+    final androidInfo = await DeviceInfoPlugin().androidInfo;
+    final sdkInt = androidInfo.version.sdkInt;
+    
+    if (sdkInt >= 33) {
+      await [
+        Permission.photos,
+        Permission.videos,
+        Permission.audio,
+        Permission.notification,
+      ].request();
+    } else {
+      await [
+        Permission.storage,
+        Permission.notification,
+      ].request();
+    }
+    
+    setState(() {}); // Refresh UI to update permission status
   }
 
   Widget _buildSettingsButton(String label, VoidCallback onTap, {bool isFirst = false, bool isLast = false}) {
@@ -5319,6 +5636,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           // Update URL when page starts loading
           _displayUrl = url;
           _urlController.text = _formatUrl(url);
+          // Update secure indicator based on URL
+          try {
+            final uri = Uri.parse(url);
+            isSecure = uri.scheme == 'https';
+          } catch (e) {
+            isSecure = false;
+          }
         });
         await _updateNavigationState();
         await _optimizationEngine.onPageStartLoad(url);
@@ -5335,12 +5659,19 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             tabs[currentTabIndex].title = title;
             tabs[currentTabIndex].url = url;
           }
+          // Double check secure indicator
+          try {
+            final uri = Uri.parse(url);
+            isSecure = uri.scheme == 'https';
+          } catch (e) {
+            isSecure = false;
+          }
         });
         await _updateNavigationState();
         await _optimizationEngine.onPageFinishLoad(url);
         await _updateFavicon(url);
         await _saveToHistory(url, title);
-        await _injectImageContextMenuJS(); // Inject JavaScript after page load
+        await _injectImageContextMenuJS();
       },
       onWebResourceError: (WebResourceError error) {
         if (!mounted) return;

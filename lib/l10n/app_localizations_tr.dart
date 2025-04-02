@@ -494,10 +494,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get storage_permission_granted => 'Depolama izni verildi';
 
   @override
-  String get storage_permission_description => 'Solar needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
+  String get storage_permission_description => 'This app needs permission to access files for download functionality.';
 
   @override
-  String get grant_permission => 'Grant Permission';
+  String get app_should_work_normally => 'The app should now work normally with full functionality.';
+
+  @override
+  String get grant_permission => 'Give Permission';
 
   @override
   String get storage_permission_denied => 'Dosyaları indirmek için depolama izni gerekli';

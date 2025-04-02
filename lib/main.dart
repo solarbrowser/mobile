@@ -13,6 +13,13 @@ import 'services/ai_manager.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
+  // Setup method channel to communicate with the platform
+  final methodChannel = MethodChannel('app.channel.shared.data');
+  
+  // Register platform plugins
+  final systemLocale = WidgetsBinding.instance.window.locale.languageCode;
+  final systemDarkMode = WidgetsBinding.instance.window.platformBrightness == Brightness.dark;
+  
   // Initialize AI Manager
   await AIManager.initialize();
   
@@ -22,13 +29,6 @@ void main() async {
   final lastVersion = prefs.getString('last_version') ?? '0.0.0';
   final packageInfo = await PackageInfo.fromPlatform();
   final currentVersion = packageInfo.version;
-  
-  // Load system preferences
-  final systemLocale = WidgetsBinding.instance.window.locale.languageCode;
-  final systemDarkMode = WidgetsBinding.instance.window.platformBrightness == Brightness.dark;
-  
-  // Load saved theme
-  await ThemeManager.loadSavedTheme();
   
   // Set default preferences if first start
   if (isFirstStart) {
@@ -42,6 +42,9 @@ void main() async {
   if (lastVersion != currentVersion) {
     await prefs.setString('last_version', currentVersion);
   }
+  
+  // Load saved theme
+  await ThemeManager.loadSavedTheme();
   
   runApp(MyApp(
     isFirstStart: isFirstStart,

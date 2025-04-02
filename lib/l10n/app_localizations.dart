@@ -1059,28 +1059,34 @@ abstract class AppLocalizations {
   /// **'Press back again to exit'**
   String get press_back_to_exit;
 
-  /// Title for storage permission request
+  /// Title for the permission request banner
   ///
   /// In en, this message translates to:
-  /// **'Storage Permission Required'**
+  /// **'Give Permission'**
   String get storage_permission_required;
 
-  /// Message shown when storage permission is granted
+  /// Title shown when all permissions are granted
   ///
   /// In en, this message translates to:
-  /// **'Storage Permission Granted'**
+  /// **'All permissions given'**
   String get storage_permission_granted;
 
-  /// Description explaining why storage permission is needed
+  /// Description text for the permission request
   ///
   /// In en, this message translates to:
-  /// **'Solar needs storage permission to download files and save them to your device. This allows you to access your downloads later.'**
+  /// **'This app needs permission to access files for download functionality.'**
   String get storage_permission_description;
 
-  /// Button text to grant storage permission
+  /// Description text shown when all permissions are granted
   ///
   /// In en, this message translates to:
-  /// **'Grant Permission'**
+  /// **'The app should now work normally with full functionality.'**
+  String get app_should_work_normally;
+
+  /// Text for the permission grant button
+  ///
+  /// In en, this message translates to:
+  /// **'Give Permission'**
   String get grant_permission;
 
   /// Message shown when storage permission is denied

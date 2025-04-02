@@ -186,8 +186,11 @@
     "description": "Message shown when user needs to press back again to exit the app"
   },
   "error_opening_file": "Erreur lors de l'ouverture du fichier. Veuillez installer une application appropriée pour ouvrir ce type de fichier.",
-  "storage_permission_required": "Permission de stockage requise",
-  "storage_permission_denied": "La permission de stockage est requise pour télécharger des fichiers",
+  "storage_permission_required": "Donner la Permission",
+  "storage_permission_description": "Cette application nécessite une autorisation pour accéder aux fichiers pour la fonctionnalité de téléchargement.",
+  "storage_permission_granted": "Toutes les permissions accordées",
+  "app_should_work_normally": "L'application devrait maintenant fonctionner normalement avec toutes les fonctionnalités.",
+  "grant_permission": "Donner la Permission",
   "download_in_progress": "Téléchargement en cours",
   "download_paused": "Téléchargement en pause",
   "download_canceled": "Téléchargement annulé",

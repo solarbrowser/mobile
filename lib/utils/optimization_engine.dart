@@ -9,21 +9,26 @@ class OptimizationEngine {
   static const int MAX_ACTIVE_TABS = 5;
   static const Duration TAB_SUSPEND_TIMEOUT = Duration(minutes: 5);
   
-  final WebViewController controller;
+  final WebViewController? controller;
   final Map<String, Timer> _tabTimers = {};
   final Map<String, bool> _suspendedTabs = {};
 
-  OptimizationEngine(this.controller);
+  // Regular constructor
+  OptimizationEngine([this.controller]);
 
   // Initialize optimization engine
   Future<void> initialize() async {
-    await _injectOptimizationScripts();
-    _setupTabManagement();
+    if (controller != null) {
+      await _injectOptimizationScripts();
+      _setupTabManagement();
+    }
   }
 
   // Inject core optimization scripts
   Future<void> _injectOptimizationScripts() async {
-    await controller.runJavaScript('''
+    if (controller == null) return;
+    
+    await controller!.runJavaScript('''
       // Core optimization script
       (() => {
         // Viewport optimization
@@ -635,7 +640,7 @@ class OptimizationEngine {
   // Setup tab management
   void _setupTabManagement() {
     // Start timer for current tab
-    _startTabTimer(controller.hashCode.toString());
+    _startTabTimer(controller?.hashCode.toString() ?? '');
   }
 
   // Start timer for tab suspension
@@ -648,16 +653,18 @@ class OptimizationEngine {
   Future<void> _suspendTab(String tabId) async {
     if (!_suspendedTabs.containsKey(tabId)) {
       _suspendedTabs[tabId] = true;
-      await controller.runJavaScript('''
-        // Suspend tab resources
-        document.querySelectorAll('img, video, iframe').forEach(el => {
-          if (el instanceof HTMLMediaElement) {
-            el.pause();
-          }
-          el.src = '';
-        });
-        window.ramOptimizer.clearCaches();
-      ''');
+      if (controller != null) {
+        await controller!.runJavaScript('''
+          // Suspend tab resources
+          document.querySelectorAll('img, video, iframe').forEach(el => {
+            if (el instanceof HTMLMediaElement) {
+              el.pause();
+            }
+            el.src = '';
+          });
+          window.ramOptimizer.clearCaches();
+        ''');
+      }
     }
   }
 
@@ -665,7 +672,9 @@ class OptimizationEngine {
   Future<void> resumeTab(String tabId) async {
     if (_suspendedTabs[tabId] == true) {
       _suspendedTabs[tabId] = false;
-      await controller.reload();
+      if (controller != null) {
+        await controller!.reload();
+      }
       _startTabTimer(tabId);
     }
   }
@@ -678,11 +687,13 @@ class OptimizationEngine {
         final content = utf8.decode(response.bodyBytes);
         
         // Process content through JavaScript ADRCMV handler
-        final processedContent = await controller.runJavaScriptReturningResult(
-          'ADRCMVHandler.processADRCMV(`${content}`)'
-        );
-        
-        return processedContent.toString();
+        if (controller != null) {
+          final processedContent = await controller!.runJavaScriptReturningResult(
+            'ADRCMVHandler.processADRCMV(`${content}`)'
+          );
+          return processedContent.toString();
+        }
+        return content;
       }
       throw Exception('Failed to load ADRCMV file');
     } catch (e) {
@@ -693,215 +704,219 @@ class OptimizationEngine {
 
   // Handle navigation to optimize page load
   Future<void> onPageStartLoad(String url) async {
-    await controller.runJavaScript('''
-      // Initialize ViewportOptimizer
-      window.ViewportOptimizer = class {
-        constructor() {
-          this.observer = null;
-          this.init();
-        }
-
-        init() {
-          try {
-            // Wait for document to be ready
-            if (document.readyState === 'loading') {
-              document.addEventListener('DOMContentLoaded', () => this.setupObserver());
-            } else {
-              this.setupObserver();
-            }
-          } catch (e) {
-            console.error('ViewportOptimizer init error:', e);
+    if (controller != null) {
+      await controller!.runJavaScript('''
+        // Initialize ViewportOptimizer
+        window.ViewportOptimizer = class {
+          constructor() {
+            this.observer = null;
+            this.init();
           }
-        }
 
-        setupObserver() {
-          try {
-            // Ensure we have a valid document body
-            if (!document.body) return;
-            
-            this.observer = new MutationObserver((mutations) => {
-              mutations.forEach((mutation) => {
-                if (mutation.type === 'childList') {
-                  this.optimizeAddedNodes(mutation.addedNodes);
-                }
-              });
-            });
-
-            this.observer.observe(document.body, {
-              childList: true,
-              subtree: true
-            });
-
-            // Initial optimization
-            this.optimizeVisibleContent();
-          } catch (e) {
-            console.error('ViewportOptimizer setup error:', e);
-          }
-        }
-
-        optimizeAddedNodes(nodes) {
-          nodes.forEach(node => {
-            if (node.nodeType === Node.ELEMENT_NODE) {
-              this.optimizeElement(node);
-            }
-          });
-        }
-
-        optimizeElement(element) {
-          if (element.tagName === 'IMG') {
-            this.optimizeImage(element);
-          } else if (element.tagName === 'VIDEO') {
-            this.optimizeVideo(element);
-          }
-        }
-
-        optimizeImage(img) {
-          if (!img.loading) {
-            img.loading = 'lazy';
-          }
-          if (!img.decoding) {
-            img.decoding = 'async';
-          }
-        }
-
-        optimizeVideo(video) {
-          video.preload = 'metadata';
-          video.autoplay = false;
-        }
-
-        optimizeVisibleContent() {
-          const elements = document.querySelectorAll('img, video');
-          elements.forEach(element => this.optimizeElement(element));
-        }
-      }
-
-      // Initialize PerformanceOptimizer
-      window.PerformanceOptimizer = class {
-        constructor() {
-          this.init();
-        }
-
-        init() {
-          // Optimize favicons
-          this.handleFavicons();
-          
-          // Optimize performance
-          this.optimizePerformance();
-          
-          // Handle scroll performance
-          this.setupScrollOptimization();
-        }
-
-        handleFavicons() {
-          const links = document.querySelectorAll('link[rel*="icon"]');
-          links.forEach(link => {
-            const newLink = link.cloneNode();
-            newLink.onerror = () => {
-              // On error, try data URL fallback
-              newLink.href = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
-            };
-            link.parentNode.replaceChild(newLink, link);
-          });
-        }
-
-        optimizePerformance() {
-          // Optimize CSS animations
-          this.optimizeCSSAnimations();
-          
-          // Optimize event listeners
-          this.optimizeEventListeners();
-          
-          // Optimize DOM updates
-          this.optimizeDOMUpdates();
-        }
-
-        optimizeCSSAnimations() {
-          const style = document.createElement('style');
-          style.textContent = `
-            * {
-              animation-duration: 0.001s !important;
-              animation-delay: 0s !important;
-              transition-duration: 0.001s !important;
-            }
-          `;
-          document.head.appendChild(style);
-          
-          // Re-enable animations after initial load
-          setTimeout(() => {
-            document.head.removeChild(style);
-          }, 1000);
-        }
-
-        optimizeEventListeners() {
-          // Use passive event listeners
-          const supportsPassive = false;
-          try {
-            window.addEventListener("test", null, { 
-              get passive() { supportsPassive = true; return true; }
-            });
-          } catch(e) {}
-          
-          if (supportsPassive) {
-            const wheelOpts = { passive: true };
-            window.addEventListener('wheel', () => {}, wheelOpts);
-            window.addEventListener('touchstart', () => {}, wheelOpts);
-          }
-        }
-
-        optimizeDOMUpdates() {
-          // Batch DOM updates
-          if (window.requestAnimationFrame) {
-            let scheduled = false;
-            const updates = [];
-            
-            window.batchUpdate = (fn) => {
-              updates.push(fn);
-              if (!scheduled) {
-                scheduled = true;
-                requestAnimationFrame(() => {
-                  const fns = updates.splice(0);
-                  fns.forEach(f => f());
-                  scheduled = false;
-                });
+          init() {
+            try {
+              // Wait for document to be ready
+              if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', () => this.setupObserver());
+              } else {
+                this.setupObserver();
               }
-            };
+            } catch (e) {
+              console.error('ViewportOptimizer init error:', e);
+            }
+          }
+
+          setupObserver() {
+            try {
+              // Ensure we have a valid document body
+              if (!document.body) return;
+              
+              this.observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                  if (mutation.type === 'childList') {
+                    this.optimizeAddedNodes(mutation.addedNodes);
+                  }
+                });
+              });
+
+              this.observer.observe(document.body, {
+                childList: true,
+                subtree: true
+              });
+
+              // Initial optimization
+              this.optimizeVisibleContent();
+            } catch (e) {
+              console.error('ViewportOptimizer setup error:', e);
+            }
+          }
+
+          optimizeAddedNodes(nodes) {
+            nodes.forEach(node => {
+              if (node.nodeType === Node.ELEMENT_NODE) {
+                this.optimizeElement(node);
+              }
+            });
+          }
+
+          optimizeElement(element) {
+            if (element.tagName === 'IMG') {
+              this.optimizeImage(element);
+            } else if (element.tagName === 'VIDEO') {
+              this.optimizeVideo(element);
+            }
+          }
+
+          optimizeImage(img) {
+            if (!img.loading) {
+              img.loading = 'lazy';
+            }
+            if (!img.decoding) {
+              img.decoding = 'async';
+            }
+          }
+
+          optimizeVideo(video) {
+            video.preload = 'metadata';
+            video.autoplay = false;
+          }
+
+          optimizeVisibleContent() {
+            const elements = document.querySelectorAll('img, video');
+            elements.forEach(element => this.optimizeElement(element));
           }
         }
 
-        setupScrollOptimization() {
-          let ticking = false;
-          window.addEventListener('scroll', () => {
-            if (!ticking) {
-              window.requestAnimationFrame(() => {
-                // Optimize visible elements
-                if (window.viewportOptimizer) {
-                  window.viewportOptimizer.optimizeVisibleContent();
-                }
-                ticking = false;
-              });
-              ticking = true;
-            }
-          }, { passive: true });
-        }
-      }
+        // Initialize PerformanceOptimizer
+        window.PerformanceOptimizer = class {
+          constructor() {
+            this.init();
+          }
 
-      // Initialize optimizers
-      window.viewportOptimizer = new ViewportOptimizer();
-      window.performanceOptimizer = new PerformanceOptimizer();
-    ''');
+          init() {
+            // Optimize favicons
+            this.handleFavicons();
+            
+            // Optimize performance
+            this.optimizePerformance();
+            
+            // Handle scroll performance
+            this.setupScrollOptimization();
+          }
+
+          handleFavicons() {
+            const links = document.querySelectorAll('link[rel*="icon"]');
+            links.forEach(link => {
+              const newLink = link.cloneNode();
+              newLink.onerror = () => {
+                // On error, try data URL fallback
+                newLink.href = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+              };
+              link.parentNode.replaceChild(newLink, link);
+            });
+          }
+
+          optimizePerformance() {
+            // Optimize CSS animations
+            this.optimizeCSSAnimations();
+            
+            // Optimize event listeners
+            this.optimizeEventListeners();
+            
+            // Optimize DOM updates
+            this.optimizeDOMUpdates();
+          }
+
+          optimizeCSSAnimations() {
+            const style = document.createElement('style');
+            style.textContent = `
+              * {
+                animation-duration: 0.001s !important;
+                animation-delay: 0s !important;
+                transition-duration: 0.001s !important;
+              }
+            `;
+            document.head.appendChild(style);
+            
+            // Re-enable animations after initial load
+            setTimeout(() => {
+              document.head.removeChild(style);
+            }, 1000);
+          }
+
+          optimizeEventListeners() {
+            // Use passive event listeners
+            const supportsPassive = false;
+            try {
+              window.addEventListener("test", null, { 
+                get passive() { supportsPassive = true; return true; }
+              });
+            } catch(e) {}
+            
+            if (supportsPassive) {
+              const wheelOpts = { passive: true };
+              window.addEventListener('wheel', () => {}, wheelOpts);
+              window.addEventListener('touchstart', () => {}, wheelOpts);
+            }
+          }
+
+          optimizeDOMUpdates() {
+            // Batch DOM updates
+            if (window.requestAnimationFrame) {
+              let scheduled = false;
+              const updates = [];
+              
+              window.batchUpdate = (fn) => {
+                updates.push(fn);
+                if (!scheduled) {
+                  scheduled = true;
+                  requestAnimationFrame(() => {
+                    const fns = updates.splice(0);
+                    fns.forEach(f => f());
+                    scheduled = false;
+                  });
+                }
+              };
+            }
+          }
+
+          setupScrollOptimization() {
+            let ticking = false;
+            window.addEventListener('scroll', () => {
+              if (!ticking) {
+                window.requestAnimationFrame(() => {
+                  // Optimize visible elements
+                  if (window.viewportOptimizer) {
+                    window.viewportOptimizer.optimizeVisibleContent();
+                  }
+                  ticking = false;
+                });
+                ticking = true;
+              }
+            }, { passive: true });
+          }
+        }
+
+        // Initialize optimizers
+        window.viewportOptimizer = new ViewportOptimizer();
+        window.performanceOptimizer = new PerformanceOptimizer();
+      ''');
+    }
   }
 
   // Handle page finish loading
   Future<void> onPageFinishLoad(String url) async {
-    await controller.runJavaScript('''
-      try {
-        if (window.viewportOptimizer) {
-          window.viewportOptimizer.optimizeVisibleContent();
+    if (controller != null) {
+      await controller!.runJavaScript('''
+        try {
+          if (window.viewportOptimizer) {
+            window.viewportOptimizer.optimizeVisibleContent();
+          }
+        } catch (e) {
+          console.error('Error optimizing content:', e);
         }
-      } catch (e) {
-        console.error('Error optimizing content:', e);
-      }
-    ''');
+      ''');
+    }
   }
 
   // Clean up resources

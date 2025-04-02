@@ -488,19 +488,22 @@ class AppLocalizationsDe extends AppLocalizations {
   String get press_back_to_exit => 'Drücken Sie erneut zum Beenden';
 
   @override
-  String get storage_permission_required => 'Speicherberechtigung erforderlich';
+  String get storage_permission_required => 'Berechtigung erteilen';
 
   @override
-  String get storage_permission_granted => 'Storage Permission Granted';
+  String get storage_permission_granted => 'Alle Berechtigungen erteilt';
 
   @override
-  String get storage_permission_description => 'Solar needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
+  String get storage_permission_description => 'Diese App benötigt die Berechtigung für den Zugriff auf Dateien für die Download-Funktionalität.';
 
   @override
-  String get grant_permission => 'Grant Permission';
+  String get app_should_work_normally => 'Die App sollte jetzt mit voller Funktionalität normal funktionieren.';
 
   @override
-  String get storage_permission_denied => 'Speicherberechtigung ist zum Herunterladen von Dateien erforderlich';
+  String get grant_permission => 'Berechtigung erteilen';
+
+  @override
+  String get storage_permission_denied => 'Storage permission is required to download files';
 
   @override
   String get new_incognito_tab => 'Neuer Inkognito-Tab';

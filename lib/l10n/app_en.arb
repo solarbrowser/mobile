@@ -242,21 +242,25 @@
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
   },
-  "storage_permission_required": "Storage Permission Required",
+  "storage_permission_required": "Give Permission",
   "@storage_permission_required": {
-    "description": "Title for storage permission request"
+    "description": "Title for the permission request banner"
   },
-  "storage_permission_granted": "Storage Permission Granted",
+  "storage_permission_granted": "All permissions given",
   "@storage_permission_granted": {
-    "description": "Message shown when storage permission is granted"
+    "description": "Title shown when all permissions are granted"
   },
-  "storage_permission_description": "Solar needs storage permission to download files and save them to your device. This allows you to access your downloads later.",
+  "storage_permission_description": "This app needs permission to access files for download functionality.",
   "@storage_permission_description": {
-    "description": "Description explaining why storage permission is needed"
+    "description": "Description text for the permission request"
   },
-  "grant_permission": "Grant Permission",
+  "app_should_work_normally": "The app should now work normally with full functionality.",
+  "@app_should_work_normally": {
+    "description": "Description text shown when all permissions are granted"
+  },
+  "grant_permission": "Give Permission",
   "@grant_permission": {
-    "description": "Button text to grant storage permission"
+    "description": "Text for the permission grant button"
   },
   "storage_permission_denied": "Storage permission is required to download files",
   "@storage_permission_denied": {

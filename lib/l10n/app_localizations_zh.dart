@@ -488,16 +488,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get press_back_to_exit => '再按一次退出';
 
   @override
-  String get storage_permission_required => 'Storage Permission Required';
+  String get storage_permission_required => 'Give Permission';
 
   @override
   String get storage_permission_granted => '已授予存储权限';
 
   @override
-  String get storage_permission_description => 'Solar needs storage permission to download files and save them to your device. This allows you to access your downloads later.';
+  String get storage_permission_description => 'This app needs permission to access files for download functionality.';
 
   @override
-  String get grant_permission => 'Grant Permission';
+  String get app_should_work_normally => 'The app should now work normally with full functionality.';
+
+  @override
+  String get grant_permission => 'Give Permission';
 
   @override
   String get storage_permission_denied => 'Storage permission is required to download files';

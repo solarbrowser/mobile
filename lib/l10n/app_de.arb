@@ -188,8 +188,11 @@
     "description": "Message shown when user needs to press back again to exit the app"
   },
   "error_opening_file": "Fehler beim Öffnen der Datei. Bitte installieren Sie eine geeignete App zum Öffnen dieses Dateityps.",
-  "storage_permission_required": "Speicherberechtigung erforderlich",
-  "storage_permission_denied": "Speicherberechtigung ist zum Herunterladen von Dateien erforderlich",
+  "storage_permission_required": "Berechtigung erteilen",
+  "storage_permission_description": "Diese App benötigt die Berechtigung für den Zugriff auf Dateien für die Download-Funktionalität.",
+  "storage_permission_granted": "Alle Berechtigungen erteilt",
+  "app_should_work_normally": "Die App sollte jetzt mit voller Funktionalität normal funktionieren.",
+  "grant_permission": "Berechtigung erteilen",
   "download_in_progress": "Download läuft",
   "download_paused": "Download pausiert",
   "download_canceled": "Download abgebrochen",
