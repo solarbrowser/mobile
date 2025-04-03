@@ -25,18 +25,13 @@ class UpdateScreen extends StatefulWidget {
 }
 
 class _UpdateScreenState extends State<UpdateScreen> with SingleTickerProviderStateMixin {
-  late PageController _pageController;
   late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
-  late Animation<double> _scaleAnimation;
   late Animation<double> _floatAnimation;
-  int _currentPage = 0;
-  bool _showSkip = true;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+    
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 2000),
       vsync: this,
@@ -57,7 +52,6 @@ class _UpdateScreenState extends State<UpdateScreen> with SingleTickerProviderSt
 
   @override
   void dispose() {
-    _pageController.dispose();
     _animationController.dispose();
     super.dispose();
   }
@@ -73,6 +67,7 @@ class _UpdateScreenState extends State<UpdateScreen> with SingleTickerProviderSt
       MaterialPageRoute(
         builder: (context) => BrowserScreen(
           onLocaleChange: widget.onLocaleChange,
+          initialClassicMode: true, // Start with classic mode enabled
         ),
       ),
     );
@@ -112,188 +107,19 @@ class _UpdateScreenState extends State<UpdateScreen> with SingleTickerProviderSt
   }
 
   Widget _buildParticleBackground() {
-    return CustomAnimationBuilder<double>(
-      tween: 0.0.tweenTo(2 * 3.14),
-      duration: const Duration(seconds: 10),
-      builder: (context, value, child) {
-        return CustomPaint(
-          painter: ParticlePainter(
-            angle: value,
-            isDarkMode: Theme.of(context).brightness == Brightness.dark,
-          ),
-          child: child,
-        );
-      },
-      child: Container(),
-    );
-  }
-
-  Widget _buildWelcomePage() {
-    final size = MediaQuery.of(context).size;
-    final isLargeScreen = size.width > 600;
-
-    return Stack(
-      children: [
-        _buildParticleBackground(),
-        Center(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: size.width * 0.08,
-              ),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: isLargeScreen ? 600 : size.width * 0.84,
-                  ),
-                  child: AnimatedBuilder(
-                    animation: _floatAnimation,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: Offset(0, _floatAnimation.value),
-                        child: _buildGlassmorphicContainer(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: size.width * 0.05,
-                              vertical: size.height * 0.03,
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Hero(
-                                  tag: 'logo',
-                                  child: Image.asset(
-                                    'assets/icon.png',
-                                    width: isLargeScreen ? 120 : 80,
-                                    height: isLargeScreen ? 120 : 80,
-                                  ),
-                                ),
-                                SizedBox(height: size.height * 0.02),
-                                ShaderMask(
-                                  shaderCallback: (bounds) => LinearGradient(
-                                    colors: [
-                                      ThemeManager.textColor(),
-                                      ThemeManager.textSecondaryColor(),
-                                    ],
-                                  ).createShader(bounds),
-                                  child: Text(
-                                    AppLocalizations.of(context)!.updated,
-                                    style: TextStyle(
-                                      fontSize: isLargeScreen ? 32 : 24,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                                SizedBox(height: size.height * 0.015),
-                                Text(
-                                  AppLocalizations.of(context)!.version(widget.currentVersion),
-                                  style: TextStyle(
-                                    fontSize: isLargeScreen ? 18 : 14,
-                                    color: ThemeManager.textSecondaryColor(),
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
+    return Positioned.fill(
+      child: CustomAnimationBuilder<double>(
+        tween: 0.0.tweenTo(2 * 3.14),
+        duration: const Duration(seconds: 10),
+        builder: (context, value, child) {
+          return CustomPaint(
+            painter: ParticlePainter(
+              angle: value,
+              isDarkMode: Theme.of(context).brightness == Brightness.dark,
             ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  List<Map<String, String>> _getUpdateNotes() {
-    return [
-      {
-        'title': AppLocalizations.of(context)!.update1,
-        'description': AppLocalizations.of(context)!.update1desc,
-      },
-      {
-        'title': AppLocalizations.of(context)!.update2,
-        'description': AppLocalizations.of(context)!.update2desc,
-      },
-      {
-        'title': AppLocalizations.of(context)!.update3,
-        'description': AppLocalizations.of(context)!.update3desc,
-      },
-      {
-        'title': AppLocalizations.of(context)!.update4,
-        'description': AppLocalizations.of(context)!.update4desc,
-      },
-    ];
-  }
-
-  Widget _buildUpdatePage(String title, String description) {
-    final size = MediaQuery.of(context).size;
-    final isLargeScreen = size.width > 600;
-
-    return Stack(
-      children: [
-        _buildParticleBackground(),
-        Center(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: size.width * 0.08,
-                vertical: size.height * 0.05,
-              ),
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: isLargeScreen ? 600 : size.width * 0.84,
-                  ),
-                  child: _buildGlassmorphicContainer(
-                    child: Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.all(24),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ShaderMask(
-                            shaderCallback: (bounds) => LinearGradient(
-                              colors: [
-                                ThemeManager.textColor(),
-                                ThemeManager.textSecondaryColor(),
-                              ],
-                            ).createShader(bounds),
-                            child: Text(
-                              title,
-                              style: TextStyle(
-                                fontSize: isLargeScreen ? 28 : 22,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: size.height * 0.02),
-                          Text(
-                            description,
-                            style: TextStyle(
-                              fontSize: isLargeScreen ? 16 : 14,
-                              color: ThemeManager.textColor(),
-                              height: 1.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
+          );
+        },
+      ),
     );
   }
 
@@ -302,7 +128,6 @@ class _UpdateScreenState extends State<UpdateScreen> with SingleTickerProviderSt
     final size = MediaQuery.of(context).size;
     final isLargeScreen = size.width > 600;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final updateNotes = _getUpdateNotes();
 
     return Scaffold(
       backgroundColor: ThemeManager.backgroundColor(),
@@ -319,123 +144,93 @@ class _UpdateScreenState extends State<UpdateScreen> with SingleTickerProviderSt
         child: SafeArea(
           child: Stack(
             children: [
-              PageView(
-                controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentPage = index;
-                  });
-                },
-                children: [
-                  _buildWelcomePage(),
-                  ...updateNotes.map((note) => _buildUpdatePage(note['title']!, note['description']!)).toList(),
-                ],
-              ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
+              // Background particles
+              _buildParticleBackground(),
+              
+              // Main content
+              Center(
                 child: Padding(
-                  padding: EdgeInsets.only(
-                    left: size.width * 0.05,
-                    right: size.width * 0.05,
-                    bottom: size.height * 0.03,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: size.width * 0.08,
                   ),
-                  child: _buildGlassmorphicContainer(
-                    child: Container(
-                      height: isLargeScreen ? 72 : 56,
-                      padding: EdgeInsets.symmetric(horizontal: size.width * 0.05),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          if (_currentPage > 0)
-                            TextButton(
-                              onPressed: () {
-                                _pageController.previousPage(
-                                  duration: const Duration(milliseconds: 500),
-                                  curve: Curves.easeInOutCubic,
-                                );
-                                setState(() {
-                                  _showSkip = true;
-                                });
-                              },
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                minimumSize: Size(isLargeScreen ? 80 : 60, isLargeScreen ? 48 : 36),
-                              ),
-                              child: Text(
-                                AppLocalizations.of(context)!.back,
-                                style: TextStyle(
-                                  color: ThemeManager.textSecondaryColor(),
-                                  fontSize: isLargeScreen ? 18 : 15,
-                                ),
-                              ),
-                            )
-                          else if (_showSkip)
-                            TextButton(
-                              onPressed: _handleContinue,
-                              style: TextButton.styleFrom(
-                                padding: EdgeInsets.zero,
-                                minimumSize: Size(isLargeScreen ? 80 : 60, isLargeScreen ? 48 : 36),
-                              ),
-                              child: Text(
-                                'Skip',
-                                style: TextStyle(
-                                  color: ThemeManager.textSecondaryColor(),
-                                  fontSize: isLargeScreen ? 18 : 15,
-                                ),
-                              ),
-                            )
-                          else
-                            SizedBox(width: isLargeScreen ? 80 : 60),
-                          Row(
-                            children: List.generate(updateNotes.length + 1, (index) => Padding(
-                              padding: EdgeInsets.symmetric(horizontal: isLargeScreen ? 4 : 2),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 300),
-                                width: _currentPage == index ? (isLargeScreen ? 24 : 16) : (isLargeScreen ? 8 : 6),
-                                height: isLargeScreen ? 8 : 6,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(isLargeScreen ? 4 : 3),
-                                  color: _currentPage == index
-                                    ? ThemeManager.textColor()
-                                    : ThemeManager.textSecondaryColor(),
-                                ),
-                              ),
-                            )),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              if (_currentPage < updateNotes.length) {
-                                _pageController.nextPage(
-                                  duration: const Duration(milliseconds: 500),
-                                  curve: Curves.easeInOutCubic,
-                                );
-                                setState(() {
-                                  _showSkip = false;
-                                });
-                              } else {
-                                _handleContinue();
-                              }
-                            },
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              minimumSize: Size(isLargeScreen ? 80 : 60, isLargeScreen ? 48 : 36),
-                            ),
-                            child: Text(
-                              _currentPage < updateNotes.length
-                                ? AppLocalizations.of(context)!.next
-                                : AppLocalizations.of(context)!.getStarted,
-                              style: TextStyle(
-                                color: ThemeManager.textColor(),
-                                fontWeight: FontWeight.bold,
-                                fontSize: isLargeScreen ? 18 : 15,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Logo
+                      AnimatedBuilder(
+                        animation: _floatAnimation,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset: Offset(0, _floatAnimation.value),
+                            child: Hero(
+                              tag: 'logo',
+                              child: Image.asset(
+                                'assets/icon.png',
+                                width: isLargeScreen ? 150 : 100,
+                                height: isLargeScreen ? 150 : 100,
                               ),
                             ),
-                          ),
-                        ],
+                          );
+                        },
                       ),
-                    ),
+                      SizedBox(height: size.height * 0.04),
+                      
+                      // Localized "Solar Updated!" text
+                      ShaderMask(
+                        shaderCallback: (bounds) => LinearGradient(
+                          colors: [
+                            ThemeManager.textColor(),
+                            ThemeManager.textSecondaryColor(),
+                          ],
+                        ).createShader(bounds),
+                        child: Text(
+                          AppLocalizations.of(context)!.updated,
+                          style: TextStyle(
+                            fontSize: isLargeScreen ? 36 : 28,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      SizedBox(height: size.height * 0.02),
+                      
+                      // Version number
+                      Text(
+                        AppLocalizations.of(context)!.version(widget.currentVersion),
+                        style: TextStyle(
+                          fontSize: isLargeScreen ? 20 : 16,
+                          color: ThemeManager.textSecondaryColor(),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: size.height * 0.08),
+                      
+                      // OK button
+                      _buildGlassmorphicContainer(
+                        child: ElevatedButton(
+                          onPressed: _handleContinue,
+                          style: ElevatedButton.styleFrom(
+                            foregroundColor: ThemeManager.textColor(),
+                            backgroundColor: Colors.transparent,
+                            elevation: 0,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: size.width * 0.15,
+                              vertical: isLargeScreen ? 18 : 14,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                          ),
+                          child: Text(
+                            'OK',
+                            style: TextStyle(
+                              fontSize: isLargeScreen ? 20 : 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -458,7 +253,7 @@ class ParticlePainter extends CustomPainter {
     final paint = Paint()
       ..style = PaintingStyle.fill;
 
-    final particleCount = 50;
+    final particleCount = 30; // Reduced particle count
     final centerX = size.width / 2;
     final centerY = size.height / 2;
     final random = Random(42); // Fixed seed for consistent pattern
@@ -468,9 +263,9 @@ class ParticlePainter extends CustomPainter {
       final x = centerX + radius * cos(angle + i * 0.2);
       final y = centerY + radius * sin(angle + i * 0.2);
       
-      final baseSize = 1.0 + (i / particleCount) * 4.0;
+      final baseSize = 0.8 + (i / particleCount) * 3.0; // Smaller particles
       final randomSize = baseSize * (0.5 + random.nextDouble());
-      final opacity = 0.05 + (random.nextDouble() * 0.1);
+      final opacity = 0.03 + (random.nextDouble() * 0.05); // Lower opacity
       
       paint.color = (isDarkMode ? Colors.white : Colors.black).withOpacity(opacity);
       canvas.drawCircle(Offset(x, y), randomSize, paint);

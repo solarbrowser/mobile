@@ -12,6 +12,9 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:app_settings/app_settings.dart';
 import '../utils/theme_manager.dart';
+import 'package:flutter/gestures.dart';
+import '../utils/legal_texts.dart';
+import '../widgets/custom_dialog.dart' show showCustomDialog;
 
 class WelcomeScreen extends StatefulWidget {
   final Function(String) onLocaleChange;
@@ -334,6 +337,28 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                       ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          final String currentLocale = Localizations.localeOf(context).languageCode;
+                          showCustomDialog(
+                            context: context,
+                            title: AppLocalizations.of(context)!.terms_of_use,
+                            content: LegalTexts.getTermsOfUse(currentLocale),
+                            isDarkMode: ThemeManager.getCurrentTheme().isDark,
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text(
+                                  AppLocalizations.of(context)!.close,
+                                  style: TextStyle(
+                                    color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                     ),
                     TextSpan(
                       text: ' & ',
@@ -349,6 +374,28 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                       ),
+                      recognizer: TapGestureRecognizer()
+                        ..onTap = () {
+                          final String currentLocale = Localizations.localeOf(context).languageCode;
+                          showCustomDialog(
+                            context: context,
+                            title: AppLocalizations.of(context)!.privacy_policy,
+                            content: LegalTexts.getPrivacyPolicy(currentLocale),
+                            isDarkMode: ThemeManager.getCurrentTheme().isDark,
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text(
+                                  AppLocalizations.of(context)!.close,
+                                  style: TextStyle(
+                                    color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                     ),
                   ],
                 ),

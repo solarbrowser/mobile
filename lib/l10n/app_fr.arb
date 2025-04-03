@@ -154,8 +154,8 @@
   "allow_once": "Autoriser une fois",
   "allow_always": "Toujours autoriser",
   "block": "Bloquer",
-  "blocked_popups": "Pop-ups bloquées",
-  "no_blocked_popups": "Aucune pop-up bloquée",
+  "blocked_popups": "Pop-ups bloqués",
+  "no_blocked_popups": "Aucun pop-up bloqué",
   "allow_popups_from": "Autoriser les pop-ups de {domain}",
   "@allow_popups_from": {
     "description": "Message affiché lors de l'autorisation des pop-ups d'un domaine spécifique",
@@ -246,5 +246,7 @@
     "description": "Description for fourth update"
   },
   "searchTheWeb": "Rechercher sur le web",
-  "recentSearches": "Recherches récentes"
+  "recentSearches": "Recherches récentes",
+  "classic_navigation": "Navigation Classique",
+  "classic_navigation_description": "Afficher les boutons de navigation en bas de l'écran"
 } 

@@ -387,6 +387,21 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get install_packages_permission => 'Install Packages Permission';
+
+  @override
+  String get install_packages_permission_description => 'Allow installation of apps from this browser';
+
+  @override
+  String get permission_install_packages_required => 'Install packages permission required';
+
+  @override
+  String get storage_permission_install_packages_required => 'Storage & Install Packages Permission';
+
+  @override
+  String get storage_permission_install_packages_description => 'Solar Browser needs permission to access storage for downloads and install packages for APK installations';
+
+  @override
   String get clear_downloads_history_confirm => '这只会清除下载历史，不会删除已下载的文件。';
 
   @override
@@ -448,8 +463,14 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String allow_popups_from(String domain) {
-    return '允许来自 $domain 的弹窗';
+    return '允许来自 $domain 的弹出窗口';
   }
+
+  @override
+  String get classic_navigation => '经典导航';
+
+  @override
+  String get classic_navigation_description => '在屏幕底部显示导航按钮';
 
   @override
   String get exit_confirmation => '退出应用';

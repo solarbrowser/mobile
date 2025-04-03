@@ -226,5 +226,7 @@
   "recentSearches": "最近の検索",
   "storage_permission_granted": "ストレージ権限が付与されました",
   "summary_length": "要約の長さ",
-  "summary_language": "要約の言語"
+  "summary_language": "要約の言語",
+  "classic_navigation": "クラシックナビゲーション",
+  "classic_navigation_description": "画面下部にナビゲーションボタンを表示"
 } 

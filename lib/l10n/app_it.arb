@@ -249,5 +249,8 @@
   "storage_permission_granted": "Autorizzazione di archiviazione concessa",
   
   "summary_length": "Lunghezza del riassunto",
-  "summary_language": "Lingua del riassunto"
+  "summary_language": "Lingua del riassunto",
+  
+  "classic_navigation": "Navigazione Classica",
+  "classic_navigation_description": "Mostra i pulsanti di navigazione nella parte inferiore dello schermo"
 } 

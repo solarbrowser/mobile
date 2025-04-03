@@ -160,7 +160,7 @@
   "block": "拦截",
   "blocked_popups": "已拦截的弹窗",
   "no_blocked_popups": "没有被拦截的弹窗",
-  "allow_popups_from": "允许来自 {domain} 的弹窗",
+  "allow_popups_from": "允许来自 {domain} 的弹出窗口",
   "@allow_popups_from": {
     "description": "允许特定域名弹窗时显示的消息",
     "placeholders": {
@@ -233,5 +233,8 @@
   "storage_permission_granted": "已授予存储权限",
   
   "summary_length": "摘要长度",
-  "summary_language": "摘要语言"
+  "summary_language": "摘要语言",
+  
+  "classic_navigation": "经典导航",
+  "classic_navigation_description": "在屏幕底部显示导航按钮"
 } 

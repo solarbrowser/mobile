@@ -254,5 +254,8 @@
   "storage_permission_granted": "Permissão de armazenamento concedida",
   
   "summary_length": "Comprimento do resumo",
-  "summary_language": "Idioma do resumo"
+  "summary_language": "Idioma do resumo",
+  
+  "classic_navigation": "Navegação Clássica",
+  "classic_navigation_description": "Exibir botões de navegação na parte inferior da tela"
 } 

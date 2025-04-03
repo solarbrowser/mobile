@@ -155,6 +155,14 @@ class _MyAppState extends State<MyApp> {
   void _handleThemeChange(bool isDarkMode) {
     setState(() {
       _isDarkMode = isDarkMode;
+      
+      // Force complete rebuild of the app with the new theme
+      ThemeManager.setIsDarkMode(isDarkMode);
+    });
+    
+    // Save the theme preference
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setBool('darkMode', isDarkMode);
     });
   }
 
@@ -240,6 +248,8 @@ class _MyAppState extends State<MyApp> {
           } else {
             return BrowserScreen(
               onLocaleChange: _handleLocaleChange,
+              onThemeChange: _handleThemeChange,
+              onSearchEngineChange: _handleSearchEngineChange,
             );
           }
         },

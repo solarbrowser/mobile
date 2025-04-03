@@ -290,5 +290,7 @@
   "@previous_summaries": {
     "description": "Label for accessing previously generated summaries"
   },
-  "storage_permission_granted": "Depolama izni verildi"
+  "storage_permission_granted": "Depolama izni verildi",
+  "classic_navigation": "Klasik Navigasyon",
+  "classic_navigation_description": "Ekranın altında gezinme düğmelerini göster"
 } 

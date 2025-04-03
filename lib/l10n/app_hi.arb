@@ -246,5 +246,7 @@
     "description": "Description for fourth update"
   },
   "searchTheWeb": "वेब खोजें",
-  "recentSearches": "हाल की खोजें"
+  "recentSearches": "हाल की खोजें",
+  "classic_navigation": "क्लासिक नेविगेशन",
+  "classic_navigation_description": "स्क्रीन के निचले हिस्से में नेविगेशन बटन दिखाएं"
 } 

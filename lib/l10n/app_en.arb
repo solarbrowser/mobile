@@ -165,6 +165,11 @@
       }
     }
   },
+  "install_packages_permission": "Install Packages Permission",
+  "install_packages_permission_description": "Allow installation of apps from this browser",
+  "permission_install_packages_required": "Install packages permission required",
+  "storage_permission_install_packages_required": "Storage & Install Packages Permission",
+  "storage_permission_install_packages_description": "Solar Browser needs permission to access storage for downloads and install packages for APK installations",
   "clear_downloads_history_confirm": "This will only clear the downloads history, not the downloaded files.",
   "clear_downloads_history_title": "Clear Downloads History",
   "slide_up_panel": "Slide up panel",
@@ -194,6 +199,14 @@
         "example": "example.com"
       }
     }
+  },
+  "classic_navigation": "Classic Navigation",
+  "@classic_navigation": {
+    "description": "Option to enable classic navigation mode with buttons at the bottom"
+  },
+  "classic_navigation_description": "Show navigation buttons at the bottom of the screen",
+  "@classic_navigation_description": {
+    "description": "Description text for classic navigation mode setting"
   },
   "exit_confirmation": "Exit App",
   "flutter_version": "Flutter Version",

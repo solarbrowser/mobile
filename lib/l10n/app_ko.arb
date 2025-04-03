@@ -165,7 +165,7 @@
   "just_now": "방금 전",
   "blocked_popups": "차단된 팝업",
   "no_blocked_popups": "차단된 팝업 없음",
-  "allow_popups_from": "{domain}의 팝업 허용",
+  "allow_popups_from": "{domain}에서 팝업 허용",
   "@allow_popups_from": {
     "description": "특정 도메인의 팝업을 허용할 때 표시되는 메시지",
     "placeholders": {
@@ -226,5 +226,8 @@
   "storage_permission_granted": "저장소 권한이 승인되었습니다",
   
   "summary_length": "요약 길이",
-  "summary_language": "요약 언어"
+  "summary_language": "요약 언어",
+  
+  "classic_navigation": "클래식 내비게이션",
+  "classic_navigation_description": "화면 하단에 탐색 버튼 표시"
 } 

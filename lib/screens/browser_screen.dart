@@ -14,6 +14,7 @@ import 'dart:ui';
 import '../l10n/app_localizations.dart';
 import '../models/tab_info.dart';
 import '../utils/browser_utils.dart';
+import '../utils/legal_texts.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
@@ -58,12 +59,14 @@ class BrowserScreen extends StatefulWidget {
   final Function(String)? onLocaleChange;
   final Function(bool)? onThemeChange;
   final Function(String)? onSearchEngineChange;
+  final bool initialClassicMode;
 
   const BrowserScreen({
     Key? key,
     this.onLocaleChange,
     this.onThemeChange,
     this.onSearchEngineChange,
+    this.initialClassicMode = true,
   }) : super(key: key);
 
   @override
@@ -210,7 +213,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   String _displayUrl = '';
   bool _isUrlBarExpanded = false;
   bool isSecurityPanelVisible = false;
-  bool _isClassicMode = false; // Add declaration for classic mode
+  bool _isClassicMode = false; // Changed to default false
   String securityMessage = '';
   String currentLanguage = 'en';
   DateTime lastScrollEvent = DateTime.now();
@@ -357,6 +360,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     super.initState();
     
     print("BrowserScreen initState called"); // Debug print
+    
+    // Set classic mode from widget parameter
+    _isClassicMode = widget.initialClassicMode;
     
     // Start by initializing controllers
     _initializeControllers();
@@ -715,8 +721,17 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       showImages = prefs.getBool('showImages') ?? true;
       currentSearchEngine = prefs.getString('searchEngine') ?? 'Google';
       currentLanguage = prefs.getString('language') ?? 'en';
-      _isClassicMode = prefs.getBool('isClassicMode') ?? false; // Load classic mode preference
+      
+      // Use widget parameter for classic mode or fall back to preference
+      if (widget.initialClassicMode) {
+        _isClassicMode = true;
+      } else {
+        _isClassicMode = prefs.getBool('isClassicMode') ?? false;
+      }
     });
+    
+    // Save updated classic mode preference
+    await prefs.setBool('isClassicMode', _isClassicMode);
     
     // Update UI to reflect theme
     _updateSystemBars();
@@ -1560,35 +1575,41 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   Future<String> _getCurrentLanguageName() async {
     final prefs = await SharedPreferences.getInstance();
-    final currentLocale = prefs.getString('locale') ?? 'en';
+    final currentLocale = prefs.getString('language') ?? 'en';
     final languages = {
       'en': 'English',
       'tr': 'Türkçe',
       'es': 'Español',
       'ar': 'العربية',
-      'hi': 'हिन्दी',
+      'de': 'Deutsch',
+      'fr': 'Français',
+      'it': 'Italiano',
+      'ja': '日本語',
+      'ko': '한국어',
+      'pt': 'Português',
       'ru': 'Русский',
       'zh': '中文',
+      'hi': 'हिन्दी',
     };
     return languages[currentLocale] ?? 'English';
   }
 
   Future<String> _getCurrentSearchEngine() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('search_engine') ?? 'Google';
+    return prefs.getString('searchEngine') ?? currentSearchEngine;
   }
 
   void _showGeneralSettings() {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => Scaffold(
           backgroundColor: ThemeManager.backgroundColor(),
           appBar: AppBar(
             backgroundColor: ThemeManager.backgroundColor(),
             elevation: 0,
             leading: IconButton(
               icon: Icon(
-                Icons.arrow_back,
+                Icons.chevron_left,
                 color: ThemeManager.textColor(),
               ),
               onPressed: () => Navigator.pop(context),
@@ -1601,38 +1622,59 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               ),
             ),
           ),
-          body: ListView(
-            children: [
-              _buildSettingsSection(
-                title: AppLocalizations.of(context)!.general,
+          body: FutureBuilder<Map<String, String>>(
+            future: _getGeneralSettingsInfo(),
+            builder: (context, snapshot) {
+              final data = snapshot.data ?? {'language': 'English', 'searchEngine': 'Google'};
+              
+              return ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 children: [
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.language,
-                    trailing: Icon(
-                      Icons.chevron_right,
-                      color: ThemeManager.textSecondaryColor(),
-                      size: 20,
-                    ),
-                    onTap: () => _showLanguageSelection(context),
-                    isFirst: true,
-                  ),
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.search_engine,
-                    trailing: Icon(
-                      Icons.chevron_right,
-                      color: ThemeManager.textSecondaryColor(),
-                      size: 20,
-                    ),
-                    onTap: () => _showSearchEngineSelection(context),
-                    isLast: true,
+                  _buildSettingsSection(
+                    title: AppLocalizations.of(context)!.general,
+                    children: [
+                      _buildSettingsItem(
+                        title: AppLocalizations.of(context)!.language,
+                        subtitle: data['language'],
+                        onTap: () => _showLanguageSelection(context),
+                        isFirst: true,
+                      ),
+                      _buildSettingsItem(
+                        title: AppLocalizations.of(context)!.search_engine,
+                        subtitle: data['searchEngine'],
+                        onTap: () => _showSearchEngineSelection(context),
+                        isLast: true,
+                      ),
+                    ],
                   ),
                 ],
-              ),
-            ],
+              );
+            }
           ),
         ),
+        transitionDuration: const Duration(milliseconds: 300),
+        reverseTransitionDuration: const Duration(milliseconds: 300),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          const curve = Curves.easeInOutCubic;
+          
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var offsetAnimation = animation.drive(tween);
+          
+          return SlideTransition(position: offsetAnimation, child: child);
+        },
       ),
     );
+  }
+
+  Future<Map<String, String>> _getGeneralSettingsInfo() async {
+    final languageName = await _getCurrentLanguageName();
+    final searchEngine = await _getCurrentSearchEngine();
+    return {
+      'language': languageName,
+      'searchEngine': searchEngine,
+    };
   }
 
   void _showClearBrowserDataDialog() {
@@ -1744,17 +1786,24 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       );
     }
     
-    // Only show arrow for main settings items
+    // Only show arrow for main settings items in certain cases
     if (trailing == null && onTap != null) {
-      if (!searchEngines.keys.contains(title) && 
-          !title.contains('हिन्दी') && !title.contains('English') && 
-          !title.contains('Türkçe') && !title.contains('Español') && 
-          !title.contains('Français') && !title.contains('Deutsch') && 
-          !title.contains('Italiano') && !title.contains('Português') && 
-          !title.contains('Русский') && !title.contains('中文') && 
-          !title.contains('日本語') && !title.contains('العربية') &&
-          !title.contains('Language') && !title.contains('Search Engine') &&
-          !title.contains('한국어')) {
+      // Skip adding chevron_right for individual language options and summary length options
+      bool shouldSkipArrow = searchEngines.keys.contains(title) || 
+          title.contains('हिन्दी') || title.contains('English') || 
+          title.contains('Türkçe') || title.contains('Español') || 
+          title.contains('Français') || title.contains('Deutsch') || 
+          title.contains('Italiano') || title.contains('Português') || 
+          title.contains('Русский') || title.contains('中文') || 
+          title.contains('日本語') || title.contains('العربية') ||
+          title.contains('한국어') ||
+          title.contains(AppLocalizations.of(context)!.summary_length_short) ||
+          title.contains(AppLocalizations.of(context)!.summary_length_medium) ||
+          title.contains(AppLocalizations.of(context)!.summary_length_long) ||
+          title.contains(AppLocalizations.of(context)!.summary_language_english) ||
+          title.contains(AppLocalizations.of(context)!.summary_language_turkish);
+
+      if (!shouldSkipArrow) {
         trailingWidget = Icon(
           Icons.chevron_right,
           color: ThemeManager.textColor(),
@@ -1882,18 +1931,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   void _showLanguageSelection(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
+      _createSettingsRoute(
+        Scaffold(
           backgroundColor: ThemeManager.backgroundColor(),
           appBar: AppBar(
             backgroundColor: ThemeManager.backgroundColor(),
             elevation: 0,
-            systemOverlayStyle: _transparentNavBar,
             leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back,
-                color: ThemeManager.textColor(),
-              ),
+              icon: Icon(Icons.chevron_left, color: ThemeManager.textColor()),
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
@@ -1904,27 +1949,108 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               ),
             ),
           ),
-          body: ListView(
-            padding: const EdgeInsets.only(top: 8, bottom: 24),
+          body: FutureBuilder<String>(
+            future: _getCurrentLanguageName(),
+            builder: (context, snapshot) {
+              final currentLanguage = snapshot.data ?? 'English';
+              
+              return ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             children: [
               _buildSettingsSection(
                 title: AppLocalizations.of(context)!.chooseLanguage,
-                children: supportedLocales.map((locale) {
-                  final isSelected = Localizations.localeOf(context).languageCode == locale.languageCode;
-                  return _buildSettingsItem(
-                    title: _getLanguageName(locale.languageCode),
-                    trailing: isSelected ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
-                    onTap: () {
-                      setState(() => _currentLocale = locale.languageCode);
-                      widget.onLocaleChange?.call(locale.languageCode);
-                      Navigator.pop(context);
-                    },
-                    isFirst: locale == supportedLocales.first,
-                    isLast: locale == supportedLocales.last,
-                  );
-                }).toList(),
-              ),
-            ],
+                    children: [
+                      _buildSettingsItem(
+                        title: 'English',
+                        trailing: currentLanguage == 'English' 
+                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
+                          : null,
+                        onTap: () => _setLocale('en'),
+                        isFirst: true,
+                      ),
+                      _buildSettingsItem(
+                        title: 'Türkçe',
+                        trailing: currentLanguage == 'Türkçe' 
+                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
+                          : null,
+                        onTap: () => _setLocale('tr'),
+                      ),
+                      _buildSettingsItem(
+                        title: 'Español',
+                        trailing: currentLanguage == 'Español' 
+                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
+                          : null,
+                        onTap: () => _setLocale('es'),
+                      ),
+                      _buildSettingsItem(
+                        title: 'العربية',
+                        trailing: currentLanguage == 'العربية' 
+                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
+                          : null,
+                        onTap: () => _setLocale('ar'),
+                      ),
+                      _buildSettingsItem(
+                        title: 'Deutsch',
+                        trailing: currentLanguage == 'Deutsch' 
+                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
+                          : null,
+                        onTap: () => _setLocale('de'),
+                      ),
+                      _buildSettingsItem(
+                        title: 'Français',
+                        trailing: currentLanguage == 'Français' 
+                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
+                          : null,
+                        onTap: () => _setLocale('fr'),
+                      ),
+                      _buildSettingsItem(
+                        title: 'Italiano',
+                        trailing: currentLanguage == 'Italiano' 
+                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
+                          : null,
+                        onTap: () => _setLocale('it'),
+                      ),
+                      _buildSettingsItem(
+                        title: '日本語',
+                        trailing: currentLanguage == '日本語' 
+                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
+                          : null,
+                        onTap: () => _setLocale('ja'),
+                      ),
+                      _buildSettingsItem(
+                        title: '한국어',
+                        trailing: currentLanguage == '한국어' 
+                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
+                          : null,
+                        onTap: () => _setLocale('ko'),
+                      ),
+                      _buildSettingsItem(
+                        title: 'Português',
+                        trailing: currentLanguage == 'Português' 
+                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
+                          : null,
+                        onTap: () => _setLocale('pt'),
+                      ),
+                      _buildSettingsItem(
+                        title: 'Русский',
+                        trailing: currentLanguage == 'Русский' 
+                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
+                          : null,
+                        onTap: () => _setLocale('ru'),
+                      ),
+                      _buildSettingsItem(
+                        title: '中文',
+                        trailing: currentLanguage == '中文' 
+                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
+                          : null,
+                        onTap: () => _setLocale('zh'),
+                        isLast: true,
+                      ),
+                    ],
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -1933,84 +2059,86 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   void _showSearchEngineSelection(BuildContext context) {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          backgroundColor: ThemeManager.backgroundColor(),
-          appBar: AppBar(
-            backgroundColor: ThemeManager.backgroundColor(),
-            elevation: 0,
-            systemOverlayStyle: _transparentNavBar,
-            leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back,
-                color: ThemeManager.textColor(),
+      _createSettingsRoute(
+        StatefulBuilder(
+          builder: (BuildContext context, StateSetter setSearchEngineScreenState) {
+            return Scaffold(
+              backgroundColor: ThemeManager.backgroundColor(),
+              appBar: AppBar(
+                backgroundColor: ThemeManager.backgroundColor(),
+                elevation: 0,
+                leading: IconButton(
+                  icon: Icon(Icons.chevron_left, color: ThemeManager.textColor()),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                title: Text(
+                  AppLocalizations.of(context)!.search_engine,
+                    style: TextStyle(
+                    color: ThemeManager.textColor(),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              AppLocalizations.of(context)!.search_engine,
-                style: TextStyle(
-                color: ThemeManager.textColor(),
-                fontWeight: FontWeight.bold,
+              body: FutureBuilder<String>(
+                future: _getCurrentSearchEngine(),
+                builder: (context, snapshot) {
+                  final currentSearchEngine = snapshot.data ?? 'Google';
+                  
+                  return ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    children: [
+                      _buildSettingsSection(
+                        title: AppLocalizations.of(context)!.chooseSearchEngine,
+                        children: searchEngines.keys.map((engine) {
+                          return _buildSettingsItem(
+                            title: engine,
+                            trailing: currentSearchEngine == engine
+                              ? Icon(Icons.check, color: ThemeManager.primaryColor())
+                              : null,
+                            onTap: () {
+                              // Set search engine and update both screens
+                              _setSearchEngine(engine, setSearchEngineScreenState);
+                            },
+                            isFirst: engine == searchEngines.keys.first,
+                            isLast: engine == searchEngines.keys.last,
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  );
+                },
               ),
-            ),
-          ),
-          body: ListView(
-            padding: const EdgeInsets.only(top: 8, bottom: 24),
-            children: [
-              _buildSettingsSection(
-                title: AppLocalizations.of(context)!.chooseSearchEngine,
-                children: [
-                  _buildSettingsItem(
-                    title: 'Google',
-                    onTap: () => _setSearchEngine('Google'),
-                    isFirst: true,
-                    trailing: currentSearchEngine == 'Google' ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
-                  ),
-                  _buildSettingsItem(
-                    title: 'Bing',
-                    onTap: () => _setSearchEngine('Bing'),
-                    trailing: currentSearchEngine == 'Bing' ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
-                  ),
-                  _buildSettingsItem(
-                    title: 'DuckDuckGo',
-                    onTap: () => _setSearchEngine('DuckDuckGo'),
-                    trailing: currentSearchEngine == 'DuckDuckGo' ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
-                  ),
-                  _buildSettingsItem(
-                    title: 'Brave',
-                    onTap: () => _setSearchEngine('Brave'),
-                    trailing: currentSearchEngine == 'Brave' ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
-                  ),
-                  _buildSettingsItem(
-                    title: 'Yahoo',
-                    onTap: () => _setSearchEngine('Yahoo'),
-                    trailing: currentSearchEngine == 'Yahoo' ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
-                  ),
-                  _buildSettingsItem(
-                    title: 'Yandex',
-                    onTap: () => _setSearchEngine('Yandex'),
-                    isLast: true,
-                    trailing: currentSearchEngine == 'Yandex' ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
-                  ),
-                ],
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
   }
 
-  void _setSearchEngine(String engine) {
+  void _setSearchEngine(String engine, [StateSetter? setSearchEngineScreenState]) {
     setState(() {
       currentSearchEngine = engine;
       if (_syncHomePageSearchEngine) {
         _homePageSearchEngine = engine;
       }
     });
+    
+    // Save to SharedPreferences
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString('searchEngine', engine);
+    });
+    
+    // Call the callback to update parent widgets
     widget.onSearchEngineChange?.call(engine);
-    Navigator.pop(context);
+    
+    // Update search engine selection screen if available
+    if (setSearchEngineScreenState != null) {
+      setSearchEngineScreenState(() {});
+      // Don't pop - stay on screen to see changes
+    } else {
+      // If not in StatefulBuilder context, pop as usual
+      Navigator.pop(context);
+    }
   }
 
   String _getSearchUrl(String query) {
@@ -2020,203 +2148,219 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   void _showAppearanceSettings() {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          backgroundColor: ThemeManager.backgroundColor(),
-          appBar: AppBar(
-            backgroundColor: ThemeManager.backgroundColor(),
-            elevation: 0,
-            systemOverlayStyle: _transparentNavBar,
-            leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back,
-                color: ThemeManager.textColor(),
+      _createSettingsRoute(
+        StatefulBuilder(
+          builder: (BuildContext context, StateSetter setAppearanceState) {
+            final currentThemeName = _getThemeName(ThemeManager.getCurrentTheme());
+            
+            return Scaffold(
+              backgroundColor: ThemeManager.backgroundColor(),
+              appBar: AppBar(
+                backgroundColor: ThemeManager.backgroundColor(),
+                elevation: 0,
+                leading: IconButton(
+                  icon: Icon(
+                    Icons.chevron_left,
+                    color: ThemeManager.textColor(),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                title: Text(
+                  AppLocalizations.of(context)!.appearance,
+                  style: TextStyle(
+                    color: ThemeManager.textColor(),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              AppLocalizations.of(context)!.appearance,
-              style: TextStyle(
-                color: ThemeManager.textColor(),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          body: ListView(
-            padding: const EdgeInsets.only(top: 8),
-            children: [
-              _buildSettingsSection(
-                title: 'Customize',
+              body: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 children: [
-                  _buildSettingsItem(
-                    title: 'Themes',
-                    trailing: Icon(
-                      Icons.chevron_right,
-              color: ThemeManager.textSecondaryColor(),
-                      size: 20,
-                    ),
-                    onTap: () => _showThemeSelection(context),
-                    isFirst: true,
+                  _buildSettingsSection(
+                    title: AppLocalizations.of(context)!.appearance,
+                    children: [
+                      _buildSettingsItem(
+                        title: 'Themes',
+                        subtitle: currentThemeName,
+                        onTap: () => _showThemeSelection(context, setAppearanceState),
+                        isFirst: true,
+                        isLast: false,
+                      ),
+                      _buildSettingsItem(
+                        title: AppLocalizations.of(context)!.text_size,
+                        subtitle: _getTextSizeLabel(),
+                        onTap: () => _showTextSizeSelection(context, setAppearanceState),
+                        isLast: true,
+                      ),
+                    ],
                   ),
-                  _buildSettingsItem(
-                    title: 'App Icon',
-                    trailing: Icon(
-                      Icons.chevron_right,
-                      color: ThemeManager.textSecondaryColor(),
-                      size: 20,
-                    ),
-                    onTap: () {
-                      // TODO: Implement app icon selection
-                    },
-                  ),
-                  _buildSettingsItem(
-                    title: 'Classic Mode',
-                    subtitle: 'Show classic navigation buttons at the bottom',
-                    trailing: Switch(
-                      value: _isClassicMode,
-                      onChanged: (value) {
-                        setState(() {
-                          _isClassicMode = value;
-                          _savePreferences();
-                        });
-                      },
-                      activeColor: ThemeManager.primaryColor(),
-                    ),
-                    onTap: () {
-                      setState(() {
-                        _isClassicMode = !_isClassicMode;
-                        _savePreferences();
-                      });
-                    },
-                    isLast: true,
+                  _buildSettingsSection(
+                    title: AppLocalizations.of(context)!.general,
+                    children: [
+                      _buildSettingsItem(
+                        title: AppLocalizations.of(context)!.classic_navigation,
+                        subtitle: AppLocalizations.of(context)!.classic_navigation_description,
+                        trailing: Switch(
+                          value: _isClassicMode,
+                          onChanged: (value) {
+                            setState(() {
+                              _isClassicMode = value;
+                              _savePreferences();
+                            });
+                            setAppearanceState(() {});
+                          },
+                          activeColor: ThemeManager.primaryColor(),
+                        ),
+                        onTap: () {
+                          setState(() {
+                            _isClassicMode = !_isClassicMode;
+                            _savePreferences();
+                          });
+                          setAppearanceState(() {});
+                        },
+                        isFirst: true,
+                        isLast: true,
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
+            );
+          }
         ),
       ),
     );
   }
 
-  void _showThemeSelection(BuildContext context) {
+  void _showThemeSelection(BuildContext context, [StateSetter? setAppearanceState]) {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => StatefulBuilder(
-          builder: (context, setState) => Scaffold(
-            backgroundColor: ThemeManager.backgroundColor(),
-            appBar: AppBar(
+      _createSettingsRoute(
+        StatefulBuilder(
+          builder: (BuildContext context, StateSetter setThemeScreenState) {
+            return Scaffold(
               backgroundColor: ThemeManager.backgroundColor(),
-              elevation: 0,
-              systemOverlayStyle: _transparentNavBar,
-              leading: IconButton(
-                icon: Icon(
-                  Icons.arrow_back,
-                  color: ThemeManager.textColor(),
+              appBar: AppBar(
+                backgroundColor: ThemeManager.backgroundColor(),
+                elevation: 0,
+                systemOverlayStyle: _transparentNavBar,
+                leading: IconButton(
+                  icon: Icon(
+                    Icons.chevron_left,
+                    color: ThemeManager.textColor(),
+                  ),
+                  onPressed: () => Navigator.pop(context),
                 ),
-                onPressed: () => Navigator.pop(context),
-              ),
-              title: Text(
-                'Themes',
-                style: TextStyle(
-                  color: ThemeManager.textColor(),
-                  fontWeight: FontWeight.bold,
+                title: Text(
+                  'Themes',
+                  style: TextStyle(
+                    color: ThemeManager.textColor(),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            body: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              children: [
-                ...ThemeType.values.map((theme) {
-                  if (theme == ThemeType.system) return const SizedBox.shrink();
-                  
-                  final colors = ThemeManager.getThemeColors(theme);
-                  final isSelected = ThemeManager.getCurrentTheme() == theme;
-                  
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    decoration: BoxDecoration(
-                      color: colors.surfaceColor,
-                      borderRadius: BorderRadius.circular(12),
-                      border: isSelected ? Border.all(
-                        color: colors.primaryColor,
-                        width: 2,
-                      ) : null,
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      title: Text(
-                        _getThemeName(theme),
-                        style: TextStyle(
-                          color: colors.textColor,
-                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              body: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                children: [
+                  ...ThemeType.values.map((theme) {
+                    if (theme == ThemeType.system) return const SizedBox.shrink();
+                    
+                    final colors = ThemeManager.getThemeColors(theme);
+                    final isSelected = ThemeManager.getCurrentTheme() == theme;
+                    
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: colors.backgroundColor,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isSelected 
+                            ? colors.primaryColor 
+                            : colors.textSecondaryColor.withOpacity(0.1),
+                          width: isSelected ? 2 : 1,
                         ),
                       ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (isSelected) 
-                            Container(
-                              margin: const EdgeInsets.only(right: 12),
-                              child: Icon(Icons.check, color: colors.primaryColor),
-                            ),
-                          ...[ 
-                            colors.primaryColor,
-                            colors.accentColor,
-                            colors.textColor,
-                            colors.surfaceColor,
-                            colors.secondaryColor,
-                          ].map((color) => Container(
-                            width: 24,
-                            height: 24,
-                            margin: const EdgeInsets.only(right: 4),
-                            decoration: BoxDecoration(
-                              color: color,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: colors.textSecondaryColor.withOpacity(0.2),
-                                width: 1,
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        title: Text(
+                          _getThemeName(theme),
+                          style: TextStyle(
+                            color: colors.textColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (isSelected) 
+                              Container(
+                                margin: const EdgeInsets.only(right: 12),
+                                child: Icon(Icons.check, color: colors.primaryColor),
                               ),
-                            ),
-                          )).toList(),
-                        ],
+                            ...[ 
+                              colors.primaryColor,
+                              colors.accentColor,
+                              colors.textColor,
+                              colors.surfaceColor,
+                              colors.secondaryColor,
+                            ].map((color) => Container(
+                              width: 24,
+                              height: 24,
+                              margin: const EdgeInsets.only(right: 4),
+                              decoration: BoxDecoration(
+                                color: color,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: colors.textSecondaryColor.withOpacity(0.2),
+                                  width: 1,
+                                ),
+                              ),
+                            )).toList(),
+                          ],
+                        ),
+                        onTap: () async {
+                          // Save and apply theme
+                          await ThemeManager.setTheme(theme);
+                          
+                          // Update both UIs
+                          setState(() {
+                            isDarkMode = theme.isDark;
+                          });
+                          
+                          // Update theme selection screen
+                          setThemeScreenState(() {
+                            // This rebuilds the theme selection screen
+                          });
+                          
+                          // Update appearance settings screen if it was provided
+                          if (setAppearanceState != null) {
+                            setAppearanceState(() {
+                              // This rebuilds the appearance settings screen
+                            });
+                          }
+                          
+                          // Update system bars
+                          _updateSystemBars();
+                          
+                          // Force immediate rebuild of entire app
+                          if (mounted) {
+                            setState(() {});
+                            // Force rebuild of parent widgets
+                            if (widget.onThemeChange != null) {
+                              widget.onThemeChange!(theme.isDark);
+                            }
+                          }
+                          
+                          // Don't pop back to appearance settings - keep user on theme selection screen
+                          // so they can see the changes immediately
+                          // Navigator.pop(context);
+                        },
                       ),
-                      onTap: () async {
-                        // Save and apply theme
-                        await ThemeManager.setTheme(theme);
-                        
-                        // Update dark mode state and trigger UI refresh
-                        setState(() {
-                          isDarkMode = theme.isDark;
-                        });
-                        this.setState(() {
-                          isDarkMode = theme.isDark;
-                        });
-                        
-                        // Also save theme preferences to SharedPreferences directly
-                        final prefs = await SharedPreferences.getInstance();
-                        await prefs.setString('selectedTheme', theme.name);
-                        await prefs.setBool('darkMode', theme.isDark);
-                        
-                        // Update system bars
-                        _updateSystemBars();
-                        
-                        // Notify any listeners about theme change
-                        if (widget.onThemeChange != null) {
-                          widget.onThemeChange!(theme.isDark);
-                        }
-                        
-                        // Pop both theme selection and appearance settings screens
-                        Navigator.of(context)
-                          ..pop() // Pop theme selection
-                          ..pop(); // Pop appearance settings
-                      },
-                    ),
-                  );
-                }).where((widget) => widget is! SizedBox).toList(),
-              ],
-            ),
-          ),
+                    );
+                  }).whereType<Widget>().toList(),
+                ],
+              ),
+            );
+          }
         ),
       ),
     );
@@ -2252,94 +2396,141 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
 
   String _getTextSizeLabel() {
-    if (_textSize == 0.8) return AppLocalizations.of(context)!.text_size_small;
-    if (_textSize == 1.0) return AppLocalizations.of(context)!.text_size_medium;
-    if (_textSize == 1.2) return AppLocalizations.of(context)!.text_size_large;
+    if (textScale == 0.8) return AppLocalizations.of(context)!.text_size_small;
+    if (textScale == 1.0) return AppLocalizations.of(context)!.text_size_medium;
+    if (textScale == 1.2) return AppLocalizations.of(context)!.text_size_large;
     return AppLocalizations.of(context)!.text_size_very_large;
   }
 
-  Future<void> _showTextSizeSelection(BuildContext context) async {
+  Future<void> _showTextSizeSelection(BuildContext context, [StateSetter? setAppearanceState]) async {
     await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          backgroundColor: ThemeManager.backgroundColor(),
-          appBar: AppBar(
-            backgroundColor: ThemeManager.backgroundColor(),
-            elevation: 0,
-            leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back,
-                color: ThemeManager.textColor(),
+      _createSettingsRoute(
+        StatefulBuilder(
+          builder: (BuildContext context, StateSetter setTextSizeState) {
+            return Scaffold(
+              backgroundColor: ThemeManager.backgroundColor(),
+              appBar: AppBar(
+                backgroundColor: ThemeManager.backgroundColor(),
+                elevation: 0,
+                leading: IconButton(
+                  icon: Icon(
+                    Icons.chevron_left,
+                    color: ThemeManager.textColor(),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                title: Text(
+                  AppLocalizations.of(context)!.text_size,
+                  style: TextStyle(
+                    color: ThemeManager.textColor(),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              AppLocalizations.of(context)!.text_size,
-              style: TextStyle(
-                color: ThemeManager.textColor(),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          body: ListView(
-            padding: const EdgeInsets.only(top: 8),
-            children: [
-              _buildSettingsSection(
-                title: AppLocalizations.of(context)!.text_size_description,
+              body: ListView(
+                padding: const EdgeInsets.only(top: 8),
                 children: [
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.text_size_small,
-                    trailing: _textSize == 0.8 ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
-                    onTap: () {
-                      setState(() => _textSize = 0.8);
-                      Navigator.pop(context);
-                    },
-                    isFirst: true,
-                    isLast: false,
-                  ),
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.text_size_medium,
-                    trailing: _textSize == 1.0 ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
-                    onTap: () {
-                      setState(() => _textSize = 1.0);
-                      Navigator.pop(context);
-                    },
-                    isFirst: false,
-                    isLast: false,
-                  ),
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.text_size_large,
-                    trailing: _textSize == 1.2 ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
-                    onTap: () {
-                      setState(() => _textSize = 1.2);
-                      Navigator.pop(context);
-                    },
-                    isFirst: false,
-                    isLast: false,
-                  ),
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.text_size_very_large,
-                    trailing: _textSize == 1.4 ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
-                    onTap: () {
-                      setState(() => _textSize = 1.4);
-                      Navigator.pop(context);
-                    },
-                    isFirst: false,
-                    isLast: true,
+                  _buildSettingsSection(
+                    title: AppLocalizations.of(context)!.text_size_description,
+                    children: [
+                      _buildSettingsItem(
+                        title: AppLocalizations.of(context)!.text_size_small,
+                        trailing: textScale == 0.8 ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
+                        onTap: () {
+                          _updateTextSize(0.8);
+                          // Update both screens
+                          setTextSizeState(() {});
+                          if (setAppearanceState != null) {
+                            setAppearanceState(() {});
+                          }
+                          // Stay on screen to see the changes
+                          // Navigator.pop(context);
+                        },
+                        isFirst: true,
+                        isLast: false,
+                      ),
+                      _buildSettingsItem(
+                        title: AppLocalizations.of(context)!.text_size_medium,
+                        trailing: textScale == 1.0 ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
+                        onTap: () {
+                          _updateTextSize(1.0);
+                          // Update both screens
+                          setTextSizeState(() {});
+                          if (setAppearanceState != null) {
+                            setAppearanceState(() {});
+                          }
+                          // Stay on screen to see the changes
+                          // Navigator.pop(context);
+                        },
+                        isFirst: false,
+                        isLast: false,
+                      ),
+                      _buildSettingsItem(
+                        title: AppLocalizations.of(context)!.text_size_large,
+                        trailing: textScale == 1.2 ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
+                        onTap: () {
+                          _updateTextSize(1.2);
+                          // Update both screens
+                          setTextSizeState(() {});
+                          if (setAppearanceState != null) {
+                            setAppearanceState(() {});
+                          }
+                          // Stay on screen to see the changes
+                          // Navigator.pop(context);
+                        },
+                        isFirst: false,
+                        isLast: false,
+                      ),
+                      _buildSettingsItem(
+                        title: AppLocalizations.of(context)!.text_size_very_large,
+                        trailing: textScale == 1.4 ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
+                        onTap: () {
+                          _updateTextSize(1.4);
+                          // Update both screens
+                          setTextSizeState(() {});
+                          if (setAppearanceState != null) {
+                            setAppearanceState(() {});
+                          }
+                          // Stay on screen to see the changes
+                          // Navigator.pop(context);
+                        },
+                        isFirst: false,
+                        isLast: true,
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
+            );
+          }
         ),
       ),
     );
   }
 
+  // Helper method for creating slide transitions for settings pages
+  PageRouteBuilder<dynamic> _createSettingsRoute(Widget page) {
+    return PageRouteBuilder(
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionDuration: const Duration(milliseconds: 300),
+      reverseTransitionDuration: const Duration(milliseconds: 300),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        const begin = Offset(1.0, 0.0);
+        const end = Offset.zero;
+        const curve = Curves.easeInOutCubic;
+        
+        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        var offsetAnimation = animation.drive(tween);
+        
+        return SlideTransition(position: offsetAnimation, child: child);
+      },
+    );
+  }
+
   void _showDownloadsSettings() {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
+      _createSettingsRoute(
+        Scaffold(
           backgroundColor: ThemeManager.backgroundColor(),
           appBar: AppBar(
             backgroundColor: ThemeManager.backgroundColor(),
@@ -2347,7 +2538,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             systemOverlayStyle: _transparentNavBar,
             leading: IconButton(
               icon: Icon(
-                Icons.arrow_back,
+                Icons.chevron_left,
                 color: ThemeManager.textColor(),
               ),
               onPressed: () => Navigator.pop(context),
@@ -2361,25 +2552,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             ),
           ),
           body: ListView(
-            padding: EdgeInsets.zero,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             children: [
               _buildSettingsSection(
-                title: AppLocalizations.of(context)!.downloads,
+                title: "AppLocalizations.of(context)!.downloads",
                 children: [
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.ask_download_location,
-                    trailing: Transform.scale(
-                      scale: 0.7,
-                      child: Switch(
-                        value: _askDownloadLocation,
-                        onChanged: (value) {
-                          setState(() => _askDownloadLocation = value);
-                        },
-                      ),
-                    ),
-                    isFirst: true,
-                    isLast: true,
-                  ),
                 ],
               ),
             ],
@@ -2391,8 +2568,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   void _showAISettings() {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
+      _createSettingsRoute(
+        Scaffold(
           backgroundColor: ThemeManager.backgroundColor(),
           appBar: AppBar(
             backgroundColor: ThemeManager.backgroundColor(),
@@ -2400,7 +2577,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             systemOverlayStyle: _transparentNavBar,
             leading: IconButton(
               icon: Icon(
-                Icons.arrow_back,
+                Icons.chevron_left,
                 color: ThemeManager.textColor(),
               ),
               onPressed: () => Navigator.pop(context),
@@ -2414,28 +2591,20 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             ),
           ),
           body: ListView(
-            padding: EdgeInsets.zero,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             children: [
               _buildSettingsSection(
                 title: AppLocalizations.of(context)!.ai_preferences,
                 children: [
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.summary_length,
-                    trailing: Icon(
-                      Icons.chevron_right,
-                      color: ThemeManager.textSecondaryColor(),
-                      size: 20,
-                    ),
+                    subtitle: _getCurrentSummaryLengthLabel(),
                     onTap: () => _showSummaryLengthSelection(),
                     isFirst: true,
                   ),
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.summary_language,
-                    trailing: Icon(
-                      Icons.chevron_right,
-                      color: ThemeManager.textSecondaryColor(),
-                      size: 20,
-                    ),
+                    subtitle: _getCurrentSummaryLanguageLabel(),
                     onTap: () => _showSummaryLanguageSelection(),
                     isLast: true,
                   ),
@@ -2448,18 +2617,43 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     );
   }
 
+  String _getCurrentSummaryLengthLabel() {
+    final length = AIManager.getCurrentSummaryLength();
+    switch (length) {
+      case SummaryLength.short:
+        return AppLocalizations.of(context)!.summary_length_short;
+      case SummaryLength.medium:
+        return AppLocalizations.of(context)!.summary_length_medium;
+      case SummaryLength.long:
+        return AppLocalizations.of(context)!.summary_length_long;
+      default:
+        return AppLocalizations.of(context)!.summary_length_medium;
+    }
+  }
+
+  String _getCurrentSummaryLanguageLabel() {
+    final language = AIManager.getCurrentSummaryLanguage();
+    switch (language) {
+      case SummaryLanguage.english:
+        return AppLocalizations.of(context)!.summary_language_english;
+      case SummaryLanguage.turkish:
+        return AppLocalizations.of(context)!.summary_language_turkish;
+      default:
+        return AppLocalizations.of(context)!.summary_language_english;
+    }
+  }
+
   void _showSummaryLengthSelection() {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
+      _createSettingsRoute(
+        Scaffold(
           backgroundColor: ThemeManager.backgroundColor(),
           appBar: AppBar(
             backgroundColor: ThemeManager.backgroundColor(),
             elevation: 0,
-            systemOverlayStyle: _transparentNavBar,
             leading: IconButton(
               icon: Icon(
-                Icons.arrow_back,
+                Icons.chevron_left,
                 color: ThemeManager.textColor(),
               ),
               onPressed: () => Navigator.pop(context),
@@ -2473,7 +2667,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             ),
           ),
           body: ListView(
-            padding: EdgeInsets.zero,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             children: [
               _buildSettingsSection(
                 title: AppLocalizations.of(context)!.summary_length,
@@ -2524,16 +2718,15 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   void _showSummaryLanguageSelection() {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
+      _createSettingsRoute(
+        Scaffold(
           backgroundColor: ThemeManager.backgroundColor(),
           appBar: AppBar(
             backgroundColor: ThemeManager.backgroundColor(),
             elevation: 0,
-            systemOverlayStyle: _transparentNavBar,
             leading: IconButton(
               icon: Icon(
-                Icons.arrow_back,
+                Icons.chevron_left,
                 color: ThemeManager.textColor(),
               ),
               onPressed: () => Navigator.pop(context),
@@ -2547,7 +2740,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             ),
           ),
           body: ListView(
-            padding: EdgeInsets.zero,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             children: [
               _buildSettingsSection(
                 title: AppLocalizations.of(context)!.summary_language,
@@ -2604,23 +2797,55 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
 
   void _showPrivacyPolicy() {
-    controller.loadRequest(Uri.parse('https://github.com/solarbrowser/mobile/wiki/privacy-policy'));
-    setState(() {
-      isSettingsVisible = false;
-    });
+    final String currentLocale = Localizations.localeOf(context).languageCode;
+    
+    showCustomDialog(
+      context: context,
+      title: AppLocalizations.of(context)!.privacy_policy,
+      content: LegalTexts.getPrivacyPolicy(currentLocale),
+      isDarkMode: isDarkMode,
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            AppLocalizations.of(context)!.close,
+            style: TextStyle(
+              color: ThemeManager.textColor(),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   void _showTermsOfUse() {
-    controller.loadRequest(Uri.parse('https://github.com/solarbrowser/mobile/wiki/terms-of-use'));
-    setState(() {
-      isSettingsVisible = false;
-    });
+    final String currentLocale = Localizations.localeOf(context).languageCode;
+    
+    showCustomDialog(
+      context: context,
+      title: AppLocalizations.of(context)!.terms_of_use,
+      content: LegalTexts.getTermsOfUse(currentLocale),
+      isDarkMode: isDarkMode,
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            AppLocalizations.of(context)!.close,
+            style: TextStyle(
+              color: ThemeManager.textColor(),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   Future<dynamic> _showAboutPage() {
     return Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
+      _createSettingsRoute(
+        Scaffold(
           backgroundColor: ThemeManager.backgroundColor(),
           appBar: AppBar(
             backgroundColor: ThemeManager.backgroundColor(),
@@ -2642,14 +2867,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             ),
           ),
           body: ListView(
-            padding: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             children: [
               _buildSettingsSection(
                 title: AppLocalizations.of(context)!.about,
                 children: [
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.app_name,
-                    subtitle: AppLocalizations.of(context)!.version('0.0.8'),
+                    subtitle: AppLocalizations.of(context)!.version('0.1.1'),
                     isFirst: true,
                     isLast: false,
                   ),
@@ -4357,8 +4582,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                           style: TextStyle(color: ThemeManager.textSecondaryColor()),
                         ),
                         onTap: () {
-                          Navigator.pop(context);
                           _loadUrl(item['url']);
+                          Navigator.pop(context);
                         },
                       );
                     },
@@ -4475,7 +4700,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               constraints: const BoxConstraints(),
             ),
             onTap: () {
-              controller.loadRequest(Uri.parse(url));
+              _loadUrl(url);
               Navigator.pop(context);
             },
           ),
@@ -4543,7 +4768,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           Expanded(
             child: ListView(
               physics: const BouncingScrollPhysics(),
-              padding: EdgeInsets.zero,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               children: [
                 _buildPermissionBanner(),
                 _buildSettingsSection(
@@ -4910,23 +5135,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
 
   Future<void> _removeBookmark(String url) async {
-    final prefs = await SharedPreferences.getInstance();
-    final bookmarksList = prefs.getStringList('bookmarks') ?? [];
-    
-    bookmarksList.removeWhere((item) {
-      try {
-        final Map<String, dynamic> decoded = json.decode(item);
-        return decoded['url'] == url;
-      } catch (e) {
-        return false;
-      }
-    });
-    
-    await prefs.setStringList('bookmarks', bookmarksList);
+    // First update the UI immediately for better responsiveness
+    final previousBookmarks = List<Map<String, dynamic>>.from(bookmarks);
     setState(() {
-      bookmarks = bookmarksList.map((e) => Map<String, dynamic>.from(json.decode(e))).toList();
+      bookmarks.removeWhere((item) => item['url'] == url);
     });
     
+    // Show notification
     _showNotification(
       Row(
         children: [
@@ -4944,23 +5159,48 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       ),
       duration: const Duration(seconds: 2),
     );
+    
+    // Then update persistent storage asynchronously
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final bookmarksList = prefs.getStringList('bookmarks') ?? [];
+      
+      bookmarksList.removeWhere((item) {
+        try {
+          final Map<String, dynamic> decoded = json.decode(item);
+          return decoded['url'] == url;
+        } catch (e) {
+          return false;
+        }
+      });
+      
+      await prefs.setStringList('bookmarks', bookmarksList);
+    } catch (e) {
+      // If storage update fails, revert UI
+      setState(() {
+        bookmarks = previousBookmarks;
+      });
+    }
   }
 
   Future<void> _addBookmark() async {
     final url = await controller.currentUrl();
+    if (url == null) return;
+    
     final title = await controller.getTitle() ?? 'Untitled';
-    final favicon = await BrowserUtils.getFaviconUrl(url ?? '');
     
-    final prefs = await SharedPreferences.getInstance();
-    final bookmarksList = prefs.getStringList('bookmarks') ?? [];
-    
-    // Check if URL already exists in bookmarks
-    bool isBookmarked = bookmarksList.any((item) => 
-      Map<String, dynamic>.from(json.decode(item))['url'] == url);
+    // Check if URL already exists in bookmarks - using local state for speed
+    bool isBookmarked = bookmarks.any((item) => item['url'] == url);
 
     if (isBookmarked) {
-      await _removeBookmark(url!);
-    } else {
+      // If already bookmarked, remove it
+      await _removeBookmark(url);
+      return;
+    }
+
+    // Get favicon in background
+    BrowserUtils.getFaviconUrl(url).then((favicon) async {
+      // Create bookmark object
     final bookmark = {
       'url': url,
       'title': title,
@@ -4968,15 +5208,24 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       'timestamp': DateTime.now().toIso8601String(),
     };
 
-      bookmarksList.insert(0, json.encode(bookmark));
-      await prefs.setStringList('bookmarks', bookmarksList);
-      
+      // Update UI immediately
       setState(() {
-        bookmarks = bookmarksList.map((e) => Map<String, dynamic>.from(json.decode(e))).toList();
+        bookmarks.insert(0, bookmark);
       });
       
+      // Show notification
       _showBookmarkAddedNotification();
-    }
+      
+      // Then update storage asynchronously
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final bookmarksList = prefs.getStringList('bookmarks') ?? [];
+        bookmarksList.insert(0, json.encode(bookmark));
+        await prefs.setStringList('bookmarks', bookmarksList);
+      } catch (e) {
+        print("Error saving bookmark: $e");
+      }
+    });
   }
 
   Future<void> _suspendTab(BrowserTab tab) async {
@@ -5149,7 +5398,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       borderRadius: BorderRadius.circular(28),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
+        child: Stack(
+          children: [
+            Container(
           width: width,
           height: 48,
           decoration: BoxDecoration(
@@ -5246,6 +5497,25 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               ],
             ),
           ),
+            ),
+            // Snake-like loading animation border
+            if (isLoading)
+              Positioned.fill(
+                child: IgnorePointer(
+                  child: AnimatedBuilder(
+                    animation: _loadingAnimation,
+                    builder: (context, child) {
+                      return CustomPaint(
+                        painter: LoadingBorderPainter(
+                          progress: _loadingAnimation.value,
+                          color: ThemeManager.primaryColor(),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
@@ -7608,7 +7878,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   Text(
                     isPWA 
                       ? AppLocalizations.of(context)?.remove_from_pwa ?? 'Remove from PWA'
-                      : AppLocalizations.of(context)?.add_to_pwa ?? 'Add to PWA',
+                      : AppLocalizations.of(context)?.add_to_pwa ?? 'Add as PWA',
                     style: TextStyle(
                       color: ThemeManager.textColor(),
                       fontSize: 14,
@@ -8431,333 +8701,31 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     print('Error type: ${error.errorType}');
     print('Failed URL: $url');
     
-    // Get error message and title based on error type
-    String errorTitle = 'Error Loading Page';
-    String errorMessage = 'The page could not be loaded.';
-    String errorCode = 'ERROR_UNKNOWN';
-    
-    // Extract error code from description if available
-    final errorCodeRegex = RegExp(r'ERR_\w+');
-    final match = errorCodeRegex.firstMatch(error.description);
-    if (match != null) {
-      errorCode = match.group(0) ?? 'ERROR_UNKNOWN';
-    }
-    
-    // Set more specific error messages based on error type
-    switch (error.errorType) {
-      case WebResourceErrorType.hostLookup:
-        errorTitle = 'Cannot Find Server';
-        errorMessage = 'Check your internet connection and try again.';
-        break;
-      case WebResourceErrorType.unsupportedScheme:
-        errorTitle = 'Unsupported Protocol';
-        errorMessage = 'The URL scheme is not supported.';
-        break;
-      case WebResourceErrorType.authentication:
-        errorTitle = 'Authentication Required';
-        errorMessage = 'The website requires authentication.';
-        break;
-      case WebResourceErrorType.tooManyRequests:
-        errorTitle = 'Too Many Requests';
-        errorMessage = 'This website is temporarily unavailable due to too many requests.';
-        break;
-      case WebResourceErrorType.badUrl:
-        errorTitle = 'Invalid URL';
-        errorMessage = 'The URL is malformed or invalid.';
-        break;
-      case WebResourceErrorType.unsafeResource:
-        errorTitle = 'Unsafe Resource';
-        errorMessage = 'This resource has been blocked for security reasons.';
-        break;
-      case WebResourceErrorType.webContentProcessTerminated:
-        errorTitle = 'Process Terminated';
-        errorMessage = 'The browser process was terminated unexpectedly.';
-        break;
-      default:
-        // Use generic error message
-        break;
-    }
-    
-    // If we have a specific error code in the description, use a more specific message
-    if (error.description.contains('ERR_NAME_NOT_RESOLVED')) {
-      errorTitle = 'Server Not Found';
-      errorMessage = 'The website address does not exist.';
-    } else if (error.description.contains('ERR_CONNECTION_REFUSED')) {
-      errorTitle = 'Connection Refused';
-      errorMessage = 'The server refused the connection.';
-    } else if (error.description.contains('ERR_CONNECTION_TIMED_OUT')) {
-      errorTitle = 'Connection Timeout';
-      errorMessage = 'The connection to the server timed out.';
-    } else if (error.description.contains('ERR_INTERNET_DISCONNECTED')) {
-      errorTitle = 'No Internet Connection';
-      errorMessage = 'Please check your internet connection and try again.';
-    } else if (error.description.contains('ERR_SSL_PROTOCOL_ERROR')) {
-      errorTitle = 'SSL Error';
-      errorMessage = 'There was a problem with the website\'s security certificate.';
-    } else if (error.description.contains('ERR_UNKNOWN_URL_SCHEME')) {
-      errorTitle = 'Unknown URL Scheme';
-      errorMessage = 'The URL scheme is not recognized.';
-    }
-    
-    try {
-      // Get the error template content directly instead of loading from assets
-      final html = getErrorHtml();
-      
-      // Replace placeholders with actual error details
-      final formattedHtml = html
-          .replaceAll('PAGE_TITLE', errorTitle)
-          .replaceAll('ERROR_MESSAGE', errorMessage)
-          .replaceAll('URL_PLACEHOLDER', url)
-          .replaceAll('ERROR_CODE_PLACEHOLDER', errorCode);
-      
-      // Load the error page
-      await controller.loadHtmlString(formattedHtml, baseUrl: 'file:///android_asset/main.html');
-      
-      // Update the tab info
-      if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-        setState(() {
-          tabs[currentTabIndex].title = errorTitle;
-        });
-      }
-    } catch (e) {
-      print('Error loading error page: $e');
+    // Update the tab info with error state
+    if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+      setState(() {
+        tabs[currentTabIndex].title = 'Error Loading Page';
+      });
     }
   }
 
-  String getErrorHtml() {
-    return '''<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Error Page</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-        }
-
-        body {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            color: #333;
-            background-color: #f8f9fa;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .dark-mode {
-            background-color: #1a1a1a;
-            color: #f0f0f0;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 540px;
-            background-color: #fff;
-            border-radius: 12px;
-            padding: 32px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .dark-mode .container {
-            background-color: #2a2a2a;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
-        }
-
-        .error-title {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 16px;
-        }
-
-        .error-message {
-            font-size: 16px;
-            margin-bottom: 24px;
-            opacity: 0.8;
-        }
-
-        .error-url {
-            font-size: 14px;
-            word-break: break-all;
-            margin-bottom: 16px;
-            opacity: 0.7;
-            padding: 12px;
-            background-color: #f5f5f5;
-            border-radius: 8px;
-            text-align: left;
-        }
-
-        .dark-mode .error-url {
-            background-color: #333;
-        }
-
-        .error-code {
-            font-family: monospace;
-            background-color: #f5f5f5;
-            border-radius: 8px;
-            padding: 12px;
-            margin-bottom: 32px;
-            font-size: 14px;
-            text-align: left;
-        }
-
-        .dark-mode .error-code {
-            background-color: #333;
-        }
-        
-        .copied {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 4px;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            border-radius: 8px;
-            border: none;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            flex: 1;
-            min-width: 120px;
-        }
-
-        .btn-primary {
-            background-color: #4285f4;
-            color: white;
-        }
-
-        .btn-secondary {
-            background-color: #f2f2f2;
-            color: #333;
-        }
-
-        .dark-mode .btn-secondary {
-            background-color: #3a3a3a;
-            color: #f0f0f0;
-        }
-
-        .btn-primary:hover {
-            background-color: #2b76f5;
-        }
-
-        .btn-secondary:hover {
-            background-color: #e5e5e5;
-        }
-
-        .dark-mode .btn-secondary:hover {
-            background-color: #444;
-        }
-
-        @media (max-width: 480px) {
-            .container {
-                padding: 24px 16px;
-            }
-            
-            .error-title {
-                font-size: 20px;
-            }
-            
-            .error-message {
-                font-size: 14px;
-            }
-            
-            .btn {
-                padding: 8px 16px;
-                font-size: 13px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1 class="error-title">PAGE_TITLE</h1>
-        <p class="error-message">ERROR_MESSAGE</p>
-        <div class="error-url" id="url-box" title="Click to copy">URL_PLACEHOLDER</div>
-        <div class="error-code">ERROR_CODE_PLACEHOLDER</div>
-        <div class="action-buttons">
-            <button class="btn btn-secondary" id="new-tab-button">New Tab</button>
-            <button class="btn btn-primary" id="try-again-button">Try Again</button>
-        </div>
-    </div>
+  // Add method to handle language changes
+  Future<void> _setLocale(String languageCode) async {
+    setState(() {
+      _currentLocale = languageCode;
+    });
     
-    <div class="copied" id="copied-notification">URL copied!</div>
-
-    <script>
-        // Check if dark mode should be applied
-        function checkDarkMode() {
-            // Try to get theme from localStorage
-            const theme = localStorage.getItem('theme');
-            if (theme === 'dark') {
-                document.body.classList.add('dark-mode');
-            }
-        }
-        
-        // Apply dark mode if needed
-        checkDarkMode();
-        
-        // Make URL box copyable
-        document.getElementById('url-box').addEventListener('click', function() {
-            const text = this.textContent;
-            navigator.clipboard.writeText(text).then(function() {
-                // Show copied notification
-                const notification = document.getElementById('copied-notification');
-                notification.style.opacity = '1';
-                setTimeout(function() {
-                    notification.style.opacity = '0';
-                }, 2000);
-            });
-        });
-        
-        // New Tab button - open homepage in a new tab
-        document.getElementById('new-tab-button').addEventListener('click', function() {
-            window.location.href = 'file:///android_asset/main.html';
-        });
-        
-        // Try Again button - reload with the problematic URL directly
-        document.getElementById('try-again-button').addEventListener('click', function() {
-            const urlElement = document.getElementById('url-box');
-            const url = urlElement.textContent.trim();
-            
-            if (url && url !== 'URL_PLACEHOLDER') {
-                // Try to fix scheme issues by adding https://
-                let fixedUrl = url;
-                if (!url.startsWith('http://') && !url.startsWith('https://') && !url.startsWith('file://')) {
-                    fixedUrl = 'https://' + url.replace('://', '');
-                }
-                window.location.href = fixedUrl;
-            } else {
-                window.location.reload();
-            }
-        });
-    </script>
-</body>
-</html>''';
+    // Save the selected language to SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('language', languageCode);
+    
+    // Notify the app about locale change
+    if (widget.onLocaleChange != null) {
+      widget.onLocaleChange!(languageCode);
+    }
+    
+    // Close the language selection screen
+    Navigator.pop(context);
   }
 }
 

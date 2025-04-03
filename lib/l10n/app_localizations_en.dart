@@ -387,6 +387,21 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get install_packages_permission => 'Install Packages Permission';
+
+  @override
+  String get install_packages_permission_description => 'Allow installation of apps from this browser';
+
+  @override
+  String get permission_install_packages_required => 'Install packages permission required';
+
+  @override
+  String get storage_permission_install_packages_required => 'Storage & Install Packages Permission';
+
+  @override
+  String get storage_permission_install_packages_description => 'Solar Browser needs permission to access storage for downloads and install packages for APK installations';
+
+  @override
   String get clear_downloads_history_confirm => 'This will only clear the downloads history, not the downloaded files.';
 
   @override
@@ -450,6 +465,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String allow_popups_from(String domain) {
     return 'Allow pop-ups from $domain';
   }
+
+  @override
+  String get classic_navigation => 'Classic Navigation';
+
+  @override
+  String get classic_navigation_description => 'Show navigation buttons at the bottom of the screen';
 
   @override
   String get exit_confirmation => 'Exit App';

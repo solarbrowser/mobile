@@ -861,6 +861,36 @@ abstract class AppLocalizations {
   /// **'Size: {size}'**
   String download_size(String size);
 
+  /// No description provided for @install_packages_permission.
+  ///
+  /// In en, this message translates to:
+  /// **'Install Packages Permission'**
+  String get install_packages_permission;
+
+  /// No description provided for @install_packages_permission_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow installation of apps from this browser'**
+  String get install_packages_permission_description;
+
+  /// No description provided for @permission_install_packages_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Install packages permission required'**
+  String get permission_install_packages_required;
+
+  /// No description provided for @storage_permission_install_packages_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage & Install Packages Permission'**
+  String get storage_permission_install_packages_required;
+
+  /// No description provided for @storage_permission_install_packages_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Solar Browser needs permission to access storage for downloads and install packages for APK installations'**
+  String get storage_permission_install_packages_description;
+
   /// No description provided for @clear_downloads_history_confirm.
   ///
   /// In en, this message translates to:
@@ -986,6 +1016,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Allow pop-ups from {domain}'**
   String allow_popups_from(String domain);
+
+  /// Option to enable classic navigation mode with buttons at the bottom
+  ///
+  /// In en, this message translates to:
+  /// **'Classic Navigation'**
+  String get classic_navigation;
+
+  /// Description text for classic navigation mode setting
+  ///
+  /// In en, this message translates to:
+  /// **'Show navigation buttons at the bottom of the screen'**
+  String get classic_navigation_description;
 
   /// No description provided for @exit_confirmation.
   ///

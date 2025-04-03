@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'ai_manager.dart';
 
 class GeminiService {
   static const String _apiKey = '';
@@ -13,13 +14,36 @@ class GeminiService {
     try {
       // Limit text length to avoid excessive token usage
       final truncatedText = text.length > 4000 ? text.substring(0, 4000) + '...' : text;
+      
+      // Get the current summary length preference
+      final summaryLength = AIManager.getCurrentSummaryLength();
+      String lengthInstruction;
+      int maxOutputTokens;
+      
+      switch (summaryLength) {
+        case SummaryLength.short:
+          lengthInstruction = "Provide a brief summary in about 75 words";
+          maxOutputTokens = 100;
+          break;
+        case SummaryLength.medium:
+          lengthInstruction = "Provide a medium-length summary in about 150 words";
+          maxOutputTokens = 200;
+          break;
+        case SummaryLength.long:
+          lengthInstruction = "Provide a detailed summary in about 250 words";
+          maxOutputTokens = 350;
+          break;
+        default:
+          lengthInstruction = "Provide a medium-length summary in about 150 words";
+          maxOutputTokens = 200;
+      }
 
       // For very short text, adjust the prompt
       final prompt = text.length < 100 
-        ? "Briefly describe what this text is about: $truncatedText"
+        ? "Briefly describe what this text is about in a few sentences: $truncatedText"
         : (isFullPage 
-            ? "Provide a comprehensive summary of this webpage content in 4-5 sentences, capturing the main points and key details:\n\n$truncatedText"
-            : "Provide a detailed summary of this text in 2-3 sentences, capturing the main points:\n\n$truncatedText");
+            ? "$lengthInstruction of this webpage content, capturing the main points and key details:\n\n$truncatedText"
+            : "$lengthInstruction of this text, capturing the main points:\n\n$truncatedText");
 
       final response = await http.post(
         Uri.parse('$_baseUrl?key=$_apiKey'),
@@ -42,7 +66,7 @@ class GeminiService {
           'generationConfig': {
             'temperature': 0.7,
             'candidateCount': 1,
-            'maxOutputTokens': 250,
+            'maxOutputTokens': maxOutputTokens,
             'topP': 0.95
           }
         }),

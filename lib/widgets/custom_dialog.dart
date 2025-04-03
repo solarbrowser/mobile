@@ -19,6 +19,9 @@ class CustomDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final maxHeight = screenSize.height * 0.7; // 70% of screen height
+    
     return AlertDialog(
       backgroundColor: ThemeManager.backgroundColor(),
       shape: RoundedRectangleBorder(
@@ -32,13 +35,29 @@ class CustomDialog extends StatelessWidget {
           fontSize: 18,
         ),
       ),
-      content: customContent ?? (content != null ? Text(
-        content!,
-        style: TextStyle(
-          color: ThemeManager.textSecondaryColor(),
-          fontSize: 16,
-        ),
-      ) : null),
+      content: customContent ?? (content != null 
+        ? ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: maxHeight - 120, // Account for title and buttons
+              maxWidth: screenSize.width * 0.8,
+            ),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Text(
+                  content!,
+                  style: TextStyle(
+                    color: ThemeManager.textSecondaryColor(),
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+          )
+        : null),
+      contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 10),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
       actions: actions,
     );
   }

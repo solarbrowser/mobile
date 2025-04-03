@@ -387,6 +387,21 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get install_packages_permission => 'Install Packages Permission';
+
+  @override
+  String get install_packages_permission_description => 'Allow installation of apps from this browser';
+
+  @override
+  String get permission_install_packages_required => 'Install packages permission required';
+
+  @override
+  String get storage_permission_install_packages_required => 'Storage & Install Packages Permission';
+
+  @override
+  String get storage_permission_install_packages_description => 'Solar Browser needs permission to access storage for downloads and install packages for APK installations';
+
+  @override
   String get clear_downloads_history_confirm => '다운로드 기록만 삭제되며 다운로드한 파일은 삭제되지 않습니다.';
 
   @override
@@ -448,8 +463,14 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String allow_popups_from(String domain) {
-    return '$domain의 팝업 허용';
+    return '$domain에서 팝업 허용';
   }
+
+  @override
+  String get classic_navigation => '클래식 내비게이션';
+
+  @override
+  String get classic_navigation_description => '화면 하단에 탐색 버튼 표시';
 
   @override
   String get exit_confirmation => '앱 종료';

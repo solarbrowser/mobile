@@ -249,5 +249,7 @@
     "description": "Description for fourth update"
   },
   "searchTheWeb": "Buscar en la web",
-  "recentSearches": "Búsquedas recientes"
+  "recentSearches": "Búsquedas recientes",
+  "classic_navigation": "Navegación Clásica",
+  "classic_navigation_description": "Mostrar botones de navegación en la parte inferior de la pantalla"
 } 

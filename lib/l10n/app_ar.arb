@@ -243,5 +243,7 @@
     "description": "Description for fourth update"
   },
   "searchTheWeb": "البحث في الويب",
-  "recentSearches": "عمليات البحث الأخيرة"
+  "recentSearches": "عمليات البحث الأخيرة",
+  "classic_navigation": "التنقل الكلاسيكي",
+  "classic_navigation_description": "عرض أزرار التنقل في أسفل الشاشة"
 } 

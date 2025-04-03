@@ -233,5 +233,8 @@
   "storage_permission_granted": "Разрешение на хранение предоставлено",
   
   "summary_length": "Длина сводки",
-  "summary_language": "Язык сводки"
+  "summary_language": "Язык сводки",
+  
+  "classic_navigation": "Классическая навигация",
+  "classic_navigation_description": "Показывать кнопки навигации внизу экрана"
 } 
