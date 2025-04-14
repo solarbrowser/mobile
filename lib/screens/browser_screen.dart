@@ -448,6 +448,48 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       // Check for a shared URL after initialization with retry logic
       _checkForSharedUrl();
     });
+
+    // Initialize animation controller for dropdowns
+    _animationController = AnimationController(
+      vsync: this,
+      duration: _dropdownDuration,
+    );
+    
+    _animation = CurvedAnimation(
+      parent: _animationController,
+      curve: _dropdownCurve,
+    );
+    
+    // Initialize smooth animations
+    _loadingAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    )..repeat();
+    
+    _loadingAnimation = CurvedAnimation(
+      parent: _loadingAnimationController,
+      curve: Curves.easeInOut,
+    );
+    
+    // Add scroll listener for smooth animations
+    _smoothScrollController.addListener(_handleScroll);
+    
+    // Initialize the optimization engine with better performance settings
+    _optimizationEngine = OptimizationEngine();
+  }
+  
+  void _handleScroll() {
+    _scrollThrottle.run(() {
+      if (!mounted) return;
+      
+      final scrollDelta = _smoothScrollController.position.pixels - _lastScrollPosition;
+      _lastScrollPosition = _smoothScrollController.position.pixels;
+      
+      setState(() {
+        _isScrollingUp = scrollDelta < 0;
+        _hideUrlBar = !_isScrollingUp && _smoothScrollController.position.pixels > 100;
+      });
+    });
   }
   
   // New helper method to check for shared URL with retries
@@ -593,15 +635,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   @override
   void dispose() {
+    _transitionController.dispose();
     _loadingAnimationController.dispose();
-    _slideAnimationController.dispose();
-    _slideUpController.dispose();
-    _animationController.dispose();
-    _hideUrlBarController.dispose();
-    _urlFocusNode.dispose();
-    _urlController.dispose();
-    _historyScrollController.dispose();
-    _optimizationEngine.dispose();
+    _smoothScrollController.dispose();
+    _scrollThrottle.dispose();
     super.dispose();
   }
 
@@ -1296,7 +1333,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             setState(() {
               _tapPosition = Offset(x, y);
             });
-            _showImageOptions(imageUrl);
+            _showImageOptions(imageUrl, _tapPosition);
           });
         } catch (e) {
           print('Error handling image long press: $e');
@@ -2874,13 +2911,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                 children: [
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.app_name,
-                    subtitle: AppLocalizations.of(context)!.version('0.1.1'),
+                    subtitle: AppLocalizations.of(context)!.version('0.1.2'),
                     isFirst: true,
                     isLast: false,
                   ),
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.flutter_version,
-                    subtitle: 'Flutter 3.29.0',
+                    subtitle: 'Flutter 3.29.2',
                     isFirst: false,
                     isLast: false,
                   ),
@@ -6090,6 +6127,68 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         currentDownloadUrl = url;
         downloadProgress = 0.0;
       });
+    
+            // Handle base64 images
+      if (url.startsWith('data:image/')) {
+        final mimeType = url.split(';')[0].split(':')[1];
+        final ext = _getExtensionFromMimeType(mimeType) ?? '.png';
+        final fileName = 'image_${DateTime.now().millisecondsSinceEpoch}$ext';
+        
+        final base64Data = url.split(',')[1];
+        final bytes = base64Decode(base64Data);
+        
+        final downloadsDirectory = Directory('/storage/emulated/0/Download');
+        if (!await downloadsDirectory.exists()) {
+          await downloadsDirectory.create(recursive: true);
+        }
+        
+        String finalFilePath = '${downloadsDirectory.path}/$fileName';
+        String displayFileName = fileName;
+        int counter = 1;
+        
+        while (await File(finalFilePath).exists()) {
+          final lastDot = fileName.lastIndexOf('.');
+          final nameWithoutExt = fileName.substring(0, lastDot);
+          final ext = fileName.substring(lastDot);
+          finalFilePath = '${downloadsDirectory.path}/$nameWithoutExt ($counter)$ext';
+          displayFileName = '$nameWithoutExt ($counter)$ext';
+          counter++;
+        }
+
+        final file = File(finalFilePath);
+        await file.writeAsBytes(bytes);
+
+        final downloadData = {
+          'url': 'base64_image',  // Don't store the full base64 string
+          'filename': displayFileName,
+          'path': finalFilePath,
+          'size': bytes.length,
+          'timestamp': DateTime.now().toIso8601String(),
+          'mimeType': mimeType
+        };
+
+        final prefs = await SharedPreferences.getInstance();
+        final downloadsList = prefs.getStringList('downloads') ?? [];
+        downloadsList.insert(0, json.encode(downloadData));
+        await prefs.setStringList('downloads', downloadsList);
+
+        await _loadDownloads();
+
+        _showNotification(
+          Text('${AppLocalizations.of(context)!.download_completed}: $displayFileName'),
+          duration: const Duration(seconds: 4),
+        );
+        await notificationService.showDownloadCompleteNotification(displayFileName);
+
+        setState(() {
+          isDownloading = false;
+          currentDownloadUrl = '';
+          _currentFileName = null;
+          _currentDownloadSize = null;
+          downloadProgress = 0.0;
+        });
+        return;
+      }
 
       // Show in-app download started notification
       _showNotification(
@@ -6763,70 +6862,175 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   bool _isUrlBarVisible = true;
   double _urlBarSlideOffset = 0.0;
 
-  void _showImageOptions(String imageUrl) {
-    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
-    final RelativeRect positionRect = RelativeRect.fromRect(
-      Rect.fromPoints(
-        Offset.zero,
-        Offset(40, 40), // Give some space for the menu
-      ),
-      Offset.zero & overlay.size,
-    );
-
-    showMenu(
-      context: context,
-      color: ThemeManager.backgroundColor(),
-      elevation: 8,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      position: positionRect,
-      items: [
-        PopupMenuItem(
-          child: Row(
-            children: [
-              Icon(Icons.image, color: ThemeManager.textColor()),
-              const SizedBox(width: 8),
-              Text(
-                AppLocalizations.of(context)!.open_in_new_tab,
-                style: TextStyle(color: ThemeManager.textColor()),
-              ),
-            ],
+  void _showImageOptions(String imageUrl, Offset position) {
+    final showCustomMenu = true; // Flag to use custom menu with animations
+    
+    if (showCustomMenu) {
+      // Custom menu with in-to-out animation
+      final List<Widget> menuItems = [
+        // Open in new tab
+        ListTile(
+          leading: Icon(Icons.image, color: ThemeManager.textColor()),
+          title: Text(
+            AppLocalizations.of(context)!.open_in_new_tab,
+            style: TextStyle(color: ThemeManager.textColor()),
           ),
           onTap: () {
+            Navigator.pop(context);
             _loadUrl(imageUrl);
           },
         ),
-        PopupMenuItem(
-          child: Row(
-            children: [
-              Icon(Icons.download, color: ThemeManager.textColor()),
-              const SizedBox(width: 8),
-              Text(
-                AppLocalizations.of(context)!.downloads,
-                style: TextStyle(color: ThemeManager.textColor()),
-              ),
-            ],
+        // Download (fixed text)
+        ListTile(
+          leading: Icon(Icons.download, color: ThemeManager.textColor()),
+          title: Text(
+            "Download", // Fixed to use "Download" instead of "Downloads"
+            style: TextStyle(color: ThemeManager.textColor()),
           ),
           onTap: () {
+            Navigator.pop(context);
             _handleDownload(imageUrl);
           },
         ),
-        PopupMenuItem(
-          child: Row(
-            children: [
-              Icon(Icons.share, color: ThemeManager.textColor()),
-              const SizedBox(width: 8),
-              Text(
-                AppLocalizations.of(context)!.share,
-                style: TextStyle(color: ThemeManager.textColor()),
-              ),
-            ],
+        // Share
+        ListTile(
+          leading: Icon(Icons.share, color: ThemeManager.textColor()),
+          title: Text(
+            AppLocalizations.of(context)!.share,
+            style: TextStyle(color: ThemeManager.textColor()),
           ),
           onTap: () async {
+            Navigator.pop(context);
             await Share.share(imageUrl);
           },
         ),
-      ],
-    );
+      ];
+      
+      // Show the custom menu with scale animation (in-to-out)
+      Navigator.of(context).push(
+        PageRouteBuilder(
+          opaque: false,
+          barrierDismissible: true,
+          barrierColor: Colors.transparent,
+          pageBuilder: (BuildContext context, _, __) {
+            return StatefulBuilder(
+              builder: (context, setState) {
+                return GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          left: position.dx,
+                          top: position.dy,
+                          child: TweenAnimationBuilder<double>(
+                            duration: const Duration(milliseconds: 150),
+                            curve: Curves.easeOutCubic,
+                            tween: Tween<double>(begin: 0.8, end: 1.0),
+                            builder: (context, value, child) {
+                              return Transform.scale(
+                                scale: value,
+                                alignment: Alignment.center,
+                                child: child,
+                              );
+                            },
+                            child: Card(
+                              color: ThemeManager.backgroundColor(),
+                              elevation: 8,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: IntrinsicWidth(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: menuItems,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+          transitionsBuilder: (_, animation, __, child) {
+            return FadeTransition(
+              opacity: animation,
+              child: child,
+            );
+          },
+        ),
+      );
+    } else {
+      // Original showMenu implementation (fallback)
+      final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+      final RelativeRect positionRect = RelativeRect.fromRect(
+        Rect.fromPoints(
+          position,
+          position.translate(40, 40), // Give some space for the menu
+        ),
+        Offset.zero & overlay.size,
+      );
+
+      showMenu(
+        context: context,
+        color: ThemeManager.backgroundColor(),
+        elevation: 8,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        position: positionRect,
+        items: [
+          PopupMenuItem(
+            child: Row(
+              children: [
+                Icon(Icons.image, color: ThemeManager.textColor()),
+                const SizedBox(width: 8),
+                Text(
+                  AppLocalizations.of(context)!.open_in_new_tab,
+                  style: TextStyle(color: ThemeManager.textColor()),
+                ),
+              ],
+            ),
+            onTap: () {
+              _loadUrl(imageUrl);
+            },
+          ),
+          PopupMenuItem(
+            child: Row(
+              children: [
+                Icon(Icons.download, color: ThemeManager.textColor()),
+                const SizedBox(width: 8),
+                Text(
+                  "Download", // Fixed to use "Download" instead of "Downloads"
+                  style: TextStyle(color: ThemeManager.textColor()),
+                ),
+              ],
+            ),
+            onTap: () {
+              _handleDownload(imageUrl);
+            },
+          ),
+          PopupMenuItem(
+            child: Row(
+              children: [
+                Icon(Icons.share, color: ThemeManager.textColor()),
+                const SizedBox(width: 8),
+                Text(
+                  AppLocalizations.of(context)!.share,
+                  style: TextStyle(color: ThemeManager.textColor()),
+                ),
+              ],
+            ),
+            onTap: () async {
+              await Share.share(imageUrl);
+            },
+          ),
+        ],
+      );
+    }
   }
 
   // Add tap position tracking
@@ -7684,72 +7888,131 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     ''');
   }
 
-  void _showImageContextMenu(String imageUrl, Offset position) {
-    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
-    final RelativeRect positionRect = RelativeRect.fromRect(
-      Rect.fromPoints(
-        position,
-        position.translate(40, 40), // Give some space for the menu
-      ),
-      Offset.zero & overlay.size,
-    );
+ void _showImageContextMenu(String imageUrl, Offset position) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final menuWidth = 195.0;
+    final menuHeight = imageUrl.startsWith('data:') ? 60.0 : 170.0;
 
-    showMenu(
-      context: context,
-      color: ThemeManager.backgroundColor(),
-      elevation: 8,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      position: positionRect,
-      items: [
-        PopupMenuItem(
-          child: Row(
-            children: [
-              Icon(Icons.image, color: ThemeManager.textColor()),
-              const SizedBox(width: 8),
-              Text(
-                AppLocalizations.of(context)!.open_in_new_tab,
-                style: TextStyle(color: ThemeManager.textColor()),
-              ),
-            ],
+    double adjustedX = position.dx;
+    double adjustedY = position.dy;
+    
+    if (adjustedX + menuWidth > screenWidth) {
+      adjustedX = screenWidth - menuWidth - 8;
+    }
+    if (adjustedX < 8) {
+      adjustedX = 8;
+    }
+    
+    if (adjustedY + menuHeight > screenHeight) {
+      adjustedY = screenHeight - menuHeight - 8;
+    }
+    if (adjustedY < 8) {
+      adjustedY = 8;
+    }
+    
+     final List<Widget> menuItems = [
+      if (!imageUrl.startsWith('data:'))  // Only show open in new tab for non-base64 images
+        ListTile(
+          dense: true,
+          visualDensity: VisualDensity.compact,
+          leading: Icon(Icons.image, color: ThemeManager.textColor(), size: 20),
+          title: Text(
+            AppLocalizations.of(context)!.open_in_new_tab,
+            style: TextStyle(color: ThemeManager.textColor(), fontSize: 14),
           ),
           onTap: () {
+            Navigator.pop(context);
             _loadUrl(imageUrl);
           },
         ),
-        PopupMenuItem(
-          child: Row(
-            children: [
-              Icon(Icons.download, color: ThemeManager.textColor()),
-              const SizedBox(width: 8),
-              Text(
-                AppLocalizations.of(context)!.downloads,
-                style: TextStyle(color: ThemeManager.textColor()),
-              ),
-            ],
-          ),
-          onTap: () {
-            _handleDownload(imageUrl);
-          },
+      ListTile(
+        dense: true,
+        visualDensity: VisualDensity.compact,
+        leading: Icon(Icons.download, color: ThemeManager.textColor(), size: 20),
+        title: Text(
+          "Download",
+          style: TextStyle(color: ThemeManager.textColor(), fontSize: 14),
         ),
-        PopupMenuItem(
-          child: Row(
-            children: [
-              Icon(Icons.share, color: ThemeManager.textColor()),
-              const SizedBox(width: 8),
-              Text(
-                AppLocalizations.of(context)!.share,
-                style: TextStyle(color: ThemeManager.textColor()),
-              ),
-            ],
+        onTap: () {
+          Navigator.pop(context);
+          _handleDownload(imageUrl);
+        },
+      ),
+      if (!imageUrl.startsWith('data:'))  // Only show share for non-base64 images
+        ListTile(
+          dense: true,
+          visualDensity: VisualDensity.compact,
+          leading: Icon(Icons.share, color: ThemeManager.textColor(), size: 20),
+          title: Text(
+            AppLocalizations.of(context)!.share,
+            style: TextStyle(color: ThemeManager.textColor(), fontSize: 14),
           ),
           onTap: () async {
+            Navigator.pop(context);
             await Share.share(imageUrl);
           },
         ),
-      ],
+    ];
+    
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierDismissible: true,
+        barrierColor: Colors.black.withOpacity(0.2),
+        pageBuilder: (BuildContext context, _, __) {
+          return StatefulBuilder(
+            builder: (context, setState) {
+              return GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Material(
+                  color: Colors.transparent,
+                  child: Stack(
+                    children: [
+                      Positioned(
+                        left: adjustedX,
+                        top: adjustedY,
+                        width: menuWidth,
+                        child: TweenAnimationBuilder<double>(
+                          duration: const Duration(milliseconds: 150),
+                          curve: Curves.easeOutCubic,
+                          tween: Tween<double>(begin: 0.8, end: 1.0),
+                          builder: (context, value, child) {
+                            return Transform.scale(
+                              scale: value,
+                              alignment: Alignment.topLeft,
+                              child: child,
+                            );
+                          },
+                          child: Card(
+                            color: ThemeManager.backgroundColor(),
+                            elevation: 8,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: menuItems,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        },
+        transitionsBuilder: (_, animation, __, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+      ),
     );
   }
-
   Future<void> _clearHistory() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -8727,6 +8990,181 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     // Close the language selection screen
     Navigator.pop(context);
   }
+
+  // Add these animation durations and curves at the class level
+  final Duration _dropdownDuration = const Duration(milliseconds: 200);
+  final Curve _dropdownCurve = Curves.easeOutCubic;
+
+  // Add this method to show animated dropdown with in-to-out animation
+  void _showInToOutDropdown(BuildContext context, Widget child, {required Offset position}) {
+    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return Stack(
+            children: [
+              // Backdrop
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(color: Colors.transparent),
+                ),
+              ),
+              // Dropdown with scale animation (in-to-out)
+              Positioned(
+                top: position.dy,
+                left: position.dx,
+                child: FadeTransition(
+                  opacity: animation,
+                  child: ScaleTransition(
+                    scale: Tween<double>(
+                      begin: 0.8,
+                      end: 1.0,
+                    ).animate(CurvedAnimation(
+                      parent: animation,
+                      curve: _dropdownCurve,
+                    )),
+                    child: child,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+        barrierColor: Colors.transparent,
+        opaque: false,
+        transitionDuration: _dropdownDuration,
+      ),
+    );
+  }
+
+  // Add helper method to show dropdown menu with proper translation
+  void _showDropdownMenu(BuildContext context, List<PopupMenuItem<String>> items, {required Offset position}) {
+    final ThemeData theme = Theme.of(context);
+    
+    _showInToOutDropdown(
+      context,
+      Container(
+        decoration: BoxDecoration(
+          color: theme.cardColor.withOpacity(0.95),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 10,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: IntrinsicWidth(
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: items.map((item) {
+                return Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.pop(context);
+                      if (item.onTap != null) {
+                        item.onTap!();
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      child: item.child,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+      ),
+      position: position,
+    );
+  }
+
+  // Fix the download text translation method to use a fixed string
+  String _getDownloadText(BuildContext context) {
+    return 'Download'; // Fixed translation that will be the same in all languages
+  }
+
+  // Add smooth scrolling controller
+  final ScrollController _smoothScrollController = ScrollController();
+  
+  // Add optimization flags
+  bool _isOptimizingPerformance = false;
+  final _scrollThrottle = Debouncer(milliseconds: 16); // For 60fps smoothness
+
+  // Add smooth transition controller
+  late final AnimationController _transitionController = AnimationController(
+    duration: const Duration(milliseconds: 300),
+    vsync: this,
+  );
+  
+  // Add transition animations
+  late final Animation<double> _fadeTransition = CurvedAnimation(
+    parent: _transitionController,
+    curve: Curves.easeInOut,
+  );
+
+  // Fix the slide transition animation
+  late final Animation<Offset> _slideTransition = Tween<Offset>(
+    begin: const Offset(0, 0.1),
+    end: Offset.zero,
+  ).animate(CurvedAnimation(
+    parent: _transitionController,
+    curve: Curves.easeOutCubic,
+  ));
+
+  // Add this method to show optimized dropdown from bottom to top
+  void _showBottomToTopDropdown(BuildContext context, Widget child, {required Offset position}) {
+    final RenderBox button = context.findRenderObject() as RenderBox;
+    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+    
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(color: Colors.transparent),
+                ),
+              ),
+              Positioned(
+                top: position.dy,
+                left: position.dx,
+                child: FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: Tween<Offset>(
+                      begin: const Offset(0, -0.2),
+                      end: Offset.zero,
+                    ).animate(CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    )),
+                    child: child,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+        barrierColor: Colors.transparent,
+        opaque: false,
+        transitionDuration: const Duration(milliseconds: 250),
+      ),
+    );
+  }
 }
 
 class ThemeColors {
@@ -8743,4 +9181,24 @@ class ThemeColors {
     required this.textSecondary,
     required this.border,
   });
+}
+
+// Add an OptimizedChild widget for better performance
+class OptimizedChild extends StatelessWidget {
+  final Widget child;
+  
+  const OptimizedChild({
+    Key? key,
+    required this.child,
+  }) : super(key: key);
+  
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 200),
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      child: child,
+    );
+  }
 }
