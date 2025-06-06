@@ -57,25 +57,30 @@ class _PWAScreenState extends State<PWAScreen> {
     webViewController
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.transparent)
-      ..enableZoom(true)
-      ..setNavigationDelegate(
+      ..enableZoom(true)      ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {
-            setState(() {
-              _isLoading = true;
-            });
+            if (mounted) {
+              setState(() {
+                _isLoading = true;
+              });
+            }
           },
           onPageFinished: (String url) async {
-            final pageTitle = await webViewController.getTitle() ?? '';
-            final canGoBack = await webViewController.canGoBack();
-            final canGoForward = await webViewController.canGoForward();
-            
-            setState(() {
-              _isLoading = false;
+            if (mounted) {
+              final pageTitle = await webViewController.getTitle() ?? '';
+              final canGoBack = await webViewController.canGoBack();
+              final canGoForward = await webViewController.canGoForward();
               
-              _canGoBack = canGoBack;
-              _canGoForward = canGoForward;
-            });
+              setState(() {
+                _isLoading = false;
+                if (pageTitle.isNotEmpty) {
+                  _title = pageTitle;
+                }
+                _canGoBack = canGoBack;
+                _canGoForward = canGoForward;
+              });
+            }
           },
           onNavigationRequest: (NavigationRequest request) {
             // You can handle special navigation cases here

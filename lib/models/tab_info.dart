@@ -37,6 +37,7 @@ class BrowserTab {
   bool isIncognito = false;
   bool canGoBack = false;
   bool canGoForward = false;
+  String? groupId;
   late WebViewController controller;
 
   BrowserTab({
@@ -45,6 +46,7 @@ class BrowserTab {
     this.title = '',
     this.favicon,
     this.isIncognito = false,
+    this.groupId,
   }) {
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)

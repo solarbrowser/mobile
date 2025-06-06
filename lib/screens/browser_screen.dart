@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
 import '../l10n/app_localizations.dart';
 import '../models/tab_info.dart';
+import '../models/tab_group.dart';
 import '../utils/browser_utils.dart';
 import '../utils/legal_texts.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -82,14 +83,21 @@ class BrowserTab {
   bool isIncognito = false;
   bool canGoBack = false;
   bool canGoForward = false;
-
+  String? groupId;
+  
+  // Performance optimization fields
+  DateTime? lastActiveTime;
+  bool isOptimized = false;
+  int memoryUsage = 0; // Rough estimate in KB
   BrowserTab({
     required this.id,
     required this.url,
     this.title = '',
     this.favicon,
     this.isIncognito = false,
+    this.groupId,
   }) {
+    lastActiveTime = DateTime.now();
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.transparent)
@@ -159,7 +167,7 @@ class LoadingBorderPainter extends CustomPainter {
   }
 }
 
-class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProviderStateMixin {
+class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   // WebView and Navigation
   final List<WebViewController> _controllers = [];
   late WebViewController controller;
@@ -223,15 +231,24 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   bool _isUrlBarMinimized = false;
   bool _isUrlBarHidden = false;
   int selectedSettingsTab = 0;
-  
-  // Panel Visibility
+    // Panel Visibility
   bool isTabsVisible = false;
   bool isSettingsVisible = false;
   bool isBookmarksVisible = false;
   bool isDownloadsVisible = false;
+  bool isHistoryVisible = false;
   bool isPanelExpanded = false;
   bool isPanelVisible = true;
   bool _isLoading = false;  // Add loading state variable
+  
+  // Incognito Mode
+  bool _isIncognitoModeActive = false;
+  
+  // History Encryption
+  bool _isHistoryLocked = false;
+  bool _isHistoryEncrypted = false;
+  String? _historyPassword;
+  bool _showHistoryPasswordSetup = true;
   
   // URL Bar State
   bool _isUrlBarCollapsed = false;
@@ -271,6 +288,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   // Data
   List<Map<String, dynamic>> bookmarks = [];
   
+  // Tab Grouping
+  List<TabGroup> _tabGroups = [];
+  
   // Memory Management
   final _debouncer = Debouncer(milliseconds: 300);
   bool _isLowMemory = false;
@@ -298,7 +318,6 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   );
 
   late OptimizationEngine _optimizationEngine;
-
   // Search Engines
   final Map<String, String> searchEngines = {
     'Google': 'https://www.google.com/search?q={query}',
@@ -307,6 +326,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     'Brave': 'https://search.brave.com/search?q={query}',
     'Yahoo': 'https://search.yahoo.com/search?p={query}',
     'Yandex': 'https://yandex.com/search/?text={query}',
+    'Solar Search': 'https://search.browser.solar/search?q={query}',
   };
 
   // Add new state variables
@@ -314,9 +334,104 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   Offset _urlBarOffset = const Offset(16.0, 16.0);
   bool _isDraggingUrlBar = false;
   bool _askDownloadLocation = true;
+  bool _autoOpenDownloads = false;
+
+  // Tab Persistence Methods
+  Future<void> _saveTabs() async {
+    try {
+      final keepTabsOpen = await _getKeepTabsOpenSetting();
+      if (!keepTabsOpen) return;
+
+      final prefs = await SharedPreferences.getInstance();
+      
+      // Create serializable tab data (exclude incognito tabs for privacy)
+      final tabsData = tabs
+          .where((tab) => !tab.isIncognito)
+          .map((tab) => {
+                'id': tab.id,
+                'url': tab.url,
+                'title': tab.title,
+                'favicon': tab.favicon,
+                'groupId': tab.groupId,
+              })
+          .toList();
+
+      await prefs.setString('saved_tabs', json.encode({
+        'tabs': tabsData,
+        'currentTabIndex': currentTabIndex < tabs.length ? currentTabIndex : 0,
+        'savedAt': DateTime.now().toIso8601String(),
+      }));
+      
+      print('Saved ${tabsData.length} tabs to preferences');
+    } catch (e) {
+      print('Error saving tabs: $e');
+    }
+  }
+
+  Future<void> _loadSavedTabs() async {
+    try {
+      final keepTabsOpen = await _getKeepTabsOpenSetting();
+      if (!keepTabsOpen) return;
+
+      final prefs = await SharedPreferences.getInstance();
+      final savedTabsJson = prefs.getString('saved_tabs');
+      
+      if (savedTabsJson == null || savedTabsJson.isEmpty) return;
+
+      final savedData = json.decode(savedTabsJson) as Map<String, dynamic>;
+      final tabsData = savedData['tabs'] as List<dynamic>?;
+      final savedCurrentTabIndex = savedData['currentTabIndex'] as int? ?? 0;
+      
+      if (tabsData == null || tabsData.isEmpty) return;
+
+      // Clear the existing default tab
+      setState(() {
+        tabs.clear();
+      });
+
+      // Restore saved tabs
+      for (int i = 0; i < tabsData.length; i++) {
+        final tabData = tabsData[i] as Map<String, dynamic>;
+        final restoredTab = BrowserTab(
+          id: tabData['id'] as String,
+          url: tabData['url'] as String,
+          title: tabData['title'] as String? ?? 'Restored Tab',
+          favicon: tabData['favicon'] as String?,
+          groupId: tabData['groupId'] as String?,
+        );
+        
+        _initializeTab(restoredTab);
+        tabs.add(restoredTab);
+      }
+
+      // Set the current tab index
+      setState(() {
+        currentTabIndex = savedCurrentTabIndex.clamp(0, tabs.length - 1);
+        if (tabs.isNotEmpty) {
+          controller = tabs[currentTabIndex].controller;
+          _displayUrl = tabs[currentTabIndex].url;
+          _urlController.text = _formatUrl(tabs[currentTabIndex].url);
+        }
+      });
+
+      print('Restored ${tabs.length} tabs from preferences');
+      
+      // Clear saved tabs after successful restoration
+      await prefs.remove('saved_tabs');
+    } catch (e) {
+      print('Error loading saved tabs: $e');
+      // If there's an error, ensure we have at least one tab
+      if (tabs.isEmpty) {
+        _addNewTab();
+      }
+    }
+  }
 
   // Add new state variable for fullscreen
   bool _isFullscreen = false;
+
+  // Loading timer management
+  Timer? _loadingTimeoutTimer;
 
   // Add loading animation controller
   late AnimationController _loadingAnimationController;
@@ -328,13 +443,34 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     var i = (log(bytes) / log(1024)).floor();
     return '${(bytes / pow(1024, i)).toStringAsFixed(2)} ${suffixes[i]}';
   }
-
   void _updateState(VoidCallback update) {
     _debouncer.run(() {
       if (mounted) {
         setState(update);
       }
     });
+  }
+  // Centralized loading state management with timeout protection
+  void _setLoadingState(bool loading) {
+    if (mounted) {
+      setState(() {
+        isLoading = loading;
+      });
+    }
+
+    // Cancel existing timer
+    _loadingTimeoutTimer?.cancel();
+    
+    if (loading) {
+      // Set 30-second timeout to prevent infinite loading
+      _loadingTimeoutTimer = Timer(const Duration(seconds: 30), () {
+        if (mounted) {
+          setState(() {
+            isLoading = false;
+          });
+        }
+      });
+    }
   }
 
   BoxDecoration _getGlassmorphicDecoration() {
@@ -360,6 +496,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     super.initState();
     
     print("BrowserScreen initState called"); // Debug print
+
+    // Add app lifecycle observer for tab persistence
+    WidgetsBinding.instance.addObserver(this);
     
     // Set classic mode from widget parameter
     _isClassicMode = widget.initialClassicMode;
@@ -429,8 +568,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       }
       return null;
     });
-    
-    // Load preferences and other data
+      // Load preferences and other data
     _loadPreferences().then((_) {
       _loadBookmarks();
       _loadDownloads();
@@ -439,14 +577,17 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       _loadSettings();
       _loadSearchEngines();
       
-      // Mark as initialized at the end of initialization
-      setState(() {
-        isInitialized = true;
-        print("BrowserScreen initialization completed"); // Debug print
+      // Load saved tabs if the setting is enabled
+      _loadSavedTabs().then((_) {
+        // Mark as initialized at the end of initialization
+        setState(() {
+          isInitialized = true;
+          print("BrowserScreen initialization completed"); // Debug print
+        });
+        
+        // Check for a shared URL after initialization with retry logic
+        _checkForSharedUrl();
       });
-      
-      // Check for a shared URL after initialization with retry logic
-      _checkForSharedUrl();
     });
 
     // Initialize animation controller for dropdowns
@@ -459,8 +600,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       parent: _animationController,
       curve: _dropdownCurve,
     );
-    
-    // Initialize smooth animations
+      // Initialize smooth animations
     _loadingAnimationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
@@ -470,6 +610,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       parent: _loadingAnimationController,
       curve: Curves.easeInOut,
     );
+    
+    // Add app lifecycle observer for tab persistence
+    WidgetsBinding.instance.addObserver(this);
     
     // Add scroll listener for smooth animations
     _smoothScrollController.addListener(_handleScroll);
@@ -617,11 +760,35 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       widget.onThemeChange!(darkMode);
     }
   }
-
   void _toggleClassicMode(bool classicMode) async {
+    // First immediate state change to affect UI right away
     setState(() {
       _isClassicMode = classicMode;
+      // When toggling classic mode, always make sure the URL bar is visible
+      _hideUrlBar = false;
+      _hideUrlBarController.reverse();
     });
+    
+    // If classic mode is being turned off, additional steps to ensure complete cleanup
+    if (!classicMode) {
+      // Force a rebuild by setting state and ensure slide panel is reset
+      setState(() {
+        _slideUpController.value = 0.0;
+        _isSlideUpPanelVisible = false;
+        _hideUrlBar = false;
+        _hideUrlBarController.value = 0.0;
+      });
+      
+      // Add a small delay to ensure the UI fully refreshes and the background is hidden
+      Future.delayed(const Duration(milliseconds: 200), () {
+        if (mounted) {
+          setState(() {
+            // Force a layout rebuild to ensure background panel is completely removed
+          });
+        }
+      });
+    }
+    
     await _savePreferences();
   }
 
@@ -631,10 +798,17 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     if (tabs.isEmpty) {
       _addNewTab();
     }
-  }
-
-  @override
+  }  @override
   void dispose() {
+    // Save tabs before disposing
+    _saveTabs();
+    
+    // Remove app lifecycle observer
+    WidgetsBinding.instance.removeObserver(this);
+    
+    // Clean up loading timeout timer
+    _loadingTimeoutTimer?.cancel();
+    
     _transitionController.dispose();
     _loadingAnimationController.dispose();
     _smoothScrollController.dispose();
@@ -642,23 +816,32 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     super.dispose();
   }
 
-  Future<void> _initializeControllers() async {
+  // App lifecycle handler for tab persistence
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    
+    // Save tabs when app is paused or detached
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
+      _saveTabs();
+    }
+  }  Future<void> _initializeControllers() async {
     // Initialize all animation controllers
     _slideUpController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 380) // Further increased for even smoother animation
     );
-
+    
     _slideAnimationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 320), // Further increased for smoother animation
     );
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 1),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _slideAnimationController,
-      curve: Curves.easeOutCubic,
+      curve: Curves.easeOutCubic, // Using easeOutCubic for more natural feeling
     ));
 
     _loadingAnimationController = AnimationController(
@@ -682,21 +865,19 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       parent: _animationController,
       curve: Curves.easeInOutCubic,
     );
-
+    
     // Initialize URL bar animation controller
     _hideUrlBarController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 300), // Further increased for more fluid animation
     );
     _hideUrlBarAnimation = Tween<Offset>(
       begin: Offset.zero,
       end: const Offset(0, 1.5),
     ).animate(CurvedAnimation(
       parent: _hideUrlBarController,
-      curve: Curves.easeOutCubic,
-    ));
-
-    // Initialize other controllers
+      curve: Curves.fastLinearToSlowEaseIn, // Changed to fastLinearToSlowEaseIn for smoother acceleration/deceleration
+    ));    // Initialize other controllers
     _urlController = TextEditingController();
     _urlFocusNode = FocusNode();
     _urlFocusNode.addListener(() {
@@ -721,6 +902,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
               final currentUrl = tabs[currentTabIndex].url;
               _urlController.text = _formatUrl(currentUrl);
+              
+              // Position cursor at the end
+              _urlController.selection = TextSelection.fromPosition(
+                TextPosition(offset: _urlController.text.length),
+              );
             }
           }
         });
@@ -988,17 +1174,16 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       _homePageShortcuts = shortcutsList.map((e) => Map<String, String>.from(json.decode(e))).toList();
     });
   }
-
   Future<void> _initializeWebView() async {
-    print("Initializing WebView..."); // Debug print
+    print("Initializing WebView with optimizations..."); // Debug print
     
-    // Initialize a dummy optimization engine to prevent LateInitializationError
-    _optimizationEngine = OptimizationEngine();
-
-    controller = WebViewController()
+    // Initialize optimization engine with advanced settings
+    _optimizationEngine = OptimizationEngine();    // Performance optimization: apply user agent directly
+    final userAgent = 'Mozilla/5.0 (Linux; Android 12; Solar Browser) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.127 Mobile Safari/537.36';    controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
       ..enableZoom(false)
+      ..setUserAgent(userAgent)
       ..setNavigationDelegate(
         NavigationDelegate(
           onNavigationRequest: (NavigationRequest request) async {
@@ -1035,11 +1220,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             });
             
             return NavigationDecision.navigate;
-          },
-          onPageStarted: (String url) async {
+          },          onPageStarted: (String url) async {
             if (!mounted) return;
+            _setLoadingState(true);
             setState(() {
-              isLoading = true;
               _displayUrl = url;
               _urlController.text = _formatUrl(url);
               // Update secure indicator based on URL
@@ -1057,8 +1241,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             } catch (e) {
               print("Error in optimization engine: $e");
             }
-          },
-          onPageFinished: (String url) async {
+          },          onPageFinished: (String url) async {
             if (!mounted) return;
             print('=== PAGE FINISHED LOADING ===');
             final title = await controller.getTitle() ?? _displayUrl;
@@ -1066,13 +1249,19 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             // Use our central handler to consistently update URLs
             _handleUrlUpdate(url, title: title);
             
-            // Update loading state
-            setState(() {
-              isLoading = false;
-            });
+            // Update loading state using centralized method
+            _setLoadingState(false);
             
             await _updateNavigationState();
             await _setupUrlMonitoring();
+            
+            // Run web actions optimization
+            try {
+              await _optimizationEngine.optimizeWebActions();
+              await _optimizationEngine.onPageFinishLoad(url);
+            } catch (e) {
+              print("Error in web action optimization: $e");
+            }
             
             // Safely call optimization engine
             try {
@@ -1099,8 +1288,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           },
         ),
       );
-    
-    // Add JavaScript channel for search handling
+      // Add JavaScript channel for search handling
     await controller.addJavaScriptChannel(
       'SearchHandler',
       onMessageReceived: (JavaScriptMessage message) {
@@ -1116,10 +1304,50 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           }
         }
       },
-    );
-
-    if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+    );    // Add JavaScript channel for theme handling
+    await controller.addJavaScriptChannel(
+      'ThemeHandler',
+      onMessageReceived: (JavaScriptMessage message) {
+        if (mounted && message.message == 'getTheme') {
+          // Get current theme and its colors
+          final currentTheme = ThemeManager.getCurrentTheme();
+          final themeColors = ThemeManager.getThemeColors(currentTheme);
+          final isDarkTheme = currentTheme.isDark;
+          
+          // Convert colors to hex strings
+          String colorToHex(Color color) {
+            return '#${color.value.toRadixString(16).padLeft(8, '0').substring(2)}';
+          }
+          
+          // Create full theme data JSON string
+          final themeJson = '''{
+            "type": "fullTheme",
+            "themeName": "${currentTheme.name}",
+            "isDark": $isDarkTheme,
+            "colors": {
+              "backgroundColor": "${colorToHex(themeColors.backgroundColor)}",
+              "surfaceColor": "${colorToHex(themeColors.surfaceColor)}",
+              "textColor": "${colorToHex(themeColors.textColor)}",
+              "textSecondaryColor": "${colorToHex(themeColors.textSecondaryColor)}",
+              "primaryColor": "${colorToHex(themeColors.primaryColor)}",
+              "accentColor": "${colorToHex(themeColors.accentColor)}",
+              "errorColor": "${colorToHex(themeColors.errorColor)}",
+              "successColor": "${colorToHex(themeColors.successColor)}",
+              "warningColor": "${colorToHex(themeColors.warningColor)}",
+              "secondaryColor": "${colorToHex(themeColors.secondaryColor)}"
+            }
+          }''';
+          
+          controller.runJavaScript('''
+            window.postMessage($themeJson, '*');
+          ''');
+        }
+      },
+    );if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
       await controller.loadRequest(Uri.parse(tabs[currentTabIndex].url));
+      
+      // Initialize theme when home page loads
+      await _initializeThemeForHomePage();
     }
 
     await _setupUrlMonitoring();
@@ -1249,9 +1477,81 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           }
         }
       },
-    );
-  }
+    );  }
 
+  // Initialize theme when home page loads
+  Future<void> _initializeThemeForHomePage() async {
+    // Wait a bit for the page to fully load
+    await Future.delayed(const Duration(milliseconds: 500));
+    
+    if (mounted) {
+      try {
+        // Get current theme and its colors
+        final currentTheme = ThemeManager.getCurrentTheme();
+        final themeColors = ThemeManager.getThemeColors(currentTheme);
+        final isDarkTheme = currentTheme.isDark;
+        
+        // Convert colors to hex strings
+        String colorToHex(Color color) {
+          return '#${color.value.toRadixString(16).padLeft(8, '0').substring(2)}';
+        }
+        
+        final themeData = {
+          'type': 'fullTheme',
+          'themeName': currentTheme.name,
+          'isDark': isDarkTheme,
+          'colors': {
+            'backgroundColor': colorToHex(themeColors.backgroundColor),
+            'surfaceColor': colorToHex(themeColors.surfaceColor),
+            'textColor': colorToHex(themeColors.textColor),
+            'textSecondaryColor': colorToHex(themeColors.textSecondaryColor),
+            'primaryColor': colorToHex(themeColors.primaryColor),
+            'accentColor': colorToHex(themeColors.accentColor),
+            'errorColor': colorToHex(themeColors.errorColor),
+            'successColor': colorToHex(themeColors.successColor),
+            'warningColor': colorToHex(themeColors.warningColor),
+            'secondaryColor': colorToHex(themeColors.secondaryColor),
+          }
+        };
+        
+        // Convert to JSON string for JavaScript
+        final themeJson = '''{
+          "type": "${themeData['type']}",
+          "themeName": "${themeData['themeName']}",
+          "isDark": ${themeData['isDark']},
+          "colors": {
+            "backgroundColor": "${(themeData['colors'] as Map)['backgroundColor']}",
+            "surfaceColor": "${(themeData['colors'] as Map)['surfaceColor']}",
+            "textColor": "${(themeData['colors'] as Map)['textColor']}",
+            "textSecondaryColor": "${(themeData['colors'] as Map)['textSecondaryColor']}",
+            "primaryColor": "${(themeData['colors'] as Map)['primaryColor']}",
+            "accentColor": "${(themeData['colors'] as Map)['accentColor']}",
+            "errorColor": "${(themeData['colors'] as Map)['errorColor']}",
+            "successColor": "${(themeData['colors'] as Map)['successColor']}",
+            "warningColor": "${(themeData['colors'] as Map)['warningColor']}",
+            "secondaryColor": "${(themeData['colors'] as Map)['secondaryColor']}"
+          }
+        }''';
+        
+        await controller.runJavaScript('''
+          // Wait for page to be ready
+          if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            // Send full theme data immediately
+            window.postMessage($themeJson, '*');
+          } else {
+            // Wait for page to load
+            document.addEventListener('DOMContentLoaded', function() {
+              window.postMessage($themeJson, '*');
+            });
+          }
+        ''');
+        
+        print('✅ Theme initialized for home page: ${currentTheme.name} (${isDarkTheme ? 'dark' : 'light'})');
+      } catch (e) {
+        print('❌ Error initializing theme for home page: $e');
+      }
+    }
+  }
   Future<void> _updateNavigationState() async {
     if (!mounted) return;
     
@@ -1264,10 +1564,16 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         setState(() {
           canGoBack = canGoBackValue;
           canGoForward = canGoForwardValue;
+          
+          // Also update the current tab's navigation state
+          if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+            tabs[currentTabIndex].canGoBack = canGoBackValue;
+            tabs[currentTabIndex].canGoForward = canGoForwardValue;
+          }
         });
         
         // Use the central helper method to update URLs consistently
-        if (currentUrl.isNotEmpty) {
+        if (currentUrl.isNotEmpty && currentUrl != _displayUrl) {
           _handleUrlUpdate(currentUrl);
         }
       }
@@ -1397,8 +1703,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           print('Stack trace:');
           print('${StackTrace.current}');
         }
+          await _injectImageContextMenuJS();
         
-        await _injectImageContextMenuJS();
+        // Initialize theme if this is the home page
+        if (url.startsWith('file:///android_asset/main.html') || url == _homeUrl) {
+          await _initializeThemeForHomePage();
+        }
+        
         print('=== PAGE LOAD COMPLETE ==='); // Debug log
       },
       onWebResourceError: (WebResourceError error) async {
@@ -1463,23 +1774,38 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     } catch (e) {
       print('❌ Error saving history: $e');
     }
-  }
-
-  Future<void> _loadHistory() async {
+  }  Future<void> _loadHistory() async {
     try {
+      print('Loading history...');
       final prefs = await SharedPreferences.getInstance();
       final history = prefs.getStringList('history') ?? [];
-      setState(() {
-        _loadedHistory = history.map((e) {
-          try {
-            return Map<String, dynamic>.from(json.decode(e));
-          } catch (e) {
-            return null;
-          }
-        }).whereType<Map<String, dynamic>>().toList();
-      });
+      print('Raw history entries: ${history.length}');
+      
+      final loadedHistory = history.map((e) {
+        try {
+          return Map<String, dynamic>.from(json.decode(e));
+        } catch (e) {
+          print('Error parsing history entry: $e');
+          return null;
+        }
+      }).whereType<Map<String, dynamic>>().toList();
+      
+      print('Parsed history entries: ${loadedHistory.length}');
+      
+      if (mounted) {
+        setState(() {
+          _loadedHistory = loadedHistory;
+          _currentHistoryPage = 0; // Reset pagination
+        });
+        print('History state updated with ${_loadedHistory.length} items');
+      }
     } catch (e) {
       print('Error loading history: $e');
+      if (mounted) {
+        setState(() {
+          _loadedHistory = [];
+        });
+      }
     }
   }
 
@@ -1517,14 +1843,25 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       });
       _saveHistory();
     }
-  }
-
-  Future<void> _loadUrl(String query) async {
+  }  Future<void> _loadUrl(String query) async {
     final trimmedQuery = query.trim();
     if (trimmedQuery.isEmpty) return;
     
+    _setLoadingState(true);
+    
     setState(() {
-      isLoading = true;
+      // Ensure panels are properly hidden when navigating
+      if (_isClassicMode) {
+        // Temporarily hide the URL bar when navigating
+        _hideUrlBar = true;
+        Future.delayed(const Duration(milliseconds: 300), () {
+          if (mounted) {
+            setState(() {
+              _hideUrlBar = false;
+            });
+          }
+        });
+      }
     });
     
     // Process the URL/query
@@ -1538,11 +1875,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         // Use search engine for all search:// URLs
         final engine = searchEngines[currentSearchEngine] ?? searchEngines['Google']!;
         urlToLoad = engine.replaceAll('{query}', Uri.encodeComponent(searchTerm));
-      } else {
-        // Empty search term, return early
-        setState(() {
-          isLoading = false;
-        });
+      } else {        // Empty search term, return early
+        _setLoadingState(false);
         return;
       }
     } else if (trimmedQuery.startsWith('http://') || trimmedQuery.startsWith('https://')) {
@@ -1562,12 +1896,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     
     // Load the URL in the webview
     try {
-      await controller.loadRequest(Uri.parse(urlToLoad));
-    } catch (e) {
+      await controller.loadRequest(Uri.parse(urlToLoad));    } catch (e) {
       debugPrint('Error loading URL: $e');
-      setState(() {
-        isLoading = false;
-      });
+      _setLoadingState(false);
     }
   }
 
@@ -1630,10 +1961,18 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     };
     return languages[currentLocale] ?? 'English';
   }
-
   Future<String> _getCurrentSearchEngine() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('searchEngine') ?? currentSearchEngine;
+  }
+  Future<bool> _getKeepTabsOpenSetting() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('keepTabsOpen') ?? false;
+  }
+
+  Future<void> _setKeepTabsOpenSetting(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('keepTabsOpen', value);
   }
 
   void _showGeneralSettings() {
@@ -1658,16 +1997,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                 fontWeight: FontWeight.bold,
               ),
             ),
-          ),
-          body: FutureBuilder<Map<String, String>>(
+          ),          body: FutureBuilder<Map<String, dynamic>>(
             future: _getGeneralSettingsInfo(),
             builder: (context, snapshot) {
-              final data = snapshot.data ?? {'language': 'English', 'searchEngine': 'Google'};
+              final data = snapshot.data ?? {'language': 'English', 'searchEngine': 'Google', 'keepTabsOpen': false};
               
               return ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                children: [
-                  _buildSettingsSection(
+                children: [                  _buildSettingsSection(
                     title: AppLocalizations.of(context)!.general,
                     children: [
                       _buildSettingsItem(
@@ -1680,6 +2017,21 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                         title: AppLocalizations.of(context)!.search_engine,
                         subtitle: data['searchEngine'],
                         onTap: () => _showSearchEngineSelection(context),
+                        isLast: true,
+                      ),
+                    ],
+                  ),
+                  _buildSettingsSection(
+                    title: AppLocalizations.of(context)!.tabs,
+                    children: [                      _buildSettingsToggle(
+                        title: "Keep tabs open",
+                        subtitle: "Preserve tabs when restarting",
+                        value: data['keepTabsOpen'] ?? false,
+                        onChanged: (value) async {
+                          await _setKeepTabsOpenSetting(value);
+                          setState(() {});
+                        },
+                        isFirst: true,
                         isLast: true,
                       ),
                     ],
@@ -1704,13 +2056,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       ),
     );
   }
-
-  Future<Map<String, String>> _getGeneralSettingsInfo() async {
+  Future<Map<String, dynamic>> _getGeneralSettingsInfo() async {
     final languageName = await _getCurrentLanguageName();
     final searchEngine = await _getCurrentSearchEngine();
+    final keepTabsOpen = await _getKeepTabsOpenSetting();
     return {
       'language': languageName,
       'searchEngine': searchEngine,
+      'keepTabsOpen': keepTabsOpen,
     };
   }
 
@@ -2544,20 +2897,37 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       ),
     );
   }
-
   // Helper method for creating slide transitions for settings pages
   PageRouteBuilder<dynamic> _createSettingsRoute(Widget page) {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => page,
-      transitionDuration: const Duration(milliseconds: 300),
+      transitionDuration: const Duration(milliseconds: 350),
       reverseTransitionDuration: const Duration(milliseconds: 300),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        // Forward animation (right to left)
         const begin = Offset(1.0, 0.0);
         const end = Offset.zero;
         const curve = Curves.easeInOutCubic;
         
         var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
         var offsetAnimation = animation.drive(tween);
+        
+        // Reverse animation (left to right)
+        if (secondaryAnimation.status == AnimationStatus.forward) {
+          const reverseBegin = Offset.zero;
+          const reverseEnd = Offset(-0.3, 0.0);
+          var reverseTween = Tween(begin: reverseBegin, end: reverseEnd)
+              .chain(CurveTween(curve: curve));
+          var reverseOffsetAnimation = secondaryAnimation.drive(reverseTween);
+          
+          return SlideTransition(
+            position: offsetAnimation,
+            child: SlideTransition(
+              position: reverseOffsetAnimation,
+              child: child,
+            ),
+          );
+        }
         
         return SlideTransition(position: offsetAnimation, child: child);
       },
@@ -2587,13 +2957,58 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                 fontWeight: FontWeight.bold,
               ),
             ),
-          ),
-          body: ListView(
+          ),          body: ListView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             children: [
               _buildSettingsSection(
-                title: "AppLocalizations.of(context)!.downloads",
-                children: [
+                title: AppLocalizations.of(context)!.downloads,
+                children: [                  _buildSettingsToggle(
+                    title: AppLocalizations.of(context)!.auto_open_downloads,
+                    subtitle: "Automatically open downloaded files",
+                    value: _autoOpenDownloads,
+                    onChanged: (value) async {
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setBool('autoOpenDownloads', value);
+                      setState(() {
+                        _autoOpenDownloads = value;
+                      });
+                    },
+                    isFirst: true,
+                  ),
+                  _buildSettingsToggle(
+                    title: AppLocalizations.of(context)!.ask_download_location,
+                    subtitle: "Ask where to save files before downloading",
+                    value: _askDownloadLocation,
+                    onChanged: (value) async {
+                      final prefs = await SharedPreferences.getInstance();
+                      await prefs.setBool('askDownloadLocation', value);
+                      setState(() {
+                        _askDownloadLocation = value;
+                      });
+                    },
+                  ),                  FutureBuilder<String>(
+                    future: _getDownloadLocation(),
+                    builder: (context, snapshot) {
+                      final downloadLocation = snapshot.data ?? "Default location";
+                      return _buildSettingsItem(
+                        title: AppLocalizations.of(context)!.download_location,
+                        subtitle: downloadLocation,
+                        onTap: _showDownloadLocationPicker,
+                      );
+                    },
+                  ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.open_downloads_folder,
+                    onTap: () async {
+                      final downloadLocation = await _getDownloadLocation();
+                      await OpenFile.open(downloadLocation);
+                    },
+                  ),
+                  _buildSettingsItem(
+                    title: AppLocalizations.of(context)!.clear_downloads_history,
+                    onTap: () => _showClearDownloadsConfirmation(),
+                    isLast: true,
+                  ),
                 ],
               ),
             ],
@@ -3212,7 +3627,6 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       return url;
     }
   }
-
   void _switchTab(int index) {
     if (index < 0 || index >= tabs.length) return;
     
@@ -3225,6 +3639,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       }
       canGoBack = tabs[index].canGoBack;
       canGoForward = tabs[index].canGoForward;
+      
+      // Update security indicator for the switched tab
+      isSecure = _isSecureUrl(tabs[index].url);
     });
     
     // Update navigation state after switching tabs
@@ -3828,10 +4245,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       ),
     );
   }
-
   Future<void> _optimizeWebView() async {
-    // Memory optimization
-    const duration = Duration(minutes: 5); // More frequent cleanup
+    // Memory optimization with smarter scheduling
+    const duration = Duration(minutes: 3); // More frequent cleanup for better performance
     Timer.periodic(duration, (timer) async {
       if (!mounted) {
         timer.cancel();
@@ -3840,15 +4256,51 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       
       await _checkMemoryAndOptimize();
       
-      // Aggressive cache clearing for inactive tabs
+      // Smart cache management for inactive tabs
       for (var i = 0; i < tabs.length; i++) {
         if (i != currentTabIndex) {
-          await tabs[i].controller.clearCache();
-          await tabs[i].controller.clearLocalStorage();
+          // If tab has been inactive for more than 5 minutes, clear cache
+          final lastActive = tabs[i].lastActiveTime ?? DateTime.now();
+          final inactiveFor = DateTime.now().difference(lastActive);
+          
+          if (inactiveFor.inMinutes > 5) {
+            await tabs[i].controller.clearCache();
+            await tabs[i].controller.clearLocalStorage();
+          }
+        } else {
+          // Update last active time for current tab
+          tabs[i].lastActiveTime = DateTime.now();
         }
       }
     });
-
+    
+    // Advanced web content optimizations
+    await controller.runJavaScript('''
+      // Optimize animations and transitions
+      document.documentElement.style.setProperty('--animation-duration', '0.2s');
+      
+      // Optimize image loading
+      document.querySelectorAll('img').forEach(img => {
+        img.loading = 'lazy';
+        img.decoding = 'async';
+      });
+      
+      // Use passive event listeners for touch events
+      document.addEventListener('touchstart', function(){}, {passive: true});
+      document.addEventListener('touchmove', function(){}, {passive: true});
+      document.addEventListener('wheel', function(){}, {passive: true});
+      
+      // Enable hardware acceleration for key elements
+      const importantElements = document.querySelectorAll('.header, .banner, .navigation, nav, header');
+      importantElements.forEach(el => {
+        el.style.transform = 'translateZ(0)';
+        el.style.willChange = 'transform, opacity';
+        el.style.backfaceVisibility = 'hidden';
+      });
+      
+      console.log('[Solar Browser] Web content optimizations applied');
+    ''');
+    
     // Advanced performance optimizations
       await controller.runJavaScript('''
       // Enable maximum performance mode
@@ -4110,9 +4562,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       ''');
     }
   }
-
   Widget _buildOverlayPanel() {
-    final bool isPanelVisible = isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible;
+    final bool isPanelVisible = isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible || isHistoryVisible;
     
     if (!isPanelVisible) return const SizedBox.shrink();
 
@@ -4125,14 +4576,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       bottom: 0,
       child: Material(
         color: Colors.transparent,
-        child: GestureDetector(
-          onVerticalDragUpdate: (details) {
+        child: GestureDetector(          onVerticalDragUpdate: (details) {
             if (details.delta.dy > 10) {
               setState(() {
                 isTabsVisible = false;
                 isSettingsVisible = false;
                 isBookmarksVisible = false;
                 isDownloadsVisible = false;
+                isHistoryVisible = false;
               });
             }
           },
@@ -4150,23 +4601,24 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                       opacity: value,
                       child: child,
                     );
-                  },
-                  child: AnimatedSlide(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutCubic,
-                    offset: isPanelVisible ? Offset.zero : const Offset(0, 1),
-                    child: AnimatedOpacity(
-                      duration: const Duration(milliseconds: 200),
-                      opacity: isPanelVisible ? 1.0 : 0.0,
-                      child: isTabsVisible 
+                  },                child: AnimatedSlide(
+                  duration: const Duration(milliseconds: 400), // Increased for even smoother transition
+                  curve: Curves.fastLinearToSlowEaseIn, // Better acceleration/deceleration curve
+                  offset: isPanelVisible ? Offset.zero : const Offset(0, 1),
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 350), // Increased duration
+                    curve: Curves.easeOutCubic, // Added curve for smoother fade
+                    opacity: isPanelVisible ? 1.0 : 0.0,child: isTabsVisible 
                         ? _buildTabsPanel() 
                         : isSettingsVisible
                           ? _buildSettingsPanel()
                           : isBookmarksVisible
                             ? _buildBookmarksPanel()
-                            : isDownloadsVisible
-                              ? _buildDownloadsPanel()
-                              : Container(),
+                            : isHistoryVisible
+                              ? _buildHistoryPanel()
+                              : isDownloadsVisible
+                                ? _buildDownloadsPanel()
+                                : Container(),
                     ),
                   ),
                 ),
@@ -4176,9 +4628,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         ),
       ),
     );
-  }
-
-  Widget _buildTabsPanel() {
+  }  Widget _buildTabsPanel() {
     final displayTabs = tabs.where((tab) => 
       !tab.url.startsWith('file:///') && 
       !tab.url.startsWith('about:blank') && 
@@ -4189,27 +4639,29 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       height: MediaQuery.of(context).size.height,
       color: ThemeManager.backgroundColor(),
       child: Column(
-        children: [
+        children: [          // Modernized compact header with just back button and title
           Container(
-            height: 56 + MediaQuery.of(context).padding.top,
+            height: 46 + MediaQuery.of(context).padding.top, // Reduced height from 56 to 46
             padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
             decoration: BoxDecoration(
               color: ThemeManager.backgroundColor(),
               boxShadow: [
                 BoxShadow(
-                  color: ThemeManager.textColor().withOpacity(0.1),
-                  blurRadius: 4,
+                  color: ThemeManager.textColor().withOpacity(0.08),
+                  blurRadius: 6,
                   offset: Offset(0, 1),
+                  spreadRadius: 0.5,
                 ),
               ],
             ),
             child: Row(
               children: [
                 IconButton(
+                  padding: EdgeInsets.all(12), // Reduced padding
                   icon: Icon(
                     Icons.chevron_left,
                     color: ThemeManager.textColor(),
-                    size: 22,
+                    size: 20, // Smaller icon
                   ),
                   onPressed: () {
                     setState(() {
@@ -4218,254 +4670,434 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   },
                 ),
                 Expanded(
-                  child: Row(
+                  child: Text(
+                    'Tabs',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 16, // Smaller font
+                      fontWeight: FontWeight.w600,
+                      color: ThemeManager.textColor(),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 48), // Balance the back button
+              ],
+            ),
+          ),
+          // Content area
+          Expanded(
+            child: displayTabs.isEmpty
+              ? Center(
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      _buildHeaderButton(
-                        title: AppLocalizations.of(context)!.tabs,
-                        count: displayTabs.length,
-                        isSelected: !isHistoryVisible,
-                        onTap: () => setState(() => isHistoryVisible = false),
+                      Icon(
+                        Icons.tab_unselected_rounded,
+                        size: 48,
+                        color: ThemeManager.surfaceColor().withOpacity(0.24),
                       ),
-                      SizedBox(width: 16),
-                      _buildHeaderButton(
-                        title: AppLocalizations.of(context)!.history,
-                        count: _loadedHistory.length,
-                        isSelected: isHistoryVisible,
-                        onTap: () => setState(() => isHistoryVisible = true),
+                      SizedBox(height: 16),
+                      Text(
+                        'No tabs open',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: ThemeManager.textSecondaryColor(),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : _buildVerticalTabsList(displayTabs),
+          ),
+          // Bottom action bar
+          _buildBottomActionBar(),
+        ],
+      ),
+    );
+  }
+  // New vertical tabs list implementation
+  Widget _buildVerticalTabsList(List<BrowserTab> displayTabs) {
+    // Group tabs by their groupId
+    final Map<String?, List<BrowserTab>> groupedTabs = {};
+    for (final tab in displayTabs) {
+      final groupId = tab.groupId;
+      if (!groupedTabs.containsKey(groupId)) {
+        groupedTabs[groupId] = [];
+      }
+      groupedTabs[groupId]!.add(tab);
+    }
+
+    return ListView.builder(
+      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      physics: BouncingScrollPhysics(),
+      itemCount: _calculateItemCount(groupedTabs),
+      itemBuilder: (context, index) {
+        return _buildGroupOrTab(groupedTabs, index);
+      },
+    );
+  }
+
+  int _calculateItemCount(Map<String?, List<BrowserTab>> groupedTabs) {
+    int count = 0;
+    groupedTabs.forEach((groupId, tabs) {
+      if (groupId != null) {
+        count++; // Group header
+      }
+      count += tabs.length; // Tabs in group
+    });
+    return count;
+  }
+
+  Widget _buildGroupOrTab(Map<String?, List<BrowserTab>> groupedTabs, int index) {
+    int currentIndex = 0;
+    
+    for (final entry in groupedTabs.entries) {
+      final groupId = entry.key;
+      final groupTabs = entry.value;
+      
+      if (groupId != null) {
+        // Check if this is the group header
+        if (currentIndex == index) {
+          final group = _tabGroups.firstWhere((g) => g.id == groupId);
+          return _buildGroupHeader(group, groupTabs);
+        }
+        currentIndex++;
+      }
+      
+      // Check if this is one of the tabs in this group
+      if (index >= currentIndex && index < currentIndex + groupTabs.length) {
+        final tabIndex = index - currentIndex;
+        final tab = groupTabs[tabIndex];
+        return _buildTabItem(tab, groupId);
+      }
+      
+      currentIndex += groupTabs.length;
+    }
+    
+    return Container(); // Fallback
+  }
+
+  Widget _buildGroupHeader(TabGroup group, List<BrowserTab> groupTabs) {
+    return Container(
+      margin: EdgeInsets.only(top: 16, bottom: 8),
+      child: Row(
+        children: [
+          Container(
+            width: 16,
+            height: 16,
+            decoration: BoxDecoration(
+              color: group.color,
+              shape: BoxShape.circle,
+            ),
+          ),
+          SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              group.name,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: ThemeManager.textColor(),
+              ),
+            ),
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: group.color.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              '${groupTabs.length}',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: group.color,
+              ),
+            ),
+          ),
+          SizedBox(width: 8),
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'ungroup') {
+                _ungroupTabs(group);
+              } else if (value == 'close_group') {
+                _closeGroup(group);
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'ungroup',
+                child: Text('Ungroup'),
+              ),
+              PopupMenuItem(
+                value: 'close_group',
+                child: Text('Close group', style: TextStyle(color: Colors.red)),
+              ),
+            ],
+            child: Icon(
+              Icons.more_horiz,
+              color: ThemeManager.textSecondaryColor(),
+              size: 16,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  Widget _buildTabItem(BrowserTab tab, String? groupId) {
+    final isCurrentTab = tab == tabs[currentTabIndex];
+    
+    return Container(
+      margin: EdgeInsets.only(bottom: 6), // Reduced bottom margin from 8 to 6
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () async {
+            final tabIndex = tabs.indexOf(tab);
+            if (tabIndex != -1) {
+              await _switchToTab(tabIndex);
+              setState(() {
+                isTabsVisible = false;
+              });
+            }
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Reduced padding from 16 all to 12 vertical
+            decoration: BoxDecoration(
+              color: ThemeManager.surfaceColor().withOpacity(isCurrentTab ? 0.15 : 0.05),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: groupId != null 
+                  ? _tabGroups.firstWhere((g) => g.id == groupId, orElse: () => TabGroup(id: '', name: '', color: Colors.grey, createdAt: DateTime.now())).color.withOpacity(0.3)
+                  : ThemeManager.textColor().withOpacity(0.08),
+                width: 1,
+              ),
+            ),            child: Row(
+              children: [
+                // Active tab indicator (orange bar on the left)
+                if (isCurrentTab) ...[
+                  Container(
+                    width: 4,
+                    height: 40, // Reduced from 48 to 40
+                    decoration: BoxDecoration(
+                      color: ThemeManager.primaryColor(),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                ] else if (groupId != null) ...[
+                  Container(
+                    width: 4,
+                    height: 40, // Reduced from 48 to 40
+                    decoration: BoxDecoration(
+                      color: _tabGroups.firstWhere((g) => g.id == groupId).color.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                ] else ...[
+                  SizedBox(width: 16), // Spacing when no indicator
+                ],
+                
+                // Favicon area
+                Container(
+                  width: 40, // Reduced from 48 to 40
+                  height: 40, // Reduced from 48 to 40
+                  decoration: BoxDecoration(
+                    color: ThemeManager.surfaceColor().withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: ThemeManager.textColor().withOpacity(0.1),
+                      width: 1,
+                    ),
+                  ),
+                  child: Center(
+                    child: Container(
+                      width: 24,
+                      height: 24,
+                      child: tab.favicon != null && !tab.isIncognito
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: Image.network(
+                              tab.favicon!,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) => Icon(
+                                tab.isIncognito ? Icons.visibility_off_rounded : Icons.language_rounded,
+                                size: 20,
+                                color: ThemeManager.textSecondaryColor(),
+                              ),
+                            ),
+                          )
+                        : Icon(
+                            tab.isIncognito ? Icons.visibility_off_rounded : Icons.language_rounded,
+                            size: 20,
+                            color: ThemeManager.textSecondaryColor(),
+                          ),
+                    ),
+                  ),
+                ),
+                
+                SizedBox(width: 16),
+                
+                // Tab title and URL
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        tab.title.isEmpty ? _getDisplayUrl(tab.url) : tab.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: isCurrentTab ? FontWeight.w600 : FontWeight.w500,
+                          color: ThemeManager.textColor(),
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Row(
+                        children: [
+                          if (tab.isIncognito) ...[
+                            Icon(
+                              Icons.visibility_off_rounded,
+                              size: 14,
+                              color: ThemeManager.textSecondaryColor(),
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              'Incognito',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: ThemeManager.textSecondaryColor(),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              '•',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: ThemeManager.textSecondaryColor(),
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                          ],
+                          Expanded(
+                            child: Text(
+                              _getDisplayUrl(tab.url),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: ThemeManager.textSecondaryColor(),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-                PopupMenuButton<String>(
-                  icon: Icon(
-                    Icons.add_circle_outline_rounded,
-                    color: ThemeManager.textColor(),
-                    size: 22,
-                  ),
-                  onSelected: (String value) {
-                    if (value == 'normal') {
-                      _addNewTab();
-                    } else if (value == 'incognito') {
-                      _addNewTab(isIncognito: true);
-                    }
-                    setState(() {
-                      isTabsVisible = false;
-                    });
-                  },
-                  color: ThemeManager.surfaceColor(),
-                  elevation: 8,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    side: BorderSide(
-                      color: ThemeManager.textSecondaryColor().withOpacity(0.1),
-                      width: 1,
-                    ),
-                  ),
-                  itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                    PopupMenuItem<String>(
-                      value: 'normal',
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.tab_rounded,
-                            size: 20,
-                            color: ThemeManager.textColor(),
-                          ),
-                          SizedBox(width: 12),
-                          Text(
-                            AppLocalizations.of(context)!.new_tab,
-                            style: TextStyle(
-                              color: ThemeManager.textColor(),
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
+                
+                SizedBox(width: 16),
+                
+                // Close button
+                Material(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(20),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () => _closeTab(tabs.indexOf(tab)),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: ThemeManager.surfaceColor().withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: ThemeManager.textColor().withOpacity(0.1),
+                          width: 1,
+                        ),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 18,
+                          color: ThemeManager.textSecondaryColor(),
+                        ),
                       ),
                     ),
-                    PopupMenuItem<String>(
-                      value: 'incognito',
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.visibility_off_rounded,
-                            size: 20,
-                            color: ThemeManager.textColor(),
-                          ),
-                          SizedBox(width: 12),
-                          Text(
-                            AppLocalizations.of(context)!.new_incognito_tab,
-                            style: TextStyle(
-                              color: ThemeManager.textColor(),
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
           ),
-          Expanded(
-            child: isHistoryVisible
-              ? _buildHistoryList()
-              : displayTabs.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.tab_unselected_rounded,
-                          size: 48,
-                          color: ThemeManager.surfaceColor().withOpacity(0.24),
-                        ),
-                        SizedBox(height: 16),
-                        Text(
-                          AppLocalizations.of(context)!.no_tabs_open,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: ThemeManager.textSecondaryColor(),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : GridView.builder(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: MediaQuery.of(context).orientation == Orientation.portrait ? 2 : 3,
-                      childAspectRatio: 0.85,
-                      crossAxisSpacing: 8,
-                      mainAxisSpacing: 8,
-                    ),
-                    padding: EdgeInsets.all(8),
-                    physics: BouncingScrollPhysics(),
-                    itemCount: displayTabs.length,
-                    itemBuilder: (context, index) {
-                      final tab = displayTabs[index];
-                      final isCurrentTab = tab == tabs[currentTabIndex];
-                      
-                      return GestureDetector(
-                        onTap: () async {
-                          final tabIndex = tabs.indexOf(tab);
-                          if (tabIndex != -1) {
-                            await _switchToTab(tabIndex);
-                            setState(() {
-                              isTabsVisible = false;
-                            });
-                          }
-                        },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: isCurrentTab 
-                              ? ThemeManager.surfaceColor().withOpacity(0.24)
-                              : ThemeManager.surfaceColor().withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.vertical(top: Radius.circular(11)),
-                                  child: Stack(
-                                    fit: StackFit.expand,
-                                    children: [
-                                      Container(
-                                        color: ThemeManager.surfaceColor().withOpacity(0.05),
-                                        child: Center(
-                                          child: Container(
-                                            width: 24,
-                                            height: 24,
-                                            child: tab.favicon != null && !tab.isIncognito
-                                              ? Image.network(
-                                                  tab.favicon!,
-                                                  fit: BoxFit.contain,
-                                                  errorBuilder: (context, error, stackTrace) => Icon(
-                                                    tab.isIncognito ? Icons.visibility_off_rounded : Icons.public_rounded,
-                                                    size: 20,
-                                                    color: ThemeManager.textSecondaryColor(),
-                                                  ),
-                                                )
-                                              : Icon(
-                                                  tab.isIncognito ? Icons.visibility_off_rounded : Icons.public_rounded,
-                                                  size: 20,
-                                                  color: ThemeManager.textSecondaryColor(),
-                                                ),
-                                          ),
-                                        ),
-                                      ),
-                                      Positioned(
-                                        top: 8,
-                                        right: 8,
-                                        child: GestureDetector(
-                                          onTap: () => _closeTab(tabs.indexOf(tab)),
-                                          child: Container(
-                                            padding: EdgeInsets.all(4),
-                                            decoration: BoxDecoration(
-                                              color: ThemeManager.surfaceColor().withOpacity(0.5),
-                                              borderRadius: BorderRadius.circular(12),
-                                            ),
-                                            child: Icon(
-                                              Icons.close,
-                                              size: 18,
-                                              color: ThemeManager.textColor(),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.all(8),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      tab.title.isEmpty ? _getDisplayUrl(tab.url) : tab.title,
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: 13,
-                                        color: ThemeManager.textColor(),
-                                        fontWeight: isCurrentTab ? FontWeight.w500 : FontWeight.normal,
-                                      ),
-                                    ),
-                                    if (tab.isIncognito) ...[
-                                      SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            Icons.visibility_off_rounded,
-                                            size: 12,
-                                            color: ThemeManager.textSecondaryColor(),
-                                          ),
-                                          SizedBox(width: 4),
-                                          Text(
-                                            AppLocalizations.of(context)!.incognito,
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              color: ThemeManager.textSecondaryColor(),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-        ],
+        ),
       ),
+    );
+  }
+
+  void _closeGroup(TabGroup group) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: ThemeManager.surfaceColor(),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            'Close Group',
+            style: TextStyle(
+              color: ThemeManager.textColor(),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          content: Text(
+            'Close all tabs in "${group.name}"? This action cannot be undone.',
+            style: TextStyle(
+              color: ThemeManager.textSecondaryColor(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  color: ThemeManager.textSecondaryColor(),
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                setState(() {
+                  tabs.removeWhere((tab) => tab.groupId == group.id);
+                  if (tabs.isEmpty) {
+                    _addNewTab();
+                  } else if (currentTabIndex >= tabs.length) {
+                    currentTabIndex = tabs.length - 1;
+                    controller = tabs[currentTabIndex].controller;
+                    _displayUrl = tabs[currentTabIndex].url;
+                    _urlController.text = _formatUrl(tabs[currentTabIndex].url);
+                  }
+                });
+              },
+              child: Text(
+                'Close Group',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -4515,118 +5147,42 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         ),
       ),
     );
-  }
-
-  // Add isHistoryVisible state variable at the top of the class
-  bool isHistoryVisible = false;
-
-  void _showHistoryPanel() {
-    print('Opening history panel...');
-    _loadHistory(); // Refresh history when panel is opened
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.8,
-        decoration: BoxDecoration(
-          color: isDarkMode ? Colors.black : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              height: 96 + MediaQuery.of(context).padding.top,
-              padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: 56,
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(Icons.close, color: ThemeManager.textColor()),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                        Expanded(
-                          child: Text(
-                            'History',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: ThemeManager.textColor(),
-                            ),
-                          ),
-                        ),
-                        if (_loadedHistory.isNotEmpty)
-                          IconButton(
-                            icon: Icon(Icons.delete_outline, color: ThemeManager.textColor()),
-                            onPressed: () {
-                              _clearHistory();
-                              Navigator.pop(context);
-                            },
-                          ),
-                      ],
-                    ),
+  }  Widget _buildHistoryPanel() {
+    print('Building history panel with ${_loadedHistory.length} items');
+    print('History panel theme colors - bg: ${ThemeManager.backgroundColor()}, text: ${ThemeManager.textColor()}');
+    
+    return Material(
+      color: ThemeManager.backgroundColor(),
+      child: SafeArea(
+        child: Container(
+          color: ThemeManager.backgroundColor(),
+          child: Column(
+            children: [              _buildPanelHeader(
+                AppLocalizations.of(context)!.history, 
+                onBack: () {
+                  setState(() {
+                    isHistoryVisible = false;
+                  });
+                },
+                trailing: IconButton(
+                  icon: Icon(
+                    Icons.delete_outline,
+                    color: ThemeManager.textColor(),
                   ),
-                ],
+                  onPressed: () => _showClearHistoryDialog(),
+                  tooltip: AppLocalizations.of(context)!.clear_history,
+                ),
               ),
-            ),
-            Expanded(
-              child: _loadedHistory.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.history,
-                          size: 48,
-                          color: ThemeManager.textSecondaryColor(),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No History',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: ThemeManager.textSecondaryColor(),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    itemCount: _loadedHistory.length,
-                    itemBuilder: (context, index) {
-                      final item = _loadedHistory[index];
-                      return ListTile(
-                        leading: item['favicon'] != null
-                          ? Image.memory(base64Decode(item['favicon']), width: 16, height: 16)
-                          : Icon(Icons.history, size: 16, color: ThemeManager.textSecondaryColor()),
-                        title: Text(
-                          item['title'] ?? item['url'],
-                          style: TextStyle(color: ThemeManager.textColor()),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Text(
-                          item['url'],
-                          style: TextStyle(color: ThemeManager.textSecondaryColor()),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        trailing: Text(
-                          _formatDate(DateTime.parse(item['timestamp'])),
-                          style: TextStyle(color: ThemeManager.textSecondaryColor()),
-                        ),
-                        onTap: () {
-                          _loadUrl(item['url']);
-                          Navigator.pop(context);
-                        },
-                      );
-                    },
-                  ),
-            ),
-          ],
+              Expanded(
+                child: Container(
+                  color: ThemeManager.backgroundColor(),
+                  child: _loadedHistory.isEmpty
+                    ? _buildEmptyState('No browsing history', Icons.history)
+                    : _buildHistoryList(),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -4654,12 +5210,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           ],
         ),
       );
-    }
-
-    return ListView.builder(
+    }    return ListView.builder(
       controller: _historyScrollController,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      itemCount: _loadedHistory.length,
+      padding: const EdgeInsets.only(top: 4, bottom: 8),
+      itemCount: _loadedHistory.length,
       physics: const BouncingScrollPhysics(),
                       itemBuilder: (context, index) {
                         final historyItem = _loadedHistory[index];
@@ -4735,10 +5289,16 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               onPressed: () => _removeHistoryItem(index),
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
-            ),
-            onTap: () {
-              _loadUrl(url);
-              Navigator.pop(context);
+            ),            onTap: () {
+              print('History item tapped: $url');
+              // Close history panel first
+              setState(() {
+                isHistoryVisible = false;
+              });
+              // Load the URL after a brief delay to ensure smooth transition
+              Future.delayed(const Duration(milliseconds: 100), () {
+                _loadUrl(url);
+              });
             },
           ),
         );
@@ -5022,6 +5582,108 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           ),
         ),
       ],
+    );  }
+
+  Future<void> _showClearDownloadsConfirmation() async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: ThemeManager.backgroundColor(),
+        title: Text(
+          AppLocalizations.of(context)!.clear_downloads_history,
+          style: TextStyle(
+            color: ThemeManager.textColor(),
+          ),
+        ),
+        content: Text(
+          AppLocalizations.of(context)!.clear_downloads_history_confirm,
+          style: TextStyle(
+            color: ThemeManager.textSecondaryColor(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              AppLocalizations.of(context)!.cancel,
+              style: TextStyle(
+                color: ThemeManager.textSecondaryColor(),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setStringList('downloads', []);
+              setState(() {
+                downloads.clear();
+              });
+              Navigator.pop(context);
+              _showNotification(
+                Text(AppLocalizations.of(context)!.downloads_history_cleared),
+                duration: const Duration(seconds: 2),
+              );
+            },
+            child: Text(
+              AppLocalizations.of(context)!.clear,
+              style: TextStyle(
+                color: Colors.red,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );  }
+
+  Future<void> _showClearHistoryDialog() async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: ThemeManager.backgroundColor(),
+        title: Text(
+          AppLocalizations.of(context)!.clear_history,
+          style: TextStyle(
+            color: ThemeManager.textColor(),
+          ),
+        ),
+        content: Text(
+          "This will clear all your browsing history. This action cannot be undone.",
+          style: TextStyle(
+            color: ThemeManager.textSecondaryColor(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              AppLocalizations.of(context)!.cancel,
+              style: TextStyle(
+                color: ThemeManager.textSecondaryColor(),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setStringList('history', []);
+              setState(() {
+                _loadedHistory.clear();
+              });
+              Navigator.pop(context);
+              _showNotification(
+                Text("History cleared"),
+                duration: const Duration(seconds: 2),
+              );
+            },
+            child: Text(
+              AppLocalizations.of(context)!.clear,
+              style: TextStyle(
+                color: Colors.red,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -5304,14 +5966,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       });
     }
   }
-
-  void _addNewTab({String? url, bool isIncognito = false}) {
+  void _addNewTab({String? url, bool isIncognito = false, String? groupId}) {
     final newTab = BrowserTab(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       url: url ?? _homeUrl,
       title: isIncognito ? AppLocalizations.of(context)!.new_incognito_tab : AppLocalizations.of(context)!.new_tab,
       favicon: null,
       isIncognito: isIncognito,
+      groupId: groupId,
     );
     
     _initializeTab(newTab);
@@ -5348,11 +6010,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     }
     return baseName;
   }
-
   Widget _buildLoadingBorder() {
     return TweenAnimationBuilder(
       tween: Tween<double>(begin: 0.0, end: 1.0),
-      duration: const Duration(seconds: 1),
+      duration: const Duration(milliseconds: 900), // Reduced from 1 second to 900ms for a snappier feel
+      curve: Curves.easeInOutCubic, // Added easing curve for smoother animation
       builder: (context, double value, child) {
         return CustomPaint(
           painter: LoadingBorderPainter(
@@ -5398,8 +6060,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           ? Transform.translate(
               offset: Offset(0, 0), // No sliding in classic mode
               child: _buildUrlBarContent(width, keyboardVisible)
-            )
-          : GestureDetector(
+            )          : GestureDetector(
               behavior: HitTestBehavior.opaque,
               onHorizontalDragUpdate: (details) {
                 setState(() {
@@ -5407,19 +6068,36 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                 });
               },
               onHorizontalDragEnd: (details) async {
-                if (_urlBarSlideOffset.abs() > 50) {
-                  if (_urlBarSlideOffset < 0 && canGoBack) {
+                const threshold = 50.0;
+                const velocity = 800.0;
+                
+                if (_urlBarSlideOffset.abs() > threshold || details.primaryVelocity!.abs() > velocity) {
+                  if ((_urlBarSlideOffset < 0 || details.primaryVelocity! < -velocity) && canGoBack) {
+                    // Animate to left before going back
+                    setState(() {
+                      _urlBarSlideOffset = -MediaQuery.of(context).size.width;
+                    });
+                    await Future.delayed(const Duration(milliseconds: 150));
                     await _goBack();
-                  } else if (_urlBarSlideOffset > 0 && canGoForward) {
+                  } else if ((_urlBarSlideOffset > 0 || details.primaryVelocity! > velocity) && canGoForward) {
+                    // Animate to right before going forward
+                    setState(() {
+                      _urlBarSlideOffset = MediaQuery.of(context).size.width;
+                    });
+                    await Future.delayed(const Duration(milliseconds: 150));
                     await _goForward();
                   }
                 }
+                
+                // Reset position with smooth animation
                 setState(() {
                   _urlBarSlideOffset = 0;
                 });
               },
-              child: Transform.translate(
-                offset: Offset(_urlBarSlideOffset, 0),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                curve: Curves.easeOutCubic,
+                transform: Matrix4.translationValues(_urlBarSlideOffset, 0, 0),
                 child: _buildUrlBarContent(width, keyboardVisible)
               ),
             ),
@@ -5482,8 +6160,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                       ),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                    ),
-                    onTap: () {
+                    ),                    onTap: () {
                       if (!_urlFocusNode.hasFocus) {
                         setState(() {
                           if (_displayUrl == 'file:///android_asset/main.html' || _displayUrl == _homeUrl) {
@@ -5497,6 +6174,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                           );
                         });
                       }
+                      _urlFocusNode.requestFocus();
                     },
                     onSubmitted: (value) {
                       _loadUrl(value);
@@ -5569,14 +6247,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   DateTime? _lastBackPressTime;
 
-  Future<bool> _onWillPop() async {
-    // First check if any panel is open
-    if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible) {
+  Future<bool> _onWillPop() async {    // First check if any panel is open
+    if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible || isHistoryVisible) {
       setState(() {
         isTabsVisible = false;
         isSettingsVisible = false;
         isBookmarksVisible = false;
         isDownloadsVisible = false;
+        isHistoryVisible = false;
       });
       return false;
     }
@@ -5607,13 +6285,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   Widget build(BuildContext context) {
     final statusBarHeight = MediaQuery.of(context).padding.top;
     final keyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
-    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-    
-    // Force show URL bar when any panel is visible
-    if ((isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible) && _hideUrlBar) {
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;    // Force show URL bar when any panel is visible or when classic mode is toggled
+    if ((isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible || isHistoryVisible) && _hideUrlBar) {
       _hideUrlBar = false;
       _hideUrlBarController.reverse();
     }
+    
+    // Ensure standard UI elements are visible when classic mode is off
+    final bool showStandardControls = !_isClassicMode || (_isClassicMode && (_hideUrlBar || isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible || isHistoryVisible));
     
     return WillPopScope(
       onWillPop: _onWillPop,
@@ -5683,106 +6362,123 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   ),
                 ),
               ),
-            ),
-
-            // WebView scroll detector with padding - Fixed position
+            ),            // WebView scroll detector with padding - Fixed position
             if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
-            Positioned(
-              top: statusBarHeight,
-              left: 0,
-              right: 0,
-              // Adjust bottom position to account for keyboard and buttons
-              bottom: keyboardVisible 
-                ? keyboardHeight + 120 // Ensure enough space for URL bar and buttons when keyboard is visible
-                : (_isClassicMode ? 116 : 60), // Fixed bottom padding based on mode
-              child: IgnorePointer(
-                ignoring: _isSlideUpPanelVisible || keyboardVisible,
-                child: Listener(
-                  behavior: HitTestBehavior.translucent,
-                  onPointerMove: (PointerMoveEvent event) {
-                    // Don't allow URL bar hide/show when keyboard is visible
-                    if (keyboardVisible) return;
-                    
-                    if (!_isSlideUpPanelVisible && event.delta.dy.abs() > 5) {
-                      if (event.delta.dx.abs() < event.delta.dy.abs()) {
-                        if (event.delta.dy < 0) { // Scrolling up = hide URL bar
-                          if (!_hideUrlBar) {
-                            setState(() {
-                              _hideUrlBar = true;
-                              _hideUrlBarController.forward();
-                            });
-                          }
-                        } else { // Scrolling down = show URL bar
-                          if (_hideUrlBar) {
-                            setState(() {
-                              _hideUrlBar = false;
-                              _hideUrlBarController.reverse();
-                            });
+              Positioned(
+                top: statusBarHeight,
+                left: 0,
+                right: 0,              // Adjust bottom position to account for keyboard and buttons
+                bottom: keyboardVisible 
+                  ? keyboardHeight + 120 // Ensure enough space for URL bar and buttons when keyboard is visible
+                  : (_isClassicMode ? 116 : 60), // Fixed bottom padding based on mode
+                child: IgnorePointer(
+                  ignoring: _isSlideUpPanelVisible || keyboardVisible,
+                  child: Listener(
+                    behavior: HitTestBehavior.translucent,
+                    onPointerMove: (PointerMoveEvent event) {                    // Don't allow URL bar hide/show when keyboard is visible
+                      if (keyboardVisible) return;
+                      
+                      // Handle scroll events for both classic and non-classic modes
+                      if (!_isSlideUpPanelVisible && event.delta.dy.abs() > 5) {
+                        if (event.delta.dx.abs() < event.delta.dy.abs()) {
+                          if (event.delta.dy < 0) { // Scrolling up = hide URL bar
+                            if (!_hideUrlBar) {
+                              setState(() {
+                                _hideUrlBar = true;
+                                _hideUrlBarController.forward();
+                              });
+                            }
+                          } else { // Scrolling down = show URL bar
+                            if (_hideUrlBar) {
+                              setState(() {
+                                _hideUrlBar = false;
+                                _hideUrlBarController.reverse();
+                              });
+                            }
                           }
                         }
                       }
-                    }
-                  },
+                    },
+                  ),
                 ),
               ),
-            ),
-
+            
             // Overlay panels (tabs, settings, etc.)
-            if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible)
+            if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible || isHistoryVisible)
               _buildOverlayPanel(),
-              
-            // Classic mode navigation panel with background that extends up to the URL bar
-              if (_isClassicMode && !isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible) 
-                SlideTransition(
-                  position: _hideUrlBarAnimation, // Use the same animation as URL bar
+                // Classic mode navigation panel with background that extends up to the URL bar
+            if (_isClassicMode)
+              AnimatedOpacity(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                opacity: (_hideUrlBar || isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible || isHistoryVisible) ? 0.0 : 1.0,                child: AnimatedSlide(
+                  duration: const Duration(milliseconds: 350),
+                  curve: Curves.easeOutCubic,
+                  offset: (_hideUrlBar || isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible || isHistoryVisible) ? const Offset(0, 1) : Offset.zero,
                   child: Stack(
                     children: [
-                      // Create a background panel that extends up to include the URL bar
+                      // Create a seamless background that visually connects with the URL bar
                       Positioned(
                         bottom: keyboardVisible ? keyboardHeight : 0, // Position above keyboard when visible
                         left: 0,
                         right: 0,
-                        height: 48 + MediaQuery.of(context).padding.bottom + 60 + 24, // Fixed height
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: ThemeManager.backgroundColor(), // Fully opaque
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(16)), // Rounded top corners
+                        height: 48 + MediaQuery.of(context).padding.bottom + 8 + 60, // Extended height to connect with URL bar
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)), // Smooth rounded top
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: ThemeManager.backgroundColor(),
+                              border: Border(
+                                top: BorderSide(
+                                  color: ThemeManager.textColor().withOpacity(0.08),
+                                  width: 1,
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
+                        ),                      ),
                       // Add the navigation buttons
-                      _buildClassicModePanel(),
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: _buildClassicModePanel(),
+                      ),
                     ],
                   ),
                 ),
+              ),
               
-            // Bottom controls (URL bar and panels) - only show when no panels are visible
-            if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible)
+            // Bottom controls (URL bar and panels) - show when no panels are visible or classic mode is off
+            if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible && !isHistoryVisible)
               Positioned(
                 left: 0,
                 right: 0,
                 // Position the URL bar above the keyboard and above navigation buttons when visible
-                bottom: keyboardVisible ? 
-                   (_isClassicMode ?
-                      (keyboardHeight + 65) : // Classic mode - position above keyboard and buttons
-                      (keyboardHeight + 8)) : // Non-classic mode - small spacing above keyboard
-                   (_isClassicMode ? 
-                      70 + MediaQuery.of(context).padding.bottom : // Classic mode fixed position
-                      MediaQuery.of(context).padding.bottom + 16), // Regular mode fixed position
+                bottom: keyboardVisible 
+                   ? (_isClassicMode 
+                      ? keyboardHeight + 56 // Classic mode - reduced from 65 to 56
+                      : keyboardHeight + 8) // Non-classic mode - small spacing above keyboard
+                   : (_isClassicMode 
+                      ? 56 + MediaQuery.of(context).padding.bottom // Classic mode fixed position - reduced from 70 to 56
+                      : MediaQuery.of(context).padding.bottom + 16), // Regular mode fixed position
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     // Quick actions and navigation panels - hide when keyboard is visible
                     if (!keyboardVisible)
-                      AnimatedBuilder(
-                        animation: _slideUpController,
+                      AnimatedBuilder(                        animation: _slideUpController,
                         builder: (context, child) {
-                          final slideValue = _slideUpController.value;
+                          // Using CurvedAnimation for smoother transitions
+                          final slideValue = CurvedAnimation(
+                            parent: _slideUpController,
+                            curve: Curves.easeOutQuint, // More modern animation curve
+                          ).value;
                           return Visibility(
                             visible: slideValue > 0,
                             maintainState: false,
                             child: Transform.translate(
-                              offset: Offset(0, 60 + (1 - slideValue) * 60),
+                              offset: Offset(0, 50 + (1 - slideValue) * 50), // Reduced offset for subtler animation
                               child: Opacity(
                                 opacity: slideValue,
                                 child: Material(
@@ -5824,11 +6520,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                         },
                       ),
 
-                    // URL bar with gesture detection
-                    SlideTransition(
-                      position: _hideUrlBarAnimation,
-                      child: _isClassicMode
-                          ? _buildUrlBar() // No gesture detection in classic mode
+                // URL bar with gesture detection - ensure it's always visible when classic mode is toggled off
+                    AnimatedOpacity(
+                      opacity: 1.0,
+                      duration: const Duration(milliseconds: 200),
+                      child: SlideTransition(
+                        position: _hideUrlBarAnimation,
+                        child: _isClassicMode
+                            ? _buildUrlBar() // No gesture detection in classic mode
                           : GestureDetector(
                               behavior: HitTestBehavior.opaque,
                               onVerticalDragUpdate: (details) {
@@ -5859,6 +6558,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                               },
                               child: _buildUrlBar(),
                             ),
+                      ),
                     ),
                   ],
                 ),
@@ -5887,7 +6587,6 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       });
     }
   }
-
   // Update URL when page changes
   void _updateUrl(String url) {
     if (!mounted) return;
@@ -5910,6 +6609,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         } catch (e) {
           isSecure = false;
         }
+        
+        // Always show the URL bar and classic mode panel when URL changes
+        _hideUrlBar = false;
+        _hideUrlBarController.reverse();
       });
       
       // Update navigation state whenever URL changes
@@ -5965,45 +6668,29 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         
         // Allow navigation for all other URLs
         return NavigationDecision.navigate;
-      },
-      onPageStarted: (String url) async {
+      },      onPageStarted: (String url) async {
         if (!mounted) return;
+        _setLoadingState(true);
         setState(() {
-          isLoading = true;
-          // Update URL when page starts loading
-          _displayUrl = url;
-          _urlController.text = _formatUrl(url);
-          // Update secure indicator based on URL
-          try {
-            final uri = Uri.parse(url);
-            isSecure = uri.scheme == 'https';
-          } catch (e) {
-            isSecure = false;
-          }
+          // Update URL when page starts loading using central method
+          _handleUrlUpdate(url);
         });
         await _updateNavigationState();
         await _optimizationEngine.onPageStartLoad(url);
-      },
-      onPageFinished: (String url) async {
+      },      onPageFinished: (String url) async {
         if (!mounted) return;
         final title = await controller.getTitle() ?? _displayUrl;
+        _setLoadingState(false);
+        
+        // Use central URL update method for consistency
+        _handleUrlUpdate(url, title: title);
+        
+        // Always ensure URL bar and classic mode panel are visible when page finishes loading
         setState(() {
-          isLoading = false;
-          // Update URL and title when page finishes loading
-          _displayUrl = url;
-          _urlController.text = _formatUrl(url);
-          if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-            tabs[currentTabIndex].title = title;
-            tabs[currentTabIndex].url = url;
-          }
-          // Double check secure indicator
-          try {
-            final uri = Uri.parse(url);
-            isSecure = uri.scheme == 'https';
-          } catch (e) {
-            isSecure = false;
-          }
+          _hideUrlBar = false;
         });
+        _hideUrlBarController.reverse();
+        
         await _updateNavigationState();
         await _optimizationEngine.onPageFinishLoad(url);
         await _updateFavicon(url);
@@ -6023,11 +6710,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     _urlBarIdleTimer = Timer(const Duration(seconds: 3), () {
       if (mounted && 
           !_urlFocusNode.hasFocus && 
-          !isPanelExpanded && 
-          !isTabsVisible && 
+          !isPanelExpanded &&          !isTabsVisible && 
           !isSettingsVisible && 
           !isBookmarksVisible && 
           !isDownloadsVisible && 
+          !isHistoryVisible && 
           !isSearchMode) {
         setState(() {
           _urlBarOffset = const Offset(16.0, 0.0);
@@ -6043,7 +6730,6 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       });
     }
   }
-
   String _formatUrl(String url, {bool showFull = false}) {
     // Always hide home page URL, even in edit mode
     if (url.startsWith('file:///android_asset/main.html') || url == _homeUrl) {
@@ -6072,15 +6758,33 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     try {
       final uri = Uri.parse(url);
       
-      // When not focused, always show domain only
+      // When not focused, show formatted domain with proper formatting
       String domain = uri.host;
+      
+      // Remove www. prefix for cleaner display
       if (domain.startsWith('www.')) {
         domain = domain.substring(4);
       }
-      return domain;
+      
+      // For common domains, show them nicely formatted
+      if (domain.isNotEmpty) {
+        return domain;
+      }
+      
+      // Fallback to showing the full URL if domain extraction fails
+      return url;
     } catch (e) {
       // If URL can't be parsed, show as is
       return url;
+    }  }
+
+  // Helper method to check if URL is secure
+  bool _isSecureUrl(String url) {
+    try {
+      final uri = Uri.parse(url);
+      return uri.scheme == 'https';
+    } catch (e) {
+      return false;
     }
   }
 
@@ -6688,17 +7392,20 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   double _slideUpPanelOffset = 0.0;
   double _slideUpPanelOpacity = 0.0;
 
-  bool get isSlideUpPanelVisible => _isSlideUpPanelVisible;
-
-  void _handleSlideUpPanelVisibility(bool show) {
+  bool get isSlideUpPanelVisible => _isSlideUpPanelVisible;  void _handleSlideUpPanelVisibility(bool show) {
     setState(() {
       _isSlideUpPanelVisible = show;
       if (show) {
         _slideUpController.forward();
-        _hideUrlBarController.forward(); // Hide URL bar when showing panels
+        // Always hide URL bar when showing panels, even in classic mode
+        // This ensures the classic mode panel also hides when slide-up panel is shown
+        _hideUrlBar = true;
+        _hideUrlBarController.forward();
       } else {
         _slideUpController.reverse();
-        _hideUrlBarController.reverse(); // Show URL bar when hiding panels
+        // Always show URL bar when hiding panels
+        _hideUrlBar = false;
+        _hideUrlBarController.reverse();
       }
     });
   }
@@ -7034,9 +7741,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
 
   // Add tap position tracking
-  Offset _tapPosition = Offset.zero;
-
-  Future<void> _goBack() async {
+  Offset _tapPosition = Offset.zero;  Future<void> _goBack() async {
     if (!canGoBack) return;
     
     try {
@@ -7045,28 +7750,27 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       // Wait a bit for the navigation to complete
       await Future.delayed(const Duration(milliseconds: 100));
       
-      // Update URL and navigation state
+      // Get updated URL and title
       final url = await controller.currentUrl();
       final title = await controller.getTitle();
       
       if (mounted && url != null) {
-        setState(() {
-          _displayUrl = url;
-          _urlController.text = _formatUrl(url);
-          if (title != null) {
-            tabs[currentTabIndex].title = title;
-          }
-          tabs[currentTabIndex].url = url;
-        });
+        // Use central URL update method for consistency
+        _handleUrlUpdate(url, title: title);
         
+        // Always ensure URL bar and classic mode panel are visible after navigation
+        setState(() {
+          _hideUrlBar = false;
+        });
+        _hideUrlBarController.reverse();
+        
+        // Update navigation state
         await _updateNavigationState();
       }
     } catch (e) {
       print('Error navigating back: $e');
     }
-  }
-
-  Future<void> _goForward() async {
+  }  Future<void> _goForward() async {
     if (!canGoForward) return;
     
     try {
@@ -7075,20 +7779,21 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       // Wait a bit for the navigation to complete
       await Future.delayed(const Duration(milliseconds: 100));
       
-      // Update URL and navigation state
+      // Get updated URL and title
       final url = await controller.currentUrl();
       final title = await controller.getTitle();
       
       if (mounted && url != null) {
-        setState(() {
-          _displayUrl = url;
-          _urlController.text = _formatUrl(url);
-          if (title != null) {
-            tabs[currentTabIndex].title = title;
-          }
-          tabs[currentTabIndex].url = url;
-        });
+        // Use central URL update method for consistency
+        _handleUrlUpdate(url, title: title);
         
+        // Always ensure URL bar and classic mode panel are visible after navigation
+        setState(() {
+          _hideUrlBar = false;
+        });
+        _hideUrlBarController.reverse();
+        
+        // Update navigation state
         await _updateNavigationState();
       }
     } catch (e) {
@@ -7124,11 +7829,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
     // Set up navigation delegate before adding the tab
     newTab.controller.setNavigationDelegate(
-      NavigationDelegate(
-        onPageStarted: (String url) async {
+      NavigationDelegate(        onPageStarted: (String url) async {
           if (!mounted) return;
+          _setLoadingState(true);
           setState(() {
-            isLoading = true;
             _displayUrl = url;
             _urlController.text = _formatUrl(url);
           });
@@ -7136,8 +7840,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         onPageFinished: (String url) async {
           if (!mounted) return;
           final title = await newTab.controller.getTitle() ?? 'New Tab';
+          _setLoadingState(false);
           setState(() {
-            isLoading = false;
             newTab.title = title;
             newTab.url = url;
           });
@@ -7719,9 +8423,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       isDarkMode = prefs.getBool('darkMode') ?? false;
-      textScale = prefs.getDouble('textScale') ?? 1.0;
-      showImages = prefs.getBool('showImages') ?? true;
+      textScale = prefs.getDouble('textScale') ?? 1.0;      showImages = prefs.getBool('showImages') ?? true;
       _askDownloadLocation = prefs.getBool('askDownloadLocation') ?? true;
+      _autoOpenDownloads = prefs.getBool('autoOpenDownloads') ?? false;
     });
   }
 
@@ -7754,8 +8458,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       isTabsVisible = false;
       isBookmarksVisible = false;
       isDownloadsVisible = false;
-    });
-  }
+    });  }
 
   void _showTabsPanel() {
     setState(() {
@@ -7767,6 +8470,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       _hideUrlBarController.reverse();
       // Show tabs panel
       isTabsVisible = true;
+      isHistoryVisible = false;
       isSettingsVisible = false;
       isBookmarksVisible = false;
       isDownloadsVisible = false;
@@ -7788,7 +8492,6 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       isDownloadsVisible = false;
     });
   }
-
   void _showDownloadsPanel() {
     setState(() {
       // Hide slide-up panel first
@@ -7802,12 +8505,112 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       isTabsVisible = false;
       isSettingsVisible = false;
       isBookmarksVisible = false;
+      isHistoryVisible = false;
     });
+  }  void _showHistoryPanel() async {
+    print('Opening history panel...');
+    try {
+      await _loadHistory(); // Ensure history is loaded before showing panel
+      print('History loaded: ${_loadedHistory.length} items');
+      
+      if (mounted) {
+        setState(() {
+          // Hide slide-up panel first
+          _isSlideUpPanelVisible = false;
+          _slideUpController.reverse();
+          // Show URL bar
+          _hideUrlBar = false;
+          _hideUrlBarController.reverse();
+          // Show history panel
+          isHistoryVisible = true;
+          isTabsVisible = false;
+          isSettingsVisible = false;
+          isBookmarksVisible = false;
+          isDownloadsVisible = false;
+        });
+        print('History panel state set to visible');
+      }
+    } catch (e) {
+      print('Error in _showHistoryPanel: $e');
+    }
   }
 
   // Add these variables at the top with other state variables
   Offset? _longPressPosition;
   String? _selectedImageUrl;
+
+  Widget _buildSettingsToggle({
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+    bool isFirst = false,
+    bool isLast = false,
+  }) {
+    return Container(
+      margin: EdgeInsets.only(bottom: isLast ? 0 : 1),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => onChanged(!value),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: ThemeManager.surfaceColor().withOpacity(0.05),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: ThemeManager.textColor().withOpacity(0.08),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: ThemeManager.textColor(),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: ThemeManager.textSecondaryColor(),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Transform.scale(
+                  scale: 0.7,
+                  child: Switch(
+                    value: value,
+                    onChanged: onChanged,
+                    activeColor: ThemeManager.primaryColor(),
+                    activeTrackColor: ThemeManager.primaryColor().withOpacity(0.3),
+                    inactiveThumbColor: ThemeManager.textSecondaryColor(),
+                    inactiveTrackColor: ThemeManager.textSecondaryColor().withOpacity(0.3),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ...existing code...
 
   // Add this method to inject the JavaScript code
   Future<void> _injectImageContextMenuJS() async {
@@ -8566,79 +9369,71 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         ),
       ),
     );
-  }
-
-  Widget _buildClassicModePanel() {
+  }  Widget _buildClassicModePanel() {
     final keyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     
-    return Positioned(
-      // Position above keyboard when keyboard is visible
-      bottom: keyboardVisible ? keyboardHeight + 8 : MediaQuery.of(context).padding.bottom + 8,
-      left: 0,
-      right: 0,
-      // Don't let this be covered by the keyboard
-      child: Container(
-        height: 48, // Fixed height
-        decoration: BoxDecoration(
-          color: ThemeManager.backgroundColor().withOpacity(0.95), // More opaque for visibility
-          // No shadow or border
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.chevron_left_rounded, size: 28),
-              color: canGoBack ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
-              onPressed: canGoBack ? () {
-                _goBack();
-                if (_hideUrlBar) {
-                  setState(() {
-                    _hideUrlBar = false;
-                    _hideUrlBarController.reverse();
-                  });
-                }
-              } : null,
+    return Container(
+      height: 48, // Fixed height
+      margin: EdgeInsets.only(
+        bottom: keyboardVisible ? keyboardHeight + 8 : MediaQuery.of(context).padding.bottom + 8,
+        left: 0,
+        right: 0,
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.chevron_left_rounded, size: 28),
+            color: canGoBack ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
+            onPressed: canGoBack ? () {
+              _goBack();
+              if (_hideUrlBar) {
+                setState(() {
+                  _hideUrlBar = false;
+                  _hideUrlBarController.reverse();
+                });
+              }
+            } : null,
+          ),
+          IconButton(
+            icon: const Icon(Icons.chevron_right_rounded, size: 28),
+            color: canGoForward ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
+            onPressed: canGoForward ? () {
+              _goForward();
+              if (_hideUrlBar) {
+                setState(() {
+                  _hideUrlBar = false;
+                  _hideUrlBarController.reverse();
+                });
+              }
+            } : null,
+          ),
+          IconButton(
+            icon: Icon(
+              isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
+              size: 24,
             ),
-            IconButton(
-              icon: const Icon(Icons.chevron_right_rounded, size: 28),
-              color: canGoForward ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
-              onPressed: canGoForward ? () {
-                _goForward();
-                if (_hideUrlBar) {
-                  setState(() {
-                    _hideUrlBar = false;
-                    _hideUrlBarController.reverse();
-                  });
-                }
-              } : null,
-            ),
-            IconButton(
-              icon: Icon(
-                isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
-                size: 24,
-              ),
-              color: ThemeManager.textSecondaryColor(),
-              onPressed: () => _addBookmark(),
-            ),
-            IconButton(
-              icon: const Icon(Icons.ios_share_rounded, size: 24),
-              color: ThemeManager.textSecondaryColor(),
-              onPressed: () async {
-                if (currentUrl.isNotEmpty) {
-                  await Share.share(currentUrl);
-                }
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.menu, size: 24),
-              color: ThemeManager.textSecondaryColor(),
-              onPressed: () {
-                _showQuickActionsModal();
-              },
-            ),
-          ],
-        ),
+            color: ThemeManager.textSecondaryColor(),
+            onPressed: () => _addBookmark(),
+          ),
+          IconButton(
+            icon: const Icon(Icons.ios_share_rounded, size: 24),
+            color: ThemeManager.textSecondaryColor(),
+            onPressed: () async {
+              if (currentUrl.isNotEmpty) {
+                await Share.share(currentUrl);
+              }
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.menu, size: 24),
+            color: ThemeManager.textSecondaryColor(),
+            onPressed: () {
+              _showQuickActionsModal();
+            },
+          ),
+        ],
       ),
     );
   }
@@ -8918,9 +9713,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       }
     });
   }
-
   // Central method to handle URL updates consistently
   void _handleUrlUpdate(String url, {String? title}) {
+    if (!mounted) return;
+    
     // Always update the tab data
     if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
       setState(() {
@@ -8934,29 +9730,29 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     // Store the full URL for when focus is gained
     _displayUrl = url;
     
+    // Always update security status regardless of focus
+    final isUrlSecure = _isSecureUrl(url);
+    
     // Only update URL bar text if not currently focused
     if (!_urlFocusNode.hasFocus && mounted) {
       setState(() {
-        // Show domain-only when not focused
+        // Show domain-only when not focused, full URL when focused
         _urlController.text = _formatUrl(url);
         
         // Update secure status
-        try {
-          final uri = Uri.parse(url);
-          isSecure = uri.scheme == 'https';
-        } catch (e) {
-          isSecure = false;
-        }
+        isSecure = isUrlSecure;
+      });
+    } else if (mounted) {
+      // Still update security status even when focused
+      setState(() {
+        isSecure = isUrlSecure;
       });
     }
   }
-
   Future<void> _handleWebResourceError(WebResourceError error, String url) async {
     if (!mounted) return;
     
-    setState(() {
-      isLoading = false;
-    });
+    _setLoadingState(false);
     
     // Log the error details
     print('Web resource error: ${error.description}');
@@ -9121,7 +9917,6 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     parent: _transitionController,
     curve: Curves.easeOutCubic,
   ));
-
   // Add this method to show optimized dropdown from bottom to top
   void _showBottomToTopDropdown(BuildContext context, Widget child, {required Offset position}) {
     final RenderBox button = context.findRenderObject() as RenderBox;
@@ -9163,6 +9958,673 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         opaque: false,
         transitionDuration: const Duration(milliseconds: 250),
       ),
+    );
+  }
+  // Tab Group Management Methods
+  Future<void> _closeAllTabs() async {
+    if (tabs.isEmpty) return;
+    
+    bool? confirm = await showGeneralDialog<bool>(
+      context: context,
+      pageBuilder: (context, animation, secondaryAnimation) => Container(),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        );
+
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.8, end: 1.0).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: animation,
+            child: CustomDialog(
+              title: 'Close All Tabs',
+              content: 'Are you sure you want to close all tabs? This action cannot be undone.',
+              isDarkMode: isDarkMode,
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(color: ThemeManager.textSecondaryColor()),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text(
+                    'Close All',
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      barrierDismissible: true,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: ThemeManager.textColor().withOpacity(0.5),
+      transitionDuration: const Duration(milliseconds: 200),
+    );
+    
+    if (confirm == true) {
+      setState(() {
+        tabs.clear();
+        _addNewTab();
+      });
+    }
+  }
+  void _showCreateGroupDialog() {
+    final TextEditingController nameController = TextEditingController();
+    Color selectedColor = Colors.blue;
+    
+    showCustomDialog(
+      context: context,
+      title: 'Create Tab Group',
+      isDarkMode: isDarkMode,
+      customContent: StatefulBuilder(
+        builder: (context, setState) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextField(
+                controller: nameController,
+                style: TextStyle(color: ThemeManager.textColor()),
+                decoration: InputDecoration(
+                  labelText: 'Group Name',
+                  labelStyle: TextStyle(color: ThemeManager.textSecondaryColor()),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: ThemeManager.textSecondaryColor().withOpacity(0.3)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Color',
+                style: TextStyle(
+                  color: ThemeManager.textColor(),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Wrap(
+                spacing: 12,
+                runSpacing: 8,
+                children: [
+                  Colors.blue,
+                  Colors.red,
+                  Colors.green,
+                  Colors.orange,
+                  Colors.purple,
+                  Colors.teal,
+                  Colors.pink,
+                  Colors.indigo,
+                  Colors.amber,
+                ].map((color) {
+                  return GestureDetector(
+                    onTap: () => setState(() => selectedColor = color),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                        border: selectedColor == color 
+                          ? Border.all(color: ThemeManager.textColor(), width: 3)
+                          : Border.all(color: ThemeManager.textSecondaryColor().withOpacity(0.2), width: 1),
+                        boxShadow: selectedColor == color ? [
+                          BoxShadow(
+                            color: color.withOpacity(0.3),
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                          )
+                        ] : null,
+                      ),
+                      child: selectedColor == color 
+                        ? Icon(Icons.check, color: Colors.white, size: 18)
+                        : null,
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          );
+        },
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(
+            'Cancel',
+            style: TextStyle(color: ThemeManager.textSecondaryColor()),
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            if (nameController.text.trim().isNotEmpty) {
+              final newGroup = TabGroup(
+                id: DateTime.now().millisecondsSinceEpoch.toString(),
+                name: nameController.text.trim(),
+                color: selectedColor,
+                createdAt: DateTime.now(),
+              );
+              this.setState(() {
+                _tabGroups.add(newGroup);
+              });
+              Navigator.of(context).pop();
+              _showAddToGroupDialog(newGroup.id);
+            }
+          },
+          child: Text(
+            'Create',
+            style: TextStyle(color: Theme.of(context).primaryColor),
+          ),
+        ),
+      ],
+    );
+  }  void _showAddToGroupDialog(String groupId) {
+    final displayTabs = tabs.where((tab) => 
+      !tab.url.startsWith('file:///') && 
+      !tab.url.startsWith('about:blank') && 
+      tab.url != _homeUrl
+    ).toList();
+    
+    List<bool> selectedTabs = List.filled(displayTabs.length, false);
+    
+    showCustomDialog(
+      context: context,
+      title: 'Add Tabs to Group',
+      isDarkMode: isDarkMode,
+      customContent: StatefulBuilder(
+        builder: (context, setState) {
+          return Container(
+            width: double.maxFinite,
+            constraints: BoxConstraints(maxHeight: 400),
+            child: displayTabs.isEmpty
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.tab,
+                          size: 48,
+                          color: ThemeManager.textSecondaryColor().withOpacity(0.5),
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          'No tabs available to add',
+                          style: TextStyle(
+                            color: ThemeManager.textSecondaryColor(),
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: displayTabs.length,
+                  itemBuilder: (context, index) {
+                    final tab = displayTabs[index];
+                    
+                    return Card(
+                      margin: EdgeInsets.symmetric(vertical: 4),
+                      color: ThemeManager.surfaceColor(),
+                      child: CheckboxListTile(
+                        contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        title: Text(
+                          tab.title.isEmpty ? 'New Tab' : tab.title,
+                          style: TextStyle(
+                            color: ThemeManager.textColor(),
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            tab.url,
+                            style: TextStyle(
+                              color: ThemeManager.textSecondaryColor(),
+                              fontSize: 12,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        value: selectedTabs[index],
+                        activeColor: Theme.of(context).primaryColor,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            selectedTabs[index] = value ?? false;
+                          });
+                        },
+                      ),
+                    );
+                  },
+                ),
+          );
+        },
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(
+            'Cancel',
+            style: TextStyle(color: ThemeManager.textSecondaryColor()),
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            this.setState(() {
+              for (int i = 0; i < displayTabs.length; i++) {
+                if (selectedTabs[i]) {
+                  final originalIndex = tabs.indexOf(displayTabs[i]);
+                  if (originalIndex >= 0) {
+                    tabs[originalIndex].groupId = groupId;
+                  }
+                }
+              }
+            });
+            Navigator.of(context).pop();
+          },
+          child: Text(
+            'Add to Group',
+            style: TextStyle(color: Theme.of(context).primaryColor),
+          ),
+        ),
+      ],
+    );
+  }
+  void _showManageGroupsDialog() {
+    showCustomDialog(
+      context: context,
+      title: 'Manage Groups',
+      isDarkMode: isDarkMode,
+      customContent: Container(
+        width: double.maxFinite,
+        constraints: BoxConstraints(maxHeight: 400),
+        child: _tabGroups.isEmpty
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.folder_outlined,
+                      size: 64,
+                      color: ThemeManager.textSecondaryColor().withOpacity(0.5),
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'No groups created yet',
+                      style: TextStyle(
+                        color: ThemeManager.textSecondaryColor(),
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : ListView.builder(
+              shrinkWrap: true,
+              itemCount: _tabGroups.length,
+              itemBuilder: (context, index) {
+                final group = _tabGroups[index];
+                final tabCount = tabs.where((tab) => tab.groupId == group.id).length;
+                
+                return Card(
+                  margin: EdgeInsets.symmetric(vertical: 4),
+                  color: ThemeManager.surfaceColor(),
+                  child: ListTile(
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    leading: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: group.color,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: group.color.withOpacity(0.3),
+                            blurRadius: 6,
+                            spreadRadius: 1,
+                          )
+                        ],
+                      ),
+                    ),
+                    title: Text(
+                      group.name,
+                      style: TextStyle(
+                        color: ThemeManager.textColor(),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    subtitle: Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        '$tabCount tab${tabCount != 1 ? 's' : ''}',
+                        style: TextStyle(
+                          color: ThemeManager.textSecondaryColor(),
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            Icons.tab_unselected,
+                            color: ThemeManager.textSecondaryColor(),
+                            size: 20,
+                          ),
+                          tooltip: 'Ungroup tabs',
+                          onPressed: () {
+                            _ungroupTabs(group);
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                        IconButton(
+                          icon: Icon(
+                            Icons.delete_outline,
+                            color: Colors.red,
+                            size: 20,
+                          ),
+                          tooltip: 'Delete group',
+                          onPressed: () {
+                            _deleteGroup(group);
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(
+            'Close',
+            style: TextStyle(color: ThemeManager.textColor()),
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _deleteGroup(TabGroup group) {
+    setState(() {
+      // Remove group
+      _tabGroups.removeWhere((g) => g.id == group.id);
+      // Ungroup all tabs in this group
+      for (var tab in tabs) {
+        if (tab.groupId == group.id) {
+          tab.groupId = null;
+        }
+      }
+    });
+  }
+
+  void _ungroupTabs(TabGroup group) {
+    setState(() {
+      for (var tab in tabs) {
+        if (tab.groupId == group.id) {
+          tab.groupId = null;
+        }
+      }
+    });  }  Widget _buildBottomActionBar() {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    
+    return Container(
+      margin: EdgeInsets.fromLTRB(18, 0, 18, 20 + bottomPadding), // Increased bottom margin from 10 to 20 + safe area
+      decoration: BoxDecoration(
+        color: ThemeManager.surfaceColor(),
+        borderRadius: BorderRadius.circular(28), // Optimized radius
+        boxShadow: [
+          BoxShadow(
+            color: ThemeManager.textColor().withOpacity(0.08), // Further reduced opacity
+            blurRadius: 16, // Optimized blur radius
+            offset: Offset(0, 1.5),  // More subtle offset
+            spreadRadius: 0.2, // More subtle spread
+          ),
+        ],
+        border: Border.all(
+          color: ThemeManager.textSecondaryColor().withOpacity(0.05), // Further reduced opacity
+          width: 0.5,
+        ),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2), // Optimized padding
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Changed back to spaceEvenly with optimized child spacing
+          children: [
+            // Left padding for better spacing
+            SizedBox(width: 2),
+            
+            // 1. Create Group
+            _buildFloatingActionButton(
+              icon: Icons.tab,
+              onTap: _showCreateGroupDialog,
+            ),
+            
+            // 2. Manage Groups
+            _buildFloatingActionButton(
+              icon: Icons.folder_outlined,
+              onTap: _showManageGroupsDialog,
+            ),
+            
+            // 3. New Tab (Center - prominent with incognito mode support)
+            _buildCenterNewTabButton(),
+            
+            // 4. History
+            _buildFloatingActionButton(
+              icon: Icons.history,
+              onTap: () {
+                _showHistoryPanel();
+              },
+            ),
+            
+            // 5. 3-dots menu (far right)
+            _buildFloatingMenuButton(),
+            
+            // Right padding for better spacing
+            SizedBox(width: 2),
+          ],
+        ),
+      ),
+    );
+  }  Widget _buildFloatingActionButton({
+    required IconData icon,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(18), // Increased touch area
+      onTap: onTap,
+      child: TweenAnimationBuilder(
+        tween: Tween<double>(begin: 0.92, end: 1.0),
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCirc, // More refined animation curve
+        builder: (context, scale, child) {
+          return Transform.scale(
+            scale: scale,
+            child: Container(
+              width: 38, // Optimized width for perfect spacing
+              height: 38, // Optimized height for perfect spacing
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16), // Optimized radius
+                // Subtle highlight effect for depth
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    ThemeManager.surfaceColor().withOpacity(0.7),
+                    ThemeManager.surfaceColor(),
+                  ],
+                ),
+              ),
+              child: Icon(
+                icon,
+                size: 19, // Optimized size for visual balance
+                color: ThemeManager.textColor().withOpacity(0.9), // Better contrast
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }  Widget _buildCenterNewTabButton() {
+    bool isIncognitoActive = _isIncognitoModeActive;
+    
+    return Container(
+      width: 48, // Optimized size for better emphasis
+      height: 48, // Optimized size for better emphasis
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isIncognitoActive 
+              ? [Color(0xFF505050), Color(0xFF3A3A3A)] // Refined incognito colors
+              : [Theme.of(context).primaryColor, Theme.of(context).primaryColor.withOpacity(0.75)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16), // Consistent with other elements
+        boxShadow: [
+          BoxShadow(
+            color: (isIncognitoActive ? Colors.grey[700]! : Theme.of(context).primaryColor)
+                .withOpacity(0.2), // Perfect shadow opacity
+            blurRadius: 12, // Refined blur for smoother shadow
+            offset: Offset(0, 1), // Minimal offset for subtle elevation
+            spreadRadius: 0, // No spread for cleaner look
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            if (isIncognitoActive) {
+              _addNewTab(isIncognito: true);
+            } else {
+              _addNewTab();
+            }
+            setState(() {
+              isTabsVisible = false;
+            });
+          },
+          child: Center(
+            child: Icon(
+              isIncognitoActive ? Icons.visibility_off_rounded : Icons.add,
+              color: Colors.white,
+              size: 24,
+            ),
+          ),
+        ),
+      ),
+    );
+  }  Widget _buildFloatingMenuButton() {
+    return PopupMenuButton<String>(
+      icon: Container(
+        width: 38, // Matched to other buttons
+        height: 38, // Matched to other buttons
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16), // Consistent radius
+          // Subtle highlight effect for depth, matching other buttons
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              ThemeManager.surfaceColor().withOpacity(0.7),
+              ThemeManager.surfaceColor(),
+            ],
+          ),
+        ),        
+        child: Icon(
+          Icons.more_horiz_rounded, // Better icon choice for menu
+          size: 19, // Consistent with other buttons
+          color: ThemeManager.textColor().withOpacity(0.9), // Consistent with other buttons
+        ),
+      ),
+      onSelected: (String value) {
+        if (value == 'incognito') {
+          setState(() {
+            _isIncognitoModeActive = !_isIncognitoModeActive;
+          });
+        } else if (value == 'close_all') {
+          _closeAllTabs();
+        }
+      },
+      color: ThemeManager.surfaceColor(),
+      elevation: 12,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: ThemeManager.textSecondaryColor().withOpacity(0.1),
+          width: 0.5,
+        ),
+      ),
+      offset: const Offset(0, -100),
+      itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+        PopupMenuItem<String>(
+          value: 'close_all',
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.close_rounded,
+                  size: 20,
+                  color: Colors.red,
+                ),
+                SizedBox(width: 12),
+                Text(
+                  'Close All Tabs',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        PopupMenuItem<String>(
+          value: 'incognito',
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Row(
+              children: [
+                Icon(
+                  _isIncognitoModeActive ? Icons.visibility_off : Icons.visibility_off_outlined,
+                  size: 20,
+                  color: _isIncognitoModeActive ? Colors.purple : ThemeManager.textColor(),
+                ),
+                SizedBox(width: 12),
+                Text(
+                  '${_isIncognitoModeActive ? 'Disable' : 'Enable'} Incognito Mode',
+                  style: TextStyle(
+                    color: _isIncognitoModeActive ? Colors.purple : ThemeManager.textColor(),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

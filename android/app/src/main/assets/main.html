@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -12,271 +11,588 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
         }
 
+        :root {
+            /* Dynamic theme variables - will be set by applyTheme() */
+            --bg-primary: #ffffff;
+            --bg-surface: #f5f5f5;
+            --text-primary: #000000;
+            --text-secondary: #757575;
+            --color-primary: #2196f3;
+            --color-accent: #1976d2;
+            --color-error: #f44336;
+            --color-success: #4caf50;
+            --color-warning: #ff9800;
+            --color-secondary: #e0e0e0;
+        }
+
         body {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
-            padding-top: 15vh;
-            color: white;
-            position: relative;
-            overflow: hidden;
+            justify-content: center;
+            padding: 20px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
         }
 
-        .background {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .container {
             width: 100%;
-            height: 100%;
-            z-index: -2;
-            background-size: cover;
-            background-position: center;
-            transition: opacity 0.5s ease;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
         }
 
-        .blur-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            backdrop-filter: blur(10px);
-            background: rgba(0, 0, 0, 0.3);
+        .logo {
+            font-size: 48px;
+            font-weight: 300;
+            margin-bottom: 20px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .search-container {
-            width: 90%;
-            max-width: 584px;
-            margin-bottom: 20px;
+            width: 100%;
+            position: relative;
         }
 
         .search-box {
             width: 100%;
-            height: 44px;
-            padding: 0 16px;
-            font-size: 16px;
-            color: white;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 22px;
-            backdrop-filter: blur(10px);
+            height: 56px;
+            padding: 0 20px;
+            font-size: 18px;
+            border: 2px solid transparent;
+            border-radius: 28px;
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            outline: none;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
         }
 
         .search-box:focus {
-            outline: none;
-            background: rgba(255, 255, 255, 0.15);
-            border-color: rgba(255, 255, 255, 0.3);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-color: var(--color-primary);
+            background: var(--bg-primary);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
         }
 
         .search-box::placeholder {
-            color: rgba(255, 255, 255, 0.7);
+            color: var(--text-secondary);
         }
 
-        .time {
-            font-size: 84px;
-            font-weight: 300;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        .shortcuts-container {
+            width: 100%;
         }
 
-        .date {
-            font-size: 20px;
-            opacity: 0.9;
-            margin-bottom: 8px;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        .shortcuts-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            width: 100%;
         }
 
-        .weather-text {
-            font-size: 16px;
-            opacity: 0.9;
-            margin-bottom: 40px;
-            text-align: center;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        .shortcut-item {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-surface);
+            border-radius: 16px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--text-primary);
+            padding: 16px;
+        }
+
+        .shortcut-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .shortcut-item.add-new {
+            border: 2px dashed var(--color-primary);
+            background: transparent;
+            color: var(--color-primary);
+        }
+
+        .shortcut-item.add-new:hover {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .shortcut-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: var(--color-secondary);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            font-size: 24px;
+            margin-bottom: 12px;
         }
 
-        .weather-icon {
-            font-size: 16px;
+        .shortcut-title {
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+            line-height: 1.3;
+            opacity: 0.9;
+        }
+
+        .add-icon {
+            font-size: 32px;
+            opacity: 0.8;
         }
 
         @media (max-width: 768px) {
-            .time {
-                font-size: 64px;
+            .logo {
+                font-size: 36px;
+                margin-bottom: 16px;
             }
-            .date {
+
+            .search-box {
+                height: 48px;
+                font-size: 16px;
+                padding: 0 16px;
+            }
+
+            .shortcuts-grid {
+                gap: 16px;
+            }
+
+            .shortcut-item {
+                padding: 12px;
+            }
+
+            .shortcut-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+                margin-bottom: 8px;
+            }
+
+            .shortcut-title {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                gap: 30px;
+            }
+
+            .shortcuts-grid {
+                gap: 12px;
+            }
+
+            .shortcut-item {
+                padding: 8px;
+            }
+
+            .shortcut-icon {
+                width: 36px;
+                height: 36px;
                 font-size: 18px;
+                margin-bottom: 6px;
             }
-            .weather-text {
-                font-size: 14px;
+
+            .shortcut-title {
+                font-size: 11px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="background"></div>
-    <div class="blur-overlay"></div>
-    
-    <div class="time">--:--</div>
-    <div class="date">Loading...</div>
-    <div class="weather-text">
-        <span class="weather-icon">⛅</span>
-        <span class="temperature">--°C</span>
-        •
-        <span class="weather-description">Loading weather...</span>
-    </div>
+    <div class="container">
+        <div class="logo"></div>
+        
+        <div class="search-container">
+            <input type="text" class="search-box" placeholder="Search with Solar Search!" autocomplete="off">
+        </div>
 
-    <div class="search-container">
-        <input type="text" class="search-box" placeholder="Search or enter address" autocomplete="off">
+        <div class="shortcuts-container">
+            <div class="shortcuts-grid" id="shortcutsGrid">
+                <!-- Dynamic shortcuts will be added here -->
+                <div class="shortcut-item add-new" onclick="addNewShortcut()">
+                    <div class="shortcut-icon">
+                        <span class="add-icon">+</span>
+                    </div>
+                    <div class="shortcut-title">Add Site</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Update background image
-        function updateBackground() {
-            const width = Math.max(window.innerWidth, window.innerHeight);
-            const height = Math.max(window.innerWidth, window.innerHeight);
-            const url = `https://picsum.photos/${width}/${height}?random=${Date.now()}`;
-            
-            const img = new Image();
-            img.onload = function() {
-                document.querySelector('.background').style.backgroundImage = `url(${url})`;
-            };
-            img.src = url;
-        }
-
-        // Update clock
-        function updateClock() {
-            const now = new Date();
-            const time = now.toLocaleTimeString(undefined, { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                hour12: false 
-            });
-            const date = now.toLocaleDateString(undefined, { 
-                weekday: 'long', 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            });
-            
-            document.querySelector('.time').textContent = time;
-            document.querySelector('.date').textContent = date;
-        }
-
-        // Weather icons mapping
-        const weatherIcons = {
-            'Clear': '☀️',
-            'Clouds': '☁️',
-            'Rain': '🌧️',
-            'Drizzle': '🌦️',
-            'Thunderstorm': '⛈️',
-            'Snow': '🌨️',
-            'Mist': '🌫️',
-            'Fog': '🌫️',
-            'Haze': '🌫️'
-        };
-
-        // Weather descriptions mapping
-        const weatherDescriptions = {
-            'Clear': 'Clear skies',
-            'Clouds': 'Cloudy',
-            'Rain': 'Rainy',
-            'Drizzle': 'Light rain',
-            'Thunderstorm': 'Thunderstorms',
-            'Snow': 'Snowy',
-            'Mist': 'Misty',
-            'Smoke': 'Smoky',
-            'Haze': 'Hazy',
-            'Dust': 'Dusty',
-            'Fog': 'Foggy',
-            'Sand': 'Sandy',
-            'Ash': 'Volcanic ash',
-            'Squall': 'Squally',
-            'Tornado': 'Tornado warning'
-        };
-
-        // Update weather
-        async function updateWeather() {
-            try {
-                const position = await new Promise((resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(resolve, reject);
-                });
-
-                const { latitude, longitude } = position.coords;
-                const apiKey = '89ac09c34c34e481c3c56c7ab5dd376c';
-                const response = await fetch(
-                    `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&appid=${apiKey}`
-                );
-                
-                const data = await response.json();
-                const temp = Math.round(data.main.temp);
-                const mainWeather = data.weather[0].main;
-                const icon = weatherIcons[mainWeather] || '🌡️';
-                const description = weatherDescriptions[mainWeather] || mainWeather;
-
-                document.querySelector('.weather-icon').textContent = icon;
-                document.querySelector('.temperature').textContent = `${temp}°C`;
-                document.querySelector('.weather-description').textContent = description;
-                document.querySelector('.weather-text').style.opacity = '0.9';
-            } catch (error) {
-                console.error('Weather error:', error);
-                document.querySelector('.weather-text').style.opacity = '0';
+        // Shortcuts data
+        let shortcuts = JSON.parse(localStorage.getItem('solarShortcuts') || '[]');
+        
+        // Theme handling
+        let currentTheme = {
+            themeName: 'light',
+            isDark: false,
+            colors: {
+                backgroundColor: '#ffffff',
+                surfaceColor: '#f5f5f5',
+                textColor: '#000000',
+                textSecondaryColor: '#757575',
+                primaryColor: '#2196f3',
+                accentColor: '#1976d2',
+                errorColor: '#f44336',
+                successColor: '#4caf50',
+                warningColor: '#ff9800',
+                secondaryColor: '#e0e0e0'
             }
-        }
+        };
 
         // Handle search
         document.querySelector('.search-box').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 const query = this.value.trim();
                 if (query) {
-                    // Check if it's a URL or a search query
-                    const isUrl = query.includes('.') && !query.includes(' ') && 
-                                !query.includes('?') && !query.includes('&') &&
-                                !query.includes('%') && !query.includes('+');
-                    
-                    if (isUrl) {
-                        // If it's a URL, add https:// if needed
-                        window.location.href = query.startsWith('http') ? query : `https://${query}`;
+                    // Check if it looks like a URL (contains dot and no spaces)
+                    if (query.includes('.') && !query.includes(' ')) {
+                        // It's a URL - navigate directly
+                        const url = query.startsWith('http') ? query : `https://${query}`;
+                        window.location.href = url;
                     } else {
-                        try {
-                            // Check if SearchHandler JavaScript channel is available
-                            if (window.SearchHandler) {
-                                // Use the JavaScriptChannel to send the search query to Flutter
-                                window.SearchHandler.postMessage(query);
-                            } else {
-                                // Fallback to direct Google search if channel isn't available
-                                window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-                            }
-                        } catch (error) {
-                            console.error('Search error:', error);
-                            // Fallback to direct Google search
-                            window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-                        }
+                        // It's a search query - use the search engine
+                        window.location.href = `https://search.browser.solar/search?q=${encodeURIComponent(query)}`;
                     }
                 }
             }
         });
 
+        // Get favicon URL for a website
+        function getFaviconUrl(url) {
+            try {
+                const domain = new URL(url.startsWith('http') ? url : 'https://' + url).hostname;
+                return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+            } catch (e) {
+                return '';
+            }
+        }
+
+        // Render shortcuts
+        function renderShortcuts() {
+            const grid = document.getElementById('shortcutsGrid');
+            
+            // Clear existing shortcuts except add button
+            grid.innerHTML = '';
+            
+            // Add existing shortcuts
+            shortcuts.forEach((shortcut, index) => {
+                const shortcutElement = document.createElement('a');
+                shortcutElement.className = 'shortcut-item';
+                shortcutElement.href = shortcut.url.startsWith('http') ? shortcut.url : 'https://' + shortcut.url;
+                shortcutElement.onclick = function(e) {
+                    e.preventDefault();
+                    window.location.href = this.href;
+                };
+                
+                const faviconUrl = getFaviconUrl(shortcut.url);
+                
+                shortcutElement.innerHTML = `
+                    <div class="shortcut-icon">
+                        ${faviconUrl ? `<img src="${faviconUrl}" alt="" style="width: 100%; height: 100%; border-radius: 8px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">` : ''}
+                        <span style="display: ${faviconUrl ? 'none' : 'block'};">${shortcut.title.charAt(0).toUpperCase()}</span>
+                    </div>
+                    <div class="shortcut-title">${shortcut.title}</div>
+                `;
+                
+                // Add long press to remove
+                let pressTimer;
+                shortcutElement.addEventListener('mousedown', function() {
+                    pressTimer = setTimeout(() => {
+                        if (confirm(`Remove "${shortcut.title}" from shortcuts?`)) {
+                            removeShortcut(index);
+                        }
+                    }, 1000);
+                });
+                
+                shortcutElement.addEventListener('mouseup', function() {
+                    clearTimeout(pressTimer);
+                });
+                
+                shortcutElement.addEventListener('touchstart', function() {
+                    pressTimer = setTimeout(() => {
+                        if (confirm(`Remove "${shortcut.title}" from shortcuts?`)) {
+                            removeShortcut(index);
+                        }
+                    }, 1000);
+                });
+                
+                shortcutElement.addEventListener('touchend', function() {
+                    clearTimeout(pressTimer);
+                });
+                
+                grid.appendChild(shortcutElement);
+            });
+            
+            // Add "Add New" button if less than 9 shortcuts (3x3 grid)
+            if (shortcuts.length < 9) {
+                const addButton = document.createElement('div');
+                addButton.className = 'shortcut-item add-new';
+                addButton.onclick = addNewShortcut;
+                addButton.innerHTML = `
+                    <div class="shortcut-icon">
+                        <span class="add-icon">+</span>
+                    </div>
+                    <div class="shortcut-title">Add Site</div>
+                `;
+                grid.appendChild(addButton);
+            }
+        }
+
+        // Add new shortcut
+        function addNewShortcut() {
+            const url = prompt('Enter website URL (e.g., google.com):');
+            if (url && url.trim()) {
+                const cleanUrl = url.trim();
+                const title = prompt('Enter shortcut title:') || cleanUrl.replace(/^https?:\/\//, '').replace(/^www\./, '');
+                
+                const newShortcut = {
+                    title: title.trim(),
+                    url: cleanUrl
+                };
+                
+                shortcuts.push(newShortcut);
+                localStorage.setItem('solarShortcuts', JSON.stringify(shortcuts));
+                renderShortcuts();
+            }
+        }
+
+        // Remove shortcut
+        function removeShortcut(index) {
+            shortcuts.splice(index, 1);
+            localStorage.setItem('solarShortcuts', JSON.stringify(shortcuts));
+            renderShortcuts();
+        }
+        
+        function applyTheme(themeData) {
+            console.log('🎨 Applying theme:', themeData);
+            
+            // Update current theme
+            if (themeData.type === 'fullTheme') {
+                currentTheme = themeData;
+            } else if (themeData.type === 'theme') {
+                // Legacy theme support - fallback to basic light/dark
+                currentTheme.isDark = themeData.theme === 'dark';
+                currentTheme.themeName = themeData.theme;
+                
+                // Set basic colors for legacy mode
+                if (themeData.theme === 'dark') {
+                    currentTheme.colors = {
+                        backgroundColor: '#000000',
+                        surfaceColor: '#1a1a1a',
+                        textColor: '#ffffff',
+                        textSecondaryColor: '#b3b3b3',
+                        primaryColor: '#2196f3',
+                        accentColor: '#42a5f5',
+                        errorColor: '#ef5350',
+                        successColor: '#66bb6a',
+                        warningColor: '#ffa726',
+                        secondaryColor: '#424242'
+                    };
+                } else {
+                    currentTheme.colors = {
+                        backgroundColor: '#ffffff',
+                        surfaceColor: '#f5f5f5',
+                        textColor: '#000000',
+                        textSecondaryColor: '#757575',
+                        primaryColor: '#2196f3',
+                        accentColor: '#1976d2',
+                        errorColor: '#f44336',
+                        successColor: '#4caf50',
+                        warningColor: '#ff9800',
+                        secondaryColor: '#e0e0e0'
+                    };
+                }
+            }
+            
+            // Apply theme classes
+            const body = document.body;
+            body.classList.remove('theme-light', 'theme-dark');
+            body.classList.add(`theme-${currentTheme.isDark ? 'dark' : 'light'}`);
+            
+            // Apply dynamic CSS using the actual theme colors
+            const themeStyle = document.getElementById('dynamic-theme') || document.createElement('style');
+            themeStyle.id = 'dynamic-theme';
+            
+            themeStyle.textContent = `
+                :root {
+                    --bg-primary: ${currentTheme.colors.backgroundColor};
+                    --bg-surface: ${currentTheme.colors.surfaceColor};
+                    --text-primary: ${currentTheme.colors.textColor};
+                    --text-secondary: ${currentTheme.colors.textSecondaryColor};
+                    --color-primary: ${currentTheme.colors.primaryColor};
+                    --color-accent: ${currentTheme.colors.accentColor};
+                    --color-error: ${currentTheme.colors.errorColor};
+                    --color-success: ${currentTheme.colors.successColor};
+                    --color-warning: ${currentTheme.colors.warningColor};
+                    --color-secondary: ${currentTheme.colors.secondaryColor};
+                }
+                
+                body {
+                    background: linear-gradient(135deg, 
+                        ${currentTheme.colors.backgroundColor}, 
+                        ${currentTheme.colors.surfaceColor}
+                    ) !important;
+                    color: var(--text-primary) !important;
+                    min-height: 100vh;
+                }
+                
+                .logo {
+                    color: var(--text-primary) !important;
+                    text-shadow: 0 2px 10px ${currentTheme.colors.primaryColor}40 !important;
+                }
+                
+                .search-box {
+                    background: var(--bg-surface) !important;
+                    color: var(--text-primary) !important;
+                    border: 1px solid ${currentTheme.colors.textSecondaryColor}30 !important;
+                    box-shadow: 0 8px 32px ${currentTheme.colors.primaryColor}20 !important;
+                }
+                
+                .search-box:focus {
+                    border-color: var(--color-primary) !important;
+                    box-shadow: 0 12px 40px ${currentTheme.colors.primaryColor}30 !important;
+                    background: var(--bg-primary) !important;
+                }
+                
+                .search-box::placeholder {
+                    color: var(--text-secondary) !important;
+                }
+                
+                .shortcuts-container {
+                    padding: 20px;
+                    border-radius: 16px;
+                }
+                
+                .shortcut-item {
+                    background: var(--bg-surface) !important;
+                    border: 1px solid ${currentTheme.colors.textSecondaryColor}20 !important;
+                    color: var(--text-primary) !important;
+                    box-shadow: 0 4px 16px ${currentTheme.colors.primaryColor}10 !important;
+                }
+                
+                .shortcut-item:hover {
+                    background: linear-gradient(135deg, 
+                        var(--color-primary), 
+                        var(--color-accent)
+                    ) !important;
+                    border-color: var(--color-primary) !important;
+                    color: white !important;
+                    transform: translateY(-4px) !important;
+                    box-shadow: 0 12px 32px ${currentTheme.colors.primaryColor}40 !important;
+                }
+                
+                .shortcut-item.add-new {
+                    background: ${currentTheme.colors.primaryColor}10 !important;
+                    border: 2px dashed var(--color-primary) !important;
+                    color: var(--color-primary) !important;
+                }
+                
+                .shortcut-item.add-new:hover {
+                    background: var(--color-primary) !important;
+                    color: white !important;
+                    border-color: var(--color-accent) !important;
+                }
+                
+                .shortcut-icon {
+                    background: linear-gradient(135deg, 
+                        ${currentTheme.colors.primaryColor}20, 
+                        ${currentTheme.colors.accentColor}20
+                    ) !important;
+                    color: var(--color-primary) !important;
+                    border: 1px solid ${currentTheme.colors.primaryColor}30 !important;
+                }
+                
+                .shortcut-item:hover .shortcut-icon {
+                    background: rgba(255, 255, 255, 0.2) !important;
+                    color: white !important;
+                }
+                
+                .shortcut-title {
+                    color: var(--text-primary) !important;
+                }
+                
+                .shortcut-item:hover .shortcut-title {
+                    color: white !important;
+                }
+                
+                .add-icon {
+                    color: var(--color-primary) !important;
+                }
+                
+                .shortcut-item.add-new:hover .add-icon {
+                    color: white !important;
+                }
+            `;
+            
+            if (!document.getElementById('dynamic-theme')) {
+                document.head.appendChild(themeStyle);
+            }
+            
+            console.log('✅ Dynamic theme applied:', currentTheme.themeName);
+        }
+
+        // Listen for theme messages from Flutter
+        window.addEventListener('message', function(event) {
+            console.log('📨 Received message:', event.data);
+            if (event.data && (event.data.type === 'theme' || event.data.type === 'fullTheme')) {
+                console.log('🎨 Applying theme from message:', event.data);
+                applyTheme(event.data);
+            }
+        });
+
+        // Request theme from Flutter app
+        function requestTheme() {
+            if (window.ThemeHandler && window.ThemeHandler.postMessage) {
+                window.ThemeHandler.postMessage('getTheme');
+                console.log('📤 Requested theme from Flutter');
+            }
+        }
+
         // Initialize
-        updateBackground();
-        updateClock();
-        updateWeather();
-
-        // Update clock every minute
-        setInterval(updateClock, 60000);
-
-        // Update weather every 30 minutes
-        setInterval(updateWeather, 1800000);
-
-        // Update background every hour
-        setInterval(updateBackground, 3600000);
+        renderShortcuts();
+        
+        // Try to get theme from Flutter
+        requestTheme();
+        
+        // Fallback: set default theme after a delay if no theme is received
+        setTimeout(() => {
+            if (!document.getElementById('dynamic-theme')) {
+                console.log('🔄 No theme received, applying default light theme');
+                applyTheme({
+                    type: 'fullTheme',
+                    themeName: 'light',
+                    isDark: false,
+                    colors: {
+                        backgroundColor: '#ffffff',
+                        surfaceColor: '#f5f5f5',
+                        textColor: '#000000',
+                        textSecondaryColor: '#757575',
+                        primaryColor: '#2196f3',
+                        accentColor: '#1976d2',
+                        errorColor: '#f44336',
+                        successColor: '#4caf50',
+                        warningColor: '#ff9800',
+                        secondaryColor: '#e0e0e0'
+                    }
+                });
+            }
+        }, 1000);
     </script>
 </body>
-</html> 
+</html>

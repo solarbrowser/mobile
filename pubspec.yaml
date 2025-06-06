@@ -1,5 +1,5 @@
 name: solar
-description: A modern, fast, and secure browser
+description: Your gateway to the cosmos.
 version: 0.1.1
 
 environment:
@@ -43,7 +43,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/icon.png"
+  image_path: "assets/icon.jpeg"
 
 flutter:
   uses-material-design: true

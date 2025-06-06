@@ -7,6 +7,7 @@ class BrowserTab {
   String title;
   String? favicon;
   final bool isIncognito;
+  String? groupId;
   late WebViewController controller;
 
   BrowserTab({
@@ -15,6 +16,7 @@ class BrowserTab {
     required this.title,
     this.favicon,
     this.isIncognito = false,
+    this.groupId,
   }) {
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)

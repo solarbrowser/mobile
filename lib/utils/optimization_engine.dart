@@ -648,21 +648,64 @@ class OptimizationEngine {
     _tabTimers[tabId]?.cancel();
     _tabTimers[tabId] = Timer(TAB_SUSPEND_TIMEOUT, () => _suspendTab(tabId));
   }
-
-  // Suspend inactive tab
+  // Suspend inactive tab with enhanced memory optimization
   Future<void> _suspendTab(String tabId) async {
     if (!_suspendedTabs.containsKey(tabId)) {
       _suspendedTabs[tabId] = true;
       if (controller != null) {
         await controller!.runJavaScript('''
-          // Suspend tab resources
-          document.querySelectorAll('img, video, iframe').forEach(el => {
-            if (el instanceof HTMLMediaElement) {
-              el.pause();
+          // Advanced tab suspension with staged resource management
+          (() => {
+            // First stage: Pause media and animations
+            document.querySelectorAll('video, audio').forEach(el => {
+              if (!el.paused) el.pause();
+              el.removeAttribute('autoplay');
+            });
+            
+            // Stop all animations
+            document.querySelectorAll('.animated, [data-animation]').forEach(el => {
+              el.style.animationPlayState = 'paused';
+              el.classList.add('animation-paused');
+            });
+            
+            // Second stage: Release memory from media elements
+            document.querySelectorAll('img, video, iframe, canvas').forEach(el => {
+              if (el instanceof HTMLMediaElement) {
+                el.pause();
+                el.dataset.originalSrc = el.src;
+                el.removeAttribute('srcset');
+                el.removeAttribute('src');
+                el.load(); // Force release of media resources
+              } else if (el instanceof HTMLImageElement) {
+                el.dataset.originalSrc = el.src;
+                el.dataset.originalSrcset = el.srcset || '';
+                el.removeAttribute('srcset');
+                el.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"%3E%3C/svg%3E';
+              } else if (el instanceof HTMLIFrameElement) {
+                el.dataset.originalSrc = el.src;
+                el.src = 'about:blank';
+              } else if (el instanceof HTMLCanvasElement) {
+                const ctx = el.getContext('2d');
+                if (ctx) ctx.clearRect(0, 0, el.width, el.height);
+              }
+            });
+            
+            // Third stage: Clear memory
+            if (window.ramOptimizer) window.ramOptimizer.clearCaches();
+            if (window.caches && window.caches.keys) {
+              window.caches.keys().then(names => {
+                names.forEach(name => window.caches.delete(name));
+              });
             }
-            el.src = '';
-          });
-          window.ramOptimizer.clearCaches();
+            
+            // Stop any ongoing network requests
+            window.stop();
+            
+            // Hint to browser to release memory
+            if (window.gc) window.gc();
+            
+            console.log('Tab suspended and optimized: ' + document.title);
+          })();
         ''');
       }
     }
@@ -673,8 +716,48 @@ class OptimizationEngine {
     if (_suspendedTabs[tabId] == true) {
       _suspendedTabs[tabId] = false;
       if (controller != null) {
-        await controller!.reload();
+        // Try to restore the tab state without a full reload if possible
+        final success = await controller!.runJavaScriptReturningResult('''
+          (() => {
+            try {
+              // First restore images and media
+              let restoredElements = 0;
+              document.querySelectorAll('img, video, iframe, canvas').forEach(el => {
+                if (el.dataset && el.dataset.originalSrc) {
+                  if (el instanceof HTMLImageElement) {
+                    el.src = el.dataset.originalSrc;
+                    if (el.dataset.originalSrcset) {
+                      el.srcset = el.dataset.originalSrcset;
+                    }
+                    restoredElements++;
+                  } else if (el instanceof HTMLMediaElement || el instanceof HTMLIFrameElement) {
+                    el.src = el.dataset.originalSrc;
+                    restoredElements++;
+                  }
+                }
+              });
+              
+              // Resume animations
+              document.querySelectorAll('.animated, [data-animation], .animation-paused').forEach(el => {
+                el.style.animationPlayState = 'running';
+                el.classList.remove('animation-paused');
+              });
+              
+              return restoredElements > 0 ? true : false;
+            } catch (e) {
+              console.error('Error restoring tab:', e);
+              return false;
+            }
+          })();
+        ''');
+        
+        // If restoration failed or didn't restore enough elements, do a full reload
+        if (success.toString() != 'true') {
+          await controller!.reload();
+        }
       }
+      
+      // Start the tab timer again
       _startTabTimer(tabId);
     }
   }
@@ -687,9 +770,8 @@ class OptimizationEngine {
         final content = utf8.decode(response.bodyBytes);
         
         // Process content through JavaScript ADRCMV handler
-        if (controller != null) {
-          final processedContent = await controller!.runJavaScriptReturningResult(
-            'ADRCMVHandler.processADRCMV(`${content}`)'
+        if (controller != null) {          final processedContent = await controller!.runJavaScriptReturningResult(
+            'ADRCMVHandler.processADRCMV("' + content + '")'
           );
           return processedContent.toString();
         }
@@ -828,18 +910,15 @@ class OptimizationEngine {
           }
 
           optimizeCSSAnimations() {
-            const style = document.createElement('style');
-            style.textContent = `
-              * {
-                animation-duration: 0.001s !important;
-                animation-delay: 0s !important;
-                transition-duration: 0.001s !important;
-              }
-            `;
+            const style = document.createElement('style');            style.textContent = 
+              '* {' +
+              '  animation-duration: 0.001s !important;' +
+              '  animation-delay: 0s !important;' +
+              '  transition-duration: 0.001s !important;' +
+              '}';
             document.head.appendChild(style);
-            
-            // Re-enable animations after initial load
-            setTimeout(() => {
+              // Re-enable animations after initial load
+            setTimeout(function() {
               document.head.removeChild(style);
             }, 1000);
           }
@@ -918,7 +997,6 @@ class OptimizationEngine {
       ''');
     }
   }
-
   // Clean up resources
   void dispose() {
     _tabTimers.forEach((_, timer) => timer.cancel());
@@ -930,4 +1008,314 @@ class OptimizationEngine {
   Future<void> suspendTab(String tabId) async {
     await _suspendTab(tabId);
   }
-} 
+  
+  // Optimize web actions
+  Future<void> optimizeWebActions() async {
+    if (controller != null) {
+      await controller!.runJavaScript('''
+        // Advanced Web Actions Optimizer
+        (() => {
+          // Network and Resource Priority Management
+          class NetworkOptimizer {
+            constructor() {
+              this.setupResourceHints();
+              this.optimizeResourcePriority();
+              this.setupAdvancedFetching();
+              this.monitorNetworkRequests();
+            }
+              setupResourceHints() {
+              // Add DNS prefetch for common domains              const commonDomains = [
+                'fonts.googleapis.com',
+                'fonts.gstatic.com',
+                'ajax.googleapis.com',
+                'www.google-analytics.com'
+              ];
+              
+              commonDomains.forEach(function(domain) {
+                if (!document.querySelector('link[rel="dns-prefetch"][href*="' + domain + '"]')) {
+                  const link = document.createElement('link');
+                  link.rel = 'dns-prefetch';
+                  link.href = '//' + domain;
+                  document.head.appendChild(link);
+                }
+              });
+                // Add preconnect for important resources
+              if (window.location && window.location.hostname) {
+                const currentDomain = window.location.hostname;
+                if (!document.querySelector('link[rel="preconnect"][href*="' + currentDomain + '"]')) {
+                  const link = document.createElement('link');
+                  link.rel = 'preconnect';
+                  link.href = '//' + currentDomain;
+                  link.crossOrigin = 'anonymous';
+                  document.head.appendChild(link);
+                }
+              }
+            }
+            
+            optimizeResourcePriority() {
+              // Optimize resource priority using fetchpriority attribute              document.querySelectorAll('img[loading="eager"]').forEach(function(img) {
+                if (!img.getAttribute('fetchpriority')) {
+                  img.setAttribute('fetchpriority', 'high');
+                }
+              });
+              
+              document.querySelectorAll('link[rel="stylesheet"]').forEach(function(link) {
+                if (!link.hasAttribute('media')) {
+                  link.setAttribute('media', 'print');
+                  link.setAttribute('onload', "this.media='all'");
+                }
+              });
+                // Lower priority for offscreen/below-the-fold resources
+              const viewportHeight = window.innerHeight;
+              document.querySelectorAll('img').forEach(function(img) {
+                const rect = img.getBoundingClientRect();
+                if (rect.top > viewportHeight * 2) {
+                  img.setAttribute('loading', 'lazy');
+                  img.setAttribute('fetchpriority', 'low');
+                }
+              });
+            }
+            
+            setupAdvancedFetching() {
+              // Use Intersection Observer to prefetch links that are visible
+              const linkObserver = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                  if (entry.isIntersecting && entry.target.href && 
+                      !entry.target.prefetched && 
+                      entry.target.hostname === window.location.hostname) {
+                    
+                    const prefetchLink = document.createElement('link');
+                    prefetchLink.rel = 'prefetch';
+                    prefetchLink.href = entry.target.href;
+                    document.head.appendChild(prefetchLink);
+                    entry.target.prefetched = true;
+                    
+                    // After prefetching, prerender if high priority
+                    if (entry.intersectionRatio > 0.5) {
+                      setTimeout(() => {
+                        const prerender = document.createElement('link');
+                        prerender.rel = 'prerender';
+                        prerender.href = entry.target.href;
+                        document.head.appendChild(prerender);
+                      }, 200);
+                    }
+                  }
+                });
+              }, {
+                rootMargin: '200px',
+                threshold: [0, 0.5, 1.0]
+              });
+              
+              // Observe all links
+              document.querySelectorAll('a').forEach(link => {
+                if (link.hostname === window.location.hostname) {
+                  linkObserver.observe(link);
+                }
+              });
+            }
+            
+            monitorNetworkRequests() {
+              // Monitor and potentially abort non-critical requests when network is slow
+              if ('connection' in navigator && 'effectiveType' in navigator.connection) {
+                navigator.connection.addEventListener('change', this.handleConnectionChange);
+                this.handleConnectionChange();
+              }
+            }
+            
+            handleConnectionChange() {
+              const connection = navigator.connection;
+              
+              if (connection.effectiveType === 'slow-2g' || connection.effectiveType === '2g') {
+                // Extremely slow connection - abort non-critical requests
+                document.querySelectorAll('img[data-src]:not([critical="true"])').forEach(img => {
+                  img.src = '';
+                });
+                
+                document.querySelectorAll('iframe:not([critical="true"])').forEach(iframe => {
+                  iframe.src = 'about:blank';
+                });
+                
+                // Remove non-essential scripts
+                document.querySelectorAll('script[async]:not([critical="true"])').forEach(script => {
+                  script.remove();
+                });
+              } else if (connection.effectiveType === '3g') {
+                // Slow connection - optimize but don't abort
+                document.querySelectorAll('img').forEach(img => {
+                  img.loading = 'lazy';
+                  img.fetchPriority = 'low';
+                });
+              }
+              
+              // Save data mode detection
+              if (connection.saveData) {
+                // Apply data saving measures
+                document.documentElement.classList.add('save-data');
+                
+                // Force low-res images
+                document.querySelectorAll('source[srcset], img[srcset]').forEach(el => {
+                  el.dataset.originalSrcset = el.srcset;
+                  el.removeAttribute('srcset');
+                });
+              }
+            }
+          }
+          
+          // Initialize network optimizer
+          window.networkOptimizer = new NetworkOptimizer();
+          
+          // Advanced Touch & Gesture Optimization
+          class TouchOptimizer {
+            constructor() {
+              this.setupFastTouch();
+              this.optimizeTouchTargets();
+              this.implementGestureRecognition();
+            }
+            
+            setupFastTouch() {
+              // Eliminate 300ms tap delay on mobile
+              document.documentElement.style.touchAction = 'manipulation';
+              
+              // Improve touch response time with event delegation
+              document.addEventListener('touchstart', e => {
+                // Find closest clickable element
+                let target = e.target;
+                while (target && target !== document.body) {
+                  if (target.tagName === 'A' || target.tagName === 'BUTTON' || 
+                      target.getAttribute('role') === 'button' ||
+                      target.classList.contains('clickable')) {
+                    // Add active state immediately for better feedback
+                    target.classList.add('active-touch');
+                    break;
+                  }
+                  target = target.parentNode;
+                }
+              }, { passive: true });
+              
+              // Remove active state on touch end
+              document.addEventListener('touchend', e => {
+                document.querySelectorAll('.active-touch').forEach(el => {
+                  el.classList.remove('active-touch');
+                });
+              }, { passive: true });
+            }
+            
+            optimizeTouchTargets() {
+              // Find elements with small touch targets
+              document.querySelectorAll('a, button, [role="button"]').forEach(el => {
+                const rect = el.getBoundingClientRect();
+                const minTouchSize = 44; // Minimum recommended touch target size in px
+                
+                if (rect.width < minTouchSize || rect.height < minTouchSize) {
+                  el.style.position = 'relative';
+                  
+                  // Create invisible touch extender if needed
+                  if (!el.querySelector('.touch-extender')) {
+                    const extender = document.createElement('span');
+                    extender.className = 'touch-extender';
+                    extender.style.position = 'absolute';
+                    extender.style.top = '50%';
+                    extender.style.left = '50%';
+                    extender.style.transform = 'translate(-50%, -50%)';
+                    extender.style.width = '44px';
+                    extender.style.height = '44px';
+                    extender.style.background = 'transparent';
+                    extender.style.zIndex = '-1';
+                    el.appendChild(extender);
+                  }
+                }
+              });
+            }
+            
+            implementGestureRecognition() {
+              // Simple gesture recognition for common actions
+              let touchStartX = 0;
+              let touchStartY = 0;
+              let lastTouchEnd = 0;
+              
+              document.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
+              }, { passive: true });
+              
+              document.addEventListener('touchend', e => {
+                const touchEndX = e.changedTouches[0].screenX;
+                const touchEndY = e.changedTouches[0].screenY;
+                const dx = touchEndX - touchStartX;
+                const dy = touchEndY - touchStartY;
+                const absDx = Math.abs(dx);
+                const absDy = Math.abs(dy);
+                
+                // Detect double tap
+                const now = new Date().getTime();
+                const timeDiff = now - lastTouchEnd;
+                
+                if (timeDiff < 300 && timeDiff > 0) {
+                  // Double tap detected
+                  if (window.doubleTapHandler) {
+                    window.doubleTapHandler(e.target, e);
+                  }
+                  
+                  // Prevent zoom on double tap
+                  e.preventDefault();
+                }
+                
+                // Store timestamp
+                lastTouchEnd = now;
+                
+                // Detect gestures (if distance > 60px and more horizontal than vertical)
+                if (absDx > 60 && absDx > absDy * 1.5) {
+                  if (dx > 0) {
+                    // Right swipe
+                    if (window.swipeRightHandler) {
+                      window.swipeRightHandler(e.target);
+                    }
+                  } else {
+                    // Left swipe
+                    if (window.swipeLeftHandler) {
+                      window.swipeLeftHandler(e.target);
+                    }
+                  }
+                } else if (absDy > 60 && absDy > absDx * 1.5) {
+                  if (dy > 0) {
+                    // Down swipe
+                    if (window.swipeDownHandler) {
+                      window.swipeDownHandler(e.target);
+                    }
+                  } else {
+                    // Up swipe
+                    if (window.swipeUpHandler) {
+                      window.swipeUpHandler(e.target);
+                    }
+                  }
+                }
+              }, { passive: false });
+            }
+          }
+          
+          // Initialize touch optimizer
+          window.touchOptimizer = new TouchOptimizer();
+          
+          // Default handlers
+          window.swipeLeftHandler = target => {
+            console.log('Swipe left detected');
+          };
+          
+          window.swipeRightHandler = target => {
+            console.log('Swipe right detected');
+            
+            // If this is a page with pagination, go back
+            const backLink = document.querySelector('a[rel="prev"], .prev, .previous');
+            if (backLink) {
+              backLink.click();
+            } else if (window.history && window.history.length > 1) {
+              window.history.back();
+            }
+          };
+          
+          console.log('Advanced web actions optimization complete');
+        })();
+      ''');
+    }
+  }
+}
