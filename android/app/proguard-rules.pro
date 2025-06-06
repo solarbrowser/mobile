@@ -120,6 +120,27 @@
 -keepattributes SourceFile,LineNumberTable
 -renamesourcefileattribute SourceFile
 
+# Fix R8 missing classes - Keep annotation processing classes
+-keep class javax.lang.model.** { *; }
+-keep class javax.lang.model.element.** { *; }
+-keep class javax.lang.model.element.Modifier { *; }
+
+# Fix R8 missing classes - Keep XML processing classes (Apache Tika)
+-keep class javax.xml.stream.** { *; }
+-keep class javax.xml.stream.XMLStreamException { *; }
+
+# Additional rules for annotation processing libraries commonly used by Flutter plugins
+-keep class com.google.errorprone.** { *; }
+-dontwarn com.google.errorprone.**
+
+# Keep Apache Tika classes if used by any plugins
+-keep class org.apache.tika.** { *; }
+-dontwarn org.apache.tika.**
+
+# Suppress warnings for missing optional dependencies
+-dontwarn javax.lang.model.element.Modifier
+-dontwarn javax.xml.stream.XMLStreamException
+
 # Keep the BuildConfig
 -keep class **.R
 -keep class **.R$* {

@@ -1337,13 +1337,44 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               "secondaryColor": "${colorToHex(themeColors.secondaryColor)}"
             }
           }''';
-          
-          controller.runJavaScript('''
+            controller.runJavaScript('''
             window.postMessage($themeJson, '*');
           ''');
         }
       },
-    );if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+    );
+
+    // Add JavaScript channel for dialog handling
+    await controller.addJavaScriptChannel(
+      'DialogHandler',
+      onMessageReceived: (JavaScriptMessage message) {
+        if (!mounted) return;
+        
+        try {
+          final data = json.decode(message.message);
+          final String type = data['type'] ?? '';
+          final String id = data['id'] ?? '';
+          final String dialogMessage = data['message'] ?? '';
+          
+          switch (type) {
+            case 'confirm':
+              _showConfirmDialog(dialogMessage, id);
+              break;
+            case 'prompt':
+              final String defaultValue = data['defaultValue'] ?? '';
+              _showPromptDialog(dialogMessage, defaultValue, id);
+              break;
+            case 'alert':
+              _showAlertDialog(dialogMessage, id);
+              break;
+          }
+        } catch (e) {
+          print('Error handling dialog message: $e');
+        }
+      },
+    );
+
+    if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
       await controller.loadRequest(Uri.parse(tabs[currentTabIndex].url));
       
       // Initialize theme when home page loads
@@ -3326,25 +3357,25 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                 children: [
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.app_name,
-                    subtitle: AppLocalizations.of(context)!.version('0.1.2'),
+                    subtitle: AppLocalizations.of(context)!.version('0.2.0'),
                     isFirst: true,
                     isLast: false,
                   ),
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.flutter_version,
-                    subtitle: 'Flutter 3.29.2',
+                    subtitle: 'Flutter 3.32.0',
                     isFirst: false,
                     isLast: false,
                   ),
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.photoncore_version,
-                    subtitle: 'Photoncore 0.0.3',
+                    subtitle: 'Photoncore 0.1.0',
                     isFirst: false,
                     isLast: false,
                   ),
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.engine_version,
-                    subtitle: 'MRE4.7.0, ARE4.3.3',
+                    subtitle: '4.10.0',
                     isFirst: false,
                     isLast: true,
                   ),
@@ -8013,6 +8044,155 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       iconColor: Colors.green,
       isDarkMode: isDarkMode,
     );
+  }
+  // Modern dialog methods for JavaScript communication
+  void _showConfirmDialog(String message, String? dialogId) {
+    showCustomDialog(
+      context: context,
+      title: 'Confirm',
+      content: message,
+      isDarkMode: isDarkMode,
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            _sendDialogResult(dialogId, false);
+          },
+          child: Text(
+            'Cancel',
+            style: TextStyle(color: ThemeManager.textSecondaryColor()),
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            _sendDialogResult(dialogId, true);
+          },
+          child: Text(
+            'OK',
+            style: TextStyle(color: ThemeManager.primaryColor()),
+          ),
+        ),
+      ],
+    );
+  }
+  void _showPromptDialog(String message, String? defaultText, String? dialogId) {
+    final TextEditingController textController = TextEditingController(text: defaultText ?? '');
+    
+    showCustomDialog(
+      context: context,
+      title: 'Input Required',
+      isDarkMode: isDarkMode,
+      customContent: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (message.isNotEmpty) ...[
+            Text(
+              message,
+              style: TextStyle(
+                color: ThemeManager.textColor(),
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+          Container(
+            decoration: BoxDecoration(
+              color: ThemeManager.surfaceColor(),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: ThemeManager.primaryColor().withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: TextField(
+              controller: textController,
+              style: TextStyle(color: ThemeManager.textColor()),
+              decoration: InputDecoration(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                border: InputBorder.none,
+                hintText: 'Enter text...',
+                hintStyle: TextStyle(
+                  color: ThemeManager.textColor().withOpacity(0.5),
+                ),
+              ),
+              autofocus: true,
+            ),
+          ),
+        ],
+      ),
+      actions: [        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            _sendDialogResult(dialogId, null);
+          },
+          child: Text(
+            'Cancel',
+            style: TextStyle(color: ThemeManager.textSecondaryColor()),
+          ),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            _sendDialogResult(dialogId, textController.text);
+          },
+          child: Text(
+            'OK',
+            style: TextStyle(color: ThemeManager.primaryColor()),
+          ),
+        ),
+      ],
+    );
+  }
+  void _showAlertDialog(String message, String? dialogId) {
+    showCustomDialog(
+      context: context,
+      title: 'Alert',
+      content: message,
+      isDarkMode: isDarkMode,
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            _sendDialogResult(dialogId, true);
+          },
+          child: Text(
+            'OK',
+            style: TextStyle(color: ThemeManager.primaryColor()),
+          ),
+        ),
+      ],
+    );
+  }
+  void _sendDialogResult(String? dialogId, dynamic result) {
+    if (dialogId != null) {
+      try {
+        final resultData = {
+          'id': dialogId,
+          'result': result,
+        };
+        
+        // Determine the dialog type based on the result
+        String dialogType = 'alert';
+        if (result is bool) {
+          dialogType = 'confirm';
+          resultData['confirmed'] = result;
+        } else if (result is String) {
+          dialogType = 'prompt';
+        }
+        resultData['type'] = dialogType;
+        
+        final resultJson = json.encode(resultData);
+        controller.runJavaScript('''
+          if (typeof handleDialogResult === 'function') {
+            handleDialogResult('$resultJson');
+          }
+        ''');
+      } catch (e) {
+        print('Error sending dialog result: $e');
+      }
+    }
   }
 
   Widget _buildPanel({

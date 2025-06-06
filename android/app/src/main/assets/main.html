@@ -1,10 +1,10 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Solar</title>
-    <style>
-        * {
+    <style>        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -56,9 +56,7 @@
         .search-container {
             width: 100%;
             position: relative;
-        }
-
-        .search-box {
+        }        .search-box {
             width: 100%;
             height: 56px;
             padding: 0 20px;
@@ -92,9 +90,7 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
             width: 100%;
-        }
-
-        .shortcut-item {
+        }        .shortcut-item {
             aspect-ratio: 1;
             display: flex;
             flex-direction: column;
@@ -217,7 +213,7 @@
         <div class="logo"></div>
         
         <div class="search-container">
-            <input type="text" class="search-box" placeholder="Search with Solar Search!" autocomplete="off">
+            <input type="text" class="search-box" placeholder="Search or enter address" autocomplete="off">
         </div>
 
         <div class="shortcuts-container">
@@ -311,12 +307,11 @@
                 `;
                 
                 // Add long press to remove
-                let pressTimer;
-                shortcutElement.addEventListener('mousedown', function() {
+                let pressTimer;                shortcutElement.addEventListener('mousedown', function() {
                     pressTimer = setTimeout(() => {
-                        if (confirm(`Remove "${shortcut.title}" from shortcuts?`)) {
+                        showConfirmDialog(`Remove "${shortcut.title}" from shortcuts?`, () => {
                             removeShortcut(index);
-                        }
+                        });
                     }, 1000);
                 });
                 
@@ -326,9 +321,9 @@
                 
                 shortcutElement.addEventListener('touchstart', function() {
                     pressTimer = setTimeout(() => {
-                        if (confirm(`Remove "${shortcut.title}" from shortcuts?`)) {
+                        showConfirmDialog(`Remove "${shortcut.title}" from shortcuts?`, () => {
                             removeShortcut(index);
-                        }
+                        });
                     }, 1000);
                 });
                 
@@ -352,24 +347,119 @@
                 `;
                 grid.appendChild(addButton);
             }
+        }        // Modern dialog functions that communicate with Flutter
+        function showConfirmDialog(message, onConfirm, onCancel) {
+            if (window.DialogHandler && window.DialogHandler.postMessage) {
+                const dialogId = Date.now().toString();
+                
+                // Store callbacks for later use
+                window.pendingDialogs = window.pendingDialogs || {};
+                window.pendingDialogs[dialogId] = { onConfirm, onCancel };
+                
+                window.DialogHandler.postMessage(JSON.stringify({
+                    type: 'confirm',
+                    id: dialogId,
+                    message: message
+                }));
+            } else {
+                // Fallback to browser confirm
+                if (confirm(message)) {
+                    onConfirm && onConfirm();
+                } else {
+                    onCancel && onCancel();
+                }
+            }
+        }
+        
+        function showPromptDialog(message, defaultValue, onResult) {
+            if (window.DialogHandler && window.DialogHandler.postMessage) {
+                const dialogId = Date.now().toString();
+                
+                // Store callback for later use
+                window.pendingDialogs = window.pendingDialogs || {};
+                window.pendingDialogs[dialogId] = { onResult };
+                
+                window.DialogHandler.postMessage(JSON.stringify({
+                    type: 'prompt',
+                    id: dialogId,
+                    message: message,
+                    defaultValue: defaultValue || ''
+                }));
+            } else {
+                // Fallback to browser prompt
+                const result = prompt(message, defaultValue);
+                onResult && onResult(result);
+            }
+        }
+        
+        function showAlertDialog(message, onClose) {
+            if (window.DialogHandler && window.DialogHandler.postMessage) {
+                const dialogId = Date.now().toString();
+                
+                // Store callback for later use
+                window.pendingDialogs = window.pendingDialogs || {};
+                window.pendingDialogs[dialogId] = { onClose };
+                
+                window.DialogHandler.postMessage(JSON.stringify({
+                    type: 'alert',
+                    id: dialogId,
+                    message: message
+                }));
+            } else {
+                // Fallback to browser alert
+                alert(message);
+                onClose && onClose();
+            }
+        }
+        
+        // Handle dialog results from Flutter
+        function handleDialogResult(result) {
+            try {
+                const data = JSON.parse(result);
+                const pendingDialog = window.pendingDialogs && window.pendingDialogs[data.id];
+                
+                if (pendingDialog) {
+                    if (data.type === 'confirm') {
+                        if (data.confirmed) {
+                            pendingDialog.onConfirm && pendingDialog.onConfirm();
+                        } else {
+                            pendingDialog.onCancel && pendingDialog.onCancel();
+                        }
+                    } else if (data.type === 'prompt') {
+                        pendingDialog.onResult && pendingDialog.onResult(data.result);
+                    } else if (data.type === 'alert') {
+                        pendingDialog.onClose && pendingDialog.onClose();
+                    }
+                    
+                    // Clean up
+                    delete window.pendingDialogs[data.id];
+                }
+            } catch (e) {
+                console.error('Error handling dialog result:', e);
+            }
         }
 
-        // Add new shortcut
+        // Add new shortcut with modern dialogs
         function addNewShortcut() {
-            const url = prompt('Enter website URL (e.g., google.com):');
-            if (url && url.trim()) {
-                const cleanUrl = url.trim();
-                const title = prompt('Enter shortcut title:') || cleanUrl.replace(/^https?:\/\//, '').replace(/^www\./, '');
-                
-                const newShortcut = {
-                    title: title.trim(),
-                    url: cleanUrl
-                };
-                
-                shortcuts.push(newShortcut);
-                localStorage.setItem('solarShortcuts', JSON.stringify(shortcuts));
-                renderShortcuts();
-            }
+            showPromptDialog('Enter website URL (e.g., google.com):', '', (url) => {
+                if (url && url.trim()) {
+                    const cleanUrl = url.trim();
+                    const defaultTitle = cleanUrl.replace(/^https?:\/\//, '').replace(/^www\./, '');
+                    
+                    showPromptDialog('Enter shortcut title:', defaultTitle, (title) => {
+                        if (title && title.trim()) {
+                            const newShortcut = {
+                                title: title.trim(),
+                                url: cleanUrl
+                            };
+                            
+                            shortcuts.push(newShortcut);
+                            localStorage.setItem('solarShortcuts', JSON.stringify(shortcuts));
+                            renderShortcuts();
+                        }
+                    });
+                }
+            });
         }
 
         // Remove shortcut
