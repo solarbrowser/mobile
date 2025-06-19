@@ -45,6 +45,7 @@
   "customize_browser": "Browser anpassen",
   "learn_more": "Mehr erfahren",
   "tabs": "Tabs",
+  "keep_tabs_open": "Tabs offen halten",
   "history": "Verlauf",
   "bookmarks": "Lesezeichen",
   "search_in_page": "Auf Seite suchen",
@@ -251,4 +252,4 @@
   "classic_navigation_description": "Navigationsschaltflächen am unteren Bildschirmrand anzeigen",
   "searchTheWeb": "Im Web suchen",
   "recentSearches": "Letzte Suchen"
-} 
+}

@@ -156,6 +156,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get tabs => 'タブ';
 
   @override
+  String get keep_tabs_open => 'タブを開いたままにする';
+
+  @override
   String get history => '履歴';
 
   @override

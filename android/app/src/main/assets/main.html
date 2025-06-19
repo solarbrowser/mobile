@@ -44,13 +44,12 @@
             flex-direction: column;
             align-items: center;
             gap: 40px;
-        }
-
-        .logo {
-            font-size: 48px;
-            font-weight: 300;
+        }        .logo {
+            width: 80px; /* Increased from 64px */
+            height: 80px; /* Increased from 64px */
             margin-bottom: 20px;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.1));
+            border-radius: 12px;
         }
 
         .search-container {
@@ -105,6 +104,34 @@
             text-decoration: none;
             color: var(--text-primary);
             padding: 16px;
+            position: relative;
+        }
+
+        .shortcut-menu {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: var(--bg-primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            font-size: 12px;
+            z-index: 10;
+        }
+
+        .shortcut-item:hover .shortcut-menu {
+            opacity: 1;
+        }
+
+        .shortcut-menu:hover {
+            background: var(--color-error);
+            color: white;
         }
 
         .shortcut-item:hover {
@@ -210,7 +237,7 @@
 </head>
 <body>
     <div class="container">
-        <div class="logo"></div>
+        <img src="flutter_assets/assets/icon.png" alt="Solar Browser" class="logo" onerror="console.log('Logo failed to load'); this.style.display='none';">
         
         <div class="search-container">
             <input type="text" class="search-box" placeholder="Search or enter address" autocomplete="off">
@@ -249,24 +276,44 @@
                 warningColor: '#ff9800',
                 secondaryColor: '#e0e0e0'
             }
-        };
-
-        // Handle search
+        };        // Handle search - Use user's selected search engine from Flutter app
         document.querySelector('.search-box').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 const query = this.value.trim();
+                console.log('Search query entered:', query);
+                
                 if (query) {
                     // Check if it looks like a URL (contains dot and no spaces)
                     if (query.includes('.') && !query.includes(' ')) {
                         // It's a URL - navigate directly
                         const url = query.startsWith('http') ? query : `https://${query}`;
+                        console.log('Navigating to URL:', url);
                         window.location.href = url;
                     } else {
-                        // It's a search query - use the search engine
-                        window.location.href = `https://search.browser.solar/search?q=${encodeURIComponent(query)}`;
+                        // It's a search query - send to Flutter app to use user's selected search engine
+                        console.log('Sending search query to Flutter');
+                        if (window.SearchHandler && window.SearchHandler.postMessage) {
+                            window.SearchHandler.postMessage(query);
+                        } else {
+                            // Fallback to Google if SearchHandler is not available
+                            console.log('SearchHandler not available, using Google fallback');
+                            const fallbackUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+                            window.location.href = fallbackUrl;
+                        }
                     }
                 }
             }
+        });
+        
+        // Add focus and blur event listeners for search box
+        document.querySelector('.search-box').addEventListener('focus', function() {
+            console.log('Search box focused');
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        document.querySelector('.search-box').addEventListener('blur', function() {
+            console.log('Search box blurred');
+            this.style.transform = 'translateY(0)';
         });
 
         // Get favicon URL for a website
@@ -297,8 +344,8 @@
                 };
                 
                 const faviconUrl = getFaviconUrl(shortcut.url);
-                
-                shortcutElement.innerHTML = `
+                  shortcutElement.innerHTML = `
+                    <div class="shortcut-menu" onclick="event.stopPropagation(); removeShortcut(${index})" title="Remove shortcut">⋯</div>
                     <div class="shortcut-icon">
                         ${faviconUrl ? `<img src="${faviconUrl}" alt="" style="width: 100%; height: 100%; border-radius: 8px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">` : ''}
                         <span style="display: ${faviconUrl ? 'none' : 'block'};">${shortcut.title.charAt(0).toUpperCase()}</span>
@@ -437,9 +484,7 @@
             } catch (e) {
                 console.error('Error handling dialog result:', e);
             }
-        }
-
-        // Add new shortcut with modern dialogs
+        }        // Add new shortcut with modern dialogs
         function addNewShortcut() {
             showPromptDialog('Enter website URL (e.g., google.com):', '', (url) => {
                 if (url && url.trim()) {
@@ -462,26 +507,40 @@
             });
         }
 
-        // Remove shortcut
+        // Remove shortcut        
         function removeShortcut(index) {
-            shortcuts.splice(index, 1);
-            localStorage.setItem('solarShortcuts', JSON.stringify(shortcuts));
-            renderShortcuts();
+            const shortcut = shortcuts[index];
+            showConfirmDialog(`Remove "${shortcut.title}" from shortcuts?`, () => {
+                shortcuts.splice(index, 1);
+                localStorage.setItem('solarShortcuts', JSON.stringify(shortcuts));
+                renderShortcuts();
+            });
         }
         
         function applyTheme(themeData) {
             console.log('🎨 Applying theme:', themeData);
             
+            // Handle different data formats
+            let theme = themeData;
+            if (typeof themeData === 'string') {
+                try {
+                    theme = JSON.parse(themeData);
+                } catch (e) {
+                    console.error('Failed to parse theme data:', e);
+                    return;
+                }
+            }
+            
             // Update current theme
-            if (themeData.type === 'fullTheme') {
-                currentTheme = themeData;
-            } else if (themeData.type === 'theme') {
+            if (theme.type === 'fullTheme') {
+                currentTheme = theme;
+            } else if (theme.type === 'theme') {
                 // Legacy theme support - fallback to basic light/dark
-                currentTheme.isDark = themeData.theme === 'dark';
-                currentTheme.themeName = themeData.theme;
+                currentTheme.isDark = theme.theme === 'dark';
+                currentTheme.themeName = theme.theme;
                 
                 // Set basic colors for legacy mode
-                if (themeData.theme === 'dark') {
+                if (theme.theme === 'dark') {
                     currentTheme.colors = {
                         backgroundColor: '#000000',
                         surfaceColor: '#1a1a1a',
@@ -635,22 +694,54 @@
             }
             
             console.log('✅ Dynamic theme applied:', currentTheme.themeName);
-        }
-
-        // Listen for theme messages from Flutter
+        }// Listen for theme messages from Flutter
         window.addEventListener('message', function(event) {
             console.log('📨 Received message:', event.data);
-            if (event.data && (event.data.type === 'theme' || event.data.type === 'fullTheme')) {
-                console.log('🎨 Applying theme from message:', event.data);
-                applyTheme(event.data);
+            if (event.data && typeof event.data === 'object') {
+                if (event.data.type === 'theme' || event.data.type === 'fullTheme') {
+                    console.log('🎨 Applying theme from message:', event.data);
+                    applyTheme(event.data);
+                }
+            } else if (typeof event.data === 'string') {
+                try {
+                    const parsed = JSON.parse(event.data);
+                    if (parsed.type === 'theme' || parsed.type === 'fullTheme') {
+                        console.log('🎨 Applying parsed theme:', parsed);
+                        applyTheme(parsed);
+                    }
+                } catch (e) {
+                    console.log('Could not parse message as JSON:', event.data);
+                }
             }
         });
 
-        // Request theme from Flutter app
+        // Listen for custom theme events
+        window.addEventListener('themeUpdate', function(event) {
+            console.log('🎨 Theme update event received:', event.detail);
+            if (event.detail && typeof event.detail === 'object') {
+                applyTheme(event.detail);
+            } else if (typeof event.detail === 'string') {
+                try {
+                    const parsed = JSON.parse(event.detail);
+                    applyTheme(parsed);
+                } catch (e) {
+                    console.log('Could not parse theme event detail:', event.detail);
+                }
+            }
+        });
+
+        // Function to request theme from Flutter app
         function requestTheme() {
+            console.log('📤 Requesting theme from Flutter');
             if (window.ThemeHandler && window.ThemeHandler.postMessage) {
-                window.ThemeHandler.postMessage('getTheme');
-                console.log('📤 Requested theme from Flutter');
+                try {
+                    window.ThemeHandler.postMessage('getTheme');
+                    console.log('✅ Theme request sent to Flutter');
+                } catch (e) {
+                    console.error('❌ Error requesting theme:', e);
+                }
+            } else {
+                console.log('⚠️ ThemeHandler not available, will use fallback theme');
             }
         }
 
@@ -659,8 +750,7 @@
         
         // Try to get theme from Flutter
         requestTheme();
-        
-        // Fallback: set default theme after a delay if no theme is received
+          // Fallback: set default theme after a delay if no theme is received
         setTimeout(() => {
             if (!document.getElementById('dynamic-theme')) {
                 console.log('🔄 No theme received, applying default light theme');

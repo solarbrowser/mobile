@@ -51,6 +51,7 @@
   "customize_browser": "Настроить браузер",
   "learn_more": "Узнать больше",
   "tabs": "Вкладки",
+  "keep_tabs_open": "Сохранять вкладки открытыми",
   "history": "История",
   "bookmarks": "Закладки",
   "search_in_page": "Поиск на странице",
@@ -237,4 +238,4 @@
   
   "classic_navigation": "Классическая навигация",
   "classic_navigation_description": "Показывать кнопки навигации внизу экрана"
-} 
+}

@@ -156,6 +156,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get tabs => 'Abas';
 
   @override
+  String get keep_tabs_open => 'Manter abas abertas';
+
+  @override
   String get history => 'Histórico';
 
   @override

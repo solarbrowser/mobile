@@ -45,6 +45,7 @@
   "customize_browser": "Personalizza browser",
   "learn_more": "Scopri di più",
   "tabs": "Schede",
+  "keep_tabs_open": "Mantieni schede aperte",
   "history": "Cronologia",
   "bookmarks": "Segnalibri",
   "search_in_page": "Cerca nella pagina",
@@ -253,4 +254,4 @@
   
   "classic_navigation": "Navigazione Classica",
   "classic_navigation_description": "Mostra i pulsanti di navigazione nella parte inferiore dello schermo"
-} 
+}

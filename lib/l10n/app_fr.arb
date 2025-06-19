@@ -45,6 +45,7 @@
   "customize_browser": "Personnaliser le navigateur",
   "learn_more": "En savoir plus",
   "tabs": "Onglets",
+  "keep_tabs_open": "Garder les onglets ouverts",
   "history": "Historique",
   "bookmarks": "Favoris",
   "search_in_page": "Rechercher dans la page",
@@ -249,4 +250,4 @@
   "recentSearches": "Recherches récentes",
   "classic_navigation": "Navigation Classique",
   "classic_navigation_description": "Afficher les boutons de navigation en bas de l'écran"
-} 
+}

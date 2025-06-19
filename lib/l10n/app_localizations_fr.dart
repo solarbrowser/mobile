@@ -156,6 +156,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get tabs => 'Onglets';
 
   @override
+  String get keep_tabs_open => 'Garder les onglets ouverts';
+
+  @override
   String get history => 'Historique';
 
   @override

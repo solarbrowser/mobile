@@ -156,6 +156,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tabs => '标签页';
 
   @override
+  String get keep_tabs_open => '保持标签页打开';
+
+  @override
   String get history => '浏览历史';
 
   @override
@@ -177,7 +180,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get change_location => '更改位置';
 
   @override
-  String get clear_browser_data => '清除浏览数据';
+  String get clear_browser_data => '清除浏览器数据';
 
   @override
   String get browsing_history => '浏览历史';

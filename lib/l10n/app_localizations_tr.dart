@@ -156,6 +156,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get tabs => 'Sekmeler';
 
   @override
+  String get keep_tabs_open => 'Sekmeleri açık tut';
+
+  @override
   String get history => 'Geçmiş';
 
   @override

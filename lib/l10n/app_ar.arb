@@ -45,6 +45,7 @@
   "customize_browser": "تخصيص المتصفح",
   "learn_more": "معرفة المزيد",
   "tabs": "علامات التبويب",
+  "keep_tabs_open": "الاحتفاظ بعلامات التبويب مفتوحة",
   "history": "السجل",
   "bookmarks": "الإشارات المرجعية",
   "search_in_page": "البحث في الصفحة",
@@ -246,4 +247,4 @@
   "recentSearches": "عمليات البحث الأخيرة",
   "classic_navigation": "التنقل الكلاسيكي",
   "classic_navigation_description": "عرض أزرار التنقل في أسفل الشاشة"
-} 
+}

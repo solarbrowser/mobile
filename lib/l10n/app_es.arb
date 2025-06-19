@@ -45,6 +45,7 @@
   "customize_browser": "Personalizar navegador",
   "learn_more": "Más información",
   "tabs": "Pestañas",
+  "keep_tabs_open": "Mantener pestañas abiertas",
   "history": "Historial",
   "bookmarks": "Marcadores",
   "search_in_page": "Buscar en la página",
@@ -252,4 +253,4 @@
   "recentSearches": "Búsquedas recientes",
   "classic_navigation": "Navegación Clásica",
   "classic_navigation_description": "Mostrar botones de navegación en la parte inferior de la pantalla"
-} 
+}

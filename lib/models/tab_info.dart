@@ -1,4 +1,5 @@
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart' as webview_flutter_android;
 import 'package:flutter/material.dart';
 
 class BookmarkItem {
@@ -46,14 +47,18 @@ class BrowserTab {
     this.title = '',
     this.favicon,
     this.isIncognito = false,
-    this.groupId,
-  }) {
+    this.groupId,  }) {
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))  // Transparent background
       ..enableZoom(false)
-      ..setUserAgent('Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36')
-      ..setNavigationDelegate(
+      ..setUserAgent('Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36');
+      // Enable file access for Android WebView
+    if (controller.platform is webview_flutter_android.AndroidWebViewController) {
+      (controller.platform as webview_flutter_android.AndroidWebViewController).setAllowFileAccess(true);
+    }
+    
+    controller.setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (String url) {
             if (isIncognito) {

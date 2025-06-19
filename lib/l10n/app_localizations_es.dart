@@ -156,6 +156,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tabs => 'Pestañas';
 
   @override
+  String get keep_tabs_open => 'Mantener pestañas abiertas';
+
+  @override
   String get history => 'Historial';
 
   @override

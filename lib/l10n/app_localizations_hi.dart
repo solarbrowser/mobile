@@ -156,6 +156,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get tabs => 'टैब';
 
   @override
+  String get keep_tabs_open => 'टैब खुले रखें';
+
+  @override
   String get history => 'इतिहास';
 
   @override

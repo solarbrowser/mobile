@@ -68,6 +68,7 @@
   "customize_browser": "Customize Browser",
   "learn_more": "Learn More",
   "tabs": "Tabs",
+  "keep_tabs_open": "Keep Tabs Open",
   "history": "History",
   "bookmarks": "Bookmarks",
   "search_in_page": "Search in page",
@@ -503,4 +504,4 @@
   "@add": {
     "description": "Add button text"
   }
-} 
+}

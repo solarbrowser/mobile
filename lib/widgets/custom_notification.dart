@@ -94,6 +94,7 @@ void showCustomNotification({
 }) {
   final overlayState = Overlay.of(context);
   late OverlayEntry overlayEntry;
+  bool isExiting = false;
   
   overlayEntry = OverlayEntry(
     builder: (context) => Positioned(
@@ -102,25 +103,34 @@ void showCustomNotification({
       right: 16,
       child: Material(
         color: Colors.transparent,
-        child: TweenAnimationBuilder<double>(
-          tween: Tween<double>(begin: 0.0, end: 1.0),
-          duration: const Duration(milliseconds: 300),
-          builder: (context, value, child) {
-            return Transform.translate(
-              offset: Offset(0, -50 * (1 - value)),
-              child: Opacity(
-                opacity: value,
-                child: child,
+        child: StatefulBuilder(
+          builder: (context, setState) {
+            return TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: 0.0, end: isExiting ? 0.0 : 1.0),
+              duration: const Duration(milliseconds: 300),
+              builder: (context, value, child) {
+                return Transform.translate(
+                  offset: Offset(0, isExiting ? -50 * (1 - value) : -50 * (1 - value)),
+                  child: Opacity(
+                    opacity: value,
+                    child: child,
+                  ),
+                );
+              },
+              onEnd: () {
+                if (isExiting && overlayEntry.mounted) {
+                  overlayEntry.remove();
+                }
+              },
+              child: CustomNotification(
+                message: message,
+                icon: icon,
+                iconColor: iconColor,
+                action: action,
+                isDarkMode: isDarkMode,
               ),
             );
           },
-          child: CustomNotification(
-            message: message,
-            icon: icon,
-            iconColor: iconColor,
-            action: action,
-            isDarkMode: isDarkMode,
-          ),
         ),
       ),
     ),
@@ -130,7 +140,9 @@ void showCustomNotification({
 
   Future.delayed(duration ?? const Duration(seconds: 3), () {
     if (overlayEntry.mounted) {
-      overlayEntry.remove();
+      isExiting = true;
+      // Trigger rebuild to start exit animation
+      overlayEntry.markNeedsBuild();
     }
   });
-} 
+}

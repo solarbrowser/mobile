@@ -44,6 +44,7 @@
   "customize_browser": "Özelleştir",
   "learn_more": "Daha Fazla Bilgi",
   "tabs": "Sekmeler",
+  "keep_tabs_open": "Sekmeleri açık tut",
   "history": "Geçmiş",
   "bookmarks": "Yer İmleri",
   "search_in_page": "Sayfada ara",
@@ -293,4 +294,4 @@
   "storage_permission_granted": "Depolama izni verildi",
   "classic_navigation": "Klasik Navigasyon",
   "classic_navigation_description": "Ekranın altında gezinme düğmelerini göster"
-} 
+}

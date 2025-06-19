@@ -49,6 +49,7 @@
   "customize_browser": "브라우저 사용자 지정",
   "learn_more": "자세히 알아보기",
   "tabs": "탭",
+  "keep_tabs_open": "탭 열린 상태 유지",
   "history": "기록",
   "bookmarks": "북마크",
   "search_in_page": "페이지에서 찾기",
@@ -230,4 +231,4 @@
   
   "classic_navigation": "클래식 내비게이션",
   "classic_navigation_description": "화면 하단에 탐색 버튼 표시"
-} 
+}

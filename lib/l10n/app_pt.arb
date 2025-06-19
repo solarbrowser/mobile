@@ -46,6 +46,7 @@
   "customize_browser": "Personalizar navegador",
   "learn_more": "Saiba mais",
   "tabs": "Abas",
+  "keep_tabs_open": "Manter abas abertas",
   "history": "Histórico",
   "bookmarks": "Favoritos",
   "search_in_page": "Pesquisar na página",
@@ -258,4 +259,4 @@
   
   "classic_navigation": "Navegação Clássica",
   "classic_navigation_description": "Exibir botões de navegação na parte inferior da tela"
-} 
+}

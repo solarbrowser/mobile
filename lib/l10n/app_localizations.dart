@@ -411,6 +411,12 @@ abstract class AppLocalizations {
   /// **'Tabs'**
   String get tabs;
 
+  /// No description provided for @keep_tabs_open.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep Tabs Open'**
+  String get keep_tabs_open;
+
   /// No description provided for @history.
   ///
   /// In en, this message translates to:

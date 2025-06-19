@@ -13,7 +13,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:app_settings/app_settings.dart';
 import '../utils/theme_manager.dart';
 import 'package:flutter/gestures.dart';
-import '../utils/legal_texts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../widgets/custom_dialog.dart' show showCustomDialog;
 
 class WelcomeScreen extends StatefulWidget {
@@ -278,9 +278,13 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                       );
                     },
                   ),
-                  SizedBox(height: size.height * 0.03),
-                  GestureDetector(
-                    onTap: () => _showTermsDialog(),
+                  SizedBox(height: size.height * 0.03),                  GestureDetector(
+                    onTap: () async {
+                      final uri = Uri.parse('https://browser.solar/terms-of-use');
+                      if (await canLaunchUrl(uri)) {
+                        await launchUrl(uri, mode: LaunchMode.externalApplication);
+                      }
+                    },
                     child: Text.rich(
                       TextSpan(
                         children: [
@@ -303,151 +307,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
           ),
         ),
       ],
-    );
-  }
-
-  void _showTermsDialog() {
-    showGeneralDialog(
-      context: context,
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return Container(); // Placeholder
-      },
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        final curvedAnimation = CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeOutBack,
-        );
-
-        return ScaleTransition(
-          scale: Tween<double>(begin: 0.8, end: 1.0).animate(curvedAnimation),
-          child: FadeTransition(
-            opacity: animation,
-            child: AlertDialog(
-              backgroundColor: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).backgroundColor,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              title: Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: AppLocalizations.of(context)!.terms_of_use,
-                      style: TextStyle(
-                        color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                      recognizer: TapGestureRecognizer()
-                        ..onTap = () {
-                          final String currentLocale = Localizations.localeOf(context).languageCode;
-                          showCustomDialog(
-                            context: context,
-                            title: AppLocalizations.of(context)!.terms_of_use,
-                            content: LegalTexts.getTermsOfUse(currentLocale),
-                            isDarkMode: ThemeManager.getCurrentTheme().isDark,
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: Text(
-                                  AppLocalizations.of(context)!.close,
-                                  style: TextStyle(
-                                    color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                    ),
-                    TextSpan(
-                      text: ' & ',
-                      style: TextStyle(
-                        color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textSecondaryColor,
-                        fontSize: 18,
-                      ),
-                    ),
-                    TextSpan(
-                      text: AppLocalizations.of(context)!.privacy_policy,
-                      style: TextStyle(
-                        color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      ),
-                      recognizer: TapGestureRecognizer()
-                        ..onTap = () {
-                          final String currentLocale = Localizations.localeOf(context).languageCode;
-                          showCustomDialog(
-                            context: context,
-                            title: AppLocalizations.of(context)!.privacy_policy,
-                            content: LegalTexts.getPrivacyPolicy(currentLocale),
-                            isDarkMode: ThemeManager.getCurrentTheme().isDark,
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: Text(
-                                  AppLocalizations.of(context)!.close,
-                                  style: TextStyle(
-                                    color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                    ),
-                  ],
-                ),
-              ),
-              content: Container(
-                width: double.maxFinite,
-                constraints: const BoxConstraints(maxHeight: 400),
-                child: ListView(
-                  children: [
-                    Text(
-                      AppLocalizations.of(context)!.termsOfService,
-                      style: TextStyle(
-                        color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textSecondaryColor,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      AppLocalizations.of(context)!.data_collection + ':',
-                      style: TextStyle(
-                        color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      AppLocalizations.of(context)!.data_collection_details,
-                      style: TextStyle(
-                        color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textSecondaryColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(
-                    AppLocalizations.of(context)!.continueText,
-                    style: TextStyle(
-                      color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-      transitionDuration: const Duration(milliseconds: 300),
-    );
-  }
+    );  }
 
   Widget _buildLanguagePage() {
     final size = MediaQuery.of(context).size;

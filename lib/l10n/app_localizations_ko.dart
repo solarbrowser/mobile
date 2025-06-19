@@ -156,6 +156,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get tabs => '탭';
 
   @override
+  String get keep_tabs_open => '탭 열린 상태 유지';
+
+  @override
   String get history => '기록';
 
   @override

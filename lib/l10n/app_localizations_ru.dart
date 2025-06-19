@@ -156,6 +156,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get tabs => 'Вкладки';
 
   @override
+  String get keep_tabs_open => 'Сохранять вкладки открытыми';
+
+  @override
   String get history => 'История';
 
   @override

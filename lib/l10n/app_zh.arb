@@ -51,12 +51,13 @@
   "customize_browser": "浏览器个性化设置",
   "learn_more": "了解更多",
   "tabs": "标签页",
+  "keep_tabs_open": "保持标签页打开",
   "history": "浏览历史",
   "bookmarks": "书签",
   "search_in_page": "页内搜索",
   "app_name": "Solar Browser",
   "search_or_enter_address": "搜索或输入网址",
-  "clear_browser_data": "清除浏览数据",
+  "clear_browser_data": "清除浏览器数据",
   "browsing_history": "浏览历史",
   "cookies": "Cookie",
   "cache": "缓存",
@@ -237,4 +238,4 @@
   
   "classic_navigation": "经典导航",
   "classic_navigation_description": "在屏幕底部显示导航按钮"
-} 
+}

@@ -47,6 +47,7 @@
   "customize_browser": "ब्राउज़र कस्टमाइज़ करें",
   "learn_more": "और जानें",
   "tabs": "टैब",
+  "keep_tabs_open": "टैब खुले रखें",
   "history": "इतिहास",
   "bookmarks": "बुकमार्क",
   "search_in_page": "पेज में खोजें",
@@ -249,4 +250,4 @@
   "recentSearches": "हाल की खोजें",
   "classic_navigation": "क्लासिक नेविगेशन",
   "classic_navigation_description": "स्क्रीन के निचले हिस्से में नेविगेशन बटन दिखाएं"
-} 
+}

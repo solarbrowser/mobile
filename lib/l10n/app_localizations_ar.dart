@@ -156,6 +156,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get tabs => 'علامات التبويب';
 
   @override
+  String get keep_tabs_open => 'الاحتفاظ بعلامات التبويب مفتوحة';
+
+  @override
   String get history => 'السجل';
 
   @override
