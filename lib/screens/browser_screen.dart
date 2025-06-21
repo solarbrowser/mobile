@@ -232,13 +232,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   bool isTabsVisible = false;
   bool isSettingsVisible = false;
   bool isBookmarksVisible = false;
-  bool isDownloadsVisible = false;
-  bool isHistoryVisible = false;
+  bool isDownloadsVisible = false;  bool isHistoryVisible = false;
   bool isPanelExpanded = false;
   bool isPanelVisible = true;
   bool _isLoading = false;
-  
-  // <----INCOGNITO MODE---->
+    // <----INCOGNITO MODE---->
   bool _isIncognitoModeActive = false;
   
   // <----HISTORY ENCRYPTION---->
@@ -296,6 +294,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   
   // <----TAB GROUPING---->
   List<TabGroup> _tabGroups = [];
+  // <----NAVIGATION BAR CUSTOMIZATION---->
+  List<String> _customNavButtons = ['back', 'forward', 'bookmark', 'share', 'menu'];
+  bool _navBarAnimationEnabled = true;
+    // Simple border animation for URL bar (summary panel removed)
+  late Animation<BorderRadius> _urlBarBorderAnimation;
+  
+  // Summary panel permanently disabled
+  bool _isSummaryPanelVisible = false;
   
   // <----MEMORY MANAGEMENT---->
   final _debouncer = Debouncer(milliseconds: 100);
@@ -598,12 +604,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
     _loadPreferences().then((_) {
       _loadBookmarks();
-      
-      Future.microtask(() => _loadDownloads());
+        Future.microtask(() => _loadDownloads());
       Future.microtask(() => _loadHistory());
       Future.microtask(() => _loadUrlBarPosition());
       Future.microtask(() => _loadSettings());
       Future.microtask(() => _loadSearchEngines());
+      Future.microtask(() => _loadNavigationBarSettings());
       
       Future.microtask(() => _loadSavedTabs().then((_) {
         if (mounted) {
@@ -629,15 +635,19 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     _panelSlideController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
-    );
-
-    _panelSlideAnimation = Tween<Offset>(
+    );    _panelSlideAnimation = Tween<Offset>(
       begin: const Offset(1.0, 0.0),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _panelSlideController,
       curve: Curves.easeInOut,
     ));
+
+    // Simple URL bar border animation (summary panel removed)
+    _urlBarBorderAnimation = Tween<BorderRadius>(
+      begin: BorderRadius.circular(24),
+      end: BorderRadius.circular(24), // Keep it simple since summary panel is removed
+    ).animate(const AlwaysStoppedAnimation(0.0));
 
     _loadingAnimationController = AnimationController(
       vsync: this,
@@ -866,12 +876,21 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           });
         }
       });
-    }
-    
-    await _savePreferences();
+    }      await _savePreferences();
   }
 
-  @override  void didChangeDependencies() {
+  // Summary panel methods (disabled - do nothing)
+  void _closeSummaryPanel() {
+    // Summary panel removed - this method does nothing
+  }
+  
+  Widget _buildSummaryPanel() {
+    // Summary panel removed - return empty container
+    return const SizedBox.shrink();
+  }
+
+  @override
+  void didChangeDependencies() {
     super.didChangeDependencies();
     if (tabs.isEmpty) {
       _addNewTab();
@@ -895,15 +914,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     // Clean up debouncers
     _debouncer.dispose();
     _scrollThrottle.dispose();
-    
-    // Dispose animation controllers
+      // Dispose animation controllers
     _panelSlideController.dispose();
     _animationController.dispose();
     _loadingAnimationController.dispose();
-    _slideAnimationController.dispose();
-    _slideUpController.dispose();
+    _slideAnimationController.dispose();    _slideUpController.dispose();
     _hideUrlBarController.dispose();
-      // Dispose text controllers and focus nodes
+    
+    // Dispose text controllers and focus nodes
     _urlController.dispose();
     _urlFocusNode.dispose();
     _historyScrollController.dispose();
@@ -2174,7 +2192,42 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
   Future<void> _setKeepTabsOpenSetting(bool value) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('keepTabsOpen', value);
+    await prefs.setBool('keepTabsOpen', value);  }
+
+  // <----NAVIGATION BAR CUSTOMIZATION METHODS---->
+  Future<List<String>> _getCustomNavButtons() async {
+    final prefs = await SharedPreferences.getInstance();
+    final buttonsJson = prefs.getString('customNavButtons');
+    if (buttonsJson != null) {
+      List<String> buttons = List<String>.from(json.decode(buttonsJson));
+      // Ensure menu button is always present to prevent users from being locked out
+      if (!buttons.contains('menu')) {
+        buttons.add('menu');
+      }
+      return buttons;
+    }
+    return ['back', 'forward', 'bookmark', 'share', 'menu']; // Default buttons
+  }
+
+  Future<void> _saveCustomNavButtons(List<String> buttons) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('customNavButtons', json.encode(buttons));
+    setState(() {
+      _customNavButtons = buttons;
+    });
+  }
+
+  Future<bool> _getNavBarAnimationEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('navBarAnimationEnabled') ?? true;
+  }
+
+  Future<void> _setNavBarAnimationEnabled(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('navBarAnimationEnabled', value);
+    setState(() {
+      _navBarAnimationEnabled = value;
+    });
   }
 
   Future<void> _resetWelcomeScreen() async {
@@ -3308,6 +3361,281 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           ),
         ),
       ),
+    );
+  }
+
+  // <----NAVIGATION BAR CUSTOMIZATION DIALOG---->
+  void _showNavigationCustomization() {
+    showCustomDialog(
+      context: context,
+      title: 'Customize Navigation',
+      isDarkMode: isDarkMode,
+      customContent: StatefulBuilder(
+        builder: (context, setState) {
+          final availableButtons = {
+            'back': {'icon': Icons.chevron_left_rounded, 'label': 'Back'},
+            'forward': {'icon': Icons.chevron_right_rounded, 'label': 'Forward'},
+            'home': {'icon': Icons.home_rounded, 'label': 'Home'},
+            'new_tab': {'icon': Icons.add_rounded, 'label': 'New Tab'},
+            'tabs': {'icon': Icons.tab_rounded, 'label': 'Tabs'},
+            'bookmark': {'icon': isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded, 'label': 'Bookmark'},
+            'bookmarks': {'icon': Icons.bookmark_border_rounded, 'label': 'Bookmarks'},
+            'share': {'icon': Icons.ios_share_rounded, 'label': 'Share'},
+            'settings': {'icon': Icons.settings_rounded, 'label': 'Settings'},
+            'downloads': {'icon': Icons.download_rounded, 'label': 'Downloads'},
+            'menu': {'icon': Icons.menu, 'label': 'Menu'},
+          };
+
+          return Container(
+            width: double.maxFinite,
+            constraints: BoxConstraints(maxHeight: 500),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Current Navigation Bar:',
+                  style: TextStyle(
+                    color: ThemeManager.textColor(),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 12),
+                Container(
+                  height: 60,
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  decoration: BoxDecoration(
+                    color: ThemeManager.surfaceColor().withOpacity(0.3),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: ThemeManager.textColor().withOpacity(0.1),
+                    ),
+                  ),                  child: ReorderableListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _customNavButtons.length,
+                    buildDefaultDragHandles: false, // We'll add custom drag handles
+                    proxyDecorator: (child, index, animation) {
+                      return AnimatedBuilder(
+                        animation: animation,
+                        builder: (BuildContext context, Widget? child) {
+                          final double animValue = Curves.easeInOut.transform(animation.value);
+                          final double elevation = lerpDouble(0, 6, animValue)!;
+                          final double scale = lerpDouble(1, 1.1, animValue)!;
+                          return Transform.scale(
+                            scale: scale,
+                            child: Material(
+                              elevation: elevation,
+                              borderRadius: BorderRadius.circular(8),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: child,
+                      );
+                    },onReorder: (oldIndex, newIndex) {
+                      setState(() {
+                        if (newIndex > oldIndex) newIndex--;
+                        
+                        final movedItem = _customNavButtons[oldIndex];
+                        
+                        // Special handling for menu button - it moves the entire bar as a block
+                        if (movedItem == 'menu') {
+                          // Remove menu button from current position
+                          _customNavButtons.removeAt(oldIndex);
+                          
+                          // If moving to the first half, put menu at start
+                          // If moving to the second half, put menu at end
+                          final midPoint = _customNavButtons.length / 2;
+                          if (newIndex <= midPoint) {
+                            // Put menu at the beginning
+                            _customNavButtons.insert(0, 'menu');
+                          } else {
+                            // Put menu at the end
+                            _customNavButtons.add('menu');
+                          }
+                        } else {
+                          // Normal reordering for non-menu buttons
+                          // But ensure we don't displace the menu button
+                          final menuIndex = _customNavButtons.indexOf('menu');
+                          
+                          // Remove the item being moved
+                          _customNavButtons.removeAt(oldIndex);
+                          
+                          // Adjust newIndex if menu button affects positioning
+                          int adjustedNewIndex = newIndex;
+                          if (menuIndex != -1) {
+                            if (oldIndex < menuIndex && newIndex >= menuIndex) {
+                              // Moving from before menu to after menu position
+                              adjustedNewIndex = newIndex;
+                            } else if (oldIndex > menuIndex && newIndex <= menuIndex) {
+                              // Moving from after menu to before menu position  
+                              adjustedNewIndex = newIndex;
+                            }
+                          }
+                          
+                          _customNavButtons.insert(adjustedNewIndex, movedItem);
+                        }
+                      });
+                    },                    itemBuilder: (context, index) {
+                      final buttonType = _customNavButtons[index];
+                      final buttonInfo = availableButtons[buttonType];
+                      return Container(
+                        key: ValueKey(buttonType),
+                        margin: EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                        child: ReorderableDragStartListener(
+                          index: index,
+                          child: Material(
+                            color: ThemeManager.surfaceColor(),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: ThemeManager.primaryColor().withOpacity(0.3),
+                                ),
+                              ),
+                              child: Icon(
+                                buttonInfo?['icon'] as IconData? ?? Icons.help,
+                                color: ThemeManager.textColor(),                                size: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'Available Buttons:',
+                  style: TextStyle(
+                    color: ThemeManager.textColor(),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                SizedBox(height: 12),
+                Expanded(
+                  child: GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                      childAspectRatio: 2.5,
+                    ),
+                    itemCount: availableButtons.length,
+                    itemBuilder: (context, index) {                      final buttonType = availableButtons.keys.elementAt(index);
+                      final buttonInfo = availableButtons[buttonType]!;
+                      final isInNavBar = _customNavButtons.contains(buttonType);
+                      final isMenuButton = buttonType == 'menu';
+                      final canRemove = isInNavBar && !isMenuButton;
+                      
+                      return Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(8),                          onTap: () {
+                            setState(() {
+                              if (canRemove) {
+                                _customNavButtons.remove(buttonType);
+                              } else if (!isInNavBar) {
+                                if (_customNavButtons.length < 6) {
+                                  _customNavButtons.add(buttonType);
+                                }
+                              }
+                            });
+                          },
+                          child: Container(                            decoration: BoxDecoration(
+                              color: isInNavBar 
+                                ? (isMenuButton 
+                                    ? ThemeManager.primaryColor().withOpacity(0.15)
+                                    : ThemeManager.primaryColor().withOpacity(0.1))
+                                : ThemeManager.surfaceColor().withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: isInNavBar 
+                                  ? (isMenuButton
+                                      ? ThemeManager.primaryColor().withOpacity(0.5)
+                                      : ThemeManager.primaryColor().withOpacity(0.3))
+                                  : ThemeManager.textColor().withOpacity(0.1),
+                              ),
+                            ),                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  buttonInfo['icon'] as IconData,
+                                  color: isInNavBar 
+                                    ? ThemeManager.primaryColor()
+                                    : ThemeManager.textColor(),
+                                  size: 16,
+                                ),
+                                if (isMenuButton && isInNavBar) ...[
+                                  SizedBox(width: 2),
+                                  Icon(
+                                    Icons.lock_rounded,
+                                    color: ThemeManager.primaryColor(),
+                                    size: 10,
+                                  ),
+                                ],
+                                SizedBox(width: 6),
+                                Flexible(
+                                  child: Text(
+                                    buttonInfo['label'] as String,
+                                    style: TextStyle(
+                                      color: isInNavBar 
+                                        ? ThemeManager.primaryColor()
+                                        : ThemeManager.textColor(),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            setState(() {
+              _customNavButtons = ['back', 'forward', 'bookmark', 'share', 'menu'];
+            });
+            Navigator.pop(context);
+          },
+          child: Text(
+            'Reset',
+            style: TextStyle(color: ThemeManager.textSecondaryColor()),
+          ),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            'Cancel',
+            style: TextStyle(color: ThemeManager.textSecondaryColor()),
+          ),
+        ),
+        TextButton(
+          onPressed: () async {
+            await _saveCustomNavButtons(_customNavButtons);
+            Navigator.pop(context);
+          },
+          child: Text(
+            'Save',
+            style: TextStyle(color: ThemeManager.primaryColor()),
+          ),
+        ),
+      ],
     );
   }
 
@@ -5310,8 +5638,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                       isLast: true,
                     ),
                   ],
-                ),
-                // Appearance Section
+                ),                // Appearance Section
                 _buildSettingsSection(
                   title: AppLocalizations.of(context)!.appearance,
                   children: [                    _buildSettingsItem(
@@ -5323,16 +5650,27 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                       title: AppLocalizations.of(context)!.text_size,
                       subtitle: _getTextSizeLabel(),
                       onTap: () => _showTextSizeSelection(context),
-                    ),
-                    _buildSettingsItem(
+                    ),                    _buildSettingsItem(
                       title: AppLocalizations.of(context)!.classic_navigation,
                       trailing: Switch(
                         value: _isClassicMode,
                         onChanged: (value) => _toggleClassicMode(value),
                         activeColor: ThemeManager.primaryColor(),
                       ),
-                      isLast: true,
                     ),
+                    if (_isClassicMode)
+                      _buildSettingsItem(
+                        title: 'Customize Navigation',
+                        subtitle: 'Rearrange navigation buttons',
+                        onTap: () => _showNavigationCustomization(),
+                        isLast: true,
+                      ),
+                    if (!_isClassicMode)
+                      _buildSettingsItem(
+                        title: '', // Empty item to maintain structure
+                        trailing: SizedBox.shrink(),
+                        isLast: true,
+                      ),
                   ],
                 ),
                 // AI Section
@@ -6190,24 +6528,26 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }  Widget _buildUrlBarContent(double width, bool keyboardVisible) {
     final isHomePage = _displayUrl == 'file:///android_asset/main.html' || _displayUrl == _homeUrl;
     
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(24), // Reduced from 28
-      child: Stack(
-        children: [
-          Container(
-            width: width,
-            height: 44, // Reduced from 48
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24),
-              color: (_isClassicMode || keyboardVisible) 
-                  ? ThemeManager.surfaceColor().withOpacity(0.9)
-                  : ThemeManager.backgroundColor().withOpacity(0.8), // Simplified without blur
-              border: Border.all(
-                color: ThemeManager.textColor().withOpacity(0.08),
-                width: 1,
-              ),
-            ),
-            child: Material(
+    return AnimatedBuilder(
+      animation: _urlBarBorderAnimation,
+      builder: (context, child) {
+        return ClipRRect(
+          borderRadius: _urlBarBorderAnimation.value,
+          child: Stack(
+            children: [
+              Container(
+                width: width,
+                height: 44, // Reduced from 48
+                decoration: BoxDecoration(
+                  borderRadius: _urlBarBorderAnimation.value,
+                  color: (_isClassicMode || keyboardVisible) 
+                      ? ThemeManager.surfaceColor().withOpacity(0.9)
+                      : ThemeManager.backgroundColor().withOpacity(0.8), // Simplified without blur
+                  border: Border.all(
+                    color: ThemeManager.textColor().withOpacity(0.08),
+                    width: 1,
+                  ),
+                ),                child: Material(
               type: MaterialType.transparency,
               child: Row(
                 children: [
@@ -6254,10 +6594,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                       },
                       onSubmitted: (value) {
                         _loadUrl(value);
-                        _urlFocusNode.unfocus();
-                      },
-                    ),
-                  ),                  // Hide AI/Awesome button on home page
+                        _urlFocusNode.unfocus();                      },
+                    ),                  ),
+                  // Hide AI/Awesome button on home page
                   if (!isHomePage)
                     Padding(
                       padding: const EdgeInsets.only(left: 1.0),
@@ -6267,7 +6606,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                           size: 18,
                           color: ThemeManager.textColor(),
                         ),
-                        onPressed: _showSummaryOptions,
+                        onPressed: () {
+                          // Panel functionality removed - button does nothing
+                        },
                       ),
                     ),
                   IconButton(
@@ -6290,26 +6631,28 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                 ],
               ),
             ),
-          ),
-          // Loading animation border
-          if (isLoading)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: AnimatedBuilder(
-                  animation: _loadingAnimation,
-                  builder: (context, child) {
-                    return CustomPaint(
-                      painter: LoadingBorderPainter(
-                        progress: _loadingAnimation.value,
-                        color: ThemeManager.primaryColor(),
-                      ),
-                    );
-                  },
-                ),
               ),
-            ),
-        ],
-      ),
+              // Loading animation border
+              if (isLoading)
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: AnimatedBuilder(
+                      animation: _loadingAnimation,
+                      builder: (context, child) {
+                        return CustomPaint(
+                          painter: LoadingBorderPainter(
+                            progress: _loadingAnimation.value,
+                            color: ThemeManager.primaryColor(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
   Future<WebViewController> _createWebViewController() async {
@@ -6384,8 +6727,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               bottom: 0, // Always extend to bottom of screen
               child: IgnorePointer(
                 // Ignore pointer events when keyboard is open to prevent WebView from interfering with URL bar
-                ignoring: keyboardVisible,
-                child: GestureDetector(
+                ignoring: keyboardVisible,                child: GestureDetector(
                   onTap: () {
                     if (_isSlideUpPanelVisible) {
                       setState(() {
@@ -6396,57 +6738,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                       });
                     }
                   },                  onLongPressStart: (details) async {
-                    print("Long press detected at: ${details.globalPosition}");
-                    try {
-                      // First check if there's text selection
-                      final String textSelectionJs = '''
-                        (function() {
-                          const selection = window.getSelection();
-                          return selection && selection.toString().trim().length > 0;
-                        })()
-                      ''';
-                      
-                      final hasTextSelection = await controller.runJavaScriptReturningResult(textSelectionJs);
-                      
-                      // If there's text selection, don't show custom menu - let browser handle it
-                      if (hasTextSelection == true) {
-                        return;
-                      }
-                      
-                      // Check for images
-                      final String js = '''
-                        (function() {
-                          const x = ${details.localPosition.dx};
-                          const y = ${details.localPosition.dy};
-                          const element = document.elementFromPoint(x, y);
-                          if (element && element.tagName === 'IMG') {
-                            return element.src;
-                          }
-                          const img = element ? element.closest('img') : null;
-                          return img ? img.src : null;
-                        })()
-                      ''';
-                        final result = await controller.runJavaScriptReturningResult(js);
-                      print("JavaScript result: $result");
-                      
-                      if (result != null && result.toString() != 'null') {
-                        final imageUrl = result.toString().replaceAll('"', '');
-                        if (imageUrl.isNotEmpty) {
-                          print("Found image URL: $imageUrl");
-                          _showImageContextMenu(imageUrl, details.globalPosition);
-                        } else {
-                          // Show main WebView controls when no image found
-                          _showWebViewControls(details.globalPosition);
-                        }
-                      } else {
-                        // Show main WebView controls when JavaScript result is null
-                        print("JavaScript result is null, showing main controls");
-                        _showWebViewControls(details.globalPosition);
-                      }
-                    } catch (e) {
-                      print("Error in long press handler: $e");
-                    }
-                  },                  child: Container(
+                    // Long press functionality removed
+                  },child: Container(
                     // Use Container with color to cover entire area including where keyboard would be
                     color: ThemeManager.backgroundColor(),
                     child: WebViewWidget(
@@ -6626,46 +6919,51 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                             ),
                           );
                         },
-                      ),
-
-                // URL bar with gesture detection - ensure it's always visible when classic mode is toggled off
+                      ),                // URL bar with gesture detection - ensure it's always visible when classic mode is toggled off
                     AnimatedOpacity(
                       opacity: 1.0,
                       duration: const Duration(milliseconds: 200),
-                      child: SlideTransition(
-                        position: _hideUrlBarAnimation,
-                        child: _isClassicMode
-                            ? _buildUrlBar() // No gesture detection in classic mode
-                          : GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onVerticalDragUpdate: (details) {
-                                // Disable vertical drag gestures when keyboard is visible
-                                if (keyboardVisible) return;
-                                
-                                if (!_isSlideUpPanelVisible) {
-                                  if (details.delta.dy < -5) {
-                                    _handleSlideUpPanelVisibility(true);
-                                  }
-                                } else {
-                                  if (details.delta.dy > 5) {
-                                    _handleSlideUpPanelVisibility(false);
-                                  }
-                                }
-                              },
-                              onVerticalDragEnd: (details) {
-                                // Disable vertical drag gestures when keyboard is visible
-                                if (keyboardVisible) return;
-                                
-                                if (details.primaryVelocity != null) {
-                                  if (!_isSlideUpPanelVisible && details.primaryVelocity! < -100) {
-                                    _handleSlideUpPanelVisibility(true);
-                                  } else if (_isSlideUpPanelVisible && details.primaryVelocity! > 100) {
-                                    _handleSlideUpPanelVisibility(false);
-                                  }
-                                }
-                              },
-                              child: _buildUrlBar(),
-                            ),
+                      child: Column(
+                        children: [
+                          SlideTransition(
+                            position: _hideUrlBarAnimation,
+                            child: _isClassicMode
+                                ? _buildUrlBar() // No gesture detection in classic mode
+                              : GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onVerticalDragUpdate: (details) {
+                                    // Disable vertical drag gestures when keyboard is visible
+                                    if (keyboardVisible) return;
+                                    
+                                    if (!_isSlideUpPanelVisible) {
+                                      if (details.delta.dy < -5) {
+                                        _handleSlideUpPanelVisibility(true);
+                                      }
+                                    } else {
+                                      if (details.delta.dy > 5) {
+                                        _handleSlideUpPanelVisibility(false);
+                                      }
+                                    }
+                                  },
+                                  onVerticalDragEnd: (details) {
+                                    // Disable vertical drag gestures when keyboard is visible
+                                    if (keyboardVisible) return;
+                                    
+                                    if (details.primaryVelocity != null) {
+                                      if (!_isSlideUpPanelVisible && details.primaryVelocity! < -100) {
+                                        _handleSlideUpPanelVisibility(true);
+                                      } else if (_isSlideUpPanelVisible && details.primaryVelocity! > 100) {
+                                        _handleSlideUpPanelVisibility(false);
+                                      }
+                                    }
+                                  },
+                                  child: _buildUrlBar(),
+                                ),
+                          ),
+                          // Summary panel for Task 3
+                          if (_isSummaryPanelVisible)
+                            _buildSummaryPanel(),
+                        ],
                       ),
                     ),
                   ],
@@ -7617,9 +7915,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         }
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(24), // Reduced from 28
+        margin: const EdgeInsets.symmetric(horizontal: 16),        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24), // Always keep full rounded corners
           border: Border.all(
             color: ThemeManager.textColor().withOpacity(0.08),
             width: 1,
@@ -7629,8 +7926,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         child: Container(
           height: 44, // Reduced from 48
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,            children: [
               IconButton(
                 icon: const Icon(Icons.chevron_left_rounded, size: 22), // Reduced size
                 color: canGoBack ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
@@ -7643,10 +7939,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     });
                   }
                 } : null,
-              ),
-              IconButton(
+              ),              IconButton(
                 icon: Icon(
-                  isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
+                  isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
                   size: 22, // Reduced size
                 ),
                 color: ThemeManager.textSecondaryColor(),
@@ -7659,8 +7954,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     });
                   }
                 },
-              ),
-              IconButton(
+              ),              IconButton(
                 icon: const Icon(Icons.ios_share_rounded, size: 22), // Reduced size
                 color: ThemeManager.textSecondaryColor(),
                 onPressed: () async {
@@ -7694,7 +7988,6 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       ),
     );
   }
-
   // Add new variables
   bool _isUrlBarVisible = true;
   double _urlBarSlideOffset = 0.0;
@@ -7883,11 +8176,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           Navigator.pop(context);
           _refreshPage();
         },
-      ),
-      // Go back (if possible)
+      ),      // Go back (if possible)
       if (canGoBack)
         ListTile(
-          leading: Icon(Icons.arrow_back, color: ThemeManager.textColor()),
+          leading: Icon(Icons.chevron_left_rounded, color: ThemeManager.textColor()),
           title: Text(
             AppLocalizations.of(context)!.back,
             style: TextStyle(color: ThemeManager.textColor()),
@@ -7900,7 +8192,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       // Go forward (if possible)
       if (canGoForward)
         ListTile(
-          leading: Icon(Icons.arrow_forward, color: ThemeManager.textColor()),
+          leading: Icon(Icons.chevron_right_rounded, color: ThemeManager.textColor()),
           title: Text(
             AppLocalizations.of(context)!.forward,
             style: TextStyle(color: ThemeManager.textColor()),
@@ -7970,9 +8262,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           );
         },
       ),
-    );
-  }Future<void> _goBack() async {
+    );  }Future<void> _goBack() async {
     if (!canGoBack) return;
+    
+    // Close summary panel on navigation
+    _closeSummaryPanel();
     
     try {
       await controller.goBack();
@@ -8000,6 +8294,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   Future<void> _goForward() async {
     if (!canGoForward) return;
+    
+    // Close summary panel on navigation
+    _closeSummaryPanel();
     
     try {
       await controller.goForward();
@@ -8865,6 +9162,15 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     });
   }
 
+  Future<void> _loadNavigationBarSettings() async {
+    final customButtons = await _getCustomNavButtons();
+    final animationEnabled = await _getNavBarAnimationEnabled();
+    setState(() {
+      _customNavButtons = customButtons;
+      _navBarAnimationEnabled = animationEnabled;
+    });
+  }
+
   Future<void> _loadSearchEngines() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -8952,8 +9258,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         ),
       ),    );
   }
-
-  // Simplified JavaScript injection for M12
+  // Simplified JavaScript injection for M12 - Task 4: Allow native context menus
   Future<void> _injectImageContextMenuJS() async {
     try {
       await controller.runJavaScript('''
@@ -8982,7 +9287,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           }
         };
 
-        // Simplified touch handlers for M12
+        // Modified touch handlers for M12 - allows native context menus to work
+        // Removed preventDefault() to allow native long-press context menus
         document.addEventListener('touchstart', function(e) {
           if (e.target.tagName === 'IMG' || e.target.closest('img')) {
             let startTime = Date.now();
@@ -8990,14 +9296,17 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             
             const handleTouchEnd = function() {
               const duration = Date.now() - startTime;
-              if (duration > 500 && !moved) {
+              // Reduced duration and removed preventDefault to allow native menus
+              if (duration > 700 && !moved) {
                 const imageUrl = e.target.tagName === 'IMG' ? e.target.src : e.target.closest('img').src;
-                ImageLongPress.postMessage(JSON.stringify({
-                  url: imageUrl,
-                  x: e.touches[0].clientX,
-                  y: e.touches[0].clientY + window.scrollY
-                }));
-                e.preventDefault();
+                // Only notify Flutter, don't prevent native behavior
+                if (window.ImageLongPress) {
+                  ImageLongPress.postMessage(JSON.stringify({
+                    url: imageUrl,
+                    x: e.touches[0].clientX,
+                    y: e.touches[0].clientY + window.scrollY
+                  }));
+                }
               }
             };
             
@@ -9014,336 +9323,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             document.addEventListener('touchend', handleTouchEnd, { once: true });
             document.addEventListener('touchmove', handleTouchMove, { once: true });
           }
-        }, { passive: false });
+        }, { passive: true }); // Changed to passive to improve performance and allow native events
       ''');
     } catch (e) {
       // Silently handle JavaScript injection errors
     }
   }
 
-  void _showWebViewControls(Offset position) {
-    final RenderBox overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
-    
-    showMenu(
-      context: context,
-      position: RelativeRect.fromRect(
-        Rect.fromLTWH(position.dx, position.dy, 0, 0),
-        Rect.fromLTWH(0, 0, overlay.size.width, overlay.size.height),
-      ),
-      items: [
-        // Back/Forward controls
-        PopupMenuItem(
-          enabled: canGoBack,
-          child: ListTile(
-            leading: Icon(
-              Icons.arrow_back,
-              color: canGoBack ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
-            ),
-            title: Text(
-              AppLocalizations.of(context)!.back,
-              style: TextStyle(
-                color: canGoBack ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
-              ),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 8),
-          ),
-          onTap: canGoBack ? () => _goBack() : null,
-        ),
-        PopupMenuItem(
-          enabled: canGoForward,
-          child: ListTile(
-            leading: Icon(
-              Icons.arrow_forward,
-              color: canGoForward ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
-            ),
-            title: Text(
-              AppLocalizations.of(context)!.forward,
-              style: TextStyle(
-                color: canGoForward ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
-              ),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 8),
-          ),
-          onTap: canGoForward ? () => _goForward() : null,
-        ),
-        PopupMenuItem(
-          child: Divider(),
-          enabled: false,
-        ),
-        // Refresh
-        PopupMenuItem(
-          child: ListTile(
-            leading: Icon(Icons.refresh, color: ThemeManager.textColor()),            title: Text(
-              'Refresh',
-              style: TextStyle(color: ThemeManager.textColor()),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 8),
-          ),
-          onTap: () {
-            controller.reload();
-          },
-        ),
-        // Share
-        PopupMenuItem(
-          child: ListTile(
-            leading: Icon(Icons.share, color: ThemeManager.textColor()),
-            title: Text(
-              AppLocalizations.of(context)!.share,
-              style: TextStyle(color: ThemeManager.textColor()),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 8),
-          ),
-          onTap: () => _shareUrl(),
-        ),
-        // Bookmark
-        PopupMenuItem(
-          child: ListTile(
-            leading: Icon(
-              isCurrentPageBookmarked ? Icons.bookmark : Icons.bookmark_border,
-              color: ThemeManager.textColor(),
-            ),            title: Text(
-              isCurrentPageBookmarked 
-                ? 'Remove Bookmark'
-                : 'Add Bookmark',
-              style: TextStyle(color: ThemeManager.textColor()),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 8),
-          ),
-          onTap: () {
-            if (isCurrentPageBookmarked) {
-              _removeBookmark(currentUrl);
-            } else {
-              _addBookmark();
-            }
-          },
-        ),
-        PopupMenuItem(
-          child: Divider(),
-          enabled: false,
-        ),
-        // Copy URL
-        PopupMenuItem(
-          child: ListTile(
-            leading: Icon(Icons.copy, color: ThemeManager.textColor()),
-            title: Text(
-              'Copy URL',
-              style: TextStyle(color: ThemeManager.textColor()),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 8),
-          ),
-          onTap: () async {
-            final url = await controller.currentUrl();
-            if (url != null) {
-              Clipboard.setData(ClipboardData(text: url));
-              _showCustomNotification('URL copied to clipboard');
-            }
-          },
-        ),
-        // Open in new tab
-        PopupMenuItem(
-          child: ListTile(
-            leading: Icon(Icons.open_in_new, color: ThemeManager.textColor()),
-            title: Text(
-              AppLocalizations.of(context)!.new_tab,
-              style: TextStyle(color: ThemeManager.textColor()),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 8),
-          ),
-          onTap: () async {
-            final url = await controller.currentUrl();
-            if (url != null) {
-              _addNewTab(url: url);
-            }
-          },
-        ),
-        PopupMenuItem(
-          child: Divider(),
-          enabled: false,
-        ),
-        // Zoom In
-        PopupMenuItem(
-          child: ListTile(
-            leading: Icon(Icons.zoom_in, color: ThemeManager.textColor()),
-            title: Text(
-              'Zoom In',
-              style: TextStyle(color: ThemeManager.textColor()),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 8),
-          ),
-          onTap: () {
-            controller.runJavaScript('''
-              document.body.style.zoom = (parseFloat(document.body.style.zoom || '1') + 0.1).toString();
-            ''');
-          },
-        ),
-        // Zoom Out
-        PopupMenuItem(
-          child: ListTile(
-            leading: Icon(Icons.zoom_out, color: ThemeManager.textColor()),
-            title: Text(
-              'Zoom Out',
-              style: TextStyle(color: ThemeManager.textColor()),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 8),
-          ),
-          onTap: () {
-            controller.runJavaScript('''
-              const currentZoom = parseFloat(document.body.style.zoom || '1');
-              if (currentZoom > 0.5) {
-                document.body.style.zoom = (currentZoom - 0.1).toString();
-              }
-            ''');
-          },
-        ),
-        // Reset Zoom
-        PopupMenuItem(
-          child: ListTile(
-            leading: Icon(Icons.zoom_out_map, color: ThemeManager.textColor()),
-            title: Text(
-              'Reset Zoom',
-              style: TextStyle(color: ThemeManager.textColor()),
-            ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 8),
-          ),
-          onTap: () {
-            controller.runJavaScript('''
-              document.body.style.zoom = '1';
-            ''');
-          },
-        ),
-      ],
-      color: ThemeManager.backgroundColor(),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      elevation: 8,
-    );
-  }
 
- void _showImageContextMenu(String imageUrl, Offset position) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
-    final menuWidth = 195.0;
-    final menuHeight = imageUrl.startsWith('data:') ? 60.0 : 170.0;
-
-    double adjustedX = position.dx;
-    double adjustedY = position.dy;
-    
-    if (adjustedX + menuWidth > screenWidth) {
-      adjustedX = screenWidth - menuWidth - 8;
-    }
-    if (adjustedX < 8) {
-      adjustedX = 8;
-    }
-    
-    if (adjustedY + menuHeight > screenHeight) {
-      adjustedY = screenHeight - menuHeight - 8;
-    }
-    if (adjustedY < 8) {
-      adjustedY = 8;
-    }
-    
-     final List<Widget> menuItems = [
-      if (!imageUrl.startsWith('data:'))  // Only show open in new tab for non-base64 images
-        ListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          leading: Icon(Icons.image, color: ThemeManager.textColor(), size: 20),
-          title: Text(
-            AppLocalizations.of(context)!.open_in_new_tab,
-            style: TextStyle(color: ThemeManager.textColor(), fontSize: 14),
-          ),
-          onTap: () {
-            Navigator.pop(context);
-            _loadUrl(imageUrl);
-          },
-        ),
-      ListTile(
-        dense: true,
-        visualDensity: VisualDensity.compact,
-        leading: Icon(Icons.download, color: ThemeManager.textColor(), size: 20),        title: Text(
-          AppLocalizations.of(context)!.downloads,
-          style: TextStyle(color: ThemeManager.textColor(), fontSize: 14),
-        ),
-        onTap: () {
-          Navigator.pop(context);
-          _handleDownload(imageUrl);
-        },
-      ),
-      if (!imageUrl.startsWith('data:'))  // Only show share for non-base64 images
-        ListTile(
-          dense: true,
-          visualDensity: VisualDensity.compact,
-          leading: Icon(Icons.share, color: ThemeManager.textColor(), size: 20),
-          title: Text(
-            AppLocalizations.of(context)!.share,
-            style: TextStyle(color: ThemeManager.textColor(), fontSize: 14),
-          ),
-          onTap: () async {
-            Navigator.pop(context);
-            await Share.share(imageUrl);
-          },
-        ),
-    ];
-    
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        opaque: false,
-        barrierDismissible: true,
-        barrierColor: Colors.black.withOpacity(0.2),
-        pageBuilder: (BuildContext context, _, __) {
-          return StatefulBuilder(
-            builder: (context, setState) {
-              return GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Material(
-                  color: Colors.transparent,
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        left: adjustedX,
-                        top: adjustedY,
-                        width: menuWidth,
-                        child: TweenAnimationBuilder<double>(
-                          duration: const Duration(milliseconds: 150),
-                          curve: Curves.easeOutCubic,
-                          tween: Tween<double>(begin: 0.8, end: 1.0),
-                          builder: (context, value, child) {
-                            return Transform.scale(
-                              scale: value,
-                              alignment: Alignment.topLeft,
-                              child: child,
-                            );
-                          },
-                          child: Card(
-                            color: ThemeManager.backgroundColor(),
-                            elevation: 8,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: menuItems,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          );
-        },
-        transitionsBuilder: (_, animation, __, child) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
-        },
-      ),
-    );
-  }
   Future<void> _clearHistory() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -9910,62 +9897,89 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         right: 0,
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.chevron_left_rounded, size: 28),
-            color: canGoBack ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
-            onPressed: canGoBack ? () {
-              _goBack();
-              if (_hideUrlBar) {
-                setState(() {
-                  _hideUrlBar = false;
-                  _hideUrlBarController.reverse();
-                });
-              }
-            } : null,
-          ),
-          IconButton(
-            icon: const Icon(Icons.chevron_right_rounded, size: 28),
-            color: canGoForward ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
-            onPressed: canGoForward ? () {
-              _goForward();
-              if (_hideUrlBar) {
-                setState(() {
-                  _hideUrlBar = false;
-                  _hideUrlBarController.reverse();
-                });
-              }
-            } : null,
-          ),
-          IconButton(
-            icon: Icon(
-              isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_outline_rounded,
-              size: 24,
-            ),
-            color: ThemeManager.textSecondaryColor(),
-            onPressed: () => _addBookmark(),
-          ),
-          IconButton(
-            icon: const Icon(Icons.ios_share_rounded, size: 24),
-            color: ThemeManager.textSecondaryColor(),
-            onPressed: () async {
-              if (currentUrl.isNotEmpty) {
-                await Share.share(currentUrl);
-              }
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.menu, size: 24),
-            color: ThemeManager.textSecondaryColor(),
-            onPressed: () {
-              _showQuickActionsModal();
-            },
-          ),
-        ],
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,        children: _customNavButtons.map((buttonType) => _buildNavButton(buttonType)).toList(),
       ),
     );
   }
+  // Custom navigation button builder for Task 2
+  Widget _buildNavButton(String buttonType) {
+    IconData icon;
+    VoidCallback? onPressed;
+    bool isEnabled = true;
+    
+    switch (buttonType) {
+      case 'back':
+        icon = Icons.chevron_left_rounded;
+        onPressed = canGoBack ? () => _goBack() : null;
+        isEnabled = canGoBack;
+        break;
+      case 'forward':
+        icon = Icons.chevron_right_rounded;
+        onPressed = canGoForward ? () => _goForward() : null;
+        isEnabled = canGoForward;
+        break;      case 'refresh':
+        icon = Icons.refresh;
+        onPressed = () => controller.reload();
+        isEnabled = true;
+        break;      case 'home':
+        icon = Icons.home;
+        onPressed = () => _loadUrl(_homeUrl);
+        isEnabled = true;
+        break;
+      case 'new_tab':
+        icon = Icons.add_rounded;
+        onPressed = () => _addNewTab();
+        isEnabled = true;
+        break;      case 'tabs':
+        icon = Icons.tab;
+        onPressed = () => _showTabsView();
+        isEnabled = true;
+        break;
+      case 'bookmark':
+        icon = isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded;
+        onPressed = () => _addBookmark();
+        isEnabled = true;
+        break;
+      case 'bookmarks':
+        icon = Icons.bookmark;
+        onPressed = () => _showBookmarksPanel();
+        isEnabled = true;
+        break;
+      case 'downloads':
+        icon = Icons.download;
+        onPressed = () => _showDownloadsPanel();
+        isEnabled = true;
+        break;
+      case 'settings':
+        icon = Icons.settings;
+        onPressed = () => _showSettingsPanel();
+        isEnabled = true;
+        break;      case 'share':
+        icon = Icons.ios_share_rounded;
+        onPressed = () => _shareUrl();
+        isEnabled = true;
+        break;case 'menu':
+        icon = Icons.menu;
+        onPressed = () => _showQuickActionsModal();
+        isEnabled = true;
+        break;
+      default:        icon = Icons.help;
+        onPressed = null;
+        isEnabled = false;
+    }
+    
+    return IconButton(
+      icon: Icon(
+        icon,
+        color: isEnabled 
+          ? ThemeManager.textColor() 
+          : ThemeManager.textColor().withOpacity(0.3),
+        size: 20,
+      ),
+      onPressed: onPressed,
+    );
+  }
+
   void _showQuickActionsModal() {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     final modalHeight = 49 + bottomPadding + 60 + 24; // Match classic mode panel height
@@ -11363,9 +11377,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     _loadHistory(); // Load history when showing the panel
     _showPanelWithAnimation('history');
   }
-
   void _showSettingsPanel() {
     _showPanelWithAnimation('settings');
+  }
+
+  void _showTabsView() {
+    _showPanelWithAnimation('tabs');
   }
 }
 
