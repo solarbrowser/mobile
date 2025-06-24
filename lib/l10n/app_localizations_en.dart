@@ -366,7 +366,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get size => 'Size';
 
   @override
-  String get auto_open_downloads => 'Auto-open downloads';
+  String get auto_open_downloads => 'Auto-open Downloads';
 
   @override
   String get clear_downloads_history => 'Clear downloads history';
@@ -471,7 +471,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get classic_navigation => 'Classic Navigation';
 
   @override
-  String get classic_navigation_description => 'Show navigation buttons at the bottom of the screen';
+  String get classic_navigation_description => 'Use classic browser-style navigation controls';
 
   @override
   String get exit_confirmation => 'Exit App';
@@ -701,5 +701,208 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shortcut_name => 'Shortcut name';
 
   @override
-  String get add => 'ADD';
+  String get keep_tabs_open_description => 'Keep tabs open between sessions';
+
+  @override
+  String get developer => 'Developer';
+
+  @override
+  String get reset_welcome_screen => 'Reset Welcome Screen';
+
+  @override
+  String get restored_tab => 'Restored tab';
+
+  @override
+  String get welcome_screen_reset => 'Reset Welcome Screen';
+
+  @override
+  String get welcome_screen_reset_message => 'This will reset the welcome screen so it appears again next time you start the app.';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get customize_navigation => 'Customize Navigation';
+
+  @override
+  String get button_back => 'Back';
+
+  @override
+  String get button_forward => 'Forward';
+
+  @override
+  String get button_bookmark => 'Bookmark';
+
+  @override
+  String get button_bookmarks => 'Bookmarks';
+
+  @override
+  String get button_share => 'Share';
+
+  @override
+  String get button_menu => 'Menu';
+
+  @override
+  String get available_buttons => 'Available buttons';
+
+  @override
+  String get add => 'Add';
+
+  @override
+  String get rename_pwa => 'Rename PWA';
+
+  @override
+  String get pwa_name => 'PWA name';
+
+  @override
+  String get rename => 'Rename';
+
+  @override
+  String get pwa_renamed => 'PWA renamed';
+
+  @override
+  String get remove => 'Remove';
+
+  @override
+  String get pwa_removed => 'PWA removed';
+
+  @override
+  String get bookmark_removed => 'Bookmark removed';
+
+  @override
+  String get untitled => 'Untitled';
+
+  @override
+  String get show_welcome_screen_next_launch => 'Show welcome screen on next launch';
+
+  @override
+  String get automatically_open_downloaded_files => 'Automatically open downloaded files';
+
+  @override
+  String get ask_where_to_save_files => 'Ask where to save files before downloading';
+
+  @override
+  String get clear_all_history => 'Clear All History';
+
+  @override
+  String get clear_all_history_confirm => 'This will permanently delete all your browsing history. This action cannot be undone.';
+
+  @override
+  String get history_cleared => 'History cleared';
+
+  @override
+  String get navigation_controls => 'Navigation Controls';
+
+  @override
+  String get ai_settings => 'AI Settings';
+
+  @override
+  String get ai_summary_settings => 'AI Summary Settings';
+
+  @override
+  String get ask_download_location_title => 'Ask Download Location';
+
+  @override
+  String get enable_incognito_mode => 'Enable Incognito Mode';
+
+  @override
+  String get disable_incognito_mode => 'Disable Incognito Mode';
+
+  @override
+  String get close_all_tabs => 'Close All Tabs';
+
+  @override
+  String get close_all_tabs_confirm => 'Are you sure you want to close all tabs? This action cannot be undone.';
+
+  @override
+  String close_all_tabs_in_group(String groupName) {
+    return 'Close all tabs in \"$groupName\"? This action cannot be undone.';
+  }
+
+  @override
+  String get other => 'Other';
+
+  @override
+  String get ai => 'AI';
+
+  @override
+  String get rearrange_navigation_buttons => 'Rearrange navigation buttons';
+
+  @override
+  String get current_navigation_bar => 'Current Navigation Bar:';
+
+  @override
+  String get tap_to_check_permission_status => 'Tap to check permission status';
+
+  @override
+  String get create_tab_group => 'Create Tab Group';
+
+  @override
+  String get manage_groups => 'Manage Groups';
+
+  @override
+  String get no_groups_created_yet => 'No groups created yet';
+
+  @override
+  String get group_name => 'Group Name';
+
+  @override
+  String get color => 'Color';
+
+  @override
+  String get close_group => 'Close Group';
+
+  @override
+  String get create => 'Create';
+
+  @override
+  String get summarize => 'Summarize';
+
+  @override
+  String get no_summaries_available => 'No summaries available';
+
+  @override
+  String get page_summary => 'Page Summary';
+
+  @override
+  String get failed_to_generate_summary => 'Failed to generate summary';
+
+  @override
+  String get try_again => 'Try Again';
+
+  @override
+  String get no_page_to_summarize => 'No page to summarize';
+
+  @override
+  String get no_content_found_to_summarize => 'No content found to summarize';
+
+  @override
+  String get theme => 'Theme';
+
+  @override
+  String get check => 'Check';
+
+  @override
+  String get pwa => 'PWA';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get input_required => 'Input Required';
+
+  @override
+  String get alert => 'Alert';
+
+  @override
+  String get add_tabs_to_group => 'Add Tabs to Group';
+
+  @override
+  String get ungroup_tabs => 'Ungroup tabs';
+
+  @override
+  String get delete_group => 'Delete group';
+
+  @override
+  String get copy_summary => 'Copy Summary';
 }

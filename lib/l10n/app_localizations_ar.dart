@@ -70,7 +70,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get back => 'رجوع';
 
   @override
-  String get skip => 'Skip';
+  String get skip => 'تخطي';
 
   @override
   String get getStarted => 'ابدأ';
@@ -366,7 +366,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get size => 'الحجم';
 
   @override
-  String get auto_open_downloads => 'فتح التنزيلات تلقائياً';
+  String get auto_open_downloads => 'فتح التحميلات تلقائياً';
 
   @override
   String get clear_downloads_history => 'مسح سجل التنزيلات';
@@ -388,19 +388,19 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get install_packages_permission => 'Install Packages Permission';
+  String get install_packages_permission => 'إذن تثبيت الحزم';
 
   @override
-  String get install_packages_permission_description => 'Allow installation of apps from this browser';
+  String get install_packages_permission_description => 'السماح بتثبيت التطبيقات من هذا المتصفح';
 
   @override
-  String get permission_install_packages_required => 'Install packages permission required';
+  String get permission_install_packages_required => 'إذن تثبيت الحزم مطلوب';
 
   @override
-  String get storage_permission_install_packages_required => 'Storage & Install Packages Permission';
+  String get storage_permission_install_packages_required => 'إذن التخزين وتثبيت الحزم';
 
   @override
-  String get storage_permission_install_packages_description => 'Solar Browser needs permission to access storage for downloads and install packages for APK installations';
+  String get storage_permission_install_packages_description => 'متصفح Solar يحتاج إذن للوصول للتخزين للتنزيلات وتثبيت الحزم لتثبيت APK';
 
   @override
   String get clear_downloads_history_confirm => 'سيؤدي هذا إلى مسح سجل التنزيلات فقط، ولن يتم حذف الملفات التي تم تنزيلها.';
@@ -471,7 +471,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get classic_navigation => 'التنقل الكلاسيكي';
 
   @override
-  String get classic_navigation_description => 'عرض أزرار التنقل في أسفل الشاشة';
+  String get classic_navigation_description => 'استخدام عناصر التحكم في التنقل بنمط المتصفح الكلاسيكي';
 
   @override
   String get exit_confirmation => 'الخروج من التطبيق';
@@ -480,7 +480,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get flutter_version => 'إصدار Flutter';
 
   @override
-  String get photoncore_version => 'Photoncore Version';
+  String get photoncore_version => 'إصدار Photoncore';
 
   @override
   String get engine_version => 'إصدار المحرك';
@@ -513,16 +513,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get storage_permission_required => 'إذن التخزين مطلوب';
 
   @override
-  String get storage_permission_granted => 'All permissions given';
+  String get storage_permission_granted => 'تم منح جميع الأذونات';
 
   @override
-  String get storage_permission_description => 'This app needs permission to access files for download functionality.';
+  String get storage_permission_description => 'هذا التطبيق يحتاج إذن للوصول للملفات لوظيفة التنزيل.';
 
   @override
-  String get app_should_work_normally => 'The app should now work normally with full functionality.';
+  String get app_should_work_normally => 'يجب أن يعمل التطبيق بشكل طبيعي مع الوظائف الكاملة.';
 
   @override
-  String get grant_permission => 'Give Permission';
+  String get grant_permission => 'منح الإذن';
 
   @override
   String get storage_permission_denied => 'إذن التخزين مطلوب لتنزيل الملفات';
@@ -531,10 +531,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get new_incognito_tab => 'علامة تبويب متخفية جديدة';
 
   @override
-  String get incognito_mode => 'Incognito Mode';
+  String get incognito_mode => 'وضع التخفي';
 
   @override
-  String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
+  String get incognito_description => 'في وضع التخفي:\n• لا يتم حفظ سجل التصفح\n• يتم مسح ملفات تعريف الارتباط عند إغلاق علامات التبويب\n• لا يتم تخزين أي بيانات محلياً';
 
   @override
   String get error_opening_file => 'خطأ في فتح الملف. يرجى تثبيت تطبيق مناسب لفتح هذا النوع من الملفات.';
@@ -632,74 +632,277 @@ class AppLocalizationsAr extends AppLocalizations {
   String get recentSearches => 'عمليات البحث الأخيرة';
 
   @override
-  String get previous_summaries => 'Previous Summaries';
+  String get previous_summaries => 'الملخصات السابقة';
 
   @override
-  String get summarize_selected => 'Summarize Selected';
+  String get summarize_selected => 'تلخيص المحدد';
 
   @override
-  String get summarize_page => 'Summarize Page';
+  String get summarize_page => 'تلخيص الصفحة';
 
   @override
-  String get ai_preferences => 'AI Preferences';
+  String get ai_preferences => 'تفضيلات الذكاء الاصطناعي';
 
   @override
-  String get ai_provider => 'AI Provider';
+  String get ai_provider => 'مزود الذكاء الاصطناعي';
 
   @override
-  String get summary_length => 'Summary Length';
+  String get summary_length => 'طول الملخص';
 
   @override
-  String get summary_language => 'Summary Language';
+  String get summary_language => 'لغة الملخص';
 
   @override
-  String get length_short => 'Short';
+  String get length_short => 'قصير';
 
   @override
-  String get length_medium => 'Medium';
+  String get length_medium => 'متوسط';
 
   @override
-  String get length_long => 'Long';
+  String get length_long => 'طويل';
 
   @override
-  String get summary_length_short => 'Short (75 words)';
+  String get summary_length_short => 'قصير (75 كلمة)';
 
   @override
-  String get summary_length_medium => 'Medium (150 words)';
+  String get summary_length_medium => 'متوسط (150 كلمة)';
 
   @override
-  String get summary_length_long => 'Long (250 words)';
+  String get summary_length_long => 'طويل (250 كلمة)';
 
   @override
-  String get summary_language_english => 'English';
+  String get summary_language_english => 'الإنجليزية';
 
   @override
-  String get summary_language_turkish => 'Türkçe';
+  String get summary_language_turkish => 'التركية';
 
   @override
-  String get add_to_pwa => 'Add to PWA';
+  String get add_to_pwa => 'إضافة إلى PWA';
 
   @override
-  String get remove_from_pwa => 'Remove from PWA';
+  String get remove_from_pwa => 'إزالة من PWA';
 
   @override
-  String get added_to_pwa => 'Added to PWA';
+  String get added_to_pwa => 'تمت الإضافة إلى PWA';
 
   @override
-  String get removed_from_pwa => 'Removed from PWA';
+  String get removed_from_pwa => 'تمت الإزالة من PWA';
 
   @override
-  String get pwa_info => 'Progressive Web Apps run like installed apps without browser controls';
+  String get pwa_info => 'تطبيقات الويب التقدمية تعمل مثل التطبيقات المثبتة بدون عناصر تحكم المتصفح';
 
   @override
-  String get create_shortcut => 'Create Shortcut';
+  String get create_shortcut => 'إنشاء اختصار';
 
   @override
-  String get enter_shortcut_name => 'Enter a name for this shortcut:';
+  String get enter_shortcut_name => 'أدخل اسماً لهذا الاختصار:';
 
   @override
-  String get shortcut_name => 'Shortcut name';
+  String get shortcut_name => 'اسم الاختصار';
 
   @override
-  String get add => 'ADD';
+  String get keep_tabs_open_description => 'الاحتفاظ بعلامات التبويب مفتوحة بين الجلسات';
+
+  @override
+  String get developer => 'المطور';
+
+  @override
+  String get reset_welcome_screen => 'إعادة تعيين شاشة الترحيب';
+
+  @override
+  String get restored_tab => 'تم استعادة علامة التبويب';
+
+  @override
+  String get welcome_screen_reset => 'إعادة تعيين شاشة الترحيب';
+
+  @override
+  String get welcome_screen_reset_message => 'سيؤدي هذا إلى إعادة تعيين شاشة الترحيب بحيث تظهر مرة أخرى في المرة القادمة التي تبدأ فيها التطبيق.';
+
+  @override
+  String get ok => 'موافق';
+
+  @override
+  String get customize_navigation => 'تخصيص التنقل';
+
+  @override
+  String get button_back => 'رجوع';
+
+  @override
+  String get button_forward => 'تقدم';
+
+  @override
+  String get button_bookmark => 'إشارة مرجعية';
+
+  @override
+  String get button_bookmarks => 'إشارات مرجعية';
+
+  @override
+  String get button_share => 'مشاركة';
+
+  @override
+  String get button_menu => 'قائمة';
+
+  @override
+  String get available_buttons => 'الأزرار المتاحة';
+
+  @override
+  String get add => 'إضافة';
+
+  @override
+  String get rename_pwa => 'إعادة تسمية PWA';
+
+  @override
+  String get pwa_name => 'اسم PWA';
+
+  @override
+  String get rename => 'إعادة تسمية';
+
+  @override
+  String get pwa_renamed => 'تم إعادة تسمية PWA';
+
+  @override
+  String get remove => 'إزالة';
+
+  @override
+  String get pwa_removed => 'تم إزالة PWA';
+
+  @override
+  String get bookmark_removed => 'تم حذف الإشارة المرجعية';
+
+  @override
+  String get untitled => 'بلا عنوان';
+
+  @override
+  String get show_welcome_screen_next_launch => 'إظهار شاشة الترحيب في التشغيل التالي';
+
+  @override
+  String get automatically_open_downloaded_files => 'فتح الملفات المنزلة تلقائياً';
+
+  @override
+  String get ask_where_to_save_files => 'السؤال عن مكان حفظ الملفات قبل التنزيل';
+
+  @override
+  String get clear_all_history => 'مسح كامل التاريخ';
+
+  @override
+  String get clear_all_history_confirm => 'سيؤدي هذا إلى حذف تاريخ التصفح بالكامل نهائياً. لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String get history_cleared => 'تم مسح التاريخ';
+
+  @override
+  String get navigation_controls => 'عناصر التحكم في التنقل';
+
+  @override
+  String get ai_settings => 'إعدادات الذكاء الاصطناعي';
+
+  @override
+  String get ai_summary_settings => 'إعدادات ملخص الذكاء الاصطناعي';
+
+  @override
+  String get ask_download_location_title => 'السؤال عن موقع التحميل';
+
+  @override
+  String get enable_incognito_mode => 'تفعيل الوضع الخفي';
+
+  @override
+  String get disable_incognito_mode => 'إيقاف الوضع الخفي';
+
+  @override
+  String get close_all_tabs => 'إغلاق جميع علامات التبويب';
+
+  @override
+  String get close_all_tabs_confirm => 'هل أنت متأكد من أنك تريد إغلاق جميع علامات التبويب؟ لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String close_all_tabs_in_group(String groupName) {
+    return 'إغلاق جميع علامات التبويب في \"$groupName\"؟ لا يمكن التراجع عن هذا الإجراء.';
+  }
+
+  @override
+  String get other => 'أخرى';
+
+  @override
+  String get ai => 'الذكاء الاصطناعي';
+
+  @override
+  String get rearrange_navigation_buttons => 'إعادة ترتيب أزرار التنقل';
+
+  @override
+  String get current_navigation_bar => 'شريط التنقل الحالي:';
+
+  @override
+  String get tap_to_check_permission_status => 'اضغط للتحقق من حالة الإذن';
+
+  @override
+  String get create_tab_group => 'إنشاء مجموعة علامات تبويب';
+
+  @override
+  String get manage_groups => 'إدارة المجموعات';
+
+  @override
+  String get no_groups_created_yet => 'لم يتم إنشاء مجموعات بعد';
+
+  @override
+  String get group_name => 'اسم المجموعة';
+
+  @override
+  String get color => 'اللون';
+
+  @override
+  String get close_group => 'إغلاق المجموعة';
+
+  @override
+  String get create => 'إنشاء';
+
+  @override
+  String get summarize => 'تلخيص';
+
+  @override
+  String get no_summaries_available => 'لا توجد ملخصات متاحة';
+
+  @override
+  String get page_summary => 'ملخص الصفحة';
+
+  @override
+  String get failed_to_generate_summary => 'فشل في إنشاء الملخص';
+
+  @override
+  String get try_again => 'حاول مرة أخرى';
+
+  @override
+  String get no_page_to_summarize => 'لا توجد صفحة للتلخيص';
+
+  @override
+  String get no_content_found_to_summarize => 'لم يتم العثور على محتوى للتلخيص';
+
+  @override
+  String get theme => 'السمة';
+
+  @override
+  String get check => 'فحص';
+
+  @override
+  String get pwa => 'PWA';
+
+  @override
+  String get confirm => 'تأكيد';
+
+  @override
+  String get input_required => 'مطلوب إدخال';
+
+  @override
+  String get alert => 'تحذير';
+
+  @override
+  String get add_tabs_to_group => 'إضافة علامات تبويب إلى المجموعة';
+
+  @override
+  String get ungroup_tabs => 'إلغاء تجميع علامات التبويب';
+
+  @override
+  String get delete_group => 'حذف المجموعة';
+
+  @override
+  String get copy_summary => 'نسخ الملخص';
 }

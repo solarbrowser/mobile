@@ -70,7 +70,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get back => 'वापस';
 
   @override
-  String get skip => 'Skip';
+  String get skip => 'छोड़ें';
 
   @override
   String get getStarted => 'शुरू करें';
@@ -79,14 +79,14 @@ class AppLocalizationsHi extends AppLocalizations {
   String get continueText => 'जारी रखें';
 
   @override
-  String get just_now => 'अभी अभी';
+  String get just_now => 'अभी-अभी';
 
   @override
   String get updated => 'Solar ब्राउज़र अपडेट हो गया!';
 
   @override
   String version(String version) {
-    return 'संस्करण';
+    return 'संस्करण $version';
   }
 
   @override
@@ -321,7 +321,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get do_not_track => 'ट्रैक न करें';
 
   @override
-  String get download_location_description => 'डाउनलोड की गई फ़ाइलें कहां सहेजी जाएं चुनें';
+  String get download_location_description => 'डाउनलोड की गई फ़ाइलें कहाँ सहेजी जाएं चुनें';
 
   @override
   String get text_size_description => 'वेब पेज पर टेक्स्ट का आकार समायोजित करें';
@@ -366,7 +366,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get size => 'आकार';
 
   @override
-  String get auto_open_downloads => 'डाउनलोड स्वचालित रूप से खोलें';
+  String get auto_open_downloads => 'डाउनलोड्स स्वचालित रूप से खोलें';
 
   @override
   String get clear_downloads_history => 'डाउनलोड इतिहास साफ़ करें';
@@ -388,19 +388,19 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get install_packages_permission => 'Install Packages Permission';
+  String get install_packages_permission => 'पैकेज इंस्टॉल अनुमति';
 
   @override
-  String get install_packages_permission_description => 'Allow installation of apps from this browser';
+  String get install_packages_permission_description => 'इस ब्राउज़र से ऐप्स इंस्टॉल करने की अनुमति दें';
 
   @override
-  String get permission_install_packages_required => 'Install packages permission required';
+  String get permission_install_packages_required => 'पैकेज इंस्टॉल अनुमति आवश्यक';
 
   @override
-  String get storage_permission_install_packages_required => 'Storage & Install Packages Permission';
+  String get storage_permission_install_packages_required => 'स्टोरेज और पैकेज इंस्टॉल अनुमति';
 
   @override
-  String get storage_permission_install_packages_description => 'Solar Browser needs permission to access storage for downloads and install packages for APK installations';
+  String get storage_permission_install_packages_description => 'Solar ब्राउज़र को डाउनलोड के लिए स्टोरेज एक्सेस और APK इंस्टॉलेशन के लिए पैकेज इंस्टॉल की अनुमति चाहिए';
 
   @override
   String get clear_downloads_history_confirm => 'यह केवल डाउनलोड इतिहास साफ़ करेगा, डाउनलोड की गई फ़ाइलें नहीं हटेंगी।';
@@ -471,7 +471,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get classic_navigation => 'क्लासिक नेविगेशन';
 
   @override
-  String get classic_navigation_description => 'स्क्रीन के निचले हिस्से में नेविगेशन बटन दिखाएं';
+  String get classic_navigation_description => 'क्लासिक ब्राउज़र शैली नेविगेशन नियंत्रण का उपयोग करें';
 
   @override
   String get exit_confirmation => 'ऐप से बाहर निकलें';
@@ -486,7 +486,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get engine_version => 'इंजन संस्करण';
 
   @override
-  String get software_team => 'Software Team';
+  String get software_team => 'सॉफ्टवेयर टीम';
 
   @override
   String get download_image => 'छवि डाउनलोड करें';
@@ -513,16 +513,16 @@ class AppLocalizationsHi extends AppLocalizations {
   String get storage_permission_required => 'स्टोरेज अनुमति आवश्यक है';
 
   @override
-  String get storage_permission_granted => 'All permissions given';
+  String get storage_permission_granted => 'सभी अनुमतियाँ दी गईं';
 
   @override
-  String get storage_permission_description => 'This app needs permission to access files for download functionality.';
+  String get storage_permission_description => 'इस ऐप को डाउनलोड कार्यक्षमता के लिए फ़ाइलों तक पहुंच की अनुमति चाहिए।';
 
   @override
-  String get app_should_work_normally => 'The app should now work normally with full functionality.';
+  String get app_should_work_normally => 'ऐप अब पूर्ण कार्यक्षमता के साथ सामान्य रूप से काम करना चाहिए।';
 
   @override
-  String get grant_permission => 'Give Permission';
+  String get grant_permission => 'अनुमति दें';
 
   @override
   String get storage_permission_denied => 'फ़ाइलें डाउनलोड करने के लिए स्टोरेज अनुमति आवश्यक है';
@@ -531,13 +531,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get new_incognito_tab => 'नया गुप्त टैब';
 
   @override
-  String get incognito_mode => 'Incognito Mode';
+  String get incognito_mode => 'इंकॉग्निटो मोड';
 
   @override
-  String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
+  String get incognito_description => 'इंकॉग्निटो मोड में:\n• ब्राउज़िंग इतिहास सेव नहीं होता\n• टैब बंद करने पर कुकीज़ साफ़ हो जाती हैं\n• कोई डेटा स्थानीय रूप से स्टोर नहीं होता';
 
   @override
-  String get error_opening_file => 'फ़ाइल खोलने में त्रुटि। कृपया इस प्रकार की फ़ाइल खोलने के लिए उपयुक्त ऐप इंस्टॉल करें।';
+  String get error_opening_file => 'फ़ाइल खोलने में त्रुटि';
 
   @override
   String get download_in_progress => 'डाउनलोड जारी है';
@@ -632,74 +632,277 @@ class AppLocalizationsHi extends AppLocalizations {
   String get recentSearches => 'हाल की खोजें';
 
   @override
-  String get previous_summaries => 'Previous Summaries';
+  String get previous_summaries => 'पिछले सारांश';
 
   @override
-  String get summarize_selected => 'Summarize Selected';
+  String get summarize_selected => 'चयनित को सारांश करें';
 
   @override
-  String get summarize_page => 'Summarize Page';
+  String get summarize_page => 'पेज का सारांश करें';
 
   @override
-  String get ai_preferences => 'AI Preferences';
+  String get ai_preferences => 'AI प्राथमिकताएं';
 
   @override
-  String get ai_provider => 'AI Provider';
+  String get ai_provider => 'AI प्रदाता';
 
   @override
-  String get summary_length => 'Summary Length';
+  String get summary_length => 'सारांश लंबाई';
 
   @override
-  String get summary_language => 'Summary Language';
+  String get summary_language => 'सारांश भाषा';
 
   @override
-  String get length_short => 'Short';
+  String get length_short => 'छोटा';
 
   @override
-  String get length_medium => 'Medium';
+  String get length_medium => 'मध्यम';
 
   @override
-  String get length_long => 'Long';
+  String get length_long => 'लंबा';
 
   @override
-  String get summary_length_short => 'Short (75 words)';
+  String get summary_length_short => 'छोटा (75 शब्द)';
 
   @override
-  String get summary_length_medium => 'Medium (150 words)';
+  String get summary_length_medium => 'मध्यम (150 शब्द)';
 
   @override
-  String get summary_length_long => 'Long (250 words)';
+  String get summary_length_long => 'लंबा (250 शब्द)';
 
   @override
-  String get summary_language_english => 'English';
+  String get summary_language_english => 'अंग्रेज़ी';
 
   @override
-  String get summary_language_turkish => 'Türkçe';
+  String get summary_language_turkish => 'तुर्की';
 
   @override
-  String get add_to_pwa => 'Add to PWA';
+  String get add_to_pwa => 'PWA में जोड़ें';
 
   @override
-  String get remove_from_pwa => 'Remove from PWA';
+  String get remove_from_pwa => 'PWA से हटाएं';
 
   @override
-  String get added_to_pwa => 'Added to PWA';
+  String get added_to_pwa => 'PWA में जोड़ा गया';
 
   @override
-  String get removed_from_pwa => 'Removed from PWA';
+  String get removed_from_pwa => 'PWA से हटाया गया';
 
   @override
-  String get pwa_info => 'Progressive Web Apps run like installed apps without browser controls';
+  String get pwa_info => 'प्रोग्रेसिव वेब ऐप्स बिना ब्राउज़र कंट्रोल के इंस्टॉल किए गए ऐप्स की तरह चलते हैं';
 
   @override
-  String get create_shortcut => 'Create Shortcut';
+  String get create_shortcut => 'शॉर्टकट बनाएं';
 
   @override
-  String get enter_shortcut_name => 'Enter a name for this shortcut:';
+  String get enter_shortcut_name => 'इस शॉर्टकट के लिए एक नाम दर्ज करें:';
 
   @override
-  String get shortcut_name => 'Shortcut name';
+  String get shortcut_name => 'शॉर्टकट नाम';
 
   @override
-  String get add => 'ADD';
+  String get keep_tabs_open_description => 'सत्रों के बीच टैब खुले रखें';
+
+  @override
+  String get developer => 'डेवलपर';
+
+  @override
+  String get reset_welcome_screen => 'Reset Welcome Screen';
+
+  @override
+  String get restored_tab => 'टैब पुनर्स्थापित';
+
+  @override
+  String get welcome_screen_reset => 'स्वागत स्क्रीन रीसेट करें';
+
+  @override
+  String get welcome_screen_reset_message => 'यह स्वागत स्क्रीन को रीसेट कर देगा ताकि यह अगली बार ऐप शुरू करने पर फिर से दिखाई दे।';
+
+  @override
+  String get ok => 'ठीक है';
+
+  @override
+  String get customize_navigation => 'नेविगेशन कस्टमाइज़ करें';
+
+  @override
+  String get button_back => 'पीछे';
+
+  @override
+  String get button_forward => 'आगे';
+
+  @override
+  String get button_bookmark => 'बुकमार्क';
+
+  @override
+  String get button_bookmarks => 'बुकमार्क';
+
+  @override
+  String get button_share => 'साझा करें';
+
+  @override
+  String get button_menu => 'मेनू';
+
+  @override
+  String get available_buttons => 'उपलब्ध बटन';
+
+  @override
+  String get add => 'जोड़ें';
+
+  @override
+  String get rename_pwa => 'PWA का नाम बदलें';
+
+  @override
+  String get pwa_name => 'PWA का नाम';
+
+  @override
+  String get rename => 'नाम बदलें';
+
+  @override
+  String get pwa_renamed => 'PWA का नाम बदल दिया गया';
+
+  @override
+  String get remove => 'हटाएं';
+
+  @override
+  String get pwa_removed => 'PWA हटाया गया';
+
+  @override
+  String get bookmark_removed => 'बुकमार्क हटाया गया';
+
+  @override
+  String get untitled => 'शीर्षकहीन';
+
+  @override
+  String get show_welcome_screen_next_launch => 'अगली बार चालू करने पर स्वागत स्क्रीन दिखाएं';
+
+  @override
+  String get automatically_open_downloaded_files => 'डाउनलोड की गई फाइलों को स्वचालित रूप से खोलें';
+
+  @override
+  String get ask_where_to_save_files => 'डाउनलोड करने से पहले फाइलों को कहाँ सेव करना है पूछें';
+
+  @override
+  String get clear_all_history => 'सभी इतिहास साफ़ करें';
+
+  @override
+  String get clear_all_history_confirm => 'यह आपके सभी ब्राउज़िंग इतिहास को स्थायी रूप से हटा देगा। इस क्रिया को पूर्ववत् नहीं किया जा सकता।';
+
+  @override
+  String get history_cleared => 'इतिहास साफ़ किया गया';
+
+  @override
+  String get navigation_controls => 'नेविगेशन नियंत्रण';
+
+  @override
+  String get ai_settings => 'AI सेटिंग्स';
+
+  @override
+  String get ai_summary_settings => 'AI सारांश सेटिंग्स';
+
+  @override
+  String get ask_download_location_title => 'डाउनलोड स्थान पूछें';
+
+  @override
+  String get enable_incognito_mode => 'इंकॉग्निटो मोड सक्षम करें';
+
+  @override
+  String get disable_incognito_mode => 'इंकॉग्निटो मोड अक्षम करें';
+
+  @override
+  String get close_all_tabs => 'सभी टैब बंद करें';
+
+  @override
+  String get close_all_tabs_confirm => 'क्या आप सभी टैब बंद करना चाहते हैं? यह क्रिया वापस नहीं की जा सकती।';
+
+  @override
+  String close_all_tabs_in_group(String groupName) {
+    return '\"$groupName\" में सभी टैब बंद करें? यह क्रिया वापस नहीं की जा सकती।';
+  }
+
+  @override
+  String get other => 'अन्य';
+
+  @override
+  String get ai => 'AI';
+
+  @override
+  String get rearrange_navigation_buttons => 'नेविगेशन बटन पुनर्व्यवस्थित करें';
+
+  @override
+  String get current_navigation_bar => 'वर्तमान नेविगेशन बार:';
+
+  @override
+  String get tap_to_check_permission_status => 'अनुमति स्थिति जांचने के लिए टैप करें';
+
+  @override
+  String get create_tab_group => 'टैब समूह बनाएं';
+
+  @override
+  String get manage_groups => 'समूह प्रबंधित करें';
+
+  @override
+  String get no_groups_created_yet => 'अभी तक कोई समूह नहीं बनाया गया';
+
+  @override
+  String get group_name => 'समूह का नाम';
+
+  @override
+  String get color => 'रंग';
+
+  @override
+  String get close_group => 'समूह बंद करें';
+
+  @override
+  String get create => 'बनाएं';
+
+  @override
+  String get summarize => 'सारांश';
+
+  @override
+  String get no_summaries_available => 'कोई सारांश उपलब्ध नहीं';
+
+  @override
+  String get page_summary => 'पृष्ठ सारांश';
+
+  @override
+  String get failed_to_generate_summary => 'सारांश बनाने में विफल';
+
+  @override
+  String get try_again => 'पुनः प्रयास करें';
+
+  @override
+  String get no_page_to_summarize => 'सारांश के लिए कोई पृष्ठ नहीं';
+
+  @override
+  String get no_content_found_to_summarize => 'सारांश के लिए कोई सामग्री नहीं मिली';
+
+  @override
+  String get theme => 'थीम';
+
+  @override
+  String get check => 'जांचें';
+
+  @override
+  String get pwa => 'PWA';
+
+  @override
+  String get confirm => 'पुष्टि करें';
+
+  @override
+  String get input_required => 'इनपुट आवश्यक';
+
+  @override
+  String get alert => 'चेतावनी';
+
+  @override
+  String get add_tabs_to_group => 'समूह में टैब जोड़ें';
+
+  @override
+  String get ungroup_tabs => 'टैब को अलग करें';
+
+  @override
+  String get delete_group => 'समूह हटाएं';
+
+  @override
+  String get copy_summary => 'सारांश कॉपी करें';
 }

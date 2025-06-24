@@ -500,8 +500,303 @@
   "@shortcut_name": {
     "description": "Hint for the shortcut name input field"
   },
-  "add": "ADD",
+  "keep_tabs_open_description": "Keep tabs open between sessions",
+  "@keep_tabs_open_description": {
+    "description": "Description for keep tabs open setting"
+  },
+  "developer": "Developer",
+  "@developer": {
+    "description": "Developer section title"
+  },  "reset_welcome_screen": "Reset Welcome Screen",
+  "@reset_welcome_screen": {
+    "description": "Reset welcome screen option"
+  },
+  "restored_tab": "Restored tab",
+  "@restored_tab": {
+    "description": "Message when a tab is restored"
+  },
+  "welcome_screen_reset": "Reset Welcome Screen",
+  "@welcome_screen_reset": {
+    "description": "Dialog title for resetting welcome screen"
+  },
+  "welcome_screen_reset_message": "This will reset the welcome screen so it appears again next time you start the app.",
+  "@welcome_screen_reset_message": {
+    "description": "Dialog message for resetting welcome screen"
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "OK button text"
+  },
+  "customize_navigation": "Customize Navigation",
+  "@customize_navigation": {
+    "description": "Title for navigation customization"
+  },
+  "button_back": "Back",
+  "@button_back": {
+    "description": "Back button label"
+  },
+  "button_forward": "Forward",
+  "@button_forward": {
+    "description": "Forward button label"
+  },
+  "button_bookmark": "Bookmark",
+  "@button_bookmark": {
+    "description": "Bookmark button label"
+  },
+  "button_bookmarks": "Bookmarks",
+  "@button_bookmarks": {
+    "description": "Bookmarks button label"
+  },
+  "button_share": "Share",
+  "@button_share": {
+    "description": "Share button label"
+  },
+  "button_menu": "Menu",
+  "@button_menu": {
+    "description": "Menu button label"
+  },
+  "available_buttons": "Available buttons",
+  "@available_buttons": {
+    "description": "Label for available navigation buttons"
+  },
+  "add": "Add",
   "@add": {
     "description": "Add button text"
+  },
+  "rename_pwa": "Rename PWA",
+  "@rename_pwa": {
+    "description": "Option to rename a PWA"
+  },
+  "pwa_name": "PWA name",
+  "@pwa_name": {
+    "description": "Hint for PWA name input field"
+  },
+  "rename": "Rename",
+  "@rename": {
+    "description": "Rename button text"
+  },
+  "pwa_renamed": "PWA renamed",
+  "@pwa_renamed": {
+    "description": "Confirmation message when PWA is renamed"
+  },
+  "remove": "Remove",
+  "@remove": {
+    "description": "Remove button text"
+  },
+  "pwa_removed": "PWA removed",
+  "@pwa_removed": {
+    "description": "Confirmation message when PWA is removed"
+  },  "bookmark_removed": "Bookmark removed",
+  "@bookmark_removed": {
+    "description": "Confirmation message when bookmark is removed"
+  },
+  "untitled": "Untitled",
+  "@untitled": {
+    "description": "Default title for untitled pages/tabs"
+  },
+  "show_welcome_screen_next_launch": "Show welcome screen on next launch",
+  "@show_welcome_screen_next_launch": {
+    "description": "Setting description for showing welcome screen"
+  },
+  "automatically_open_downloaded_files": "Automatically open downloaded files",
+  "@automatically_open_downloaded_files": {
+    "description": "Setting description for auto-opening downloads"
+  },
+  "ask_where_to_save_files": "Ask where to save files before downloading",
+  "@ask_where_to_save_files": {
+    "description": "Setting description for asking download location"
+  },
+  "clear_all_history": "Clear All History",
+  "@clear_all_history": {
+    "description": "Button text for clearing all browsing history"
+  },
+  "clear_all_history_confirm": "This will permanently delete all your browsing history. This action cannot be undone.",
+  "@clear_all_history_confirm": {
+    "description": "Confirmation message for clearing all history"
+  },
+  "history_cleared": "History cleared",
+  "@history_cleared": {
+    "description": "Confirmation message when history is cleared"
+  },
+  "navigation_controls": "Navigation Controls",
+  "@navigation_controls": {
+    "description": "Title for navigation controls settings"
+  },
+  "classic_navigation": "Classic Navigation",
+  "@classic_navigation": {
+    "description": "Label for classic navigation mode"
+  },
+  "classic_navigation_description": "Use classic browser-style navigation controls",
+  "@classic_navigation_description": {
+    "description": "Description for classic navigation setting"
+  },
+  "ai_settings": "AI Settings",
+  "@ai_settings": {
+    "description": "Title for AI settings section"
+  },
+  "ai_summary_settings": "AI Summary Settings",
+  "@ai_summary_settings": {
+    "description": "Title for AI summary settings"
+  },
+  "auto_open_downloads": "Auto-open Downloads",
+  "@auto_open_downloads": {
+    "description": "Setting title for auto-opening downloads"
+  },  "ask_download_location_title": "Ask Download Location",
+  "@ask_download_location_title": {
+    "description": "Setting title for asking download location"
+  },
+  "incognito_mode": "Incognito Mode",
+  "@incognito_mode": {
+    "description": "Incognito mode label"
+  },
+  "enable_incognito_mode": "Enable Incognito Mode",
+  "@enable_incognito_mode": {
+    "description": "Button to enable incognito mode"
+  },
+  "disable_incognito_mode": "Disable Incognito Mode",
+  "@disable_incognito_mode": {
+    "description": "Button to disable incognito mode"
+  },
+  "close_all_tabs": "Close All Tabs",
+  "@close_all_tabs": {
+    "description": "Button to close all tabs"
+  },
+  "close_all_tabs_confirm": "Are you sure you want to close all tabs? This action cannot be undone.",
+  "@close_all_tabs_confirm": {
+    "description": "Confirmation message for closing all tabs"
+  },
+  "close_all_tabs_in_group": "Close all tabs in \"{groupName}\"? This action cannot be undone.",
+  "@close_all_tabs_in_group": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    },
+    "description": "Confirmation message for closing all tabs in a group"
+  },
+  "other": "Other",
+  "@other": {
+    "description": "Settings group title for other options"
+  },
+  "ai": "AI",
+  "@ai": {
+    "description": "Settings group title for AI options"
+  },
+  "rearrange_navigation_buttons": "Rearrange navigation buttons",
+  "@rearrange_navigation_buttons": {
+    "description": "Setting subtitle for navigation customization"
+  },
+  "current_navigation_bar": "Current Navigation Bar:",
+  "@current_navigation_bar": {
+    "description": "Label for current navigation bar display"
+  },
+  "tap_to_check_permission_status": "Tap to check permission status",
+  "@tap_to_check_permission_status": {
+    "description": "Instruction for checking permission status"
+  },
+  "create_tab_group": "Create Tab Group",
+  "@create_tab_group": {
+    "description": "Dialog title for creating a new tab group"
+  },
+  "manage_groups": "Manage Groups",
+  "@manage_groups": {
+    "description": "Dialog title for managing tab groups"
+  },
+  "no_groups_created_yet": "No groups created yet",
+  "@no_groups_created_yet": {
+    "description": "Message when no tab groups exist"
+  },
+  "close": "Close",
+  "@close": {
+    "description": "Generic close button text"
+  },
+  "group_name": "Group Name",
+  "@group_name": {
+    "description": "Input label for tab group name"
+  },  "color": "Color",
+  "@color": {
+    "description": "Color selection label"
+  },  "close_group": "Close Group",
+  "@close_group": {
+    "description": "Dialog title for closing a tab group"
+  },
+  "create": "Create",
+  "@create": {
+    "description": "Create button text"
+  },
+  "summarize": "Summarize",
+  "@summarize": {
+    "description": "Summarize button text"
+  },
+  "previous_summaries": "Previous Summaries",
+  "@previous_summaries": {
+    "description": "Previous summaries button text"
+  },
+  "no_summaries_available": "No summaries available",
+  "@no_summaries_available": {
+    "description": "Message when no summaries are available"
+  },
+  "page_summary": "Page Summary",
+  "@page_summary": {
+    "description": "Page summary dialog title"
+  },
+  "failed_to_generate_summary": "Failed to generate summary",
+  "@failed_to_generate_summary": {
+    "description": "Error message when summary generation fails"
+  },
+  "try_again": "Try Again",
+  "@try_again": {
+    "description": "Try again button text"
+  },
+  "no_page_to_summarize": "No page to summarize",
+  "@no_page_to_summarize": {
+    "description": "Error message when there's no page to summarize"
+  },  "no_content_found_to_summarize": "No content found to summarize",
+  "@no_content_found_to_summarize": {
+    "description": "Error message when no content is found to summarize"
+  },
+  "theme": "Theme",
+  "@theme": {
+    "description": "Theme settings title"
+  },
+  "check": "Check",
+  "@check": {
+    "description": "Check button text"
+  },
+  "pwa": "PWA",
+  "@pwa": {
+    "description": "Progressive Web App button label"
+  },
+  "confirm": "Confirm",
+  "@confirm": {
+    "description": "Confirm dialog title"
+  },
+  "input_required": "Input Required",
+  "@input_required": {
+    "description": "Input dialog title"
+  },
+  "alert": "Alert",
+  "@alert": {
+    "description": "Alert dialog title"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings button label"
+  },
+  "add_tabs_to_group": "Add Tabs to Group",
+  "@add_tabs_to_group": {
+    "description": "Dialog title for adding tabs to a group"
+  },
+  "ungroup_tabs": "Ungroup tabs",
+  "@ungroup_tabs": {
+    "description": "Tooltip for ungrouping tabs"
+  },
+  "delete_group": "Delete group",
+  "@delete_group": {
+    "description": "Tooltip for deleting a tab group"
+  },
+  "copy_summary": "Copy Summary",
+  "@copy_summary": {
+    "description": "Button text for copying AI summary"
   }
 }

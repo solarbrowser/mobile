@@ -1,6 +1,6 @@
 name: solar
 description: Your gateway to the cosmos.
-version: 0.2.1
+version: 0.3.0
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -55,10 +55,10 @@ flutter_launcher_icons:
 
 flutter:
   uses-material-design: true
+  assets: 
   generate: true
-  assets:
     - assets/
-    - assets/main.html
+    - android/app/src/main/assets/main.html
     - assets/svg/
     - assets/errors/
     - assets/errors/error_template.html

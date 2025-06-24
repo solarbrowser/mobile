@@ -245,4 +245,15 @@ Kurallar:
   static SummaryLanguage getCurrentSummaryLanguage() {
     return _summaryLanguage;
   }
-} 
+
+  static Future<void> saveSummary(String summary, String url, String title) async {
+    switch (_currentProvider) {
+      case AIProvider.openai:
+        await AIService.saveSummary(summary, url, title);
+        break;
+      case AIProvider.gemini:
+        await GeminiService.saveSummary(summary, url, title);
+        break;
+    }
+  }
+}

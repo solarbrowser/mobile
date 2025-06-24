@@ -8,13 +8,8 @@ import 'update_screen.dart';
 import 'package:simple_animations/simple_animations.dart';
 import 'package:supercharged/supercharged.dart';
 import 'browser_screen.dart';
-import 'package:device_info_plus/device_info_plus.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:app_settings/app_settings.dart';
 import '../utils/theme_manager.dart';
-import 'package:flutter/gestures.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../widgets/custom_dialog.dart' show showCustomDialog;
 
 class WelcomeScreen extends StatefulWidget {
   final Function(String) onLocaleChange;

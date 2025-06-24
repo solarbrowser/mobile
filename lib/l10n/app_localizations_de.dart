@@ -70,7 +70,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get back => 'Zurück';
 
   @override
-  String get skip => 'Skip';
+  String get skip => 'Überspringen';
 
   @override
   String get getStarted => 'Loslegen';
@@ -366,7 +366,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get size => 'Größe';
 
   @override
-  String get auto_open_downloads => 'Downloads automatisch öffnen';
+  String get auto_open_downloads => 'Downloads Automatisch Öffnen';
 
   @override
   String get clear_downloads_history => 'Download-Verlauf löschen';
@@ -388,19 +388,19 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get install_packages_permission => 'Install Packages Permission';
+  String get install_packages_permission => 'Pakete-Installationsberechtigung';
 
   @override
-  String get install_packages_permission_description => 'Allow installation of apps from this browser';
+  String get install_packages_permission_description => 'Erlaube die Installation von Apps aus diesem Browser';
 
   @override
-  String get permission_install_packages_required => 'Install packages permission required';
+  String get permission_install_packages_required => 'Pakete-Installationsberechtigung erforderlich';
 
   @override
-  String get storage_permission_install_packages_required => 'Storage & Install Packages Permission';
+  String get storage_permission_install_packages_required => 'Speicher- und Pakete-Installationsberechtigung';
 
   @override
-  String get storage_permission_install_packages_description => 'Solar Browser needs permission to access storage for downloads and install packages for APK installations';
+  String get storage_permission_install_packages_description => 'Solar Browser benötigt Berechtigung für Speicherzugriff für Downloads und Paketinstallation für APK-Installationen';
 
   @override
   String get clear_downloads_history_confirm => 'Dies löscht nur den Download-Verlauf, nicht die heruntergeladenen Dateien.';
@@ -471,7 +471,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get classic_navigation => 'Klassische Navigation';
 
   @override
-  String get classic_navigation_description => 'Navigationsschaltflächen am unteren Bildschirmrand anzeigen';
+  String get classic_navigation_description => 'Klassische Browser-Style-Navigationssteuerungen verwenden';
 
   @override
   String get exit_confirmation => 'App beenden';
@@ -486,10 +486,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get engine_version => 'Engine-Version';
 
   @override
-  String get software_team => 'Software Team';
+  String get software_team => 'Software-Team';
 
   @override
-  String get download_image => 'Download Image';
+  String get download_image => 'Bild herunterladen';
 
   @override
   String get share_image => 'Bild teilen';
@@ -525,16 +525,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get grant_permission => 'Berechtigung erteilen';
 
   @override
-  String get storage_permission_denied => 'Storage permission is required to download files';
+  String get storage_permission_denied => 'Speicherberechtigung verweigert';
 
   @override
   String get new_incognito_tab => 'Neuer Inkognito-Tab';
 
   @override
-  String get incognito_mode => 'Incognito Mode';
+  String get incognito_mode => 'Inkognito-Modus';
 
   @override
-  String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
+  String get incognito_description => 'Im Inkognito-Modus:\n• Browserverlauf wird nicht gespeichert\n• Cookies werden beim Schließen von Tabs gelöscht\n• Keine Daten werden lokal gespeichert';
 
   @override
   String get error_opening_file => 'Fehler beim Öffnen der Datei. Bitte installieren Sie eine geeignete App zum Öffnen dieses Dateityps.';
@@ -632,74 +632,277 @@ class AppLocalizationsDe extends AppLocalizations {
   String get recentSearches => 'Letzte Suchen';
 
   @override
-  String get previous_summaries => 'Previous Summaries';
+  String get previous_summaries => 'Vorherige Zusammenfassungen';
 
   @override
-  String get summarize_selected => 'Summarize Selected';
+  String get summarize_selected => 'Auswahl zusammenfassen';
 
   @override
-  String get summarize_page => 'Summarize Page';
+  String get summarize_page => 'Seite zusammenfassen';
 
   @override
-  String get ai_preferences => 'AI Preferences';
+  String get ai_preferences => 'KI-Einstellungen';
 
   @override
-  String get ai_provider => 'AI Provider';
+  String get ai_provider => 'KI-Anbieter';
 
   @override
-  String get summary_length => 'Summary Length';
+  String get summary_length => 'Zusammenfassungslänge';
 
   @override
-  String get summary_language => 'Summary Language';
+  String get summary_language => 'Zusammenfassungssprache';
 
   @override
-  String get length_short => 'Short';
+  String get length_short => 'Kurz';
 
   @override
-  String get length_medium => 'Medium';
+  String get length_medium => 'Mittel';
 
   @override
-  String get length_long => 'Long';
+  String get length_long => 'Lang';
 
   @override
-  String get summary_length_short => 'Short (75 words)';
+  String get summary_length_short => 'Kurz (75 Wörter)';
 
   @override
-  String get summary_length_medium => 'Medium (150 words)';
+  String get summary_length_medium => 'Mittel (150 Wörter)';
 
   @override
-  String get summary_length_long => 'Long (250 words)';
+  String get summary_length_long => 'Lang (250 Wörter)';
 
   @override
-  String get summary_language_english => 'English';
+  String get summary_language_english => 'Englisch';
 
   @override
-  String get summary_language_turkish => 'Türkçe';
+  String get summary_language_turkish => 'Türkisch';
 
   @override
-  String get add_to_pwa => 'Add to PWA';
+  String get add_to_pwa => 'Zu PWA hinzufügen';
 
   @override
-  String get remove_from_pwa => 'Remove from PWA';
+  String get remove_from_pwa => 'Von PWA entfernen';
 
   @override
-  String get added_to_pwa => 'Added to PWA';
+  String get added_to_pwa => 'Zu PWA hinzugefügt';
 
   @override
-  String get removed_from_pwa => 'Removed from PWA';
+  String get removed_from_pwa => 'Von PWA entfernt';
 
   @override
-  String get pwa_info => 'Progressive Web Apps run like installed apps without browser controls';
+  String get pwa_info => 'Progressive Web Apps laufen wie installierte Apps ohne Browser-Steuerelemente';
 
   @override
-  String get create_shortcut => 'Create Shortcut';
+  String get create_shortcut => 'Verknüpfung erstellen';
 
   @override
-  String get enter_shortcut_name => 'Enter a name for this shortcut:';
+  String get enter_shortcut_name => 'Geben Sie einen Namen für diese Verknüpfung ein:';
 
   @override
-  String get shortcut_name => 'Shortcut name';
+  String get shortcut_name => 'Verknüpfungsname';
 
   @override
-  String get add => 'ADD';
+  String get keep_tabs_open_description => 'Tabs zwischen Sitzungen offen halten';
+
+  @override
+  String get developer => 'Entwickler';
+
+  @override
+  String get reset_welcome_screen => 'Willkommensbildschirm zurücksetzen';
+
+  @override
+  String get restored_tab => 'Tab wiederhergestellt';
+
+  @override
+  String get welcome_screen_reset => 'Willkommensbildschirm zurücksetzen';
+
+  @override
+  String get welcome_screen_reset_message => 'Dies wird den Willkommensbildschirm zurücksetzen, sodass er beim nächsten Start der App wieder angezeigt wird.';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get customize_navigation => 'Navigation anpassen';
+
+  @override
+  String get button_back => 'Zurück';
+
+  @override
+  String get button_forward => 'Vor';
+
+  @override
+  String get button_bookmark => 'Lesezeichen';
+
+  @override
+  String get button_bookmarks => 'Lesezeichen';
+
+  @override
+  String get button_share => 'Teilen';
+
+  @override
+  String get button_menu => 'Menü';
+
+  @override
+  String get available_buttons => 'Verfügbare Schaltflächen';
+
+  @override
+  String get add => 'Hinzufügen';
+
+  @override
+  String get rename_pwa => 'PWA umbenennen';
+
+  @override
+  String get pwa_name => 'PWA-Name';
+
+  @override
+  String get rename => 'Umbenennen';
+
+  @override
+  String get pwa_renamed => 'PWA umbenannt';
+
+  @override
+  String get remove => 'Entfernen';
+
+  @override
+  String get pwa_removed => 'PWA entfernt';
+
+  @override
+  String get bookmark_removed => 'Lesezeichen entfernt';
+
+  @override
+  String get untitled => 'Unbenannt';
+
+  @override
+  String get show_welcome_screen_next_launch => 'Willkommensbildschirm beim nächsten Start anzeigen';
+
+  @override
+  String get automatically_open_downloaded_files => 'Heruntergeladene Dateien automatisch öffnen';
+
+  @override
+  String get ask_where_to_save_files => 'Vor dem Herunterladen fragen, wo Dateien gespeichert werden sollen';
+
+  @override
+  String get clear_all_history => 'Gesamten Verlauf Löschen';
+
+  @override
+  String get clear_all_history_confirm => 'Dies wird Ihren gesamten Browserverlauf dauerhaft löschen. Diese Aktion kann nicht rückgängig gemacht werden.';
+
+  @override
+  String get history_cleared => 'Verlauf gelöscht';
+
+  @override
+  String get navigation_controls => 'Navigationssteuerungen';
+
+  @override
+  String get ai_settings => 'KI-Einstellungen';
+
+  @override
+  String get ai_summary_settings => 'KI-Zusammenfassung Einstellungen';
+
+  @override
+  String get ask_download_location_title => 'Download-Speicherort Abfragen';
+
+  @override
+  String get enable_incognito_mode => 'Inkognito-Modus Aktivieren';
+
+  @override
+  String get disable_incognito_mode => 'Inkognito-Modus Deaktivieren';
+
+  @override
+  String get close_all_tabs => 'Alle Tabs Schließen';
+
+  @override
+  String get close_all_tabs_confirm => 'Sind Sie sicher, dass Sie alle Tabs schließen möchten? Diese Aktion kann nicht rückgängig gemacht werden.';
+
+  @override
+  String close_all_tabs_in_group(String groupName) {
+    return 'Alle Tabs in \"$groupName\" schließen? Diese Aktion kann nicht rückgängig gemacht werden.';
+  }
+
+  @override
+  String get other => 'Andere';
+
+  @override
+  String get ai => 'KI';
+
+  @override
+  String get rearrange_navigation_buttons => 'Navigationsschaltflächen neu anordnen';
+
+  @override
+  String get current_navigation_bar => 'Aktuelle Navigationsleiste:';
+
+  @override
+  String get tap_to_check_permission_status => 'Tippen Sie, um den Berechtigungsstatus zu überprüfen';
+
+  @override
+  String get create_tab_group => 'Tab-Gruppe Erstellen';
+
+  @override
+  String get manage_groups => 'Gruppen Verwalten';
+
+  @override
+  String get no_groups_created_yet => 'Noch keine Gruppen erstellt';
+
+  @override
+  String get group_name => 'Gruppenname';
+
+  @override
+  String get color => 'Farbe';
+
+  @override
+  String get close_group => 'Gruppe Schließen';
+
+  @override
+  String get create => 'Erstellen';
+
+  @override
+  String get summarize => 'Zusammenfassen';
+
+  @override
+  String get no_summaries_available => 'Keine Zusammenfassungen verfügbar';
+
+  @override
+  String get page_summary => 'Seitenzusammenfassung';
+
+  @override
+  String get failed_to_generate_summary => 'Zusammenfassung konnte nicht generiert werden';
+
+  @override
+  String get try_again => 'Erneut Versuchen';
+
+  @override
+  String get no_page_to_summarize => 'Keine Seite zum Zusammenfassen';
+
+  @override
+  String get no_content_found_to_summarize => 'Kein Inhalt zum Zusammenfassen gefunden';
+
+  @override
+  String get theme => 'Thema';
+
+  @override
+  String get check => 'Prüfen';
+
+  @override
+  String get pwa => 'PWA';
+
+  @override
+  String get confirm => 'Bestätigen';
+
+  @override
+  String get input_required => 'Eingabe Erforderlich';
+
+  @override
+  String get alert => 'Warnung';
+
+  @override
+  String get add_tabs_to_group => 'Tabs zur Gruppe Hinzufügen';
+
+  @override
+  String get ungroup_tabs => 'Tabs entgruppieren';
+
+  @override
+  String get delete_group => 'Gruppe löschen';
+
+  @override
+  String get copy_summary => 'Zusammenfassung Kopieren';
 }

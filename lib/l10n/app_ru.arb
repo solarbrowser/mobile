@@ -1,6 +1,6 @@
-{
+﻿{
   "@@locale": "ru",
-  
+
   "welcomeToSolar": "Добро пожаловать в Solar",
   "welcomeDescription": "Современный, быстрый и безопасный браузер",
   "termsOfService": "Продолжая, вы соглашаетесь с нашими Условиями использования и Политикой конфиденциальности",
@@ -29,7 +29,6 @@
   "and": "и",
   "data_collection": "Сбор данных",
   "data_collection_details": "• Мы собираем минимум данных, необходимых для работы браузера\n• Ваша история просмотров остаётся на вашем устройстве\n• Мы не отслеживаем вашу онлайн-активность\n• Вы можете удалить все данные в любое время",
-
   "general": "Общие",
   "appearance": "Внешний вид",
   "downloads": "Загрузки",
@@ -232,10 +231,456 @@
   "searchTheWeb": "Поиск в интернете",
   "recentSearches": "Недавние поиски",
   "storage_permission_granted": "Разрешение на хранение предоставлено",
-  
   "summary_length": "Длина сводки",
   "summary_language": "Язык сводки",
-  
   "classic_navigation": "Классическая навигация",
-  "classic_navigation_description": "Показывать кнопки навигации внизу экрана"
+  "classic_navigation_description": "Показывать кнопки навигации внизу экрана",
+  "ok": "ОК",
+  "welcome_screen_reset": "Сброс экрана приветствия",
+  "welcome_screen_reset_message": "Экран приветствия будет показан при следующем запуске приложения. Пожалуйста, перезапустите приложение, чтобы увидеть обновленную политику конфиденциальности и условия использования.",
+  "customize_navigation": "Настроить навигацию",
+  "bookmark_removed": "Закладка удалена",
+  "navigation_buttons": "Кнопки навигации",
+  "available_buttons": "Доступные кнопки",
+  "enabled_buttons": "Включенные кнопки",
+  "button_back": "Назад",
+  "button_forward": "Вперед",
+  "button_bookmark": "Закладка",
+  "button_share": "Поделиться",
+  "button_menu": "Меню",
+  "button_bookmarks": "Закладки",
+  "navigation_bar_animations": "Анимации панели навигации",
+  "restore_defaults": "Восстановить по умолчанию",
+  "drag_to_reorder": "Перетащите для изменения порядка",
+  "add": "ДОБАВИТЬ",
+  "restored_tab": "Восстановленная Вкладка",
+  "rename": "Переименовать",
+  "rename_pwa": "Переименовать PWA",
+  "pwa_name": "Имя PWA",
+  "pwa_renamed": "PWA и ярлык главного экрана переименованы",
+  "pwa_removed": "PWA и ярлык главного экрана удалены",
+  "remove": "Удалить",
+  "@remove": {
+    "description": "Button text for removing something"
+  },
+  "install_packages_permission": "Разрешение на установку пакетов",
+  "@install_packages_permission": {
+    "description": "Install packages permission title"
+  },
+  "install_packages_permission_description": "Разрешить установку приложений из этого браузера",
+  "@install_packages_permission_description": {
+    "description": "Install packages permission description"
+  },
+  "permission_install_packages_required": "Требуется разрешение на установку пакетов",
+  "@permission_install_packages_required": {
+    "description": "Install packages permission required message"
+  },
+  "storage_permission_install_packages_required": "Разрешение на хранение и установку пакетов",
+  "@storage_permission_install_packages_required": {
+    "description": "Storage and install packages permission title"
+  },
+  "storage_permission_install_packages_description": "Браузеру Solar требуется разрешение на доступ к хранилищу для загрузок и установку пакетов для установки APK",
+  "@storage_permission_install_packages_description": {
+    "description": "Storage and install packages permission description"
+  },
+  "software_team": "Команда разработчиков",
+  "@software_team": {
+    "description": "Software team label"
+  },
+  "storage_permission_required": "Дать разрешение",
+  "@storage_permission_required": {
+    "description": "Title for the permission request banner"
+  },
+  "storage_permission_description": "Этому приложению требуется разрешение на доступ к файлам для функции загрузки.",
+  "@storage_permission_description": {
+    "description": "Description text for the permission request"
+  },
+  "app_should_work_normally": "Приложение должно работать нормально с полным функционалом.",
+  "@app_should_work_normally": {
+    "description": "Description text shown when all permissions are granted"
+  },
+  "grant_permission": "Дать разрешение",
+  "@grant_permission": {
+    "description": "Text for the permission grant button"
+  },
+  "storage_permission_denied": "Для загрузки файлов требуется разрешение на доступ к хранилищу",
+  "@storage_permission_denied": {
+    "description": "Message shown when storage permission is denied"
+  },
+  "incognito_mode": "Режим инкогнито",
+  "@incognito_mode": {
+    "description": "Label for incognito mode"
+  },
+  "incognito_description": "В режиме инкогнито:\n• История браузера не сохраняется\n• Файлы cookie удаляются при закрытии вкладок\n• Данные не сохраняются локально",
+  "@incognito_description": {
+    "description": "Description of incognito mode features"
+  },
+  "error_opening_file": "Ошибка открытия файла",
+  "@error_opening_file": {
+    "description": "Error message when a file cannot be opened"
+  },
+  "download_in_progress": "Идет загрузка",
+  "@download_in_progress": {
+    "description": "Message shown when a download is in progress"
+  },
+  "download_paused": "Загрузка приостановлена",
+  "@download_paused": {
+    "description": "Message shown when a download is paused"
+  },
+  "download_canceled": "Загрузка отменена",
+  "@download_canceled": {
+    "description": "Message shown when a download is canceled"
+  },
+  "download_error": "Ошибка загрузки: {error}",
+  "@download_error": {
+    "description": "Message shown when there is an error during download",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "Network error"
+      }
+    }
+  },
+  "open_downloads_folder": "Открыть папку загрузок",
+  "@open_downloads_folder": {
+    "description": "Label for button to open downloads folder"
+  },
+  "file_exists": "Файл уже существует",
+  "@file_exists": {
+    "description": "Message shown when trying to download a file that already exists"
+  },
+  "file_saved": "Файл сохранен в Загрузки",
+  "@file_saved": {
+    "description": "Message shown when a file is successfully saved"
+  },
+  "no_tabs_open": "Нет открытых вкладок",
+  "incognito": "Инкогнито",
+  "clear_all": "Очистить все",
+  "clear_history": "Очистить историю",
+  "clear_history_confirmation": "Вы уверены, что хотите очистить историю браузера?",
+  "no_history": "Нет истории браузера",
+  "today": "Сегодня",
+  "yesterday": "Вчера",
+  "days_ago": "{days} дней назад",
+  "@days_ago": {
+    "description": "Shows how many days ago something happened",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": 3
+      }
+    }
+  },
+  "weeks_ago": "{weeks} недель назад",
+  "@weeks_ago": {
+    "description": "Shows how many weeks ago something happened",
+    "placeholders": {
+      "weeks": {
+        "type": "int",
+        "example": 2
+      }
+    }
+  },
+  "months_ago": "{months} месяцев назад",
+  "@months_ago": {
+    "description": "Shows how many months ago something happened",
+    "placeholders": {
+      "months": {
+        "type": "int",
+        "example": 3
+      }
+    }
+  },
+  "previous_summaries": "Предыдущие сводки",
+  "@previous_summaries": {
+    "description": "Label for accessing previously generated summaries"
+  },
+  "summarize_selected": "Сводка выбранного",
+  "@summarize_selected": {
+    "description": "Label for summarizing selected text"
+  },
+  "summarize_page": "Сводка страницы",
+  "@summarize_page": {
+    "description": "Label for summarizing the entire page"
+  },
+  "ai_preferences": "Настройки ИИ",
+  "@ai_preferences": {
+    "description": "Label for AI preferences section"
+  },
+  "ai_provider": "Провайдер ИИ",
+  "@ai_provider": {
+    "description": "Label for AI provider selection"
+  },
+  "length_short": "Короткий",
+  "@length_short": {
+    "description": "Label for short summary length"
+  },
+  "length_medium": "Средний",
+  "@length_medium": {
+    "description": "Label for medium summary length"
+  },
+  "length_long": "Длинный",
+  "@length_long": {
+    "description": "Label for long summary length"
+  },
+  "summary_length_short": "Короткий (75 слов)",
+  "@summary_length_short": {
+    "description": "Label for short summary length with word count"
+  },
+  "summary_length_medium": "Средний (150 слов)",
+  "@summary_length_medium": {
+    "description": "Label for medium summary length with word count"
+  },
+  "summary_length_long": "Длинный (250 слов)",
+  "@summary_length_long": {
+    "description": "Label for long summary length with word count"
+  },
+  "summary_language_english": "Английский",
+  "@summary_language_english": {
+    "description": "Label for English language option"
+  },
+  "summary_language_turkish": "Турецкий",
+  "@summary_language_turkish": {
+    "description": "Label for Turkish language option"
+  },
+  "add_to_pwa": "Добавить в PWA",
+  "@add_to_pwa": {
+    "description": "Option to add current website as a PWA"
+  },
+  "remove_from_pwa": "Удалить из PWA",
+  "@remove_from_pwa": {
+    "description": "Option to remove website from PWA list"
+  },
+  "added_to_pwa": "Добавлено в PWA",
+  "@added_to_pwa": {
+    "description": "Confirmation message when site is added as PWA"
+  },
+  "removed_from_pwa": "Удалено из PWA",
+  "@removed_from_pwa": {
+    "description": "Confirmation message when site is removed from PWA list"
+  },
+  "pwa_info": "Прогрессивные веб-приложения работают как установленные приложения без элементов управления браузера",
+  "@pwa_info": {
+    "description": "Information about what PWAs are"
+  },
+  "create_shortcut": "Создать ярлык",
+  "@create_shortcut": {
+    "description": "Title for the shortcut creation dialog"
+  },
+  "enter_shortcut_name": "Введите имя для этого ярлыка:",
+  "@enter_shortcut_name": {
+    "description": "Prompt for entering the shortcut name"
+  },
+  "shortcut_name": "Имя ярлыка",
+  "@shortcut_name": {
+    "description": "Hint for the shortcut name input field"
+  },
+  "keep_tabs_open_description": "Сохранять вкладки между сессиями",
+  "@keep_tabs_open_description": {
+    "description": "Description for keep tabs open setting"
+  },
+  "developer": "Разработчик",
+  "@developer": {
+    "description": "Developer section title"
+  },
+  "reset_welcome_screen": "Сбросить экран приветствия",
+  "@reset_welcome_screen": {
+    "description": "Reset welcome screen option"
+  },
+  "restored_tab": "Вкладка восстановлена",
+  "@restored_tab": {
+    "description": "Message when a tab is restored"
+  },
+  "welcome_screen_reset_message": "Это сбросит экран приветствия, чтобы он снова появился при следующем запуске приложения.",
+  "@welcome_screen_reset_message": {
+    "description": "Dialog message for resetting welcome screen"
+  },
+  "@ok": {
+    "description": "OK button text"
+  },
+  "@customize_navigation": {
+    "description": "Title for navigation customization"
+  },
+  "@button_back": {
+    "description": "Back button label"
+  },
+  "@button_forward": {
+    "description": "Forward button label"
+  },
+  "@button_bookmark": {
+    "description": "Bookmark button label"
+  },
+  "@button_bookmarks": {
+    "description": "Bookmarks button label"
+  },
+  "@button_share": {
+    "description": "Share button label"
+  },
+  "@button_menu": {
+    "description": "Menu button label"
+  },
+  "@available_buttons": {
+    "description": "Label for available navigation buttons"
+  },
+  "@add": {
+    "description": "Add button text"
+  },
+  "@rename_pwa": {
+    "description": "Option to rename a PWA"
+  },
+  "@pwa_name": {
+    "description": "Hint for PWA name input field"
+  },
+  "@rename": {
+    "description": "Rename button text"
+  },
+  "pwa_renamed": "PWA переименовано",
+  "@pwa_renamed": {
+    "description": "Confirmation message when PWA is renamed"
+  },
+  "@remove": {
+    "description": "Remove button text"
+  },
+  "pwa_removed": "PWA удалено",
+  "@pwa_removed": {
+    "description": "Confirmation message when PWA is removed"
+  },
+  "@bookmark_removed": {
+    "description": "Confirmation message when bookmark is removed"
+  },
+  "untitled": "Без названия",
+  "@untitled": {
+    "description": "Default title for untitled pages/tabs"
+  },
+  "show_welcome_screen_next_launch": "Показать экран приветствия при следующем запуске",
+  "@show_welcome_screen_next_launch": {
+    "description": "Setting description for showing welcome screen"
+  },
+  "automatically_open_downloaded_files": "Автоматически открывать загруженные файлы",
+  "@automatically_open_downloaded_files": {
+    "description": "Setting description for auto-opening downloads"
+  },
+  "ask_where_to_save_files": "Спрашивать, где сохранять файлы перед загрузкой",
+  "@ask_where_to_save_files": {
+    "description": "Setting description for asking download location"
+  },
+  "clear_all_history": "Очистить Всю Историю",
+  "@clear_all_history": {
+    "description": "Button text for clearing all browsing history"
+  },
+  "clear_all_history_confirm": "Это навсегда удалит всю вашу историю просмотров. Это действие нельзя отменить.",
+  "@clear_all_history_confirm": {
+    "description": "Confirmation message for clearing all history"
+  },
+  "history_cleared": "История очищена",
+  "@history_cleared": {
+    "description": "Confirmation message when history is cleared"
+  },
+  "navigation_controls": "Элементы Навигации",
+  "@navigation_controls": {
+    "description": "Title for navigation controls settings"
+  },
+  "ai_settings": "Настройки ИИ",
+  "@ai_settings": {
+    "description": "Title for AI settings section"
+  },
+  "ai_summary_settings": "Настройки Резюме ИИ",
+  "@ai_summary_settings": {
+    "description": "Title for AI summary settings"
+  },
+  "@auto_open_downloads": {
+    "description": "Setting title for auto-opening downloads"
+  },
+  "ask_download_location_title": "Спросить Местоположение Загрузки",
+  "@ask_download_location_title": {
+    "description": "Setting title for asking download location"
+  },
+  "enable_incognito_mode": "Включить режим инкогнито",
+  "@enable_incognito_mode": {
+    "description": "Button to enable incognito mode"
+  },
+  "disable_incognito_mode": "Отключить режим инкогнито",
+  "@disable_incognito_mode": {
+    "description": "Button to disable incognito mode"
+  },
+  "close_all_tabs": "Закрыть все вкладки",
+  "@close_all_tabs": {
+    "description": "Button to close all tabs"
+  },
+  "close_all_tabs_confirm": "Вы уверены, что хотите закрыть все вкладки? Это действие нельзя отменить.",
+  "@close_all_tabs_confirm": {
+    "description": "Confirmation message for closing all tabs"
+  },
+  "close_all_tabs_in_group": "Закрыть все вкладки в \"{groupName}\"? Это действие нельзя отменить.",
+  "@close_all_tabs_in_group": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    },
+    "description": "Confirmation message for closing all tabs in a group"
+  },
+  "other": "Другое",
+  "@other": {
+    "description": "Settings group title for other options"
+  },
+  "ai": "ИИ",
+  "@ai": {
+    "description": "Settings group title for AI options"
+  },
+  "rearrange_navigation_buttons": "Переупорядочить кнопки навигации",
+  "@rearrange_navigation_buttons": {
+    "description": "Setting subtitle for navigation customization"
+  },
+  "current_navigation_bar": "Текущая панель навигации:",
+  "@current_navigation_bar": {
+    "description": "Label for current navigation bar display"
+  },
+  "tap_to_check_permission_status": "Нажмите, чтобы проверить статус разрешений",
+  "@tap_to_check_permission_status": {
+    "description": "Instruction for checking permission status"
+  },
+  "create_tab_group": "Создать группу вкладок",
+  "@create_tab_group": {
+    "description": "Dialog title for creating a new tab group"
+  },
+  "manage_groups": "Управлять группами",
+  "@manage_groups": {
+    "description": "Dialog title for managing tab groups"
+  },
+  "no_groups_created_yet": "Группы еще не созданы",
+  "@no_groups_created_yet": {
+    "description": "Message when no tab groups exist"
+  },
+  "group_name": "Имя группы",
+  "@group_name": {
+    "description": "Input label for tab group name"
+  },
+  "color": "Цвет",
+  "@color": {
+    "description": "Color selection label"
+  },
+  "close_group": "Закрыть группу",
+  "@close_group": {
+    "description": "Dialog title for closing a tab group"
+  },
+  "create": "Создать",
+  "summarize": "Резюмировать",
+  "previous_summaries": "Предыдущие резюме",
+  "no_summaries_available": "Нет доступных резюме",
+  "page_summary": "Резюме страницы",
+  "failed_to_generate_summary": "Не удалось создать резюме",
+  "try_again": "Попробовать снова",
+  "no_page_to_summarize": "Нет страницы для резюмирования",
+  "no_content_found_to_summarize": "Не найдено содержимое для резюмирования",
+  "theme": "Тема",
+  "check": "Проверить",
+  "pwa": "PWA",
+  "confirm": "Подтвердить",
+  "input_required": "Требуется ввод",
+  "alert": "Предупреждение",
+  "add_tabs_to_group": "Добавить вкладки в группу",
+  "ungroup_tabs": "Разгруппировать вкладки",
+  "delete_group": "Удалить группу",
+  "copy_summary": "Копировать резюме"
 }

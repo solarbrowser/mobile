@@ -3,16 +3,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart' as webview_flutter_android;
-import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
-import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
 import '../l10n/app_localizations.dart';
-import '../models/tab_info.dart';
 import '../models/tab_group.dart';
 import '../utils/browser_utils.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -22,30 +17,22 @@ import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/services.dart';
 import '../utils/optimization_engine.dart';
-import 'package:flutter_phoenix/flutter_phoenix.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import '../widgets/custom_dialog.dart';
 import '../widgets/custom_notification.dart';
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:flutter/services.dart';
-import 'package:path/path.dart' as path;
 import 'package:solar/theme/theme_manager.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:solar/services/notification_service.dart';
 import 'package:solar/services/ai_manager.dart';
 import 'package:solar/services/pwa_manager.dart';
 import 'package:solar/screens/pwa_screen.dart';
-import 'package:flutter/services.dart';
 
 class Debouncer {
   final int milliseconds;
   Timer? _timer;
 
-  Debouncer({required this.milliseconds});
-
-  void run(VoidCallback action) {
+  Debouncer({required this.milliseconds});  void run(VoidCallback action) {
     _timer?.cancel();
     _timer = Timer(Duration(milliseconds: milliseconds), action);
   }
@@ -297,6 +284,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   // <----NAVIGATION BAR CUSTOMIZATION---->
   List<String> _customNavButtons = ['back', 'forward', 'bookmark', 'share', 'menu'];
   bool _navBarAnimationEnabled = true;
+  
+  // <----AI ACTION BAR---->
+  bool _isAiActionBarVisible = false;
+  late AnimationController _aiActionBarController;
+  late Animation<double> _aiActionBarAnimation;
+  late Animation<double> _aiActionBarHeightAnimation;
+  
     // Simple border animation for URL bar (summary panel removed)
   late Animation<BorderRadius> _urlBarBorderAnimation;
   
@@ -317,10 +311,41 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   bool _autoOpenDownloads = false;
   late OptimizationEngine _optimizationEngine;
   late Animation<double> _loadingAnimation;
-
   Timer? _urlBarIdleTimer;
+  Timer? _urlSyncTimer; // Timer for periodic URL sync
   bool _isFullscreen = false;
   late AnimationController _loadingAnimationController;
+    // Smooth scrolling controller
+  final ScrollController _smoothScrollController = ScrollController();
+  
+  // Optimization flags
+  bool _isOptimizingPerformance = false;
+  
+  // Animation durations and curves for dropdowns
+  final Duration _dropdownDuration = const Duration(milliseconds: 200);
+  final Curve _dropdownCurve = Curves.easeOutCubic;
+  
+  // Smooth transition controller
+  late final AnimationController _transitionController = AnimationController(
+    duration: const Duration(milliseconds: 300),
+    vsync: this,
+  );
+  
+  // Transition animations
+  late final Animation<double> _fadeTransition = CurvedAnimation(
+    parent: _transitionController,
+    curve: Curves.easeInOut,
+  );
+
+  // Slide transition animation
+  late final Animation<Offset> _slideTransition = Tween<Offset>(
+    begin: const Offset(0, 0.1),
+    end: Offset.zero,
+  ).animate(CurvedAnimation(
+    parent: _transitionController,
+    curve: Curves.easeOutCubic,
+  ));
+  
   bool mounted = true;
 
   // <----URL BAR DRAGGING---->
@@ -414,7 +439,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         final restoredTab = {
           'id': tabData['id'] as String,
           'url': tabData['url'] as String,
-          'title': tabData['title'] as String? ?? 'Restored Tab',
+          'title': tabData['title'] as String? ?? AppLocalizations.of(context)!.restored_tab,
           'favicon': tabData['favicon'] as String?,
           'groupId': tabData['groupId'] as String?,
           'controller': WebViewController(),
@@ -487,24 +512,35 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   
   bool _isUpdating = false;  // <----LOADING STATE MANAGEMENT---->
   void _setLoadingState(bool loading) {
-    if (mounted) {
-      setState(() {
-        isLoading = loading;
-      });
-    }
+    if (!mounted) return;
+    
+    setState(() {
+      isLoading = loading;
+    });
 
     _loadingTimeoutTimer?.cancel();
     
     if (loading) {
-      _loadingTimeoutTimer = Timer(const Duration(seconds: 30), () {
-        if (mounted) {
+      // Start the loading animation
+      _loadingAnimationController.reset();
+      _loadingAnimationController.repeat();
+      
+      // Set a more aggressive timeout for stuck loading states
+      _loadingTimeoutTimer = Timer(const Duration(seconds: 15), () {
+        if (mounted && isLoading) {
+          print('⚠️ Loading timeout - forcing loading state to false');
           setState(() {
             isLoading = false;
           });
+          _loadingAnimationController.stop();
         }
       });
+    } else {
+      // Ensure animation is stopped when loading finishes
+      _loadingAnimationController.stop();
+      _loadingAnimationController.reset();
     }
-  }  // <----GLASSMORPHIC DECORATION---->
+  }// <----GLASSMORPHIC DECORATION---->
   BoxDecoration? _cachedGlassDecoration;
   
   BoxDecoration _getGlassmorphicDecoration() {
@@ -658,11 +694,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       parent: _loadingAnimationController,
       curve: Curves.linear,
     );
-    
-    _smoothScrollController.addListener(_handleScroll);
+      _smoothScrollController.addListener(_handleScroll);
     
     _optimizationEngine = OptimizationEngine();
-  }  void _handleScroll() {
+  }
+  
+  void _handleScroll() {
     _scrollThrottle.run(() {
       if (!mounted) return;
       
@@ -781,9 +818,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       systemNavigationBarColor: Colors.transparent,
       systemNavigationBarIconBrightness: isBackgroundDark ? Brightness.light : Brightness.dark,
       systemNavigationBarContrastEnforced: false,
-      systemNavigationBarDividerColor: Colors.transparent,
-    ));
-  }  void _toggleTheme(bool darkMode) async {
+      systemNavigationBarDividerColor: Colors.transparent,    ));
+  }
+  
+  void _toggleTheme(bool darkMode) async {
     final theme = darkMode ? ThemeType.dark : ThemeType.light;
     await ThemeManager.setTheme(theme);
     
@@ -843,14 +881,20 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         } catch (e) {
           console.error('Theme application error:', e);
         }
-      ''');
-    } catch (e) {
+      ''');    } catch (e) {
       print('Error sending theme to WebView: $e');
     }
   }
-
+  
   void _toggleClassicMode(bool classicMode) async {
-    // First immediate state change to affect UI right away
+    // Close AI action bar with animation when entering classic mode FIRST
+    if (classicMode && _isAiActionBarVisible) {
+      _closeAiActionBar();
+      // Wait for animation to complete
+      await Future.delayed(const Duration(milliseconds: 250));
+    }
+    
+    // Then update state
     setState(() {
       _isClassicMode = classicMode;
       // When toggling classic mode, always make sure the URL bar is visible
@@ -876,7 +920,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           });
         }
       });
-    }      await _savePreferences();
+    }
+    
+    await _savePreferences();
   }
 
   // Summary panel methods (disabled - do nothing)
@@ -902,24 +948,24 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     
     // Remove app lifecycle observer
     WidgetsBinding.instance.removeObserver(this);
-    
-    // Clean up all timers for better performance
+      // Clean up all timers for better performance
     _loadingTimeoutTimer?.cancel();
     _autoCollapseTimer?.cancel();
     _loadingTimer?.cancel();
     _hideTimer?.cancel();
     _urlBarIdleTimer?.cancel();
+    _urlSyncTimer?.cancel(); // Clean up URL sync timer
     _developerModeTimer?.cancel();
     
     // Clean up debouncers
     _debouncer.dispose();
-    _scrollThrottle.dispose();
-      // Dispose animation controllers
+    _scrollThrottle.dispose();      // Dispose animation controllers
     _panelSlideController.dispose();
     _animationController.dispose();
     _loadingAnimationController.dispose();
     _slideAnimationController.dispose();    _slideUpController.dispose();
     _hideUrlBarController.dispose();
+    _aiActionBarController.dispose();
     
     // Dispose text controllers and focus nodes
     _urlController.dispose();
@@ -955,9 +1001,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     ).animate(CurvedAnimation(
       parent: _slideAnimationController,
       curve: Curves.easeOut, // Simpler curve for better performance
-    ));
-
-    _loadingAnimationController = AnimationController(
+    ));    _loadingAnimationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500), // Optimized for M12
     );
@@ -968,7 +1012,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       parent: _loadingAnimationController,
       curve: Curves.linear,
     ));
-    _loadingAnimationController.repeat();
+    // Don't auto-start the animation here - let _setLoadingState handle it
 
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 200), // Reduced for M12
@@ -978,8 +1022,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       parent: _animationController,
       curve: Curves.easeOut, // Simpler curve
     );
-    
-    // Initialize URL bar animation controller
+      // Initialize URL bar animation controller
     _hideUrlBarController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 180), // Reduced for M12 responsiveness
@@ -989,30 +1032,55 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     ).animate(CurvedAnimation(
       parent: _hideUrlBarController,
       curve: Curves.easeOut, // Simpler curve for M12
-    ));    // Panel animation controllers initialized earlier// Initialize other controllers
+    ));
+    
+    // Initialize AI action bar animation controller
+    _aiActionBarController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+    _aiActionBarAnimation = CurvedAnimation(
+      parent: _aiActionBarController,
+      curve: Curves.easeOutCubic,
+    );
+    _aiActionBarHeightAnimation = Tween<double>(
+      begin: 0.0,
+      end: 60.0, // Height of the expanded AI action bar
+    ).animate(_aiActionBarAnimation);
+
+    // Panel animation controllers initialized earlier    // Initialize other controllers
     _urlController = TextEditingController();
     _urlFocusNode = FocusNode();
+    
+    // FIXED: Improved focus listener for proper URL formatting
     _urlFocusNode.addListener(() {
       if (mounted) {
         setState(() {
           _isUrlBarExpanded = _urlFocusNode.hasFocus;
+            // Close AI action bar when URL bar gains focus
+          if (_urlFocusNode.hasFocus && _isAiActionBarVisible) {
+            _closeAiActionBar();
+          }
           
           // When focus gained, show the full URL
           if (_urlFocusNode.hasFocus) {
             if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
               // Get the current tab's full URL and show it
-              final fullUrl = tabs[currentTabIndex]['url'];
+              final fullUrl = _displayUrl; // Use _displayUrl which is most current
               _urlController.text = fullUrl;
               
-              // Position cursor at the end
-              _urlController.selection = TextSelection.fromPosition(
-                TextPosition(offset: _urlController.text.length),
+              // Select all text for easy editing
+              _urlController.selection = TextSelection(
+                baseOffset: 0,
+                extentOffset: _urlController.text.length,
               );
-            }          } else {
-            // When focus is lost, reformat to domain-only using the most current URL
+            }          
+          } else {
+            // FIXED: When focus is lost, reformat to domain-only using the most current URL
             if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-              // Use _displayUrl which has the most current URL, not the potentially outdated tab URL
-              _urlController.text = _formatUrl(_displayUrl);
+              // Use _displayUrl which has the most current URL
+              final formattedUrl = _formatUrl(_displayUrl);
+              _urlController.text = formattedUrl;
               
               // Position cursor at the end
               _urlController.selection = TextSelection.fromPosition(
@@ -1278,7 +1346,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         androidController.setBackgroundColor(Colors.transparent),
         androidController.setAllowFileAccess(true),
         androidController.setUserAgent(
-          'Solar Mobile 0.2.1'
+          'Mozilla/9999.9999 (Linux; Android 9999; Solar 0.3.0) AppleWebKit/9999.9999 (KHTML, like Gecko) Chrome/9999.9999 Mobile Safari/9999.9999'
         ),
       ]);
       
@@ -1339,7 +1407,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     // Initialize optimization engine
     _optimizationEngine = OptimizationEngine();
       // Modern user agent for best compatibility
-    final userAgent = 'Mozilla/5.0 (Linux; Android 13; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36';
+    final userAgent = 'Mozilla/9999.9999 (Linux; Android 9999; Solar 0.3.0) AppleWebKit/9999.9999 (KHTML, like Gecko) Chrome/9999.9999 Mobile Safari/9999.9999';
       controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted) // CRITICAL: ENABLE JAVASCRIPT      ..setBackgroundColor(Colors.transparent)
       ..enableZoom(true)
@@ -1364,26 +1432,17 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             final String defaultValue = data['defaultValue'] ?? '';
             
             if (type == 'prompt') {
-              // Show app-styled prompt dialog
-              final result = await _showCustomPromptDialog(messageText, defaultValue);
-              // Send result back to web page
-              await controller.runJavaScript('''
-                if (window.handleDialogResult) {
-                  window.handleDialogResult('{"id": "$id", "result": ${result != null ? '"$result"' : 'null'}}');
-                }
-              ''');
+              // FIXED: Use existing prompt dialog method with custom animation
+              _showPromptDialog(messageText, defaultValue, id);
             } else if (type == 'alert') {
-              // Show app-styled alert dialog
-              await _showCustomAlertDialog(messageText);
-              // Send result back to web page
-              await controller.runJavaScript('''
-                if (window.handleDialogResult) {
-                  window.handleDialogResult('{"id": "$id", "result": true}');
-                }
-              ''');
+              // FIXED: Use existing alert dialog method with custom animation
+              _showAlertDialog(messageText, id);
+            } else if (type == 'confirm') {
+              // FIXED: Use existing confirm dialog method with custom animation
+              _showConfirmDialog(messageText, id);
             }
           } catch (e) {
-            print('Error handling dialog: $e');
+            print('DialogHandler error: $e');
           }
         }
       },
@@ -1399,9 +1458,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           await _sendThemeToMainHtml();
         }
       },
-    );
-
-    await controller.addJavaScriptChannel(
+    );    await controller.addJavaScriptChannel(
       'SearchHandler',
       onMessageReceived: (JavaScriptMessage message) {
         if (mounted && message.message.isNotEmpty) {
@@ -1416,11 +1473,39 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           
           controller.loadRequest(Uri.parse(searchUrl));
         }
+      },    );    // <----SEARCH ENGINE HANDLER CHANNEL---->
+    // JavaScript channel for search engine communication with main.html
+    await controller.addJavaScriptChannel(
+      'SearchEngineHandler',
+      onMessageReceived: (JavaScriptMessage message) async {
+        if (mounted && message.message == 'getSearchEngine') {
+          // Send current search engine to main.html
+          await _sendSearchEngineToMainHtml();
+        }
       },
-    );// Load initial tab content efficiently
+    );
+
+    // <----NEWS HANDLER CHANNEL---->
+    // JavaScript channel for news fetching communication with main.html
+    await controller.addJavaScriptChannel(
+      'NewsHandler',
+      onMessageReceived: (JavaScriptMessage message) async {
+        if (mounted && message.message == 'fetchNews') {
+          print('📰 Received fetchNews request from main.html');
+          await _fetchNewsFromFirebase();
+        }
+      },
+    );
+
+    // FIXED: Set navigation delegate BEFORE loading initial content
+    controller.setNavigationDelegate(await _navigationDelegate);
+
+// Load initial tab content efficiently with proper loading animation
     if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
       final initialUrl = tabs[currentTabIndex]['url'];
       if (initialUrl.isNotEmpty && initialUrl != 'about:blank') {
+        // FIXED: Trigger loading animation for initial page load
+        _setLoadingState(true);
         controller.loadRequest(Uri.parse(initialUrl));
         
         // Initialize theme for home page if needed
@@ -1428,10 +1513,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           Future.delayed(const Duration(milliseconds: 300), _initializeThemeForHomePage);
         }
       }
-    }
-
-    // Setup URL monitoring last to avoid conflicts
+    }// Setup URL monitoring last to avoid conflicts
     Future.microtask(() => _setupUrlMonitoring());
+    
+    // Start URL sync to ensure URL bar is always accurate
+    _startUrlSync();
   }
   // Optimized download URL detection for M12
   bool _isDownloadUrl(String url) {
@@ -1457,72 +1543,157 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
            lowerUrl.contains('/download/') ||
            lowerUrl.contains('downloadfile') ||
            lowerUrl.contains('getfile');
-  }
-  Future<void> _setupUrlMonitoring() async {
-    // Simplified URL monitoring for M12 performance
+  }  Future<void> _setupUrlMonitoring() async {
+    // Enhanced URL monitoring for better compatibility with modern websites like Google
     await controller.runJavaScript('''
       (function() {
+        // Clean up any existing monitoring first
+        if (window.cleanupUrlMonitoring) {
+          window.cleanupUrlMonitoring();
+        }
+        
         let lastUrl = window.location.href;
         let lastTitle = document.title;
         let notifyThrottle = null;
+        let checkInterval = null;
+        let isMonitoring = true;
         
         function notifyUrlChanged() {
-          if (notifyThrottle) return; // Prevent spam
+          if (!isMonitoring || notifyThrottle) return; // Prevent spam
           
           const currentUrl = window.location.href;
-          const currentTitle = document.title;
+          const currentTitle = document.title || document.querySelector('title')?.textContent || 'Untitled';
           
           // Only notify on actual changes
           if (currentUrl !== lastUrl || currentTitle !== lastTitle) {
+            console.log('🔄 URL changed from', lastUrl, 'to', currentUrl);
+            console.log('🔄 Title changed from', lastTitle, 'to', currentTitle);
+            
             if (window.UrlChanged && window.UrlChanged.postMessage) {
-              window.UrlChanged.postMessage(JSON.stringify({
-                url: currentUrl,
-                title: currentTitle
-              }));
+              try {
+                window.UrlChanged.postMessage(JSON.stringify({
+                  url: currentUrl,
+                  title: currentTitle,
+                  timestamp: Date.now()
+                }));
+              } catch(e) {
+                console.error('Failed to send URL update:', e);
+              }
             }
             
             lastUrl = currentUrl;
             lastTitle = currentTitle;
             
-            // Throttle notifications
+            // Throttle notifications to prevent spam
             notifyThrottle = setTimeout(() => {
               notifyThrottle = null;
-            }, 200);
+            }, 100);
           }
         }
 
-        // Optimized event listeners for M12
-        ['popstate', 'hashchange', 'load'].forEach(event => {
-          window.addEventListener(event, notifyUrlChanged, { passive: true });
+        // Enhanced event listeners for comprehensive coverage
+        const events = ['load', 'popstate', 'hashchange', 'DOMContentLoaded'];
+        events.forEach(event => {
+          window.addEventListener(event, () => {
+            setTimeout(notifyUrlChanged, 50);
+          }, { passive: true });
         });
         
-        // Monitor clicks with throttling
+        // Monitor for DOM changes that indicate navigation (especially for SPAs like Google)
+        let titleObserver = null;
+        let headObserver = null;
+        
+        try {
+          // Watch for title changes specifically
+          const titleElement = document.querySelector('title');
+          if (titleElement) {
+            titleObserver = new MutationObserver(() => {
+              setTimeout(notifyUrlChanged, 50);
+            });
+            titleObserver.observe(titleElement, { childList: true, characterData: true });
+          }
+          
+          // Watch for head changes (new scripts, meta tags, etc.)
+          headObserver = new MutationObserver((mutations) => {
+            let significantChange = false;
+            mutations.forEach((mutation) => {
+              if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach(node => {
+                  if (node.nodeName === 'TITLE' || node.nodeName === 'META' || node.nodeName === 'LINK') {
+                    significantChange = true;
+                  }
+                });
+              }
+            });
+            if (significantChange) {
+              setTimeout(notifyUrlChanged, 100);
+            }
+          });
+          headObserver.observe(document.head, { childList: true, subtree: true });
+        } catch(e) {
+          console.log('MutationObserver setup failed:', e);
+        }
+        
+        // Monitor clicks on links with enhanced targeting
         document.addEventListener('click', function(e) {
-          const link = e.target.closest('a');
-          if (link && link.href) {
-            setTimeout(notifyUrlChanged, 150);
+          const link = e.target.closest('a, button[onclick], [data-href]');
+          if (link) {
+            // Check various ways a navigation might be triggered
+            const href = link.href || link.getAttribute('data-href') || link.getAttribute('onclick');
+            if (href && href !== 'javascript:void(0)' && !href.includes('void(0)')) {
+              setTimeout(notifyUrlChanged, 200);
+            }
           }
         }, { passive: true });
         
-        // Override history methods efficiently
+        // Override history methods comprehensively for SPA navigation
         const originalPushState = history.pushState;
         const originalReplaceState = history.replaceState;
         
         history.pushState = function() {
           originalPushState.apply(this, arguments);
-          setTimeout(notifyUrlChanged, 100);
+          setTimeout(notifyUrlChanged, 25);
         };
         
         history.replaceState = function() {
           originalReplaceState.apply(this, arguments);
-          setTimeout(notifyUrlChanged, 100);
+          setTimeout(notifyUrlChanged, 25);
         };
         
-        // Reduced frequency monitoring for M12
-        setInterval(notifyUrlChanged, 500);
-        notifyUrlChanged(); // Initial check
+        // Regular monitoring with adaptive frequency (reduced for better performance)
+        checkInterval = setInterval(() => {
+          if (isMonitoring) {
+            notifyUrlChanged();
+          }
+        }, 200);
+        
+        // Monitor page visibility changes (important for Google and other SPAs)
+        document.addEventListener('visibilitychange', () => {
+          if (!document.hidden) {
+            setTimeout(notifyUrlChanged, 100);
+          }
+        });
+        
+        // Monitor for focus events that might trigger navigation updates
+        window.addEventListener('focus', () => {
+          setTimeout(notifyUrlChanged, 100);
+        }, { passive: true });
+        
+        // Initial check after a short delay
+        setTimeout(notifyUrlChanged, 150);
+        
+        // Cleanup function
+        window.cleanupUrlMonitoring = function() {
+          isMonitoring = false;
+          if (checkInterval) clearInterval(checkInterval);
+          if (titleObserver) titleObserver.disconnect();
+          if (headObserver) headObserver.disconnect();
+          console.log('🧹 URL monitoring cleaned up');
+        };
+        
+        console.log('🚀 Enhanced URL monitoring initialized for:', window.location.href);
       })();
-    ''');    await controller.addJavaScriptChannel(
+    ''');await controller.addJavaScriptChannel(
       'UrlChanged',
       onMessageReceived: (JavaScriptMessage message) {
         if (!mounted) return;
@@ -1551,10 +1722,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     await Future.delayed(const Duration(milliseconds: 300));
     
     if (!mounted) return;
-    
-    try {
+      try {
       // Send theme specifically to main.html
       await _sendThemeToMainHtml();
+      
+      // Also send search engine and language information
+      await _sendSearchEngineToMainHtml();
+      await _sendLanguageToMainHtml();
       
       // Additional initialization with retry for stability
       await controller.runJavaScript('''
@@ -1602,37 +1776,216 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       // Convert to proper JSON string
       final themeJson = json.encode(themeData);
       
-      print('Sending theme to main.html: $themeJson'); // Debug log
-      
-      // Send theme via multiple methods for compatibility
+      print('Sending theme to main.html: $themeJson'); // Debug log        // Send theme via multiple methods for compatibility
       await controller.runJavaScript('''
         try {
-          console.log('Sending theme data to main.html...');
+          console.log('🎨 Sending theme data to main.html...');
+          
+          // Parse the theme data (it's already a JSON string)
+          const themeData = JSON.parse('$themeJson');
           
           // Method 1: window.postMessage
           if (window.postMessage) {
-            window.postMessage($themeJson, '*');
-            console.log('Theme sent via postMessage');
+            window.postMessage(themeData, '*');
+            console.log('✅ Theme sent via postMessage');
           }
           
           // Method 2: Direct function call if available
           if (typeof applyTheme === 'function') {
-            applyTheme($themeJson);
-            console.log('Theme applied via applyTheme function');
+            applyTheme(themeData);
+            console.log('✅ Theme applied via applyTheme function');
           }
           
-          // Method 3: Dispatch custom event
-          window.dispatchEvent(new CustomEvent('themeUpdate', { detail: $themeJson }));
-          console.log('Theme event dispatched');
+          // Method 3: Custom event
+          window.dispatchEvent(new CustomEvent('themeUpdate', { detail: themeData }));
+          console.log('✅ Theme update event dispatched');
           
         } catch (e) {
-          console.error('Theme update error:', e);
+          console.error('❌ Error sending theme:', e);
         }
       ''');
-    } catch (e) {
+      
+      // Also send current search engine information
+      await _sendSearchEngineToMainHtml();
+      
+      // And send language information
+      await _sendLanguageToMainHtml();
+        } catch (e) {
       print('Error sending theme to main.html: $e');
     }
   }
+
+  // Fetch news from Firebase Storage using proper Uri.parse()
+  Future<void> _fetchNewsFromFirebase() async {
+    if (!mounted) return;
+    
+    try {
+      print('📰 Fetching news from Firebase Storage...');
+      
+      // Use the exact URL from your Firebase Storage with proper Uri.parse()
+      final url = Uri.parse("https://firebasestorage.googleapis.com/v0/b/vertex-ai-1618.firebasestorage.app/o/public-cache%2Fnews.json?alt=media&token=c1553d29-fa55-4520-9bec-e1d3416be62a");
+      final response = await http.get(url);
+      
+      print('📰 News fetch response status: ${response.statusCode}');
+      
+      if (response.statusCode == 200) {
+        // Parse the JSON response
+        final newsData = json.decode(response.body);
+        print('📰 Successfully fetched ${newsData.length} news articles');
+        
+        // Send the news data to main.html
+        final newsJson = json.encode(newsData);
+        await controller.runJavaScript('''
+          try {
+            console.log('📰 Received news data from Flutter:', $newsJson);
+            
+            // Call the renderNews function with the fetched data
+            if (typeof renderNews === 'function') {
+              renderNews($newsJson);
+              console.log('✅ News rendered successfully');
+            } else {
+              console.error('❌ renderNews function not found');
+            }
+            
+            // Also trigger a custom event for any listeners
+            window.dispatchEvent(new CustomEvent('newsUpdate', { detail: $newsJson }));
+            
+          } catch (e) {
+            console.error('❌ Error processing news data:', e);
+          }
+        ''');
+        
+      } else {
+        print('❌ Failed to fetch news: ${response.statusCode} ${response.reasonPhrase}');
+        
+        // Send error message to main.html
+        await controller.runJavaScript('''
+          try {
+            console.error('❌ News fetch failed with status: ${response.statusCode}');
+            
+            // Call the error handling function
+            if (typeof renderNewsError === 'function') {
+              renderNewsError('Failed to load news from server');
+            }
+            
+          } catch (e) {
+            console.error('❌ Error handling news fetch failure:', e);
+          }
+        ''');
+      }
+      
+    } catch (e) {
+      print('❌ Error fetching news from Firebase: $e');
+      
+      // Send error message to main.html
+      try {
+        await controller.runJavaScript('''
+          try {
+            console.error('❌ News fetch error:', '$e');
+            
+            // Call the error handling function
+            if (typeof renderNewsError === 'function') {
+              renderNewsError('Network error while loading news');
+            }
+            
+          } catch (jsError) {
+            console.error('❌ Error handling news fetch error:', jsError);
+          }
+        ''');
+      } catch (jsError) {
+        print('❌ Error sending error message to JavaScript: $jsError');
+      }
+    }
+  }
+
+  // Send search engine data to main.html
+  Future<void> _sendSearchEngineToMainHtml() async {
+    if (!mounted) return;
+    
+    try {
+      final searchEngineData = {
+        'type': 'searchEngine',
+        'engine': currentSearchEngine,
+      };
+      
+      final searchEngineJson = json.encode(searchEngineData);
+        await controller.runJavaScript('''
+        try {
+          console.log('🔍 Sending search engine data to main.html...');
+          
+          // Parse the search engine data
+          const searchEngineData = JSON.parse('$searchEngineJson');
+          
+          if (window.postMessage) {
+            window.postMessage(searchEngineData, '*');
+            console.log('✅ Search engine sent via postMessage');
+          }
+          
+          // Update current search engine and logo directly
+          if (typeof updateSearchEngineLogo === 'function') {
+            currentSearchEngine = '${currentSearchEngine}';
+            updateSearchEngineLogo();
+            console.log('✅ Search engine updated directly to: ${currentSearchEngine}');
+          }
+          
+          // Also dispatch a custom event
+          window.dispatchEvent(new CustomEvent('searchEngineUpdate', { 
+            detail: { engine: '${currentSearchEngine}' } 
+          }));
+          
+        } catch (e) {
+          console.error('❌ Error sending search engine:', e);
+        }
+      ''');
+      
+    } catch (e) {
+      print('Error sending search engine to main.html: $e');
+    }
+  }
+
+  // Send language data to main.html
+  Future<void> _sendLanguageToMainHtml() async {
+    if (!mounted) return;
+    
+    try {
+      // Get current language from app localization
+      String currentLang = 'en'; // Default
+      if (mounted) {
+        final locale = Localizations.localeOf(context);
+        currentLang = locale.languageCode;
+      }
+      
+      final languageData = {
+        'type': 'language',
+        'language': currentLang,
+      };
+      
+      final languageJson = json.encode(languageData);
+      
+      await controller.runJavaScript('''
+        try {
+          console.log('Sending language data to main.html...');
+          
+          if (window.postMessage) {
+            window.postMessage($languageJson, '*');
+            console.log('Language sent via postMessage');
+          }
+          
+          if (typeof updateLocalizedUI === 'function') {
+            currentLanguage = '${currentLang}';
+            updateLocalizedUI();
+            console.log('Language updated directly');
+          }
+          
+        } catch (e) {
+          console.error('Error sending language:', e);
+        }
+      ''');      
+    } catch (e) {
+      print('Error sending language to main.html: $e');
+    }
+  }
+
   // Send theme data to restored tabs
   Future<void> _sendThemeToRestoredTab() async {
     if (!mounted) return;
@@ -1906,26 +2259,36 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         
         return NavigationDecision.navigate;
       },
-      onPageStarted: _handlePageStarted,
-      onPageFinished: (String url) async {
+      onPageStarted: _handlePageStarted,      onPageFinished: (String url) async {
         if (!mounted) return;
         print('=== PAGE FINISHED LOADING ==='); // Debug log
         print('URL: $url'); // Debug log
-        final title = await controller.getTitle() ?? _displayUrl;
-        print('Title: $title'); // Debug log
-        _updateUrl(url);
-        setState(() {
-          isLoading = false;
-          if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {            tabs[currentTabIndex]['title'] = title;
-            tabs[currentTabIndex]['url'] = url;
-          }
-        });
-        // Stop the loading animation
-        _loadingAnimationController.stop();
         
+        // Get title with fallback
+        String? title;
+        try {
+          title = await controller.getTitle();
+          if (title == null || title.isEmpty) {
+            title = _extractDomainFromUrl(url);
+          }
+        } catch (e) {
+          print('Error getting title: $e');
+          title = _extractDomainFromUrl(url);
+        }        print('Title: $title'); // Debug log
+        
+        // FIXED: Stop loading state and animation using centralized method
+        _setLoadingState(false);
+        
+        // Update URL and title using the centralized method
+        _handleUrlUpdate(url, title: title);
+        
+        // Update navigation state and favicon
         await _updateNavigationState();
         await _optimizationEngine.onPageFinishLoad(url);
         await _updateFavicon(url);
+        
+        // Setup URL monitoring for dynamic content changes
+        Future.microtask(() => _setupUrlMonitoring());
         
         print('Calling _saveToHistory...'); // Debug log
         try {
@@ -2125,11 +2488,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     
     // Update URL state
     _handleUrlUpdate(urlToLoad);
-    
-    // Load URL with error handling
+      // Load URL with error handling
     try {
       await controller.loadRequest(Uri.parse(urlToLoad));
     } catch (e) {
+      // FIXED: Use centralized loading state method for proper animation handling
       _setLoadingState(false);
     }
   }
@@ -2236,15 +2599,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     
     // Show confirmation dialog
     showCustomDialog(
-      context: context,
-      title: "Welcome Screen Reset",
-      content: "The welcome screen will be shown on the next app launch. Please restart the app to see the updated privacy policy and terms of service.",
+      context: context,      title: AppLocalizations.of(context)!.welcome_screen_reset,
+      content: AppLocalizations.of(context)!.welcome_screen_reset_message,
       isDarkMode: ThemeManager.getCurrentTheme().isDark,
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
           child: Text(
-            "OK",
+            AppLocalizations.of(context)!.ok,
             style: TextStyle(
               color: ThemeManager.getThemeColors(ThemeManager.getCurrentTheme()).textColor,
               fontWeight: FontWeight.bold,
@@ -2328,7 +2690,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     title: AppLocalizations.of(context)!.tabs,
                     children: [                      _buildSettingsToggle(
                         title: AppLocalizations.of(context)!.keep_tabs_open,
-                        subtitle: "Keep tabs open between sessions",
+                        subtitle: AppLocalizations.of(context)!.keep_tabs_open_description,
                         value: data['keepTabsOpen'] ?? false,
                         onChanged: (value) async {
                           await _setKeepTabsOpenSetting(value);
@@ -2340,11 +2702,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     ],
                   ),
                   _buildSettingsSection(
-                    title: "Developer",
+                    title: AppLocalizations.of(context)!.developer,
                     children: [
                       _buildSettingsItem(
-                        title: "Reset Welcome Screen",
-                        subtitle: "Show welcome screen on next launch",
+                        title: AppLocalizations.of(context)!.reset_welcome_screen,
+                        subtitle: AppLocalizations.of(context)!.show_welcome_screen_next_launch,
                         onTap: () => _resetWelcomeScreen(),
                         isFirst: true,
                         isLast: true,
@@ -2438,18 +2800,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             }
             
             if (mounted) {
-              Navigator.pop(context);
-              showCustomNotification(
+              Navigator.pop(context);              showCustomNotification(
                 context: context,
                 message: AppLocalizations.of(context)!.browser_data_cleared,
-                icon: Icons.check_circle,
-                iconColor: ThemeManager.successColor(),
                 isDarkMode: isDarkMode,
               );
             }
-          },
-          child: const Text(
-            'Clear',
+          },          child: Text(
+            AppLocalizations.of(context)!.clear,
             style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
           ),
         ),
@@ -2768,9 +3126,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             );
           },
         ),
-      ),
-    );
+      ),    );
   }
+  
   void _setSearchEngine(String engine, [StateSetter? setSearchEngineScreenState]) {
     setState(() {
       currentSearchEngine = engine;
@@ -2783,6 +3141,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     SharedPreferences.getInstance().then((prefs) {
       prefs.setString('searchEngine', engine);
     });
+    
+    // Send updated search engine to main.html if it's currently loaded
+    if (_isHomePage(_displayUrl)) {
+      _sendSearchEngineToMainHtml();
+    }
     
     // Callback optimization
     widget.onSearchEngineChange?.call(engine);
@@ -2833,7 +3196,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   _buildSettingsSection(
                     title: AppLocalizations.of(context)!.appearance,
                     children: [                      _buildSettingsItem(
-                        title: 'Theme',
+                        title: AppLocalizations.of(context)!.theme,
                         subtitle: currentThemeName,
                         onTap: () => _showThemeSelection(context, setAppearanceState),
                         isFirst: true,
@@ -2849,26 +3212,17 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   ),
                   _buildSettingsSection(
                     title: AppLocalizations.of(context)!.general,
-                    children: [
-                      _buildSettingsItem(
+                    children: [                      _buildSettingsItem(
                         title: AppLocalizations.of(context)!.classic_navigation,
-                        subtitle: AppLocalizations.of(context)!.classic_navigation_description,
-                        trailing: Switch(
+                        subtitle: AppLocalizations.of(context)!.classic_navigation_description,                        trailing: Switch(
                           value: _isClassicMode,
                           onChanged: (value) {
-                            setState(() {
-                              _isClassicMode = value;
-                              _savePreferences();
-                            });
+                            _toggleClassicMode(value);
                             setAppearanceState(() {});
                           },
                           activeColor: ThemeManager.primaryColor(),
-                        ),
-                        onTap: () {
-                          setState(() {
-                            _isClassicMode = !_isClassicMode;
-                            _savePreferences();
-                          });
+                        ),                        onTap: () {
+                          _toggleClassicMode(!_isClassicMode);
                           setAppearanceState(() {});
                         },
                         isFirst: true,
@@ -3047,29 +3401,29 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   String _getThemeName(ThemeType theme) {
     switch (theme) {
       case ThemeType.system:
-        return 'System';
+        return AppLocalizations.of(context)!.systemTheme;
       case ThemeType.light:
-        return 'Light';
+        return AppLocalizations.of(context)!.lightTheme;
       case ThemeType.dark:
-        return 'Dark';
+        return AppLocalizations.of(context)!.darkTheme;
       case ThemeType.tokyoNight:
-        return 'Tokyo Night';
+        return AppLocalizations.of(context)!.tokyoNightTheme;
       case ThemeType.solarizedLight:
-        return 'Solarized Light';
+        return AppLocalizations.of(context)!.solarizedLightTheme;
       case ThemeType.dracula:
-        return 'Dracula';
+        return AppLocalizations.of(context)!.draculaTheme;
       case ThemeType.nord:
-        return 'Nord Dark';
+        return AppLocalizations.of(context)!.nordTheme;
       case ThemeType.gruvbox:
-        return 'Gruvbox Dark';
+        return AppLocalizations.of(context)!.gruvboxTheme;
       case ThemeType.oneDark:
-        return 'One Dark';
+        return AppLocalizations.of(context)!.oneDarkTheme;
       case ThemeType.catppuccin:
-        return 'Catppuccin';
+        return AppLocalizations.of(context)!.catppuccinTheme;
       case ThemeType.nordLight:
-        return 'Nord Light';
+        return AppLocalizations.of(context)!.nordLightTheme;
       case ThemeType.gruvboxLight:
-        return 'Gruvbox Light';
+        return AppLocalizations.of(context)!.gruvboxLightTheme;
     }
   }
 
@@ -3259,7 +3613,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                 title: AppLocalizations.of(context)!.downloads,
                 children: [                  _buildSettingsToggle(
                     title: AppLocalizations.of(context)!.auto_open_downloads,
-                    subtitle: "Automatically open downloaded files",
+                    subtitle: AppLocalizations.of(context)!.automatically_open_downloaded_files,
                     value: _autoOpenDownloads,
                     onChanged: (value) async {
                       final prefs = await SharedPreferences.getInstance();
@@ -3272,7 +3626,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   ),
                   _buildSettingsToggle(
                     title: AppLocalizations.of(context)!.ask_download_location,
-                    subtitle: "Ask where to save files before downloading",
+                    subtitle: AppLocalizations.of(context)!.ask_where_to_save_files,
                     value: _askDownloadLocation,
                     onChanged: (value) async {
                       final prefs = await SharedPreferences.getInstance();
@@ -3365,25 +3719,23 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
 
   // <----NAVIGATION BAR CUSTOMIZATION DIALOG---->
-  void _showNavigationCustomization() {
-    showCustomDialog(
+  void _showNavigationCustomization() {    showCustomDialog(
       context: context,
-      title: 'Customize Navigation',
+      title: AppLocalizations.of(context)!.customize_navigation,
       isDarkMode: isDarkMode,
       customContent: StatefulBuilder(
-        builder: (context, setState) {
-          final availableButtons = {
-            'back': {'icon': Icons.chevron_left_rounded, 'label': 'Back'},
-            'forward': {'icon': Icons.chevron_right_rounded, 'label': 'Forward'},
-            'home': {'icon': Icons.home_rounded, 'label': 'Home'},
-            'new_tab': {'icon': Icons.add_rounded, 'label': 'New Tab'},
-            'tabs': {'icon': Icons.tab_rounded, 'label': 'Tabs'},
-            'bookmark': {'icon': isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded, 'label': 'Bookmark'},
-            'bookmarks': {'icon': Icons.bookmark_border_rounded, 'label': 'Bookmarks'},
-            'share': {'icon': Icons.ios_share_rounded, 'label': 'Share'},
-            'settings': {'icon': Icons.settings_rounded, 'label': 'Settings'},
-            'downloads': {'icon': Icons.download_rounded, 'label': 'Downloads'},
-            'menu': {'icon': Icons.menu, 'label': 'Menu'},
+        builder: (context, setState) {          final availableButtons = {
+            'back': {'icon': Icons.chevron_left_rounded, 'label': AppLocalizations.of(context)!.button_back},
+            'forward': {'icon': Icons.chevron_right_rounded, 'label': AppLocalizations.of(context)!.button_forward},
+            'home': {'icon': Icons.home_rounded, 'label': AppLocalizations.of(context)!.home},
+            'new_tab': {'icon': Icons.add_rounded, 'label': AppLocalizations.of(context)!.new_tab},
+            'tabs': {'icon': Icons.tab_rounded, 'label': AppLocalizations.of(context)!.tabs},
+            'bookmark': {'icon': isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded, 'label': AppLocalizations.of(context)!.button_bookmark},
+            'bookmarks': {'icon': Icons.bookmark_border_rounded, 'label': AppLocalizations.of(context)!.button_bookmarks},
+            'share': {'icon': Icons.ios_share_rounded, 'label': AppLocalizations.of(context)!.button_share},
+            'settings': {'icon': Icons.settings_rounded, 'label': AppLocalizations.of(context)!.settings},
+            'downloads': {'icon': Icons.download_rounded, 'label': AppLocalizations.of(context)!.downloads},
+            'menu': {'icon': Icons.menu, 'label': AppLocalizations.of(context)!.button_menu},
           };
 
           return Container(
@@ -3391,9 +3743,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             constraints: BoxConstraints(maxHeight: 500),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Current Navigation Bar:',
+              children: [                Text(
+                  AppLocalizations.of(context)!.current_navigation_bar,
                   style: TextStyle(
                     color: ThemeManager.textColor(),
                     fontSize: 16,
@@ -3509,7 +3860,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                 ),
                 SizedBox(height: 20),
                 Text(
-                  'Available Buttons:',
+                  AppLocalizations.of(context)!.available_buttons,
                   style: TextStyle(
                     color: ThemeManager.textColor(),
                     fontSize: 16,
@@ -3612,16 +3963,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               _customNavButtons = ['back', 'forward', 'bookmark', 'share', 'menu'];
             });
             Navigator.pop(context);
-          },
-          child: Text(
-            'Reset',
+          },          child: Text(
+            AppLocalizations.of(context)!.reset,
             style: TextStyle(color: ThemeManager.textSecondaryColor()),
           ),
-        ),
-        TextButton(
+        ),        TextButton(
           onPressed: () => Navigator.pop(context),
           child: Text(
-            'Cancel',
+            AppLocalizations.of(context)!.cancel,
             style: TextStyle(color: ThemeManager.textSecondaryColor()),
           ),
         ),
@@ -3631,7 +3980,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             Navigator.pop(context);
           },
           child: Text(
-            'Save',
+            AppLocalizations.of(context)!.add,
             style: TextStyle(color: ThemeManager.primaryColor()),
           ),
         ),
@@ -3891,7 +4240,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           ),
         ),
       ),
-    );  }  Widget _buildPanelHeader(String title, {VoidCallback? onBack, Widget? trailing}) {
+    );
+  }
+  
+  Widget _buildPanelHeader(String title, {VoidCallback? onBack, Widget? trailing}) {
     final statusBarHeight = MediaQuery.of(context).padding.top;
 
     String getLocalizedTitle() {
@@ -4161,9 +4513,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       String host = uri.host;
       return host.startsWith('www.') ? host.substring(4) : host;
     } catch (e) {
-      return url;
-    }
-  }  void _switchTab(int index) {
+      return url;    }
+  }
+  
+  void _switchTab(int index) {
     if (index < 0 || index >= tabs.length) return;
     
     setState(() {
@@ -4952,13 +5305,15 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         final androidController = controller.platform as webview_flutter_android.AndroidWebViewController;
         await androidController.setMediaPlaybackRequiresUserGesture(true);
       }
-    } catch (e) {
-      // Silently handle JavaScript errors
-    }  }  Widget _buildOverlayPanel() {
+    } catch (e) {      // Silently handle JavaScript errors
+    }
+  }
+
+  Widget _buildOverlayPanel() {
     final bool isPanelVisible = isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible || isHistoryVisible;
     
     if (!isPanelVisible) return const SizedBox.shrink();
-
+    
     return Positioned(
       top: 0,
       left: 0,
@@ -4966,32 +5321,43 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       bottom: 0,
       child: Material(
         color: Colors.transparent,
-        child: Container(          color: ThemeManager.backgroundColor().withOpacity(0.85),
-          child: SlideTransition(
-            position: _panelSlideAnimation,
-            child: GestureDetector(
-              onVerticalDragUpdate: (details) {
-                if (details.delta.dy > 8) {
-                  _hidePanelWithAnimation();
-                }
-              },
-              child: isTabsVisible 
-                  ? _buildTabsPanel() 
-                  : isSettingsVisible
-                    ? _buildSettingsPanel()
+        child: GestureDetector(
+          onTap: () {
+            // Close panel when tapping on backdrop
+            _hidePanelWithAnimation();          },
+          child: Container(
+            color: ThemeManager.backgroundColor().withOpacity(0.85),
+            child: SlideTransition(
+              position: _panelSlideAnimation,
+              child: GestureDetector(
+                onTap: () {
+                  // Prevent closing when tapping on the panel content itself
+                },                onVerticalDragUpdate: (details) {
+                  if (details.delta.dy > 8) {
+                    _hidePanelWithAnimation();
+                  }
+                },
+                child: isTabsVisible 
+                    ? _buildTabsPanel()
+                    : isSettingsVisible
+                      ? _buildSettingsPanel()
                     : isBookmarksVisible
                       ? _buildBookmarksPanel()
                     : isHistoryVisible
                       ? _buildHistoryPanel()
-                      : isDownloadsVisible
+                    : isDownloadsVisible
                         ? _buildDownloadsPanel()
                         : Container(),
+                ),
+              ),
             ),
           ),
         ),
-      ),
-    );
-  }Widget _buildTabsPanel() {
+      );
+    
+  }
+  
+  Widget _buildTabsPanel() {
     final displayTabs = tabs.where((tab) => 
       !tab['url'].startsWith('file:///') && 
       !tab['url'].startsWith('about:blank') && 
@@ -5270,16 +5636,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           backgroundColor: ThemeManager.surfaceColor(),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text(
-            'Close Group',
+          ),          title: Text(
+            AppLocalizations.of(context)!.close_group,
             style: TextStyle(
               color: ThemeManager.textColor(),
               fontWeight: FontWeight.w600,
             ),
-          ),
-          content: Text(
-            'Close all tabs in "${group.name}"? This action cannot be undone.',
+          ),content: Text(
+            AppLocalizations.of(context)!.close_all_tabs_in_group(group.name),
             style: TextStyle(
               color: ThemeManager.textSecondaryColor(),
             ),
@@ -5306,9 +5670,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     _urlController.text = _formatUrl(tabs[currentTabIndex]['url']);
                   }
                 });
-              },
-              child: Text(
-                'Close Group',
+              },              child: Text(
+                AppLocalizations.of(context)!.close_group,
                 style: TextStyle(
                   color: Colors.red,
                   fontWeight: FontWeight.w600,
@@ -5366,7 +5729,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           ],
         ),
       ),
-    );  }  Widget _buildHistoryPanel() {
+    );
+  }
+  
+  Widget _buildHistoryPanel() {
     print('Building history panel with ${_loadedHistory.length} items');
     print('History panel theme colors - bg: ${ThemeManager.backgroundColor()}, text: ${ThemeManager.textColor()}');
     
@@ -5420,7 +5786,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                       size: 20,
                     ),
                     onPressed: () => _showClearHistoryDialog(),
-                    tooltip: AppLocalizations.of(context)!.clear_history,
+                    tooltip: AppLocalizations.of(context)!.clear_all_history,
                   ),
                 ],
               ),
@@ -5595,7 +5961,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     });
 
     await prefs.setStringList('history', history);
-  }  Widget _buildSettingsPanel() {
+  }
+  
+  Widget _buildSettingsPanel() {
     return Material(
       color: ThemeManager.backgroundColor(),
       child: Column(
@@ -5658,10 +6026,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                         activeColor: ThemeManager.primaryColor(),
                       ),
                     ),
-                    if (_isClassicMode)
-                      _buildSettingsItem(
-                        title: 'Customize Navigation',
-                        subtitle: 'Rearrange navigation buttons',
+                    if (_isClassicMode)                      _buildSettingsItem(
+                        title: AppLocalizations.of(context)!.customize_navigation,
+                        subtitle: AppLocalizations.of(context)!.rearrange_navigation_buttons,
                         onTap: () => _showNavigationCustomization(),
                         isLast: true,
                       ),
@@ -5672,10 +6039,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                         isLast: true,
                       ),
                   ],
-                ),
-                // AI Section
+                ),                // AI Section
                 _buildSettingsSection(
-                  title: 'AI',
+                  title: AppLocalizations.of(context)!.ai,
                   children: [
                     _buildSettingsItem(
                       title: AppLocalizations.of(context)!.summary_length,
@@ -5689,10 +6055,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                       isLast: true,
                     ),
                   ],
-                ),
-                // Other Section
+                ),                // Other Section
                 _buildSettingsSection(
-                  title: 'Other',
+                  title: AppLocalizations.of(context)!.other,
                   children: [
                     _buildSettingsButton('help', () => _showHelpPage()),
                     _buildSettingsButton('rate_us', () => _showRateUs()),
@@ -5752,9 +6117,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 6),
-                          const Text(
-                            'Tap to check permission status',
+                          const SizedBox(height: 6),                          Text(
+                            AppLocalizations.of(context)!.tap_to_check_permission_status,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 13,
@@ -5776,7 +6140,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                         ),
                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       ),
-                      child: const Text('Check'),
+                      child: Text(AppLocalizations.of(context)!.check),
                     ),
                   ],
                 ),
@@ -5982,13 +6346,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           ),
         ),
       ],
-    );  }
-
-  Future<void> _showClearDownloadsConfirmation() async {
+    );  }  Future<void> _showClearDownloadsConfirmation() async {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: ThemeManager.backgroundColor(),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(
           AppLocalizations.of(context)!.clear_downloads_history,
           style: TextStyle(
@@ -6033,57 +6396,43 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           ),
         ],
       ),
-    );  }
-
-  Future<void> _showClearHistoryDialog() async {
-    showDialog(
+    );  }  Future<void> _showClearHistoryDialog() async {
+    showCustomDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: ThemeManager.backgroundColor(),
-        title: Text(
-          AppLocalizations.of(context)!.clear_history,
-          style: TextStyle(
-            color: ThemeManager.textColor(),
-          ),
-        ),
-        content: Text(
-          "This will clear all your browsing history. This action cannot be undone.",
-          style: TextStyle(
-            color: ThemeManager.textSecondaryColor(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              AppLocalizations.of(context)!.cancel,
-              style: TextStyle(
-                color: ThemeManager.textSecondaryColor(),
-              ),
+      title: AppLocalizations.of(context)!.clear_all_history,
+      isDarkMode: ThemeManager.getCurrentTheme().isDark,
+      content: AppLocalizations.of(context)!.clear_all_history_confirm,
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            AppLocalizations.of(context)!.cancel,
+            style: TextStyle(
+              color: ThemeManager.textSecondaryColor(),
             ),
           ),
-          TextButton(
-            onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setStringList('history', []);
-              setState(() {
-                _loadedHistory.clear();
-              });
-              Navigator.pop(context);
-              _showNotification(
-                Text("History cleared"),
-                duration: const Duration(seconds: 2),
-              );
-            },
-            child: Text(
-              AppLocalizations.of(context)!.clear,
-              style: TextStyle(
-                color: Colors.red,
-              ),
+        ),
+        TextButton(
+          onPressed: () async {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setStringList('history', []);
+            setState(() {
+              _loadedHistory.clear();
+            });
+            Navigator.pop(context);
+            _showNotification(
+              Text(AppLocalizations.of(context)!.history_cleared),
+              duration: const Duration(seconds: 2),
+            );
+          },          child: Text(
+            AppLocalizations.of(context)!.clear,
+            style: TextStyle(
+              color: Colors.red,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -6105,12 +6454,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     
     // Load homepage
     await controller.loadRequest(Uri.parse('file:///android_asset/main.html'));
-    
-    showCustomNotification(
+      showCustomNotification(
       context: context,
       message: AppLocalizations.of(context)!.reset_complete,
-      icon: Icons.check_circle,
-      iconColor: ThemeManager.successColor(),
       isDarkMode: isDarkMode,
     );
     
@@ -6248,7 +6594,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           const SizedBox(width: 16),
           Expanded(
             child: Text(
-              'Bookmark removed',
+              AppLocalizations.of(context)!.bookmark_removed,
               style: TextStyle(
                 color: ThemeManager.textColor(),
               ),
@@ -6286,7 +6632,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     final url = await controller.currentUrl();
     if (url == null) return;
     
-    final title = await controller.getTitle() ?? 'Untitled';
+    final title = await controller.getTitle() ?? AppLocalizations.of(context)!.untitled;
     
     // Check if URL already exists in bookmarks - using local state for speed
     bool isBookmarked = bookmarks.any((item) => item['url'] == url);
@@ -6361,9 +6707,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             _displayUrl = url;
           });
         }
-      });
-    }
-  }  void _addNewTab({String? url, bool isIncognito = false, String? groupId}) {
+      });    }
+  }
+  
+  void _addNewTab({String? url, bool isIncognito = false, String? groupId}) {
     final targetUrl = url ?? _homeUrl;
     final newTab = {
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
@@ -6473,90 +6820,213 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       return url;
     }
   }
+  
   Widget _buildUrlBar() {
     final displayUrl = _urlFocusNode.hasFocus ? _displayUrl : _formatUrl(_displayUrl);
     final width = MediaQuery.of(context).size.width - 32;
     final keyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+    final isHomePage = _isHomePage(_displayUrl);
     
     return Container(
       width: width,
       margin: EdgeInsets.only(bottom: _isClassicMode ? 0 : 6),
       child: SlideTransition(
-        position: _hideUrlBarAnimation,
-        child: _isClassicMode 
-          ? _buildUrlBarContent(width, keyboardVisible)
-          : GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onHorizontalDragUpdate: (details) {
-                setState(() {
-                  _urlBarSlideOffset += details.delta.dx;
-                });
-              },
-              onHorizontalDragEnd: (details) async {
-                const threshold = 40.0; // Reduced threshold for M12
-                const velocity = 600.0; // Reduced velocity for M12
-                
-                if (_urlBarSlideOffset.abs() > threshold || details.primaryVelocity!.abs() > velocity) {
-                  if ((_urlBarSlideOffset < 0 || details.primaryVelocity! < -velocity) && canGoBack) {
+        position: _hideUrlBarAnimation,        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [            // URL bar and background logic
+            _isClassicMode 
+              ? AnimatedBuilder(
+                  animation: _aiActionBarAnimation,
+                  builder: (context, child) {
+                    final isExpanded = _isAiActionBarVisible && !isHomePage;
+                    final expandedHeight = isExpanded ? _aiActionBarHeightAnimation.value : 0;                    final animationProgress = _aiActionBarAnimation.value;
+                      return Container(
+                      width: width,
+                      height: 44 + expandedHeight.toDouble(),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(24),
+                        color: (keyboardVisible) 
+                            ? ThemeManager.surfaceColor().withOpacity(0.9)
+                            : ThemeManager.surfaceColor().withOpacity(0.8),
+                        border: Border.all(
+                          color: ThemeManager.textColor().withOpacity(0.08),
+                          width: 1,
+                        ),
+                      ),
+                      child: Stack(
+                        children: [
+                          // AI action bar content at top (inside the container)
+                          if (expandedHeight > 0)
+                            Positioned(
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              height: expandedHeight.toDouble(),
+                              child: Opacity(
+                                opacity: animationProgress,
+                                child: _buildAiActionBarContent(width),
+                              ),
+                            ),
+                          // URL bar content at bottom with dynamic border radius
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            child: _buildUrlBarContent(width, keyboardVisible, isExpanded),
+                          ),
+                          // Loading animation border overlay
+                          if (isLoading)
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: AnimatedBuilder(
+                                  animation: _loadingAnimation,
+                                  builder: (context, child) {
+                                    return CustomPaint(
+                                      painter: LoadingBorderPainter(
+                                        progress: _loadingAnimation.value,
+                                        color: ThemeManager.primaryColor(),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    );
+                  },
+                )
+              : GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onHorizontalDragUpdate: (details) {
                     setState(() {
-                      _urlBarSlideOffset = -MediaQuery.of(context).size.width;
+                      _urlBarSlideOffset += details.delta.dx;
                     });
-                    await Future.delayed(const Duration(milliseconds: 100)); // Reduced delay
-                    await _goBack();
-                  } else if ((_urlBarSlideOffset > 0 || details.primaryVelocity! > velocity) && canGoForward) {
+                  },
+                  onHorizontalDragEnd: (details) async {
+                    const threshold = 40.0; // Reduced threshold for M12
+                    const velocity = 600.0; // Reduced velocity for M12
+                    
+                    if (_urlBarSlideOffset.abs() > threshold || details.primaryVelocity!.abs() > velocity) {
+                      if ((_urlBarSlideOffset < 0 || details.primaryVelocity! < -velocity) && canGoBack) {
+                        setState(() {
+                          _urlBarSlideOffset = -MediaQuery.of(context).size.width;
+                        });
+                        await Future.delayed(const Duration(milliseconds: 100)); // Reduced delay
+                        await _goBack();
+                      } else if ((_urlBarSlideOffset > 0 || details.primaryVelocity! > velocity) && canGoForward) {
+                        setState(() {
+                          _urlBarSlideOffset = MediaQuery.of(context).size.width;
+                        });
+                        await Future.delayed(const Duration(milliseconds: 100)); // Reduced delay
+                        await _goForward();
+                      }
+                    }
+                    
                     setState(() {
-                      _urlBarSlideOffset = MediaQuery.of(context).size.width;
+                      _urlBarSlideOffset = 0;
                     });
-                    await Future.delayed(const Duration(milliseconds: 100)); // Reduced delay
-                    await _goForward();
-                  }
-                }
-                
-                setState(() {
-                  _urlBarSlideOffset = 0;
-                });
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 150), // Reduced from 200ms
-                curve: Curves.easeOut, // Simplified curve
-                transform: Matrix4.translationValues(_urlBarSlideOffset, 0, 0),
-                child: _buildUrlBarContent(width, keyboardVisible)
-              ),
-            ),
+                  },                  child: AnimatedBuilder(
+                    animation: _aiActionBarAnimation,
+                    builder: (context, child) {
+                      final isExpanded = _isAiActionBarVisible && !isHomePage;
+                      final expandedHeight = isExpanded ? _aiActionBarHeightAnimation.value : 0;
+                      final animationProgress = _aiActionBarAnimation.value;
+                      
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        transform: Matrix4.translationValues(_urlBarSlideOffset, 0, 0),
+                        height: 44 + expandedHeight.toDouble(),                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(24),
+                          color: (keyboardVisible) 
+                              ? ThemeManager.surfaceColor().withOpacity(0.9)
+                              : ThemeManager.surfaceColor().withOpacity(0.8),
+                          border: Border.all(
+                            color: ThemeManager.textColor().withOpacity(0.08),
+                            width: 1,
+                          ),
+                        ),child: Stack(
+                          children: [
+                            // AI action bar content at top (inside the container)
+                            if (expandedHeight > 0)
+                              Positioned(
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                height: expandedHeight.toDouble(),
+                                child: Opacity(
+                                  opacity: animationProgress,
+                                  child: _buildAiActionBarContent(width),
+                                ),
+                              ),
+                            // URL bar content at bottom with dynamic border radius
+                            Positioned(
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              child: _buildUrlBarContent(width, keyboardVisible, isExpanded),
+                            ),
+                            // Loading animation border overlay
+                            if (isLoading)
+                              Positioned.fill(
+                                child: IgnorePointer(
+                                  child: AnimatedBuilder(
+                                    animation: _loadingAnimation,
+                                    builder: (context, child) {
+                                      return CustomPaint(
+                                        painter: LoadingBorderPainter(
+                                          progress: _loadingAnimation.value,
+                                          color: ThemeManager.primaryColor(),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+          ],
+        ),
       ),
     );
-  }  Widget _buildUrlBarContent(double width, bool keyboardVisible) {
-    final isHomePage = _displayUrl == 'file:///android_asset/main.html' || _displayUrl == _homeUrl;
+  }
+  
+  Widget _buildUrlBarContent(double width, bool keyboardVisible, [bool isExpanded = false]) {
+    final isHomePage = _isHomePage(_displayUrl); // Use the centralized homepage detection
+    final urlStatus = _getUrlBarStatus(_displayUrl);
     
-    return AnimatedBuilder(
+    // Dynamic border radius based on AI Action Bar expansion
+    final borderRadius = isExpanded 
+        ? const BorderRadius.only(
+            bottomLeft: Radius.circular(24),
+            bottomRight: Radius.circular(24),
+            topLeft: Radius.circular(0),
+            topRight: Radius.circular(0),
+          )
+        : BorderRadius.circular(24);
+      return AnimatedBuilder(
       animation: _urlBarBorderAnimation,
       builder: (context, child) {
         return ClipRRect(
-          borderRadius: _urlBarBorderAnimation.value,
-          child: Stack(
-            children: [
-              Container(
-                width: width,
-                height: 44, // Reduced from 48
-                decoration: BoxDecoration(
-                  borderRadius: _urlBarBorderAnimation.value,
-                  color: (_isClassicMode || keyboardVisible) 
-                      ? ThemeManager.surfaceColor().withOpacity(0.9)
-                      : ThemeManager.backgroundColor().withOpacity(0.8), // Simplified without blur
-                  border: Border.all(
-                    color: ThemeManager.textColor().withOpacity(0.08),
-                    width: 1,
-                  ),
-                ),                child: Material(
+          borderRadius: borderRadius,
+          child: Container(
+            width: width,
+            height: 44, // Fixed height for URL bar content only
+            child: Material(
               type: MaterialType.transparency,
               child: Row(
                 children: [
-                  const SizedBox(width: 14),
+                  const SizedBox(width: 14),                  // FIXED: Proper status indicator based on URL type with theme colors
                   Icon(
-                    isHomePage ? Icons.home_rounded :
-                    (isSecure ? Icons.shield : Icons.warning_amber_rounded),
+                    urlStatus == 'home' ? Icons.home_rounded :
+                    urlStatus == 'secure' ? Icons.shield : Icons.warning_amber_rounded,
                     size: 14,
-                    color: ThemeManager.textColor(),
+                    color: urlStatus == 'home' ? ThemeManager.primaryColor() :
+                           urlStatus == 'secure' ? ThemeManager.primaryColor() : ThemeManager.textSecondaryColor(),
                   ),
                   Expanded(
                     child: TextField(
@@ -6577,9 +7047,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                       ),
                       onTap: () {
-                        if (!_urlFocusNode.hasFocus) {
-                          setState(() {
-                            if (_displayUrl == 'file:///android_asset/main.html' || _displayUrl == _homeUrl) {
+                        if (!_urlFocusNode.hasFocus) {                          setState(() {
+                            if (_isHomePage(_displayUrl)) {
                               _urlController.text = '';
                             } else {
                               _urlController.text = _displayUrl;
@@ -6595,8 +7064,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                       onSubmitted: (value) {
                         _loadUrl(value);
                         _urlFocusNode.unfocus();                      },
-                    ),                  ),
-                  // Hide AI/Awesome button on home page
+                    ),                  ),                  // Hide AI/Awesome button on home page
                   if (!isHomePage)
                     Padding(
                       padding: const EdgeInsets.only(left: 1.0),
@@ -6604,11 +7072,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                         icon: Icon(
                           Icons.auto_awesome,
                           size: 18,
-                          color: ThemeManager.textColor(),
+                          color: _isAiActionBarVisible 
+                            ? ThemeManager.primaryColor()
+                            : ThemeManager.textColor(),
                         ),
-                        onPressed: () {
-                          // Panel functionality removed - button does nothing
-                        },
+                        onPressed: _toggleAiActionBar,
                       ),
                     ),
                   IconButton(
@@ -6625,36 +7093,273 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                           });
                         }
                       : () {
-                          controller.reload();
-                        },
-                  ),
-                ],
+                          controller.reload();                        },                  ),                ],
               ),
             ),
-              ),
-              // Loading animation border
-              if (isLoading)
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: AnimatedBuilder(
-                      animation: _loadingAnimation,
-                      builder: (context, child) {
-                        return CustomPaint(
-                          painter: LoadingBorderPainter(
-                            progress: _loadingAnimation.value,
-                            color: ThemeManager.primaryColor(),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-            ],
           ),
         );
       },
     );
   }
+  // <----AI ACTION BAR METHODS---->
+  void _toggleAiActionBar() {
+    setState(() {
+      _isAiActionBarVisible = !_isAiActionBarVisible;
+    });
+    
+    if (_isAiActionBarVisible) {
+      _aiActionBarController.forward();
+    } else {
+      _aiActionBarController.reverse();
+    }
+  }
+
+  void _closeAiActionBar() {
+    if (_isAiActionBarVisible) {
+      setState(() {
+        _isAiActionBarVisible = false;
+      });
+      _aiActionBarController.reverse();
+    }  }
+  void _handleSummarize() async {
+    try {
+      // Close the action bar first
+      _closeAiActionBar();
+      
+      // Get current page URL and content
+      final currentUrl = await controller.currentUrl();
+      if (currentUrl == null || currentUrl.isEmpty) {        showCustomNotification(
+          context: context,
+          message: AppLocalizations.of(context)!.no_page_to_summarize,
+          icon: Icons.warning,
+          iconColor: Colors.orange,
+          isDarkMode: isDarkMode,
+        );
+        return;
+      }
+      
+      // Extract page content for summarization
+      String pageContent = '';
+      try {
+        pageContent = await controller.runJavaScriptReturningResult(
+          'document.body.innerText || document.body.textContent || ""'
+        ) as String;
+      } catch (e) {
+        // Fallback - try to get any text content
+        try {
+          pageContent = await controller.runJavaScriptReturningResult(
+            'document.documentElement.innerText || document.documentElement.textContent || ""'
+          ) as String;
+        } catch (e2) {
+          pageContent = '';
+        }
+      }
+      
+      if (pageContent.trim().isEmpty) {        showCustomNotification(
+          context: context,
+          message: AppLocalizations.of(context)!.no_content_found_to_summarize,
+          icon: Icons.warning,
+          iconColor: Colors.orange,
+          isDarkMode: isDarkMode,
+        );
+        return;
+      }
+      
+      // Show summary modal with actual content
+      _showSummaryModal(currentUrl, pageContent);
+      
+    } catch (e) {      showCustomNotification(
+        context: context,
+        message: AppLocalizations.of(context)!.failed_to_generate_summary,
+        icon: Icons.error,
+        iconColor: Colors.red,
+        isDarkMode: isDarkMode,
+      );
+    }
+  }
+  void _handlePreviousSummaries() {
+    // Close the action bar first
+    _closeAiActionBar();
+    
+    // Show previous summaries modal
+    _showPreviousSummariesModal();
+  }
+
+  void _handleOutsideTap() {
+    // Only hide AI action bar if it's visible
+    if (_isAiActionBarVisible) {
+      _closeAiActionBar();
+    }
+  }
+
+  // Helper method to get favicon URL
+  Future<String?> _getFaviconUrl(String pageUrl) async {
+    try {
+      final faviconUrl = await controller.runJavaScriptReturningResult('''
+        (function() {
+          var link = document.querySelector("link[rel*='icon']");
+          if (link && link.href) {
+            return link.href;
+          }
+          // Fallback to standard favicon.ico
+          var url = new URL(window.location.href);
+          return url.origin + '/favicon.ico';
+        })();
+      ''') as String?;
+      return faviconUrl?.isNotEmpty == true ? faviconUrl : null;
+    } catch (e) {
+      // Return standard favicon path as fallback
+      try {
+        final uri = Uri.parse(pageUrl);
+        return '${uri.scheme}://${uri.host}/favicon.ico';
+      } catch (e2) {
+        return null;
+      }    }
+  }
+  
+  void _handlePWA() async {
+    try {
+      // Close the action bar first
+      _closeAiActionBar();
+      
+      final currentUrl = await controller.currentUrl();
+      if (currentUrl == null || currentUrl.isEmpty) {
+        showCustomNotification(
+          context: context,
+          message: "No page to install as PWA",
+          isDarkMode: ThemeManager.getCurrentTheme().isDark,
+        );
+        return;
+      }
+      
+      // Get page title for PWA name
+      String pageTitle = await controller.getTitle() ?? "Web App";
+      
+      // Get favicon for better PWA experience
+      String? faviconUrl = await _getFaviconUrl(currentUrl);
+      
+      // Direct PWA installation using the correct method
+      final success = await PWAManager.savePWA(
+        context,
+        currentUrl,
+        pageTitle,
+        faviconUrl,
+      );
+      
+      if (success) {
+        showCustomNotification(
+          context: context,
+          message: "PWA installed: $pageTitle",
+          icon: Icons.check_circle,
+          iconColor: Colors.green,
+          isDarkMode: ThemeManager.getCurrentTheme().isDark,
+        );
+      } else {
+        showCustomNotification(
+          context: context,
+          message: "Failed to install PWA",
+          icon: Icons.error,
+          iconColor: Colors.red,
+          isDarkMode: ThemeManager.getCurrentTheme().isDark,
+        );
+      }
+      
+    } catch (e) {
+      showCustomNotification(
+        context: context,
+        message: "Failed to install PWA: ${e.toString()}",
+        icon: Icons.error,
+        iconColor: Colors.red,
+        isDarkMode: ThemeManager.getCurrentTheme().isDark,
+      );
+    }
+  }Widget _buildAiActionBarContent(double width) {
+    return AnimatedBuilder(
+      animation: _aiActionBarHeightAnimation,
+      builder: (context, child) {
+        return Container(
+          width: width,
+          height: _aiActionBarHeightAnimation.value,
+          // Remove decoration - let parent handle all styling
+          padding: const EdgeInsets.all(8), // Add padding inside the container
+          child: _aiActionBarHeightAnimation.value > 30 
+            ? Row(
+                children: [
+                  Expanded(                    child: _buildAiActionButton(
+                      icon: Icons.summarize_outlined,
+                      label: AppLocalizations.of(context)!.summarize,
+                      onTap: _handleSummarize,
+                    ),
+                  ),
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: ThemeManager.textColor().withOpacity(0.1),
+                  ),
+                  Expanded(                    child: _buildAiActionButton(
+                      icon: Icons.history_outlined,
+                      label: AppLocalizations.of(context)!.previous_summaries,
+                      onTap: _handlePreviousSummaries,
+                    ),
+                  ),
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: ThemeManager.textColor().withOpacity(0.1),
+                  ),
+                  Expanded(                    child: _buildAiActionButton(
+                      icon: Icons.install_mobile_outlined,
+                      label: AppLocalizations.of(context)!.pwa,
+                      onTap: _handlePWA,
+                    ),
+                  ),
+                ],
+              )
+            : const SizedBox.shrink(),
+        );
+      },
+    );
+  }
+
+  Widget _buildAiActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 20,
+                color: ThemeManager.textColor(),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: TextStyle(
+                  color: ThemeManager.textColor(),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<WebViewController> _createWebViewController() async {
     final controller = await _initializeWebViewController();
     
@@ -6666,9 +7371,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     }
     
     return controller;
-  }
-  DateTime? _lastBackPressTime;
+  }  DateTime? _lastBackPressTime;
   Future<bool> _onWillPop() async {
+    // Close AI action bar first if it's visible
+    if (_isAiActionBarVisible) {
+      _toggleAiActionBar();
+      return false;
+    }
+    
     // Fast panel check - only check visible panels
     if (isTabsVisible || isSettingsVisible || isBookmarksVisible || isDownloadsVisible || isHistoryVisible) {
       _hidePanelWithAnimation();
@@ -6681,14 +7391,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     }
 
     if (_lastBackPressTime == null || 
-        DateTime.now().difference(_lastBackPressTime!) > const Duration(seconds: 2)) {
-      showCustomNotification(
+        DateTime.now().difference(_lastBackPressTime!) > const Duration(seconds: 2)) {      showCustomNotification(
         context: context,
         message: AppLocalizations.of(context)!.press_back_to_exit,
-        icon: Icons.exit_to_app,
-        iconColor: ThemeManager.textColor(),
         isDarkMode: isDarkMode,
-        duration: const Duration(seconds: 2),
       );
       
       _lastBackPressTime = DateTime.now();
@@ -6729,6 +7435,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                 // Ignore pointer events when keyboard is open to prevent WebView from interfering with URL bar
                 ignoring: keyboardVisible,                child: GestureDetector(
                   onTap: () {
+                    // Handle outside tap for AI action bar
+                    _handleOutsideTap();
+                    
                     if (_isSlideUpPanelVisible) {
                       setState(() {
                         _isSlideUpPanelVisible = false;
@@ -6737,7 +7446,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                         _hideUrlBarController.reverse();
                       });
                     }
-                  },                  onLongPressStart: (details) async {
+                  },onLongPressStart: (details) async {
                     // Long press functionality removed
                   },child: Container(
                     // Use Container with color to cover entire area including where keyboard would be
@@ -6995,62 +7704,21 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   void _updateUrl(String url) {
     if (!mounted) return;
     
-    // Check if URL actually changed to avoid unnecessary setState calls
-    if (_displayUrl == url) return;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-      final newFormattedUrl = _formatUrl(url);
-      // Always update URL bar when navigating to a different page (unless user is actively typing)
-      final shouldUpdateUrlBar = !_urlFocusNode.hasFocus || _displayUrl != url;
-      
-      setState(() {
-        _displayUrl = url;
-        if (shouldUpdateUrlBar) {
-          _urlController.text = newFormattedUrl;
-        }
-        
-        if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-          tabs[currentTabIndex]['url'] = url;
-        }// Update secure indicator based on URL - only if changed
-        try {
-          final uri = Uri.parse(url);
-          bool newIsSecure;
-          if (uri.scheme == 'https') {
-            newIsSecure = true;
-          } else if (uri.scheme == 'file' || url.startsWith('file://')) {
-            // Local files are considered secure
-            newIsSecure = true;
-          } else {
-            newIsSecure = false;
-          }
-          
-          if (isSecure != newIsSecure) {
-            isSecure = newIsSecure;
-          }
-        } catch (e) {
-          if (isSecure != false) {
-            isSecure = false;
-          }
-        }
-        
-        // Always show the URL bar and classic mode panel when URL changes
-        _hideUrlBar = false;
-        _hideUrlBarController.reverse();
-      });
-      
-      // Update navigation state whenever URL changes
-      _updateNavigationState();
-    });
+    // Use the centralized URL update method for consistency
+    _handleUrlUpdate(url);
   }
 
-  // New helper method to handle page start logic without updating the URL bar/secure indicator
-  Future<void> _handlePageStarted(String url) async {
+// New helper method to handle page start logic consistently  
+Future<void> _handlePageStarted(String url) async {
     if (!mounted) return;
-    setState(() {
-      isLoading = true;
-    });
-    // Start the loading animation
-    _loadingAnimationController.reset();
-    _loadingAnimationController.repeat();
+    print('=== PAGE STARTED LOADING ==='); // Debug log
+    print('URL: $url'); // Debug log
+    
+    // Use the centralized loading state method (this will start the animation)
+    _setLoadingState(true);
+    
+    // Update URL immediately on start (for instant feedback)
+    _handleUrlUpdate(url);
     
     await _updateNavigationState();
     await _optimizationEngine.onPageStartLoad(url);
@@ -7063,8 +7731,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
   // Navigation delegate methods
   Future<NavigationDelegate> get _navigationDelegate async {
-    return NavigationDelegate(
-      onNavigationRequest: (NavigationRequest request) async {
+    return NavigationDelegate(      onNavigationRequest: (NavigationRequest request) async {
         final url = request.url.toLowerCase();
         
         // Handle search:// protocol
@@ -7093,31 +7760,34 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           return NavigationDecision.prevent;
         }
         
-        // Update URL immediately when navigation starts
-        _updateUrl(request.url);
-          // Allow navigation for all other URLs
+        // FIXED: Update URL immediately when navigation starts (for immediate feedback)
+        print('🚀 Navigation request to: ${request.url}');
+        _handleUrlUpdate(request.url);
+        
+        // Allow navigation for all other URLs
         return NavigationDecision.navigate;
-      },
-      onPageStarted: (String url) async {
+      },      onPageStarted: (String url) async {
         if (!mounted) return;
         
         print('DEBUG: onPageStarted called with URL: $url');
         _setLoadingState(true);
-        setState(() {
-          // Update URL when page starts loading using central method
-          _handleUrlUpdate(url);
-        });        await _updateNavigationState();
-        await _optimizationEngine.onPageStartLoad(url);
-      },
-      onPageFinished: (String url) async {
+        
+        // FIXED: Always update URL immediately on page start for better responsiveness
+        print('🚀 Page started, updating URL to: $url');
+        _handleUrlUpdate(url);
+        
+        await _updateNavigationState();
+        await _optimizationEngine.onPageStartLoad(url);      },      onPageFinished: (String url) async {
         if (!mounted) return;
         
         print('DEBUG: onPageFinished called with URL: $url');
         final title = await controller.getTitle() ?? _displayUrl;
+        
+        // FIXED: Use centralized loading state method for proper animation handling
         _setLoadingState(false);
         
         // Force URL update on page finish - this ensures we always get the final URL
-        print('DEBUG: Forcing URL update from onPageFinished');
+        print('DEBUG: Forcing URL update from onPageFinished to: $url');
         _displayUrl = url; // Update display URL first
         _handleUrlUpdate(url, title: title);
         
@@ -7131,11 +7801,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         await _optimizationEngine.onPageFinishLoad(url);
         await _updateFavicon(url);
         await _saveToHistory(url, title);        await _injectImageContextMenuJS();
-      },
-      onUrlChange: (UrlChange change) {
-        if (mounted) {
-          final url = change.url ?? '';
-          print('DEBUG: Main navigation delegate onUrlChange called with URL: $url');
+      },      onUrlChange: (UrlChange change) {
+        if (mounted && change.url != null) {
+          final url = change.url!;
+          print('DEBUG: onUrlChange called with URL: $url');
+          print('🔄 URL changed in browser, updating to: $url');
+          // FIXED: Immediate URL update for better responsiveness during navigation
           _handleUrlUpdate(url);
         }
       },
@@ -7146,7 +7817,6 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       },
     );
   }
-
   void _startUrlBarIdleTimer() {
     _urlBarIdleTimer?.cancel();
     _urlBarIdleTimer = Timer(const Duration(seconds: 3), () {
@@ -7163,6 +7833,32 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         });
       }
     });
+  }
+  
+  // Start periodic URL sync to ensure URL bar is always accurate
+  void _startUrlSync() {
+    _urlSyncTimer?.cancel();
+    _urlSyncTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) async {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      
+      try {
+        final currentUrl = await controller.currentUrl();
+        if (currentUrl != null && currentUrl != _displayUrl && !_urlFocusNode.hasFocus) {
+          print('🔄 URL sync detected change: $_displayUrl -> $currentUrl');
+          _handleUrlUpdate(currentUrl);
+        }
+      } catch (e) {
+        // Silently handle errors
+      }
+    });
+  }
+  
+  // Stop URL sync timer
+  void _stopUrlSync() {
+    _urlSyncTimer?.cancel();
   }
   void _updateUrlBarState() {
     if (!_urlFocusNode.hasFocus && !isPanelExpanded) {
@@ -7218,7 +7914,6 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       return url;
     }
   }
-
   // Helper method to check if URL is secure
   bool _isSecureUrl(String url) {
     try {
@@ -7231,6 +7926,22 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       return false;
     } catch (e) {
       return false;
+    }
+  }
+
+  // FIXED: Helper method to check if URL is the homepage
+  bool _isHomePage(String url) {
+    return url.startsWith('file:///android_asset/main.html') || url == _homeUrl;
+  }
+
+  // FIXED: Get appropriate status indicator for URL bar
+  String _getUrlBarStatus(String url) {
+    if (_isHomePage(url)) {
+      return 'home';
+    } else if (_isSecureUrl(url)) {
+      return 'secure';
+    } else {
+      return 'insecure';
     }
   }
 
@@ -7627,65 +8338,51 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       isDarkMode: isDarkMode,
     );
   }
-
   void _showClearDownloadsDialog() {
-    showDialog(
+    showCustomDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: ThemeManager.backgroundColor(),
-        title: Text(
-          AppLocalizations.of(context)!.clear_downloads_history_title,
-          style: TextStyle(
-            color: ThemeManager.textColor(),
-          ),
-        ),
-        content: Text(
-          AppLocalizations.of(context)!.clear_downloads_history_confirm,
-          style: TextStyle(
-            color: ThemeManager.textSecondaryColor(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              AppLocalizations.of(context)!.cancel,
-              style: TextStyle(
-                color: ThemeManager.textSecondaryColor(),
-              ),
+      title: AppLocalizations.of(context)!.clear_downloads_history_title,
+      isDarkMode: ThemeManager.getCurrentTheme().isDark,
+      content: AppLocalizations.of(context)!.clear_downloads_history_confirm,
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            AppLocalizations.of(context)!.cancel,
+            style: TextStyle(
+              color: ThemeManager.textSecondaryColor(),
             ),
           ),
-          TextButton(
-            onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.remove('downloads');
-              setState(() {
-                downloads.clear();
-              });
-              Navigator.pop(context);
-              _showNotification(
-                Row(
-                  children: [
-                    Icon(Icons.check_circle, color: ThemeManager.successColor()),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Text(AppLocalizations.of(context)!.downloads_history_cleared),
-                    ),
-                  ],
-                ),
-                duration: const Duration(seconds: 4),
-              );
-            },
-            child: Text(
-              AppLocalizations.of(context)!.clear,
-              style: TextStyle(
-                color: ThemeManager.errorColor(),
-                fontWeight: FontWeight.bold,
+        ),
+        TextButton(
+          onPressed: () async {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.remove('downloads');
+            setState(() {
+              downloads.clear();
+            });
+            Navigator.pop(context);
+            _showNotification(
+              Row(
+                children: [
+                  Icon(Icons.check_circle, color: ThemeManager.successColor()),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Text(AppLocalizations.of(context)!.downloads_history_cleared),
+                  ),
+                ],
               ),
+              duration: const Duration(seconds: 4),
+            );
+          },          child: Text(
+            AppLocalizations.of(context)!.clear,
+            style: TextStyle(
+              color: ThemeManager.errorColor(),
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -7922,11 +8619,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             width: 1,
           ),
           color: ThemeManager.backgroundColor().withOpacity(0.8), // Simplified without blur for M12
-        ),
-        child: Container(
+        ),        child: Container(
           height: 44, // Reduced from 48
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,            children: [
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,            
+            children: [
               IconButton(
                 icon: const Icon(Icons.chevron_left_rounded, size: 22), // Reduced size
                 color: canGoBack ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
@@ -7939,7 +8636,26 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     });
                   }
                 } : null,
-              ),              IconButton(
+              ),              // FIXED: Added home button with proper navigation
+              IconButton(
+                icon: const Icon(Icons.home_rounded, size: 22),
+                color: _isHomePage(_displayUrl) ? ThemeManager.primaryColor() : ThemeManager.textColor(),
+                onPressed: () async {
+                  try {
+                    await controller.loadRequest(Uri.parse(_homeUrl));
+                    _handleUrlUpdate(_homeUrl);
+                  } catch (e) {
+                    print('Error navigating to home: $e');
+                  }
+                  if (_hideUrlBar) {
+                    setState(() {
+                      _hideUrlBar = false;
+                      _hideUrlBarController.reverse();
+                    });
+                  }
+                },
+              ),
+              IconButton(
                 icon: Icon(
                   isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
                   size: 22, // Reduced size
@@ -7954,7 +8670,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     });
                   }
                 },
-              ),              IconButton(
+              ),              
+              IconButton(
                 icon: const Icon(Icons.ios_share_rounded, size: 22), // Reduced size
                 color: ThemeManager.textSecondaryColor(),
                 onPressed: () async {
@@ -8262,11 +8979,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           );
         },
       ),
-    );  }Future<void> _goBack() async {
+    );  }  Future<void> _goBack() async {
     if (!canGoBack) return;
     
     // Close summary panel on navigation
     _closeSummaryPanel();
+    
+    // Close AI action bar on navigation
+    _closeAiActionBar();
     
     try {
       await controller.goBack();
@@ -8291,12 +9011,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       // Silently handle errors for M12
     }
   }
-
   Future<void> _goForward() async {
     if (!canGoForward) return;
     
     // Close summary panel on navigation
     _closeSummaryPanel();
+    
+    // Close AI action bar on navigation
+    _closeAiActionBar();
     
     try {
       await controller.goForward();
@@ -8519,10 +9241,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     );
   }
   // Modern dialog methods for JavaScript communication
-  void _showConfirmDialog(String message, String? dialogId) {
-    showCustomDialog(
+  void _showConfirmDialog(String message, String? dialogId) {    showCustomDialog(
       context: context,
-      title: 'Confirm',
+      title: AppLocalizations.of(context)!.confirm,
       content: message,
       isDarkMode: isDarkMode,
       actions: [
@@ -8551,10 +9272,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
   void _showPromptDialog(String message, String? defaultText, String? dialogId) {
     final TextEditingController textController = TextEditingController(text: defaultText ?? '');
-    
-    showCustomDialog(
+      showCustomDialog(
       context: context,
-      title: 'Input Required',
+      title: AppLocalizations.of(context)!.input_required,
       isDarkMode: isDarkMode,
       customContent: Column(
         mainAxisSize: MainAxisSize.min,
@@ -8618,10 +9338,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       ],
     );
   }
-  void _showAlertDialog(String message, String? dialogId) {
-    showCustomDialog(
+  void _showAlertDialog(String message, String? dialogId) {    showCustomDialog(
       context: context,
-      title: 'Alert',
+      title: AppLocalizations.of(context)!.alert,
       content: message,
       isDarkMode: isDarkMode,
       actions: [
@@ -8748,7 +9467,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     final webViewController = tab['controller'] as WebViewController;
     
     // Modern user agent for best compatibility
-    final userAgent = 'Mozilla/5.0 (Linux; Android 13; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36';
+    final userAgent = 'Mozilla/9999.9999 (Linux; Android 9999; Solar 0.3.0) AppleWebKit/9999.9999 (KHTML, like Gecko) Chrome/9999.9999 Mobile Safari/9999.9999';
     
     // Set essential WebView settings
     webViewController
@@ -8775,8 +9494,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     
     // <----JAVASCRIPT CHANNELS SETUP---->
     // CRITICAL: Set up JavaScript channels BEFORE loading any URL
-    try {
-      // DialogHandler channel
+    try {      // DialogHandler channel
       await webViewController.addJavaScriptChannel(
         'DialogHandler',
         onMessageReceived: (JavaScriptMessage message) async {
@@ -8789,22 +9507,17 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               final String defaultValue = data['defaultValue'] ?? '';
               
               if (type == 'prompt') {
-                final result = await _showCustomPromptDialog(messageText, defaultValue);
-                await webViewController.runJavaScript('''
-                  if (window.handleDialogResult) {
-                    window.handleDialogResult('{"id": "$id", "result": ${result != null ? '"$result"' : 'null'}}');
-                  }
-                ''');
+                // FIXED: Use existing prompt dialog method with custom animation
+                _showPromptDialog(messageText, defaultValue, id);
               } else if (type == 'alert') {
-                await _showCustomAlertDialog(messageText);
-                await webViewController.runJavaScript('''
-                  if (window.handleDialogResult) {
-                    window.handleDialogResult('{"id": "$id", "result": true}');
-                  }
-                ''');
+                // FIXED: Use existing alert dialog method with custom animation
+                _showAlertDialog(messageText, id);
+              } else if (type == 'confirm') {
+                // FIXED: Use existing confirm dialog method with custom animation
+                _showConfirmDialog(messageText, id);
               }
             } catch (e) {
-              print('Error handling dialog: $e');
+              print('DialogHandler error in tab: $e');
             }
           }
         },
@@ -8839,6 +9552,18 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             });
             
             webViewController.loadRequest(Uri.parse(searchUrl));
+          }
+        },      );
+
+      // SearchEngineHandler channel
+      await webViewController.addJavaScriptChannel(
+        'SearchEngineHandler',
+        onMessageReceived: (JavaScriptMessage message) async {
+          if (mounted && message.message == 'getSearchEngine') {
+            final tabUrl = tab['url'] as String;
+            if (tabUrl == _homeUrl || tabUrl.contains('main.html')) {
+              await _sendSearchEngineToMainHtml();
+            }
           }
         },
       );
@@ -8981,9 +9706,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         if (!status.isGranted) {
           _showNotification(
             Text("Full storage access is needed for downloading non-media files"),
-            duration: const Duration(seconds: 6),
-            action: SnackBarAction(
-              label: 'Settings',
+            duration: const Duration(seconds: 6),            action: SnackBarAction(
+              label: AppLocalizations.of(context)!.settings,
               onPressed: () => openAppSettings(),
             ),
           );
@@ -9426,7 +10150,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               final summary = await AIManager.summarizeText(content, isFullPage: true);
               if (!mounted) return;
               
-              _showSummaryModal(summary, url: currentUrl);
+              _showSummaryModal(currentUrl);
             } catch (e) {
               if (!mounted) return;
               _showNotification(
@@ -9591,8 +10315,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             ),
             Expanded(
               child: summaries.isEmpty
-                ? Center(                    child: Text(
-                      "No summaries available",
+                ? Center(                    child:                    Text(
+                      AppLocalizations.of(context)!.no_summaries_available,
                       style: TextStyle(
                         color: ThemeManager.textSecondaryColor(),
                         fontSize: 14,
@@ -9722,8 +10446,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                                 ),
                               ),
                             ),
-                          ],
-                        ),
+                          ],                        ),
                       );
                     },
                   ),
@@ -9733,159 +10456,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       ),
     );
   }
-  void _showSummaryModal(String summary, {String? url}) async {
-    if (!mounted) return;
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      isDismissible: false,
-      enableDrag: false,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        decoration: BoxDecoration(
-          color: ThemeManager.backgroundColor(),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: ThemeManager.textSecondaryColor().withOpacity(0.3),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Page Summary',
-                    style: TextStyle(
-                      color: ThemeManager.textColor(),
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: [
-                  Container(
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    decoration: BoxDecoration(
-                      color: ThemeManager.surfaceColor(),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      url != null ? _extractDomain(url) : 'Current Page',
-                                      style: TextStyle(
-                                        color: ThemeManager.primaryColor(),
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                  Row(
-                                    children: [
-                                      IconButton(
-                                        icon: Icon(
-                                          Icons.copy_rounded,
-                                          size: 20,
-                                          color: ThemeManager.textSecondaryColor(),
-                                        ),
-                                        onPressed: () async {
-                                          await AIManager.copyToClipboard(summary);
-                                          if (!mounted) return;
-                                          Navigator.pop(context);
-                                          _showNotification(
-                                            Text(
-                                              'Summary copied to clipboard',
-                                              style: TextStyle(
-                                                color: ThemeManager.textColor(),
-                                              ),
-                                            ),
-                                            duration: const Duration(seconds: 2),
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  Text(
-                                    _formatDate(DateTime.now()),
-                                    style: TextStyle(
-                                      color: ThemeManager.textSecondaryColor(),
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: ThemeManager.primaryColor().withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      AIManager.getCurrentProvider() == AIProvider.openai ? 'GPT-3.5 Turbo' : 'Gemini 2.0-Flash',
-                                      style: TextStyle(
-                                        color: ThemeManager.primaryColor(),
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                          child: Text(
-                            summary,
-                            style: TextStyle(
-                              color: ThemeManager.textColor(),
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }  Widget _buildClassicModePanel() {
+  Widget _buildClassicModePanel() {
     final keyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     
@@ -10249,14 +10821,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       ),
     );
 
-    overlay.insert(overlayEntry);
-
-    Future.delayed(duration ?? const Duration(seconds: 2), () {
+    overlay.insert(overlayEntry);    Future.delayed(duration ?? const Duration(seconds: 2), () {
       if (overlayEntry.mounted) {
         overlayEntry.remove();
       }
     });
-  }  // Central method to handle URL updates consistently for all tabs
+  }
+
+  // Central method to handle URL updates consistently for all tabs
   void _handleUrlUpdate(String url, {String? title}) {
     if (!mounted) return;
     
@@ -10270,7 +10842,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     
     // Always update the tab data
     if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-      setState(() {        tabs[currentTabIndex]['url'] = url;
+      setState(() {        
+        tabs[currentTabIndex]['url'] = url;
         if (title != null) {
           tabs[currentTabIndex]['title'] = title;
         }
@@ -10287,33 +10860,45 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
       _updateNavigationState().then((_) {
         if (mounted) {
-          setState(() {            tabs[currentTabIndex]['canGoBack'] = canGoBack;
+          setState(() {            
+            tabs[currentTabIndex]['canGoBack'] = canGoBack;
             tabs[currentTabIndex]['canGoForward'] = canGoForward;
           });
         }
       });
     }
 
-    // Only update URL bar text if not currently focused OR if URL significantly changed
-    // (This ensures navigation updates the URL bar even when focused, but typing is not interrupted)
-    if ((!_urlFocusNode.hasFocus || shouldForceUpdate) && mounted) {
-      final formattedUrl = _formatUrl(url);
-      print("🔄 Updating URL bar to: $formattedUrl");
+    // FIXED: Always update URL bar for navigation changes, but respect focus state for formatting
+    if (mounted) {
+      final formattedUrl = _urlFocusNode.hasFocus ? url : _formatUrl(url);
+      print("🔄 Updating URL bar to: $formattedUrl (focused: ${_urlFocusNode.hasFocus})");
       setState(() {
-        // Show domain-only when not focused, full URL when focused
+        // Show full URL when focused, formatted URL when not focused
         _urlController.text = formattedUrl;
         
         // Update secure status
         isSecure = isUrlSecure;
-      });
-    } else if (mounted) {
-      print("⏭️ Skipping URL bar update - only updating security status");
-      // Still update security status even when focused
-      setState(() {
-        isSecure = isUrlSecure;
+        
+        // Position cursor at end if focused
+        if (_urlFocusNode.hasFocus) {
+          _urlController.selection = TextSelection.fromPosition(
+            TextPosition(offset: _urlController.text.length),
+          );
+        }
       });
     }
   }
+
+  // Helper method to extract domain from URL for fallback title
+  String _extractDomainFromUrl(String url) {
+    try {
+      final uri = Uri.parse(url);
+      return uri.host.isNotEmpty ? uri.host : url;
+    } catch (e) {
+      return url;
+    }
+  }
+
   Future<void> _handleWebResourceError(WebResourceError error, String url) async {
     if (!mounted) return;
     
@@ -10358,16 +10943,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     // Save the selected language to SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('language', languageCode);
-    
-    // Notify the app about locale change
+      // Notify the app about locale change
     if (widget.onLocaleChange != null) {
       widget.onLocaleChange!(languageCode);
     }
   }
-
-  // Add these animation durations and curves at the class level
-  final Duration _dropdownDuration = const Duration(milliseconds: 200);
-  final Curve _dropdownCurve = Curves.easeOutCubic;
 
   // Add this method to show animated dropdown with in-to-out animation
   void _showInToOutDropdown(BuildContext context, Widget child, {required Offset position}) {
@@ -10462,37 +11042,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       position: position,
     );
   }
-
   // Fix the download text translation method to use a fixed string
   String _getDownloadText(BuildContext context) {
     return 'Download'; // Fixed translation that will be the same in all languages
   }
-
-  // Add smooth scrolling controller
-  final ScrollController _smoothScrollController = ScrollController();
-  // Add optimization flags
-  bool _isOptimizingPerformance = false;
-
-  // Add smooth transition controller
-  late final AnimationController _transitionController = AnimationController(
-    duration: const Duration(milliseconds: 300),
-    vsync: this,
-  );
-  
-  // Add transition animations
-  late final Animation<double> _fadeTransition = CurvedAnimation(
-    parent: _transitionController,
-    curve: Curves.easeInOut,
-  );
-
-  // Fix the slide transition animation
-  late final Animation<Offset> _slideTransition = Tween<Offset>(
-    begin: const Offset(0, 0.1),
-    end: Offset.zero,
-  ).animate(CurvedAnimation(
-    parent: _transitionController,
-    curve: Curves.easeOutCubic,
-  ));
   // Add this method to show optimized dropdown from bottom to top
   void _showBottomToTopDropdown(BuildContext context, Widget child, {required Offset position}) {
     final RenderBox button = context.findRenderObject() as RenderBox;
@@ -10552,10 +11105,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         return ScaleTransition(
           scale: Tween<double>(begin: 0.8, end: 1.0).animate(curvedAnimation),
           child: FadeTransition(
-            opacity: animation,
-            child: CustomDialog(
-              title: 'Close All Tabs',
-              content: 'Are you sure you want to close all tabs? This action cannot be undone.',
+            opacity: animation,            child: CustomDialog(
+              title: AppLocalizations.of(context)!.close_all_tabs,
+              content: AppLocalizations.of(context)!.close_all_tabs_confirm,
               isDarkMode: isDarkMode,
               actions: [
                 TextButton(
@@ -10593,10 +11145,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   void _showCreateGroupDialog() {
     final TextEditingController nameController = TextEditingController();
     Color selectedColor = Colors.blue;
-    
-    showCustomDialog(
+      showCustomDialog(
       context: context,
-      title: 'Create Tab Group',
+      title: AppLocalizations.of(context)!.create_tab_group,
       isDarkMode: isDarkMode,
       customContent: StatefulBuilder(
         builder: (context, setState) {
@@ -10606,18 +11157,16 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             children: [
               TextField(
                 controller: nameController,
-                style: TextStyle(color: ThemeManager.textColor()),
-                decoration: InputDecoration(
-                  labelText: 'Group Name',
+                style: TextStyle(color: ThemeManager.textColor()),                decoration: InputDecoration(
+                  labelText: AppLocalizations.of(context)!.group_name,
                   labelStyle: TextStyle(color: ThemeManager.textSecondaryColor()),
                   enabledBorder: UnderlineInputBorder(
                     borderSide: BorderSide(color: ThemeManager.textSecondaryColor().withOpacity(0.3)),
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-              Text(
-                'Color',
+              const SizedBox(height: 20),              Text(
+                AppLocalizations.of(context)!.color,
                 style: TextStyle(
                   color: ThemeManager.textColor(),
                   fontSize: 16,
@@ -10668,12 +11217,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             ],
           );
         },
-      ),
-      actions: [
+      ),      actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
-            'Cancel',
+            AppLocalizations.of(context)!.cancel,
             style: TextStyle(color: ThemeManager.textSecondaryColor()),
           ),
         ),
@@ -10692,25 +11240,24 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               Navigator.of(context).pop();
               _showAddToGroupDialog(newGroup.id);
             }
-          },
-          child: Text(
-            'Create',
+          },          child: Text(
+            AppLocalizations.of(context)!.create,
             style: TextStyle(color: Theme.of(context).primaryColor),
           ),
         ),
-      ],
-    );
-  }  void _showAddToGroupDialog(String groupId) {
+      ],    );
+  }
+  
+  void _showAddToGroupDialog(String groupId) {
     final displayTabs = tabs.where((tab) =>      !tab['url'].startsWith('file:///') && 
       !tab['url'].startsWith('about:blank') && 
       tab['url'] != _homeUrl
     ).toList();
     
     List<bool> selectedTabs = List.filled(displayTabs.length, false);
-    
-    showCustomDialog(
+      showCustomDialog(
       context: context,
-      title: 'Add Tabs to Group',
+      title: AppLocalizations.of(context)!.add_tabs_to_group,
       isDarkMode: isDarkMode,
       customContent: StatefulBuilder(
         builder: (context, setState) {
@@ -10816,10 +11363,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       ],
     );
   }
-  void _showManageGroupsDialog() {
-    showCustomDialog(
+  void _showManageGroupsDialog() {    showCustomDialog(
       context: context,
-      title: 'Manage Groups',
+      title: AppLocalizations.of(context)!.manage_groups,
       isDarkMode: isDarkMode,
       customContent: Container(
         width: double.maxFinite,
@@ -10837,7 +11383,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                       color: ThemeManager.textSecondaryColor().withOpacity(0.5),
                     ),
                     SizedBox(height: 16),                    Text(
-                      "No groups created yet",
+                      AppLocalizations.of(context)!.no_groups_created_yet,
                       style: TextStyle(
                         color: ThemeManager.textSecondaryColor(),
                         fontSize: 16,
@@ -10899,8 +11445,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                             Icons.tab_unselected,
                             color: ThemeManager.textSecondaryColor(),
                             size: 20,
-                          ),
-                          tooltip: 'Ungroup tabs',
+                          ),                          tooltip: AppLocalizations.of(context)!.ungroup_tabs,
                           onPressed: () {
                             _ungroupTabs(group);
                             Navigator.of(context).pop();
@@ -10911,8 +11456,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                             Icons.delete_outline,
                             color: Colors.red,
                             size: 20,
-                          ),
-                          tooltip: 'Delete group',
+                          ),                          tooltip: AppLocalizations.of(context)!.delete_group,
                           onPressed: () {
                             _deleteGroup(group);
                             Navigator.of(context).pop();
@@ -10927,9 +11471,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(
-            'Close',
+          onPressed: () => Navigator.of(context).pop(),          child: Text(
+            AppLocalizations.of(context)!.close,
             style: TextStyle(color: ThemeManager.textColor()),
           ),
         ),
@@ -10948,14 +11491,17 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       }
     });
   }
-
   void _ungroupTabs(TabGroup group) {
-    setState(() {      for (var tab in tabs) {
+    setState(() {
+      for (var tab in tabs) {
         if (tab['groupId'] == group.id) {
           tab['groupId'] = null;
         }
       }
-    });  }  Widget _buildBottomActionBar() {
+    });
+  }
+  
+  Widget _buildBottomActionBar() {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     
     return Container(
@@ -11016,7 +11562,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         ),
       ),
     );
-  }  Widget _buildFloatingActionButton({
+  }
+  
+  Widget _buildFloatingActionButton({
     required IconData icon,
     required VoidCallback onTap,
   }) {
@@ -11055,7 +11603,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         },
       ),
     );
-  }  Widget _buildCenterNewTabButton() {
+  }
+  
+  Widget _buildCenterNewTabButton() {
     bool isIncognitoActive = _isIncognitoModeActive;
     
     return Container(
@@ -11159,9 +11709,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   size: 20,
                   color: Colors.red,
                 ),
-                SizedBox(width: 12),
-                Text(
-                  'Close All Tabs',
+                SizedBox(width: 12),                Text(
+                  AppLocalizations.of(context)!.close_all_tabs,
                   style: TextStyle(
                     color: Colors.red,
                     fontSize: 14,
@@ -11183,9 +11732,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   size: 20,
                   color: _isIncognitoModeActive ? Colors.purple : ThemeManager.textColor(),
                 ),
-                SizedBox(width: 12),
-                Text(
-                  '${_isIncognitoModeActive ? 'Disable' : 'Enable'} Incognito Mode',
+                SizedBox(width: 12),                Text(
+                  _isIncognitoModeActive 
+                    ? AppLocalizations.of(context)!.disable_incognito_mode
+                    : AppLocalizations.of(context)!.enable_incognito_mode,
                   style: TextStyle(
                     color: _isIncognitoModeActive ? Colors.purple : ThemeManager.textColor(),
                     fontSize: 14,
@@ -11293,17 +11843,24 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text(
+              onPressed: () => Navigator.of(context).pop(),              child: Text(
                 'OK',
                 style: TextStyle(color: ThemeManager.accentColor()),
               ),
-            ),          ],
-        );      },
+            ),
+          ],
+        );
+      },
     );
   }
+  
   // Panel animation helper methods
   void _showPanelWithAnimation(String panelType) {
+    // Close AI action bar when panels are opened
+    if (_isAiActionBarVisible) {
+      _toggleAiActionBar();
+    }
+    
     // COMPLETELY NEW IMPLEMENTATION
     // First reset controller to start fresh
     _panelSlideController.reset();
@@ -11336,8 +11893,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           break;
       }
     });
-    
-    // Start the slide-in animation
+      // Start the slide-in animation
     _panelSlideController.forward();
   }
   
@@ -11345,6 +11901,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     setState(() {
       _isPanelClosing = true;
     });
+    
+    // Close AI action bar when panels are opened
+    if (_isAiActionBarVisible) {
+      _toggleAiActionBar();
+    }
     
     // Use reverse animation to slide out to the right
     _panelSlideController.reverse().then((_) {
@@ -11372,17 +11933,821 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   void _showDownloadsPanel() {
     _showPanelWithAnimation('downloads');
   }
-
   void _showHistoryPanel() async {
     _loadHistory(); // Load history when showing the panel
     _showPanelWithAnimation('history');
   }
+  
   void _showSettingsPanel() {
     _showPanelWithAnimation('settings');
   }
-
+  
   void _showTabsView() {
     _showPanelWithAnimation('tabs');
+  }
+
+  // AI Action Bar Modal Methods
+  void _showErrorNotification(String message) {
+    showCustomNotification(
+      context: context,
+      message: message,
+      isDarkMode: ThemeManager.getCurrentTheme().isDark,
+    );
+  }
+  
+  void _showSummaryModal(String url, [String? content]) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _SummaryModal(
+        url: url,
+        content: content,
+        controller: controller,
+        onClose: () => Navigator.pop(context),
+      ),
+    );
+  }
+}
+
+// Summary Modal Widget
+class _SummaryModal extends StatefulWidget {
+  final String url;
+  final String? content;
+  final VoidCallback onClose;
+  final WebViewController controller;
+
+  const _SummaryModal({
+    required this.url,
+    this.content,
+    required this.onClose,
+    required this.controller,
+  });
+
+  @override
+  _SummaryModalState createState() => _SummaryModalState();
+}
+
+class _SummaryModalState extends State<_SummaryModal> {
+  bool _isLoading = true;
+  String? _summary;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _generateSummary();
+  }
+
+  Future<void> _generateSummary() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _error = null;
+      });
+
+      // Initialize AI Manager
+      await AIManager.initialize();
+      
+      // Get page text content using the existing controller
+      final pageContent = await widget.controller.runJavaScriptReturningResult('''
+        (function() {
+          // Remove script and style elements
+          const scripts = document.querySelectorAll('script, style, nav, footer, header, .nav, .navbar, .sidebar, .ad, .advertisement');
+          scripts.forEach(el => el.remove());
+          
+          // Get main content
+          const main = document.querySelector('main, article, .content, .post, .entry, .article-content, [role="main"]');
+          if (main) {
+            return main.innerText || main.textContent || '';
+          }
+          
+          // Fallback to body content
+          return document.body.innerText || document.body.textContent || '';
+        })();
+      ''');
+
+      final content = pageContent.toString().replaceAll('"', '').trim();
+      
+      if (content.isEmpty || content.length < 50) {
+        throw Exception('No sufficient content found to summarize');
+      }      // Generate summary using AI Manager
+      final summary = await AIManager.summarizeText(content, isFullPage: true);
+      
+      // Get page title for better metadata
+      final title = await widget.controller.getTitle() ?? AppLocalizations.of(context)!.untitled;
+      
+      // Save summary with metadata
+      await AIManager.saveSummary(summary, widget.url, title);
+
+      setState(() {
+        _summary = summary;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.8,
+      decoration: BoxDecoration(
+        color: ThemeManager.surfaceColor(),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          // Handle bar
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: ThemeManager.textColor().withOpacity(0.3),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.summarize_outlined,
+                  color: ThemeManager.textColor(),
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child:                  Text(
+                    AppLocalizations.of(context)!.page_summary,
+                    style: TextStyle(
+                      color: ThemeManager.textColor(),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: widget.onClose,
+                  icon: Icon(
+                    Icons.close,
+                    color: ThemeManager.textColor(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Divider(
+            height: 1,
+            color: ThemeManager.textColor().withOpacity(0.1),
+          ),
+          // Content
+          Expanded(
+            child: _isLoading
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        CircularProgressIndicator(
+                          color: ThemeManager.primaryColor(),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Generating summary...',
+                          style: TextStyle(
+                            color: ThemeManager.textSecondaryColor(),
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : _error != null
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                color: ThemeManager.textColor().withOpacity(0.5),
+                                size: 48,
+                              ),
+                              const SizedBox(height: 16),                              Text(
+                                AppLocalizations.of(context)!.failed_to_generate_summary,
+                                style: TextStyle(
+                                  color: ThemeManager.textColor(),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                _error ?? '',
+                                style: TextStyle(
+                                  color: ThemeManager.textSecondaryColor(),
+                                  fontSize: 14,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: _generateSummary,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: ThemeManager.primaryColor(),
+                                  foregroundColor: Colors.white,
+                                ),
+                                child: Text(AppLocalizations.of(context)!.try_again),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // URL
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: ThemeManager.backgroundColor().withOpacity(0.5),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.link,
+                                    color: ThemeManager.textSecondaryColor(),
+                                    size: 16,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      widget.url,
+                                      style: TextStyle(
+                                        color: ThemeManager.textSecondaryColor(),
+                                        fontSize: 12,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),                            ),
+                            const SizedBox(height: 16),
+                            // Summary
+                            Text(
+                              _summary ?? '',
+                              style: TextStyle(
+                                color: ThemeManager.textColor(),
+                                fontSize: 16,
+                                height: 1.5,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            // Copy button
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: () async {
+                                  if (_summary != null) {
+                                    await AIManager.copyToClipboard(_summary!);
+                                    // Show feedback
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Summary copied to clipboard',
+                                          style: TextStyle(color: ThemeManager.textColor()),
+                                        ),
+                                        backgroundColor: ThemeManager.surfaceColor(),
+                                        duration: const Duration(seconds: 2),
+                                      ),
+                                    );
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: ThemeManager.primaryColor(),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                ),
+                                icon: const Icon(Icons.copy, size: 18),
+                                label: Text(AppLocalizations.of(context)!.copy_summary),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Previous Summaries Modal Widget
+class _PreviousSummariesModal extends StatefulWidget {
+  final VoidCallback onClose;
+
+  const _PreviousSummariesModal({
+    required this.onClose,
+  });
+
+  @override
+  _PreviousSummariesModalState createState() => _PreviousSummariesModalState();
+}
+
+class _PreviousSummariesModalState extends State<_PreviousSummariesModal> {
+  bool _isLoading = true;
+  List<Map<String, dynamic>> _summaries = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPreviousSummaries();
+  }
+
+  Future<void> _loadPreviousSummaries() async {
+    try {
+      await AIManager.initialize();
+      final summaries = await AIManager.getPreviousSummaries();
+      setState(() {
+        _summaries = summaries;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  String _formatDate(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr);
+      final now = DateTime.now();
+      final difference = now.difference(date);
+
+      if (difference.inDays == 0) {
+        if (difference.inHours == 0) {
+          return '${difference.inMinutes}m ago';
+        }
+        return '${difference.inHours}h ago';
+      } else if (difference.inDays < 7) {
+        return '${difference.inDays}d ago';
+      } else {
+        return '${date.day}/${date.month}/${date.year}';
+      }
+    } catch (e) {
+      return dateStr;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.8,
+      decoration: BoxDecoration(
+        color: ThemeManager.surfaceColor(),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          // Handle bar
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: ThemeManager.textColor().withOpacity(0.3),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.history_outlined,
+                  color: ThemeManager.textColor(),
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Expanded(                  child: Text(
+                    AppLocalizations.of(context)!.previous_summaries,
+                    style: TextStyle(
+                      color: ThemeManager.textColor(),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: widget.onClose,
+                  icon: Icon(
+                    Icons.close,
+                    color: ThemeManager.textColor(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Divider(
+            height: 1,
+            color: ThemeManager.textColor().withOpacity(0.1),
+          ),
+          // Content
+          Expanded(
+            child: _isLoading
+                ? Center(
+                    child: CircularProgressIndicator(
+                      color: ThemeManager.primaryColor(),
+                    ),
+                  )
+                : _summaries.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.history_outlined,
+                              color: ThemeManager.textColor().withOpacity(0.3),
+                              size: 64,
+                            ),
+                            const SizedBox(height: 16),                            Text(
+                              AppLocalizations.of(context)!.no_summaries_available,
+                              style: TextStyle(
+                                color: ThemeManager.textColor(),
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Start summarizing pages to see them here',
+                              style: TextStyle(
+                                color: ThemeManager.textSecondaryColor(),
+                                fontSize: 14,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.all(16),
+                        itemCount: _summaries.length,
+                        itemBuilder: (context, index) {
+                          final summary = _summaries[index];
+                          final siteName = summary['siteName'] ?? 'Unknown Site';
+                          final model = summary['model'] ?? 'Unknown Model';
+                          final date = summary['date'] ?? '';
+                          final text = summary['text'] ?? '';
+                          final url = summary['url'] ?? '';
+
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: ThemeManager.backgroundColor(),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: ThemeManager.textColor().withOpacity(0.1),
+                                width: 1,
+                              ),
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(12),
+                                onTap: () {
+                                  // Show summary detail
+                                  showModalBottomSheet(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    backgroundColor: Colors.transparent,
+                                    builder: (context) => _SummaryDetailModal(
+                                      summary: summary,
+                                      onClose: () => Navigator.pop(context),
+                                    ),
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Header row
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  siteName,
+                                                  style: TextStyle(
+                                                    color: ThemeManager.textColor(),
+                                                    fontSize: 16,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                                const SizedBox(height: 4),
+                                                Row(
+                                                  children: [
+                                                    Text(
+                                                      model,
+                                                      style: TextStyle(
+                                                        color: ThemeManager.primaryColor(),
+                                                        fontSize: 12,
+                                                        fontWeight: FontWeight.w500,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      ' • ',
+                                                      style: TextStyle(
+                                                        color: ThemeManager.textSecondaryColor(),
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      _formatDate(date),
+                                                      style: TextStyle(
+                                                        color: ThemeManager.textSecondaryColor(),
+                                                        fontSize: 12,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          Icon(
+                                            Icons.chevron_right,
+                                            color: ThemeManager.textSecondaryColor(),
+                                            size: 20,
+                                          ),
+                                        ],
+                                      ),
+                                      if (url.isNotEmpty) ...[
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          url,
+                                          style: TextStyle(
+                                            color: ThemeManager.textSecondaryColor(),
+                                            fontSize: 11,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                      const SizedBox(height: 12),
+                                      // Summary preview
+                                      Text(
+                                        text,
+                                        style: TextStyle(
+                                          color: ThemeManager.textColor(),
+                                          fontSize: 14,
+                                          height: 1.4,
+                                        ),
+                                        maxLines: 3,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Summary Detail Modal Widget
+class _SummaryDetailModal extends StatelessWidget {
+  final Map<String, dynamic> summary;
+  final VoidCallback onClose;
+
+  const _SummaryDetailModal({
+    required this.summary,
+    required this.onClose,
+  });
+
+  String _formatDate(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr);
+      return '${date.day}/${date.month}/${date.year} at ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    } catch (e) {
+      return dateStr;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final siteName = summary['siteName'] ?? 'Unknown Site';
+    final model = summary['model'] ?? 'Unknown Model';
+    final date = summary['date'] ?? '';
+    final text = summary['text'] ?? '';
+    final url = summary['url'] ?? '';
+
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.9,
+      decoration: BoxDecoration(
+        color: ThemeManager.surfaceColor(),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      child: Column(
+        children: [
+          // Handle bar
+          Container(
+            margin: const EdgeInsets.symmetric(vertical: 8),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: ThemeManager.textColor().withOpacity(0.3),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        siteName,
+                        style: TextStyle(
+                          color: ThemeManager.textColor(),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Text(
+                            model,
+                            style: TextStyle(
+                              color: ThemeManager.primaryColor(),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Text(
+                            ' • ',
+                            style: TextStyle(
+                              color: ThemeManager.textSecondaryColor(),
+                              fontSize: 14,
+                            ),
+                          ),
+                          Text(
+                            _formatDate(date),
+                            style: TextStyle(
+                              color: ThemeManager.textSecondaryColor(),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: onClose,
+                  icon: Icon(
+                    Icons.close,
+                    color: ThemeManager.textColor(),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Divider(
+            height: 1,
+            color: ThemeManager.textColor().withOpacity(0.1),
+          ),
+          // Content
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (url.isNotEmpty) ...[
+                    // URL
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: ThemeManager.backgroundColor().withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.link,
+                            color: ThemeManager.textSecondaryColor(),
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              url,
+                              style: TextStyle(
+                                color: ThemeManager.textSecondaryColor(),
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  // Summary
+                  Text(
+                    text,
+                    style: TextStyle(
+                      color: ThemeManager.textColor(),
+                      fontSize: 16,
+                      height: 1.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),        ],
+      ),
+    );
+  }
+
+  // FIXED: Standardized dialog animation method for consistent UI
+  Future<T?> showStandardDialog<T>({
+    required BuildContext context,
+    required Widget child,
+    bool barrierDismissible = true,
+  }) {
+    return showGeneralDialog<T>(
+      context: context,
+      barrierDismissible: barrierDismissible,
+      barrierLabel: '',
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, animation, secondaryAnimation) => child,
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        // Scale and fade animation similar to tabs dialog
+        return ScaleTransition(
+          scale: Tween<double>(
+            begin: 0.8,
+            end: 1.0,
+          ).animate(CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutBack,
+          )),
+          child: FadeTransition(
+            opacity: animation,
+            child: child,
+          ),
+        );
+      },
+    );
+  }
+
+  // Helper method for creating standardized alert dialogs
+  Widget createStandardAlertDialog({
+    required String title,
+    required String content,
+    required List<Widget> actions,
+  }) {
+    return AlertDialog(
+      backgroundColor: ThemeManager.backgroundColor(),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: Text(
+        title,
+        style: TextStyle(color: ThemeManager.textColor()),
+      ),
+      content: Text(
+        content,
+        style: TextStyle(color: ThemeManager.textColor()),
+      ),
+      actions: actions,
+    );
   }
 }
 

@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import '../utils/browser_utils.dart';
 import '../utils/theme_manager.dart';
@@ -11,8 +10,7 @@ import '../l10n/app_localizations.dart';
 class PWAManager {
   static const String _pwaShortcutsKey = 'pwa_shortcuts';
   static const platform = MethodChannel('com.solar.browser/shortcuts');
-  
-  // Prompt for PWA name with improved styling
+    // Prompt for PWA name with improved styling and custom animation
   static Future<String?> showNamePrompt(BuildContext context, String title) async {
     final TextEditingController controller = TextEditingController(text: title);
     final localizations = AppLocalizations.of(context);
@@ -23,85 +21,104 @@ class PWAManager {
     final textColor = ThemeManager.textColor();
     final surfaceColor = ThemeManager.surfaceColor();
     
-    String? result = await showDialog<String>(
+    String? result = await showGeneralDialog<String>(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: backgroundColor,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Text(
-          localizations?.create_shortcut ?? 'Create Shortcut',
-          style: TextStyle(
-            color: textColor,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              localizations?.enter_shortcut_name ?? 'Enter a name for this shortcut:',
-              style: TextStyle(
-                color: textColor,
+      pageBuilder: (context, animation, secondaryAnimation) => Container(),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        );
+
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.8, end: 1.0).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: animation,
+            child: AlertDialog(
+              backgroundColor: backgroundColor,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
               ),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              decoration: BoxDecoration(
-                color: surfaceColor,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: primaryColor.withOpacity(0.3),
-                  width: 1,
+              title: Text(
+                localizations?.create_shortcut ?? 'Create Shortcut',
+                style: TextStyle(
+                  color: textColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
                 ),
               ),
-              child: TextField(
-                controller: controller,
-                style: TextStyle(color: textColor),
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  border: InputBorder.none,
-                  hintText: localizations?.shortcut_name ?? 'Shortcut name',
-                  hintStyle: TextStyle(
-                    color: textColor.withOpacity(0.5),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    localizations?.enter_shortcut_name ?? 'Enter a name for this shortcut:',
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: surfaceColor,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: primaryColor.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: TextField(
+                      controller: controller,
+                      style: TextStyle(color: textColor),
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        border: InputBorder.none,
+                        hintText: localizations?.shortcut_name ?? 'Shortcut name',
+                        hintStyle: TextStyle(
+                          color: textColor.withOpacity(0.5),
+                        ),
+                      ),
+                      autofocus: true,
+                    ),
+                  ),
+                ],
+              ),
+              contentPadding: const EdgeInsets.fromLTRB(24, 20, 24, 10),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    localizations?.cancel ?? 'CANCEL',
+                    style: TextStyle(
+                      color: textColor.withOpacity(0.7),
+                    ),
                   ),
                 ),
-                autofocus: true,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              localizations?.cancel ?? 'CANCEL',
-              style: TextStyle(
-                color: primaryColor,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: primaryColor,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            ),
-            onPressed: () => Navigator.of(context).pop(controller.text),
-            child: Text(
-              localizations?.add ?? 'ADD',
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
+                TextButton(
+                  onPressed: () {
+                    final name = controller.text.trim();
+                    if (name.isNotEmpty) {
+                      Navigator.of(context).pop(name);
+                    }
+                  },
+                  child: Text(
+                    localizations?.add ?? 'ADD',
+                    style: TextStyle(
+                      color: primaryColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        );
+      },
+      barrierDismissible: true,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: textColor.withOpacity(0.5),
+      transitionDuration: const Duration(milliseconds: 200),
     );
     
     return result;

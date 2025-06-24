@@ -183,7 +183,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get clear_browser_data => 'ブラウザデータを消去';
 
   @override
-  String get browsing_history => '閲覧履歴';
+  String get browsing_history => 'Browsing History';
 
   @override
   String get cookies => 'Cookie';
@@ -366,7 +366,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get size => 'サイズ';
 
   @override
-  String get auto_open_downloads => 'ダウンロード後に自動で開く';
+  String get auto_open_downloads => 'ダウンロードを自動で開く';
 
   @override
   String get clear_downloads_history => 'ダウンロード履歴を消去';
@@ -388,19 +388,19 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get install_packages_permission => 'Install Packages Permission';
+  String get install_packages_permission => 'パッケージインストール許可';
 
   @override
-  String get install_packages_permission_description => 'Allow installation of apps from this browser';
+  String get install_packages_permission_description => 'このブラウザからアプリのインストールを許可する';
 
   @override
-  String get permission_install_packages_required => 'Install packages permission required';
+  String get permission_install_packages_required => 'パッケージインストール許可が必要です';
 
   @override
-  String get storage_permission_install_packages_required => 'Storage & Install Packages Permission';
+  String get storage_permission_install_packages_required => 'ストレージ・パッケージインストール許可';
 
   @override
-  String get storage_permission_install_packages_description => 'Solar Browser needs permission to access storage for downloads and install packages for APK installations';
+  String get storage_permission_install_packages_description => 'Solar ブラウザはダウンロード用のストレージアクセスとAPKインストール用のパッケージインストールの許可が必要です';
 
   @override
   String get clear_downloads_history_confirm => 'これはダウンロード履歴のみを消去し、ダウンロードしたファイルは削除されません。';
@@ -471,7 +471,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get classic_navigation => 'クラシックナビゲーション';
 
   @override
-  String get classic_navigation_description => '画面下部にナビゲーションボタンを表示';
+  String get classic_navigation_description => 'クラシックブラウザスタイルのナビゲーションコントロールを使用';
 
   @override
   String get exit_confirmation => 'アプリを終了';
@@ -480,10 +480,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get flutter_version => 'Flutter バージョン';
 
   @override
-  String get photoncore_version => 'Photoncore Version';
+  String get photoncore_version => 'Photoncore バージョン';
 
   @override
-  String get engine_version => 'Engine Version';
+  String get engine_version => 'エンジンバージョン';
 
   @override
   String get software_team => 'ソフトウェアチーム';
@@ -510,95 +510,95 @@ class AppLocalizationsJa extends AppLocalizations {
   String get press_back_to_exit => 'もう一度押すと終了します';
 
   @override
-  String get storage_permission_required => 'Give Permission';
+  String get storage_permission_required => '許可を与える';
 
   @override
   String get storage_permission_granted => 'ストレージ権限が付与されました';
 
   @override
-  String get storage_permission_description => 'This app needs permission to access files for download functionality.';
+  String get storage_permission_description => 'このアプリはダウンロード機能のためにファイルへのアクセス許可が必要です。';
 
   @override
-  String get app_should_work_normally => 'The app should now work normally with full functionality.';
+  String get app_should_work_normally => 'アプリは完全な機能で正常に動作するはずです。';
 
   @override
-  String get grant_permission => 'Give Permission';
+  String get grant_permission => '許可を与える';
 
   @override
-  String get storage_permission_denied => 'Storage permission is required to download files';
+  String get storage_permission_denied => 'ファイルをダウンロードするにはストレージ許可が必要です';
 
   @override
-  String get new_incognito_tab => 'New Incognito Tab';
+  String get new_incognito_tab => '新しいシークレットタブ';
 
   @override
-  String get incognito_mode => 'Incognito Mode';
+  String get incognito_mode => 'シークレットモード';
 
   @override
-  String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
+  String get incognito_description => 'シークレットモードでは:\n• ブラウジング履歴は保存されません\n• タブを閉じるとクッキーがクリアされます\n• データはローカルに保存されません';
 
   @override
-  String get error_opening_file => 'Error opening file';
+  String get error_opening_file => 'ファイルを開く際のエラー';
 
   @override
-  String get download_in_progress => 'Download in progress';
+  String get download_in_progress => 'ダウンロード中';
 
   @override
-  String get download_paused => 'Download paused';
+  String get download_paused => 'ダウンロード一時停止';
 
   @override
-  String get download_canceled => 'Download canceled';
+  String get download_canceled => 'ダウンロードキャンセル';
 
   @override
   String download_error(String error) {
-    return 'Download error: $error';
+    return 'ダウンロードエラー: $error';
   }
 
   @override
-  String get open_downloads_folder => 'Open downloads folder';
+  String get open_downloads_folder => 'ダウンロードフォルダを開く';
 
   @override
-  String get file_exists => 'File already exists';
+  String get file_exists => 'ファイルが既に存在します';
 
   @override
-  String get file_saved => 'File saved to Downloads';
+  String get file_saved => 'ファイルがダウンロードに保存されました';
 
   @override
-  String get no_tabs_open => 'No tabs open';
+  String get no_tabs_open => '開いているタブがありません';
 
   @override
-  String get incognito => 'Incognito';
+  String get incognito => 'シークレット';
 
   @override
-  String get clear_all => 'Clear All';
+  String get clear_all => 'すべてクリア';
 
   @override
-  String get clear_history => 'Clear History';
+  String get clear_history => '履歴をクリア';
 
   @override
-  String get clear_history_confirmation => 'Are you sure you want to clear your browsing history?';
+  String get clear_history_confirmation => 'ブラウジング履歴をクリアしてもよろしいですか？';
 
   @override
-  String get no_history => 'No browsing history';
+  String get no_history => 'ブラウジング履歴がありません';
 
   @override
-  String get today => 'Today';
+  String get today => '今日';
 
   @override
-  String get yesterday => 'Yesterday';
+  String get yesterday => '昨日';
 
   @override
   String days_ago(int days) {
-    return '$days days ago';
+    return '$days日前';
   }
 
   @override
   String weeks_ago(int weeks) {
-    return '$weeks weeks ago';
+    return '$weeks週間前';
   }
 
   @override
   String months_ago(int months) {
-    return '$months months ago';
+    return '$monthsヶ月前';
   }
 
   @override
@@ -632,19 +632,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get recentSearches => '最近の検索';
 
   @override
-  String get previous_summaries => 'Previous Summaries';
+  String get previous_summaries => '以前の要約';
 
   @override
-  String get summarize_selected => 'Summarize Selected';
+  String get summarize_selected => '選択部分を要約';
 
   @override
-  String get summarize_page => 'Summarize Page';
+  String get summarize_page => 'ページを要約';
 
   @override
-  String get ai_preferences => 'AI Preferences';
+  String get ai_preferences => 'AI設定';
 
   @override
-  String get ai_provider => 'AI Provider';
+  String get ai_provider => 'AIプロバイダー';
 
   @override
   String get summary_length => '要約の長さ';
@@ -653,53 +653,256 @@ class AppLocalizationsJa extends AppLocalizations {
   String get summary_language => '要約の言語';
 
   @override
-  String get length_short => 'Short';
+  String get length_short => '短い';
 
   @override
-  String get length_medium => 'Medium';
+  String get length_medium => '中程度';
 
   @override
-  String get length_long => 'Long';
+  String get length_long => '長い';
 
   @override
-  String get summary_length_short => 'Short (75 words)';
+  String get summary_length_short => '短い（75単語）';
 
   @override
-  String get summary_length_medium => 'Medium (150 words)';
+  String get summary_length_medium => '中程度（150単語）';
 
   @override
-  String get summary_length_long => 'Long (250 words)';
+  String get summary_length_long => '長い（250単語）';
 
   @override
-  String get summary_language_english => 'English';
+  String get summary_language_english => '英語';
 
   @override
-  String get summary_language_turkish => 'Türkçe';
+  String get summary_language_turkish => 'トルコ語';
 
   @override
-  String get add_to_pwa => 'Add to PWA';
+  String get add_to_pwa => 'PWAに追加';
 
   @override
-  String get remove_from_pwa => 'Remove from PWA';
+  String get remove_from_pwa => 'PWAから削除';
 
   @override
-  String get added_to_pwa => 'Added to PWA';
+  String get added_to_pwa => 'PWAに追加されました';
 
   @override
-  String get removed_from_pwa => 'Removed from PWA';
+  String get removed_from_pwa => 'PWAから削除されました';
 
   @override
-  String get pwa_info => 'Progressive Web Apps run like installed apps without browser controls';
+  String get pwa_info => 'プログレッシブウェブアプリはブラウザコントロールなしでインストールされたアプリのように動作します';
 
   @override
-  String get create_shortcut => 'Create Shortcut';
+  String get create_shortcut => 'ショートカットを作成';
 
   @override
-  String get enter_shortcut_name => 'Enter a name for this shortcut:';
+  String get enter_shortcut_name => 'このショートカットの名前を入力してください:';
 
   @override
-  String get shortcut_name => 'Shortcut name';
+  String get shortcut_name => 'ショートカット名';
 
   @override
-  String get add => 'ADD';
+  String get keep_tabs_open_description => 'セッション間でタブを開いたままにする';
+
+  @override
+  String get developer => '開発者';
+
+  @override
+  String get reset_welcome_screen => 'ウェルカム画面をリセット';
+
+  @override
+  String get restored_tab => 'タブが復元されました';
+
+  @override
+  String get welcome_screen_reset => 'ウェルカム画面をリセット';
+
+  @override
+  String get welcome_screen_reset_message => 'これにより、ウェルカム画面がリセットされ、次回アプリを起動するときに再び表示されます。';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get customize_navigation => 'ナビゲーションをカスタマイズ';
+
+  @override
+  String get button_back => '戻る';
+
+  @override
+  String get button_forward => '進む';
+
+  @override
+  String get button_bookmark => 'ブックマーク';
+
+  @override
+  String get button_bookmarks => 'ブックマーク';
+
+  @override
+  String get button_share => '共有';
+
+  @override
+  String get button_menu => 'メニュー';
+
+  @override
+  String get available_buttons => '利用可能なボタン';
+
+  @override
+  String get add => '追加';
+
+  @override
+  String get rename_pwa => 'PWAの名前を変更';
+
+  @override
+  String get pwa_name => 'PWA名';
+
+  @override
+  String get rename => '名前を変更';
+
+  @override
+  String get pwa_renamed => 'PWAの名前が変更されました';
+
+  @override
+  String get remove => '削除';
+
+  @override
+  String get pwa_removed => 'PWAが削除されました';
+
+  @override
+  String get bookmark_removed => 'ブックマークが削除されました';
+
+  @override
+  String get untitled => '無題';
+
+  @override
+  String get show_welcome_screen_next_launch => '次回起動時にウェルカム画面を表示';
+
+  @override
+  String get automatically_open_downloaded_files => 'ダウンロードしたファイルを自動的に開く';
+
+  @override
+  String get ask_where_to_save_files => 'ダウンロード前にファイルの保存場所を尋ねる';
+
+  @override
+  String get clear_all_history => 'すべての履歴を消去';
+
+  @override
+  String get clear_all_history_confirm => 'これにより、すべての閲覧履歴が完全に削除されます。この操作は元に戻せません。';
+
+  @override
+  String get history_cleared => '履歴が消去されました';
+
+  @override
+  String get navigation_controls => 'ナビゲーションコントロール';
+
+  @override
+  String get ai_settings => 'AI設定';
+
+  @override
+  String get ai_summary_settings => 'AI要約設定';
+
+  @override
+  String get ask_download_location_title => 'ダウンロード場所を尋ねる';
+
+  @override
+  String get enable_incognito_mode => 'シークレットモードを有効にする';
+
+  @override
+  String get disable_incognito_mode => 'シークレットモードを無効にする';
+
+  @override
+  String get close_all_tabs => 'すべてのタブを閉じる';
+
+  @override
+  String get close_all_tabs_confirm => 'すべてのタブを閉じてもよろしいですか？この操作は元に戻せません。';
+
+  @override
+  String close_all_tabs_in_group(String groupName) {
+    return '\"$groupName\"のすべてのタブを閉じますか？この操作は元に戻せません。';
+  }
+
+  @override
+  String get other => 'その他';
+
+  @override
+  String get ai => 'AI';
+
+  @override
+  String get rearrange_navigation_buttons => 'ナビゲーションボタンを再配置';
+
+  @override
+  String get current_navigation_bar => '現在のナビゲーションバー：';
+
+  @override
+  String get tap_to_check_permission_status => 'タップして権限ステータスを確認';
+
+  @override
+  String get create_tab_group => 'タブグループを作成';
+
+  @override
+  String get manage_groups => 'グループを管理';
+
+  @override
+  String get no_groups_created_yet => 'まだグループが作成されていません';
+
+  @override
+  String get group_name => 'グループ名';
+
+  @override
+  String get color => '色';
+
+  @override
+  String get close_group => 'グループを閉じる';
+
+  @override
+  String get create => '作成';
+
+  @override
+  String get summarize => '要約';
+
+  @override
+  String get no_summaries_available => '利用可能な要約はありません';
+
+  @override
+  String get page_summary => 'ページ要約';
+
+  @override
+  String get failed_to_generate_summary => '要約の生成に失敗しました';
+
+  @override
+  String get try_again => '再試行';
+
+  @override
+  String get no_page_to_summarize => '要約するページがありません';
+
+  @override
+  String get no_content_found_to_summarize => '要約するコンテンツが見つかりません';
+
+  @override
+  String get theme => 'テーマ';
+
+  @override
+  String get check => 'チェック';
+
+  @override
+  String get pwa => 'PWA';
+
+  @override
+  String get confirm => '確認';
+
+  @override
+  String get input_required => '入力が必要';
+
+  @override
+  String get alert => 'アラート';
+
+  @override
+  String get add_tabs_to_group => 'タブをグループに追加';
+
+  @override
+  String get ungroup_tabs => 'タブのグループ化を解除';
+
+  @override
+  String get delete_group => 'グループを削除';
+
+  @override
+  String get copy_summary => '要約をコピー';
 }

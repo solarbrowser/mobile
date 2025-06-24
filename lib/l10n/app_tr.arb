@@ -1,6 +1,5 @@
-{
+﻿{
   "@@locale": "tr",
-  
   "welcomeToSolar": "Solar'a Hoş Geldiniz",
   "welcomeDescription": "Modern, hızlı ve güvenli",
   "termsOfService": "Devam ederek, Kullanım Koşullarımızı ve Gizlilik Politikamızı kabul etmiş olursunuz",
@@ -25,7 +24,6 @@
   "and": "ve",
   "data_collection": "Veri Toplama",
   "data_collection_details": "• Tarayıcı işlevselliği için gerekli minimum veriyi topluyoruz\n• Tarama geçmişiniz cihazınızda kalır\n• Çevrimiçi etkinliğinizi takip etmiyoruz\n• Tüm verileri istediğiniz zaman silebilirsiniz",
-
   "general": "Genel",
   "appearance": "Görünüm",
   "downloads": "İndirilenler",
@@ -53,7 +51,7 @@
   "current_location": "Mevcut Konum",
   "change_location": "Konumu Değiştir",
   "clear_browser_data": "Verileri Temizle",
-  "browsing_history": "Gezinme Geçmişi",
+  "Browse_history": "Gezinme Geçmişi",
   "cookies": "Çerezler",
   "cache": "Önbellek",
   "form_data": "Form Verileri",
@@ -188,7 +186,7 @@
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
   },
-  "error_opening_file": "Dosya açılırken hata oluştu. Lütfen bu dosya türünü açmak için uygun bir uygulama yükleyin.",
+  "error_opening_file": "Dosya açılırken hata oluştu. Lütfen bu türünü açmak için uygun bir uygulama yükleyin.",
   "storage_permission_required": "Depolama izni gerekli",
   "storage_permission_denied": "Dosyaları indirmek için depolama izni gerekli",
   "download_in_progress": "İndirme devam ediyor",
@@ -293,5 +291,300 @@
   },
   "storage_permission_granted": "Depolama izni verildi",
   "classic_navigation": "Klasik Navigasyon",
-  "classic_navigation_description": "Ekranın altında gezinme düğmelerini göster"
+  "classic_navigation_description": "Ekranın altında gezinme düğmelerini göster",
+  "ok": "Tamam",
+  "welcome_screen_reset": "Karşılama Ekranını Sıfırla",
+  "welcome_screen_reset_message": "Karşılama ekranı bir sonraki uygulama başlatışında gösterilecektir. Güncellenmiş gizlilik politikasını ve kullanım koşullarını görmek için lütfen uygulamayı yeniden başlatın.",
+  "customize_navigation": "Navigasyonu Özelleştir",
+  "bookmark_removed": "Yer imi kaldırıldı",
+  "navigation_buttons": "Navigasyon Düğmeleri",
+  "available_buttons": "Kullanılabilir Düğmeler",
+  "enabled_buttons": "Etkin Düğmeler",
+  "button_back": "Geri",
+  "button_forward": "İleri",
+  "button_bookmark": "Yer İmi",
+  "button_share": "Paylaş",
+  "button_menu": "Menü",
+  "button_bookmarks": "Yer İmleri",
+  "navigation_bar_animations": "Navigasyon Çubuğu Animasyonları",
+  "restore_defaults": "Varsayılanları Geri Yükle",
+  "drag_to_reorder": "Sıralamak için sürükleyin",
+  "add": "Ekle",
+  "restored_tab": "Sekme geri yüklendi",
+  "rename": "Yeniden Adlandır",
+  "rename_pwa": "PWA'yı Yeniden Adlandır",
+  "pwa_name": "PWA adı",
+  "pwa_renamed": "PWA ve ana ekran kısayolu yeniden adlandırıldı",
+  "pwa_removed": "PWA ve ana ekran kısayolu kaldırıldı",
+  "remove": "Kaldır",
+  "@remove": {
+    "description": "Button text for removing something"
+  },
+  "skip": "Atla",
+  "@skip": {
+    "description": "Skip button text"
+  },
+  "install_packages_permission": "Paket Kurulum İzni",
+  "@install_packages_permission": {
+    "description": "Install packages permission title"
+  },
+  "install_packages_permission_description": "Bu tarayıcıdan uygulama kurulumuna izin ver",
+  "@install_packages_permission_description": {
+    "description": "Install packages permission description"
+  },
+  "permission_install_packages_required": "Paket kurulum izni gerekli",
+  "@permission_install_packages_required": {
+    "description": "Install packages permission required message"
+  },
+  "storage_permission_install_packages_required": "Depolama ve Paket Kurulum İzni",
+  "@storage_permission_install_packages_required": {
+    "description": "Storage and install packages permission title"
+  },
+  "storage_permission_install_packages_description": "Solar Tarayıcı, indirmeler için depolama erişimine ve APK kurulumları için paket kurulumuna izin gerektirir",
+  "@storage_permission_install_packages_description": {
+    "description": "Storage and install packages permission description"
+  },
+  "software_team": "Yazılım Ekibi",
+  "@software_team": {
+    "description": "Software team label"
+  },
+  "download_image": "Resmi İndir",
+  "@download_image": {
+    "description": "Option to download an image"
+  },
+  "storage_permission_description": "Bu uygulama, indirme işlevi için dosyalara erişim izni gerektirir.",
+  "@storage_permission_description": {
+    "description": "Description text for the permission request"
+  },
+  "app_should_work_normally": "Uygulama artık tam işlevsellikle normal çalışmalıdır.",
+  "@app_should_work_normally": {
+    "description": "Description text shown when all permissions are granted"
+  },
+  "grant_permission": "İzin Ver",
+  "@grant_permission": {
+    "description": "Text for the permission grant button"
+  },
+  "incognito_mode": "Gizli Mod",
+  "@incognito_mode": {
+    "description": "Label for incognito mode"
+  },
+  "incognito_description": "Gizli modda:\n• Tarama geçmişi kaydedilmez\n• Sekmeleri kapattığınızda çerezler temizlenir\n• Hiçbir veri yerel olarak depolanmaz",
+  "@incognito_description": {
+    "description": "Description of incognito mode features"
+  },
+  "ai_provider": "AI Sağlayıcısı",
+  "@ai_provider": {
+    "description": "Label for AI provider selection"
+  },
+  "length_short": "Kısa",
+  "@length_short": {
+    "description": "Label for short summary length"
+  },
+  "length_medium": "Orta",
+  "@length_medium": {
+    "description": "Label for medium summary length"
+  },
+  "length_long": "Uzun",
+  "@length_long": {
+    "description": "Label for long summary length"
+  },
+  "add_to_pwa": "PWA'ya Ekle",
+  "@add_to_pwa": {
+    "description": "Option to add current website as a PWA"
+  },
+  "remove_from_pwa": "PWA'dan Kaldır",
+  "@remove_from_pwa": {
+    "description": "Option to remove website from PWA list"
+  },
+  "added_to_pwa": "PWA'ya Eklendi",
+  "@added_to_pwa": {
+    "description": "Confirmation message when site is added as PWA"
+  },
+  "removed_from_pwa": "PWA'dan Kaldırıldı",
+  "@removed_from_pwa": {
+    "description": "Confirmation message when site is removed from PWA list"
+  },
+  "pwa_info": "İlerici Web Uygulamaları, tarayıcı kontrolü olmadan kurulu uygulamalar gibi çalışır",
+  "@pwa_info": {
+    "description": "Information about what PWAs are"
+  },
+  "create_shortcut": "Kısayol Oluştur",
+  "@create_shortcut": {
+    "description": "Title for the shortcut creation dialog"
+  },
+  "enter_shortcut_name": "Bu kısayol için bir isim girin:",
+  "@enter_shortcut_name": {
+    "description": "Prompt for entering the shortcut name"
+  },
+  "shortcut_name": "Kısayol adı",
+  "@shortcut_name": {
+    "description": "Hint for the shortcut name input field"
+  },
+  "keep_tabs_open_description": "Oturumlar arasında sekmeleri açık tut",
+  "@keep_tabs_open_description": {
+    "description": "Description for keep tabs open setting"
+  },
+  "developer": "Geliştirici",
+  "@developer": {
+    "description": "Developer section title"
+  },
+  "reset_welcome_screen": "Hoş Geldin Ekranını Sıfırla",
+  "@reset_welcome_screen": {
+    "description": "Reset welcome screen option"
+  },
+  "welcome_screen_reset_message": "Bu, hoş geldin ekranını sıfırlayacak ve uygulamayı bir sonraki başlatışınızda tekrar görünecek.",
+  "@welcome_screen_reset_message": {
+    "description": "Dialog message for resetting welcome screen"
+  },
+  "available_buttons": "Mevcut düğmeler",
+  "@available_buttons": {
+    "description": "Label for available navigation buttons"
+  },
+  "pwa_renamed": "PWA yeniden adlandırıldı",
+  "@pwa_renamed": {
+    "description": "Confirmation message when PWA is renamed"
+  },
+  "pwa_removed": "PWA kaldırıldı",
+  "@pwa_removed": {
+    "description": "Confirmation message when PWA is removed"
+  },
+  "untitled": "Başlıksız",
+  "@untitled": {
+    "description": "Default title for untitled pages/tabs"
+  },
+  "show_welcome_screen_next_launch": "Bir sonraki açılışta hoş geldin ekranını göster",
+  "@show_welcome_screen_next_launch": {
+    "description": "Setting description for showing welcome screen"
+  },
+  "automatically_open_downloaded_files": "İndirilen dosyaları otomatik olarak aç",
+  "@automatically_open_downloaded_files": {
+    "description": "Setting description for auto-opening downloads"
+  },
+  "ask_where_to_save_files": "İndirmeden önce dosyaların kaydedileceği yeri sor",
+  "@ask_where_to_save_files": {
+    "description": "Setting description for asking download location"
+  },
+  "clear_all_history": "Tüm Geçmişi Temizle",
+  "@clear_all_history": {
+    "description": "Button text for clearing all Browse history"
+  },
+  "clear_all_history_confirm": "Bu işlem tüm tarama geçmişinizi kalıcı olarak silecektir. Bu işlem geri alınamaz.",
+  "@clear_all_history_confirm": {
+    "description": "Confirmation message for clearing all history"
+  },
+  "history_cleared": "Geçmiş temizlendi",
+  "@history_cleared": {
+    "description": "Confirmation message when history is cleared"
+  },
+  "navigation_controls": "Navigasyon Kontrolleri",
+  "@navigation_controls": {
+    "description": "Title for navigation controls settings"
+  },
+  "classic_navigation_description": "Klasik tarayıcı tarzı navigasyon kontrollerini kullan",
+  "@classic_navigation_description": {
+    "description": "Description for classic navigation setting"
+  },
+  "ai_settings": "AI Ayarları",
+  "@ai_settings": {
+    "description": "Title for AI settings section"
+  },
+  "ai_summary_settings": "AI Özet Ayarları",
+  "@ai_summary_settings": {
+    "description": "Title for AI summary settings"
+  },
+  "auto_open_downloads": "İndirmeleri Otomatik Aç",
+  "@auto_open_downloads": {
+    "description": "Setting title for auto-opening downloads"
+  },
+  "ask_download_location_title": "İndirme Konumunu Sor",
+  "@ask_download_location_title": {
+    "description": "Setting title for asking download location"
+  },
+  "enable_incognito_mode": "Gizli Modu Etkinleştir",
+  "@enable_incognito_mode": {
+    "description": "Button to enable incognito mode"
+  },
+  "disable_incognito_mode": "Gizli Modu Devre Dışı Bırak",
+  "@disable_incognito_mode": {
+    "description": "Button to disable incognito mode"
+  },
+  "close_all_tabs": "Tüm Sekmeleri Kapat",
+  "@close_all_tabs": {
+    "description": "Button to close all tabs"
+  },
+  "close_all_tabs_confirm": "Tüm sekmeleri kapatmak istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+  "@close_all_tabs_confirm": {
+    "description": "Confirmation message for closing all tabs"
+  },
+  "close_all_tabs_in_group": "\"{groupName}\" grubundaki tüm sekmeleri kapat? Bu işlem geri alınamaz.",
+  "@close_all_tabs_in_group": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    },
+    "description": "Confirmation message for closing all tabs in a group"
+  },
+  "other": "Diğer",
+  "@other": {
+    "description": "Settings group title for other options"
+  },
+  "ai": "AI",
+  "@ai": {
+    "description": "Settings group title for AI options"
+  },
+  "rearrange_navigation_buttons": "Navigasyon düğmelerini yeniden düzenle",
+  "@rearrange_navigation_buttons": {
+    "description": "Setting subtitle for navigation customization"
+  },
+  "current_navigation_bar": "Mevcut Navigasyon Çubuğu:",
+  "@current_navigation_bar": {
+    "description": "Label for current navigation bar display"
+  },
+  "tap_to_check_permission_status": "İzin durumunu kontrol etmek için dokunun",
+  "@tap_to_check_permission_status": {
+    "description": "Instruction for checking permission status"
+  },
+  "create_tab_group": "Sekme Grubu Oluştur",
+  "@create_tab_group": {
+    "description": "Dialog title for creating a new tab group"
+  },
+  "manage_groups": "Grupları Yönet",
+  "@manage_groups": {
+    "description": "Dialog title for managing tab groups"
+  },
+  "no_groups_created_yet": "Henüz grup oluşturulmadı",
+  "@no_groups_created_yet": {
+    "description": "Message when no tab groups exist"
+  },
+  "group_name": "Grup Adı",
+  "@group_name": {
+    "description": "Input label for tab group name"
+  },
+  "color": "Renk",
+  "@color": {
+    "description": "Color selection label"
+  },
+  "close_group": "Grubu Kapat",
+  "@close_group": {
+    "description": "Dialog title for closing a tab group"
+  },
+  "create": "Oluştur",
+  "summarize": "Özetle",
+  "no_summaries_available": "Özet mevcut değil",
+  "page_summary": "Sayfa Özeti",
+  "failed_to_generate_summary": "Özet oluşturulamadı",
+  "try_again": "Tekrar Dene",
+  "no_page_to_summarize": "Özetlenecek sayfa yok",
+  "no_content_found_to_summarize": "Özetlenecek içerik bulunamadı",
+  "theme": "Tema",
+  "check": "Kontrol Et",
+  "pwa": "PWA",
+  "confirm": "Onayla",
+  "input_required": "Giriş Gerekli",
+  "alert": "Uyarı",
+  "add_tabs_to_group": "Gruba Sekme Ekle",
+  "ungroup_tabs": "Sekmeleri ayır",
+  "delete_group": "Grubu sil",
+  "copy_summary": "Özeti Kopyala"
 }

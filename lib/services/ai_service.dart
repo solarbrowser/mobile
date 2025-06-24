@@ -52,14 +52,11 @@ class AIService {
       final contentItems = response.choices.first.message.content;
       if (contentItems == null || contentItems.isEmpty) {
         throw Exception('Empty response from AI');
-      }
-
-      final content = contentItems.map((item) => item.text).join(' ').trim();
+      }      final content = contentItems.map((item) => item.text).join(' ').trim();
       if (content.isEmpty) {
         throw Exception('Empty text content from AI');
       }
 
-      await saveSummary(content);
       return content;
     } catch (e) {
       final error = e.toString().toLowerCase();
@@ -93,17 +90,30 @@ class AIService {
     
     return results;
   }
-
-  static Future<void> saveSummary(String summary) async {
+  static Future<void> saveSummary(String summary, [String? url, String? title]) async {
     final prefs = await SharedPreferences.getInstance();
     final summariesJson = prefs.getStringList(_summariesKey) ?? [];
+    
+    String siteName = 'Unknown Site';
+    if (url != null && url.isNotEmpty) {
+      try {
+        final uri = Uri.parse(url);
+        siteName = title?.isNotEmpty == true ? title! : uri.host.replaceFirst('www.', '');
+      } catch (e) {
+        siteName = title ?? 'Unknown Site';
+      }
+    } else if (title?.isNotEmpty == true) {
+      siteName = title!;
+    }
     
     // Create new summary with timestamp
     final newSummary = {
       'text': summary,
       'date': DateTime.now().toIso8601String(),
       'model': 'GPT-3.5 Turbo',
-      'language': 'English'
+      'language': 'English',
+      'url': url ?? '',
+      'siteName': siteName,
     };
     
     // Add new summary at the beginning

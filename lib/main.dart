@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/services.dart';
@@ -27,9 +25,8 @@ void main() async {
     FlutterError.presentError(details);
     // Log errors to analytics service
   };
-  
-  // Setup method channel to communicate with the platform
-  final methodChannel = MethodChannel('app.channel.shared.data');
+    // Setup method channel to communicate with the platform
+  // final methodChannel = MethodChannel('app.channel.shared.data'); // Currently unused
   
   // Register platform plugins
   final systemLocale = WidgetsBinding.instance.window.locale.languageCode;
@@ -116,7 +113,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   late Locale _locale;
   late bool _isDarkMode;
-  late String _searchEngine;
+  // late String _searchEngine; // Currently unused
   bool _initialCheckDone = false;
   String? _initialPwaUrl;
   String? _initialPwaTitle;
@@ -134,7 +131,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _searchEngine = prefs.getString('searchEngine') ?? 'google';
+      // _searchEngine = prefs.getString('searchEngine') ?? 'google'; // Currently unused
     });
   }
 
@@ -192,7 +189,7 @@ class _MyAppState extends State<MyApp> {
 
   void _handleSearchEngineChange(String searchEngine) {
     setState(() {
-      _searchEngine = searchEngine;
+      // _searchEngine = searchEngine; // Currently unused
     });
   }
   // Pre-defined themes for performance

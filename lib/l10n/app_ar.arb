@@ -245,6 +245,406 @@
   },
   "searchTheWeb": "البحث في الويب",
   "recentSearches": "عمليات البحث الأخيرة",
+  "classic_navigation": "التنقل الكلاسيكي",  "classic_navigation_description": "عرض أزرار التنقل في أسفل الشاشة",
+  "ok": "موافق",
+  "welcome_screen_reset": "إعادة تعيين شاشة الترحيب",
+  "welcome_screen_reset_message": "ستظهر شاشة الترحيب في بدء التطبيق التالي. يرجى إعادة تشغيل التطبيق لرؤية سياسة الخصوصية وشروط الخدمة المحدثة.",
+  "customize_navigation": "تخصيص التنقل",
+  "bookmark_removed": "تمت إزالة الإشارة المرجعية",
+  "navigation_buttons": "أزرار التنقل",
+  "available_buttons": "الأزرار المتاحة",
+  "enabled_buttons": "الأزرار المفعلة",
+  "button_back": "الخلف",
+  "button_forward": "الأمام",
+  "button_bookmark": "إشارة مرجعية",
+  "button_share": "مشاركة",
+  "button_menu": "القائمة",
+  "button_bookmarks": "الإشارات المرجعية",
+  "navigation_bar_animations": "رسوم متحركة لشريط التنقل",
+  "restore_defaults": "استعادة الافتراضية",  "drag_to_reorder": "اسحب لإعادة الترتيب",
+  "add": "إضافة",  "restored_tab": "علامة تبويب مستعادة",
+  "rename": "إعادة تسمية",
+  "rename_pwa": "إعادة تسمية PWA",
+  "pwa_name": "اسم PWA",
+  "pwa_renamed": "تم إعادة تسمية PWA واختصار الشاشة الرئيسية",  "pwa_removed": "تم إزالة PWA واختصار الشاشة الرئيسية",
+  "remove": "إزالة",
+  "@remove": {
+    "description": "Button text for removing something"
+  },
+
+  "skip": "تخطي",
+  "@skip": {
+    "description": "Skip button text"
+  },
+  "install_packages_permission": "إذن تثبيت الحزم",
+  "@install_packages_permission": {
+    "description": "Install packages permission title"
+  },
+  "install_packages_permission_description": "السماح بتثبيت التطبيقات من هذا المتصفح",
+  "@install_packages_permission_description": {
+    "description": "Install packages permission description"
+  },
+  "permission_install_packages_required": "إذن تثبيت الحزم مطلوب",
+  "@permission_install_packages_required": {
+    "description": "Install packages permission required message"
+  },
+  "storage_permission_install_packages_required": "إذن التخزين وتثبيت الحزم",
+  "@storage_permission_install_packages_required": {
+    "description": "Storage and install packages permission title"
+  },
+  "storage_permission_install_packages_description": "متصفح Solar يحتاج إذن للوصول للتخزين للتنزيلات وتثبيت الحزم لتثبيت APK",
+  "@storage_permission_install_packages_description": {
+    "description": "Storage and install packages permission description"
+  },
+  "photoncore_version": "إصدار Photoncore",
+  "@photoncore_version": {
+    "description": "Label for Photoncore version in settings"
+  },
+  "storage_permission_granted": "تم منح جميع الأذونات",
+  "@storage_permission_granted": {
+    "description": "Title shown when all permissions are granted"
+  },
+  "storage_permission_description": "هذا التطبيق يحتاج إذن للوصول للملفات لوظيفة التنزيل.",
+  "@storage_permission_description": {
+    "description": "Description text for the permission request"
+  },
+  "app_should_work_normally": "يجب أن يعمل التطبيق بشكل طبيعي مع الوظائف الكاملة.",
+  "@app_should_work_normally": {
+    "description": "Description text shown when all permissions are granted"
+  },
+  "grant_permission": "منح الإذن",
+  "@grant_permission": {
+    "description": "Text for the permission grant button"
+  },
+  "incognito_mode": "وضع التخفي",
+  "@incognito_mode": {
+    "description": "Label for incognito mode"
+  },
+  "incognito_description": "في وضع التخفي:\n• لا يتم حفظ سجل التصفح\n• يتم مسح ملفات تعريف الارتباط عند إغلاق علامات التبويب\n• لا يتم تخزين أي بيانات محلياً",
+  "@incognito_description": {
+    "description": "Description of incognito mode features"
+  },
+  "previous_summaries": "الملخصات السابقة",
+  "@previous_summaries": {
+    "description": "Label for accessing previously generated summaries"
+  },
+  "summarize_selected": "تلخيص المحدد",
+  "@summarize_selected": {
+    "description": "Label for summarizing selected text"
+  },
+  "summarize_page": "تلخيص الصفحة",
+  "@summarize_page": {
+    "description": "Label for summarizing the entire page"
+  },
+  "ai_preferences": "تفضيلات الذكاء الاصطناعي",
+  "@ai_preferences": {
+    "description": "Label for AI preferences section"
+  },
+  "ai_provider": "مزود الذكاء الاصطناعي",
+  "@ai_provider": {
+    "description": "Label for AI provider selection"
+  },
+  "summary_length": "طول الملخص",
+  "@summary_length": {
+    "description": "Label for AI summary length preference"
+  },
+  "summary_language": "لغة الملخص",
+  "@summary_language": {
+    "description": "Label for AI summary language preference"
+  },
+  "length_short": "قصير",
+  "@length_short": {
+    "description": "Label for short summary length"
+  },
+  "length_medium": "متوسط",
+  "@length_medium": {
+    "description": "Label for medium summary length"
+  },
+  "length_long": "طويل",
+  "@length_long": {
+    "description": "Label for long summary length"
+  },
+  "summary_length_short": "قصير (75 كلمة)",
+  "@summary_length_short": {
+    "description": "Label for short summary length with word count"
+  },
+  "summary_length_medium": "متوسط (150 كلمة)",
+  "@summary_length_medium": {
+    "description": "Label for medium summary length with word count"
+  },
+  "summary_length_long": "طويل (250 كلمة)",
+  "@summary_length_long": {
+    "description": "Label for long summary length with word count"
+  },
+  "summary_language_english": "الإنجليزية",
+  "@summary_language_english": {
+    "description": "Label for English language option"
+  },
+  "summary_language_turkish": "التركية",
+  "@summary_language_turkish": {
+    "description": "Label for Turkish language option"
+  },
+  "add_to_pwa": "إضافة إلى PWA",
+  "@add_to_pwa": {
+    "description": "Option to add current website as a PWA"
+  },
+  "remove_from_pwa": "إزالة من PWA",
+  "@remove_from_pwa": {
+    "description": "Option to remove website from PWA list"
+  },
+  "added_to_pwa": "تمت الإضافة إلى PWA",
+  "@added_to_pwa": {
+    "description": "Confirmation message when site is added as PWA"
+  },
+  "removed_from_pwa": "تمت الإزالة من PWA",
+  "@removed_from_pwa": {
+    "description": "Confirmation message when site is removed from PWA list"
+  },
+  "pwa_info": "تطبيقات الويب التقدمية تعمل مثل التطبيقات المثبتة بدون عناصر تحكم المتصفح",
+  "@pwa_info": {
+    "description": "Information about what PWAs are"
+  },
+  "create_shortcut": "إنشاء اختصار",
+  "@create_shortcut": {
+    "description": "Title for the shortcut creation dialog"
+  },
+  "enter_shortcut_name": "أدخل اسماً لهذا الاختصار:",
+  "@enter_shortcut_name": {
+    "description": "Prompt for entering the shortcut name"
+  },
+  "shortcut_name": "اسم الاختصار",
+  "@shortcut_name": {
+    "description": "Hint for the shortcut name input field"
+  },
+  "keep_tabs_open_description": "الاحتفاظ بعلامات التبويب مفتوحة بين الجلسات",
+  "@keep_tabs_open_description": {
+    "description": "Description for keep tabs open setting"
+  },
+  "developer": "المطور",
+  "@developer": {
+    "description": "Developer section title"
+  },  "reset_welcome_screen": "إعادة تعيين شاشة الترحيب",
+  "@reset_welcome_screen": {
+    "description": "Reset welcome screen option"
+  },
+  "restored_tab": "تم استعادة علامة التبويب",
+  "@restored_tab": {
+    "description": "Message when a tab is restored"
+  },
+  "welcome_screen_reset": "إعادة تعيين شاشة الترحيب",
+  "@welcome_screen_reset": {
+    "description": "Dialog title for resetting welcome screen"
+  },
+  "welcome_screen_reset_message": "سيؤدي هذا إلى إعادة تعيين شاشة الترحيب بحيث تظهر مرة أخرى في المرة القادمة التي تبدأ فيها التطبيق.",
+  "@welcome_screen_reset_message": {
+    "description": "Dialog message for resetting welcome screen"
+  },
+  "ok": "موافق",
+  "@ok": {
+    "description": "OK button text"
+  },
+  "customize_navigation": "تخصيص التنقل",
+  "@customize_navigation": {
+    "description": "Title for navigation customization"
+  },
+  "button_back": "رجوع",
+  "@button_back": {
+    "description": "Back button label"
+  },
+  "button_forward": "تقدم",
+  "@button_forward": {
+    "description": "Forward button label"
+  },
+  "button_bookmark": "إشارة مرجعية",
+  "@button_bookmark": {
+    "description": "Bookmark button label"
+  },
+  "button_bookmarks": "إشارات مرجعية",
+  "@button_bookmarks": {
+    "description": "Bookmarks button label"
+  },
+  "button_share": "مشاركة",
+  "@button_share": {
+    "description": "Share button label"
+  },
+  "button_menu": "قائمة",
+  "@button_menu": {
+    "description": "Menu button label"
+  },
+  "available_buttons": "الأزرار المتاحة",
+  "@available_buttons": {
+    "description": "Label for available navigation buttons"
+  },
+  "add": "إضافة",
+  "@add": {
+    "description": "Add button text"
+  },
+  "rename_pwa": "إعادة تسمية PWA",
+  "@rename_pwa": {
+    "description": "Option to rename a PWA"
+  },
+  "pwa_name": "اسم PWA",
+  "@pwa_name": {
+    "description": "Hint for PWA name input field"
+  },
+  "rename": "إعادة تسمية",
+  "@rename": {
+    "description": "Rename button text"
+  },
+  "pwa_renamed": "تم إعادة تسمية PWA",
+  "@pwa_renamed": {
+    "description": "Confirmation message when PWA is renamed"
+  },
+  "remove": "إزالة",
+  "@remove": {
+    "description": "Remove button text"
+  },
+  "pwa_removed": "تم إزالة PWA",
+  "@pwa_removed": {
+    "description": "Confirmation message when PWA is removed"
+  },  "bookmark_removed": "تم حذف الإشارة المرجعية",
+  "@bookmark_removed": {
+    "description": "Confirmation message when bookmark is removed"
+  },
+  "untitled": "بلا عنوان",
+  "@untitled": {
+    "description": "Default title for untitled pages/tabs"
+  },
+  "show_welcome_screen_next_launch": "إظهار شاشة الترحيب في التشغيل التالي",
+  "@show_welcome_screen_next_launch": {
+    "description": "Setting description for showing welcome screen"
+  },
+  "automatically_open_downloaded_files": "فتح الملفات المنزلة تلقائياً",
+  "@automatically_open_downloaded_files": {
+    "description": "Setting description for auto-opening downloads"
+  },
+  "ask_where_to_save_files": "السؤال عن مكان حفظ الملفات قبل التنزيل",
+  "@ask_where_to_save_files": {
+    "description": "Setting description for asking download location"
+  },
+  "clear_all_history": "مسح كامل التاريخ",
+  "@clear_all_history": {
+    "description": "Button text for clearing all browsing history"
+  },
+  "clear_all_history_confirm": "سيؤدي هذا إلى حذف تاريخ التصفح بالكامل نهائياً. لا يمكن التراجع عن هذا الإجراء.",
+  "@clear_all_history_confirm": {
+    "description": "Confirmation message for clearing all history"
+  },
+  "history_cleared": "تم مسح التاريخ",
+  "@history_cleared": {
+    "description": "Confirmation message when history is cleared"
+  },
+  "navigation_controls": "عناصر التحكم في التنقل",
+  "@navigation_controls": {
+    "description": "Title for navigation controls settings"
+  },
   "classic_navigation": "التنقل الكلاسيكي",
-  "classic_navigation_description": "عرض أزرار التنقل في أسفل الشاشة"
+  "@classic_navigation": {
+    "description": "Label for classic navigation mode"
+  },
+  "classic_navigation_description": "استخدام عناصر التحكم في التنقل بنمط المتصفح الكلاسيكي",
+  "@classic_navigation_description": {
+    "description": "Description for classic navigation setting"
+  },
+  "ai_settings": "إعدادات الذكاء الاصطناعي",
+  "@ai_settings": {
+    "description": "Title for AI settings section"
+  },
+  "ai_summary_settings": "إعدادات ملخص الذكاء الاصطناعي",
+  "@ai_summary_settings": {
+    "description": "Title for AI summary settings"
+  },
+  "auto_open_downloads": "فتح التحميلات تلقائياً",
+  "@auto_open_downloads": {
+    "description": "Setting title for auto-opening downloads"
+  },  "ask_download_location_title": "السؤال عن موقع التحميل",
+  "@ask_download_location_title": {
+    "description": "Setting title for asking download location"
+  },
+  "enable_incognito_mode": "تفعيل الوضع الخفي",
+  "@enable_incognito_mode": {
+    "description": "Button to enable incognito mode"
+  },
+  "disable_incognito_mode": "إيقاف الوضع الخفي",
+  "@disable_incognito_mode": {
+    "description": "Button to disable incognito mode"
+  },
+  "close_all_tabs": "إغلاق جميع علامات التبويب",
+  "@close_all_tabs": {
+    "description": "Button to close all tabs"
+  },
+  "close_all_tabs_confirm": "هل أنت متأكد من أنك تريد إغلاق جميع علامات التبويب؟ لا يمكن التراجع عن هذا الإجراء.",
+  "@close_all_tabs_confirm": {
+    "description": "Confirmation message for closing all tabs"
+  },
+  "close_all_tabs_in_group": "إغلاق جميع علامات التبويب في \"{groupName}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+  "@close_all_tabs_in_group": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    },
+    "description": "Confirmation message for closing all tabs in a group"
+  },
+  "other": "أخرى",
+  "@other": {
+    "description": "Settings group title for other options"
+  },
+  "ai": "الذكاء الاصطناعي",
+  "@ai": {
+    "description": "Settings group title for AI options"
+  },
+  "rearrange_navigation_buttons": "إعادة ترتيب أزرار التنقل",
+  "@rearrange_navigation_buttons": {
+    "description": "Setting subtitle for navigation customization"
+  },
+  "current_navigation_bar": "شريط التنقل الحالي:",
+  "@current_navigation_bar": {
+    "description": "Label for current navigation bar display"
+  },
+  "tap_to_check_permission_status": "اضغط للتحقق من حالة الإذن",
+  "@tap_to_check_permission_status": {
+    "description": "Instruction for checking permission status"
+  },
+  "create_tab_group": "إنشاء مجموعة علامات تبويب",
+  "@create_tab_group": {
+    "description": "Dialog title for creating a new tab group"
+  },
+  "manage_groups": "إدارة المجموعات",
+  "@manage_groups": {
+    "description": "Dialog title for managing tab groups"
+  },
+  "no_groups_created_yet": "لم يتم إنشاء مجموعات بعد",
+  "@no_groups_created_yet": {
+    "description": "Message when no tab groups exist"
+  },
+  "group_name": "اسم المجموعة",
+  "@group_name": {
+    "description": "Input label for tab group name"
+  },  "color": "اللون",
+  "@color": {
+    "description": "Color selection label"
+  },  "close_group": "إغلاق المجموعة",
+  "@close_group": {
+    "description": "Dialog title for closing a tab group"
+  },
+  "create": "إنشاء",
+  "summarize": "تلخيص",
+  "previous_summaries": "الملخصات السابقة",
+  "no_summaries_available": "لا توجد ملخصات متاحة",
+  "page_summary": "ملخص الصفحة",
+  "failed_to_generate_summary": "فشل في إنشاء الملخص",
+  "try_again": "حاول مرة أخرى",
+  "no_page_to_summarize": "لا توجد صفحة للتلخيص",  "no_content_found_to_summarize": "لم يتم العثور على محتوى للتلخيص",
+  "theme": "السمة",
+  "check": "فحص",
+  "pwa": "PWA",
+  "confirm": "تأكيد",
+  "input_required": "مطلوب إدخال",
+  "alert": "تحذير",
+  "settings": "الإعدادات",
+  "add_tabs_to_group": "إضافة علامات تبويب إلى المجموعة",
+  "ungroup_tabs": "إلغاء تجميع علامات التبويب",
+  "delete_group": "حذف المجموعة",
+  "copy_summary": "نسخ الملخص"
 }

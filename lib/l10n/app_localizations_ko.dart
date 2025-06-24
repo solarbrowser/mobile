@@ -388,19 +388,19 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
-  String get install_packages_permission => 'Install Packages Permission';
+  String get install_packages_permission => '패키지 설치 권한';
 
   @override
-  String get install_packages_permission_description => 'Allow installation of apps from this browser';
+  String get install_packages_permission_description => '이 브라우저에서 앱 설치 허용';
 
   @override
-  String get permission_install_packages_required => 'Install packages permission required';
+  String get permission_install_packages_required => '패키지 설치 권한이 필요합니다';
 
   @override
-  String get storage_permission_install_packages_required => 'Storage & Install Packages Permission';
+  String get storage_permission_install_packages_required => '저장소 및 패키지 설치 권한';
 
   @override
-  String get storage_permission_install_packages_description => 'Solar Browser needs permission to access storage for downloads and install packages for APK installations';
+  String get storage_permission_install_packages_description => 'Solar 브라우저는 다운로드를 위한 저장소 액세스와 APK 설치를 위한 패키지 설치 권한이 필요합니다';
 
   @override
   String get clear_downloads_history_confirm => '다운로드 기록만 삭제되며 다운로드한 파일은 삭제되지 않습니다.';
@@ -471,7 +471,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get classic_navigation => '클래식 내비게이션';
 
   @override
-  String get classic_navigation_description => '화면 하단에 탐색 버튼 표시';
+  String get classic_navigation_description => '클래식 브라우저 스타일 내비게이션 컨트롤 사용';
 
   @override
   String get exit_confirmation => '앱 종료';
@@ -480,10 +480,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get flutter_version => 'Flutter 버전';
 
   @override
-  String get photoncore_version => 'Photoncore Version';
+  String get photoncore_version => 'Photoncore 버전';
 
   @override
-  String get engine_version => 'Engine Version';
+  String get engine_version => '엔진 버전';
 
   @override
   String get software_team => '소프트웨어 팀';
@@ -510,95 +510,95 @@ class AppLocalizationsKo extends AppLocalizations {
   String get press_back_to_exit => '한 번 더 누르면 종료됩니다';
 
   @override
-  String get storage_permission_required => 'Give Permission';
+  String get storage_permission_required => '권한 부여';
 
   @override
   String get storage_permission_granted => '저장소 권한이 승인되었습니다';
 
   @override
-  String get storage_permission_description => 'This app needs permission to access files for download functionality.';
+  String get storage_permission_description => '이 앱은 다운로드 기능을 위해 파일 액세스 권한이 필요합니다.';
 
   @override
-  String get app_should_work_normally => 'The app should now work normally with full functionality.';
+  String get app_should_work_normally => '앱이 완전한 기능으로 정상적으로 작동해야 합니다.';
 
   @override
-  String get grant_permission => 'Give Permission';
+  String get grant_permission => '권한 부여';
 
   @override
-  String get storage_permission_denied => 'Storage permission is required to download files';
+  String get storage_permission_denied => '파일을 다운로드하려면 저장소 권한이 필요합니다';
 
   @override
-  String get new_incognito_tab => 'New Incognito Tab';
+  String get new_incognito_tab => '새 시크릿 탭';
 
   @override
-  String get incognito_mode => 'Incognito Mode';
+  String get incognito_mode => '시크릿 모드';
 
   @override
-  String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
+  String get incognito_description => '시크릿 모드에서:\n• 브라우징 기록이 저장되지 않습니다\n• 탭을 닫을 때 쿠키가 삭제됩니다\n• 데이터가 로컬에 저장되지 않습니다';
 
   @override
-  String get error_opening_file => 'Error opening file';
+  String get error_opening_file => '파일 열기 오류';
 
   @override
-  String get download_in_progress => 'Download in progress';
+  String get download_in_progress => '다운로드 진행 중';
 
   @override
-  String get download_paused => 'Download paused';
+  String get download_paused => '다운로드 일시정지';
 
   @override
-  String get download_canceled => 'Download canceled';
+  String get download_canceled => '다운로드 취소됨';
 
   @override
   String download_error(String error) {
-    return 'Download error: $error';
+    return '다운로드 오류: $error';
   }
 
   @override
-  String get open_downloads_folder => 'Open downloads folder';
+  String get open_downloads_folder => '다운로드 폴더 열기';
 
   @override
-  String get file_exists => 'File already exists';
+  String get file_exists => '파일이 이미 존재합니다';
 
   @override
-  String get file_saved => 'File saved to Downloads';
+  String get file_saved => '파일이 다운로드에 저장되었습니다';
 
   @override
-  String get no_tabs_open => 'No tabs open';
+  String get no_tabs_open => '열린 탭이 없습니다';
 
   @override
-  String get incognito => 'Incognito';
+  String get incognito => '시크릿';
 
   @override
-  String get clear_all => 'Clear All';
+  String get clear_all => '모두 지우기';
 
   @override
-  String get clear_history => 'Clear History';
+  String get clear_history => '기록 지우기';
 
   @override
-  String get clear_history_confirmation => 'Are you sure you want to clear your browsing history?';
+  String get clear_history_confirmation => '브라우징 기록을 지우시겠습니까?';
 
   @override
-  String get no_history => 'No browsing history';
+  String get no_history => '브라우징 기록이 없습니다';
 
   @override
-  String get today => 'Today';
+  String get today => '오늘';
 
   @override
-  String get yesterday => 'Yesterday';
+  String get yesterday => '어제';
 
   @override
   String days_ago(int days) {
-    return '$days days ago';
+    return '$days일 전';
   }
 
   @override
   String weeks_ago(int weeks) {
-    return '$weeks weeks ago';
+    return '$weeks주 전';
   }
 
   @override
   String months_ago(int months) {
-    return '$months months ago';
+    return '$months개월 전';
   }
 
   @override
@@ -632,19 +632,19 @@ class AppLocalizationsKo extends AppLocalizations {
   String get recentSearches => '최근 검색';
 
   @override
-  String get previous_summaries => 'Previous Summaries';
+  String get previous_summaries => '이전 요약';
 
   @override
-  String get summarize_selected => 'Summarize Selected';
+  String get summarize_selected => '선택된 부분 요약';
 
   @override
-  String get summarize_page => 'Summarize Page';
+  String get summarize_page => '페이지 요약';
 
   @override
-  String get ai_preferences => 'AI Preferences';
+  String get ai_preferences => 'AI 설정';
 
   @override
-  String get ai_provider => 'AI Provider';
+  String get ai_provider => 'AI 제공업체';
 
   @override
   String get summary_length => '요약 길이';
@@ -653,53 +653,256 @@ class AppLocalizationsKo extends AppLocalizations {
   String get summary_language => '요약 언어';
 
   @override
-  String get length_short => 'Short';
+  String get length_short => '짧게';
 
   @override
-  String get length_medium => 'Medium';
+  String get length_medium => '보통';
 
   @override
-  String get length_long => 'Long';
+  String get length_long => '길게';
 
   @override
-  String get summary_length_short => 'Short (75 words)';
+  String get summary_length_short => '짧게 (75단어)';
 
   @override
-  String get summary_length_medium => 'Medium (150 words)';
+  String get summary_length_medium => '보통 (150단어)';
 
   @override
-  String get summary_length_long => 'Long (250 words)';
+  String get summary_length_long => '길게 (250단어)';
 
   @override
-  String get summary_language_english => 'English';
+  String get summary_language_english => '영어';
 
   @override
-  String get summary_language_turkish => 'Türkçe';
+  String get summary_language_turkish => '터키어';
 
   @override
-  String get add_to_pwa => 'Add to PWA';
+  String get add_to_pwa => 'PWA에 추가';
 
   @override
-  String get remove_from_pwa => 'Remove from PWA';
+  String get remove_from_pwa => 'PWA에서 제거';
 
   @override
-  String get added_to_pwa => 'Added to PWA';
+  String get added_to_pwa => 'PWA에 추가됨';
 
   @override
-  String get removed_from_pwa => 'Removed from PWA';
+  String get removed_from_pwa => 'PWA에서 제거됨';
 
   @override
-  String get pwa_info => 'Progressive Web Apps run like installed apps without browser controls';
+  String get pwa_info => '프로그레시브 웹 앱은 브라우저 컨트롤 없이 설치된 앱처럼 실행됩니다';
 
   @override
-  String get create_shortcut => 'Create Shortcut';
+  String get create_shortcut => '바로가기 만들기';
 
   @override
-  String get enter_shortcut_name => 'Enter a name for this shortcut:';
+  String get enter_shortcut_name => '이 바로가기의 이름을 입력하세요:';
 
   @override
-  String get shortcut_name => 'Shortcut name';
+  String get shortcut_name => '바로가기 이름';
 
   @override
-  String get add => 'ADD';
+  String get keep_tabs_open_description => '세션 간에 탭 열어두기';
+
+  @override
+  String get developer => '개발자';
+
+  @override
+  String get reset_welcome_screen => '환영 화면 재설정';
+
+  @override
+  String get restored_tab => '복원된 탭';
+
+  @override
+  String get welcome_screen_reset => '환영 화면 재설정';
+
+  @override
+  String get welcome_screen_reset_message => '이렇게 하면 환영 화면이 재설정되어 다음에 앱을 시작할 때 다시 나타납니다.';
+
+  @override
+  String get ok => '확인';
+
+  @override
+  String get customize_navigation => '내비게이션 사용자 정의';
+
+  @override
+  String get button_back => '뒤로';
+
+  @override
+  String get button_forward => '앞으로';
+
+  @override
+  String get button_bookmark => '북마크';
+
+  @override
+  String get button_bookmarks => '북마크';
+
+  @override
+  String get button_share => '공유';
+
+  @override
+  String get button_menu => '메뉴';
+
+  @override
+  String get available_buttons => '사용 가능한 버튼';
+
+  @override
+  String get add => '추가';
+
+  @override
+  String get rename_pwa => 'PWA 이름 바꾸기';
+
+  @override
+  String get pwa_name => 'PWA 이름';
+
+  @override
+  String get rename => '이름 바꾸기';
+
+  @override
+  String get pwa_renamed => 'PWA 이름이 변경되었습니다';
+
+  @override
+  String get remove => '제거';
+
+  @override
+  String get pwa_removed => 'PWA가 제거되었습니다';
+
+  @override
+  String get bookmark_removed => '북마크가 제거되었습니다';
+
+  @override
+  String get untitled => '제목 없음';
+
+  @override
+  String get show_welcome_screen_next_launch => '다음 실행 시 환영 화면 표시';
+
+  @override
+  String get automatically_open_downloaded_files => '다운로드한 파일 자동으로 열기';
+
+  @override
+  String get ask_where_to_save_files => '다운로드 전에 파일 저장 위치 묻기';
+
+  @override
+  String get clear_all_history => '모든 기록 지우기';
+
+  @override
+  String get clear_all_history_confirm => '모든 탐색 기록이 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.';
+
+  @override
+  String get history_cleared => '기록이 지워졌습니다';
+
+  @override
+  String get navigation_controls => '내비게이션 컨트롤';
+
+  @override
+  String get ai_settings => 'AI Settings';
+
+  @override
+  String get ai_summary_settings => 'AI 요약 설정';
+
+  @override
+  String get ask_download_location_title => '다운로드 위치 묻기';
+
+  @override
+  String get enable_incognito_mode => '시크릿 모드 활성화';
+
+  @override
+  String get disable_incognito_mode => '시크릿 모드 비활성화';
+
+  @override
+  String get close_all_tabs => '모든 탭 닫기';
+
+  @override
+  String get close_all_tabs_confirm => '모든 탭을 닫으시겠습니까? 이 작업은 되돌릴 수 없습니다.';
+
+  @override
+  String close_all_tabs_in_group(String groupName) {
+    return '\"$groupName\"의 모든 탭을 닫으시겠습니까? 이 작업은 되돌릴 수 없습니다.';
+  }
+
+  @override
+  String get other => '기타';
+
+  @override
+  String get ai => 'AI';
+
+  @override
+  String get rearrange_navigation_buttons => '내비게이션 버튼 재배열';
+
+  @override
+  String get current_navigation_bar => '현재 내비게이션 바:';
+
+  @override
+  String get tap_to_check_permission_status => '권한 상태를 확인하려면 탭하세요';
+
+  @override
+  String get create_tab_group => '탭 그룹 만들기';
+
+  @override
+  String get manage_groups => '그룹 관리';
+
+  @override
+  String get no_groups_created_yet => '아직 생성된 그룹이 없습니다';
+
+  @override
+  String get group_name => '그룹 이름';
+
+  @override
+  String get color => '색상';
+
+  @override
+  String get close_group => '그룹 닫기';
+
+  @override
+  String get create => '생성';
+
+  @override
+  String get summarize => '요약';
+
+  @override
+  String get no_summaries_available => '사용 가능한 요약이 없습니다';
+
+  @override
+  String get page_summary => '페이지 요약';
+
+  @override
+  String get failed_to_generate_summary => '요약 생성 실패';
+
+  @override
+  String get try_again => '다시 시도';
+
+  @override
+  String get no_page_to_summarize => '요약할 페이지가 없습니다';
+
+  @override
+  String get no_content_found_to_summarize => '요약할 콘텐츠를 찾을 수 없습니다';
+
+  @override
+  String get theme => '테마';
+
+  @override
+  String get check => '확인';
+
+  @override
+  String get pwa => 'PWA';
+
+  @override
+  String get confirm => '확인';
+
+  @override
+  String get input_required => '입력 필요';
+
+  @override
+  String get alert => '알림';
+
+  @override
+  String get add_tabs_to_group => '그룹에 탭 추가';
+
+  @override
+  String get ungroup_tabs => '탭 그룹 해제';
+
+  @override
+  String get delete_group => '그룹 삭제';
+
+  @override
+  String get copy_summary => '요약 복사';
 }

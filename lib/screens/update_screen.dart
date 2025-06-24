@@ -220,9 +220,8 @@ class _UpdateScreenState extends State<UpdateScreen> with SingleTickerProviderSt
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
-                          ),
-                          child: Text(
-                            'OK',
+                          ),                          child: Text(
+                            AppLocalizations.of(context)!.ok,
                             style: TextStyle(
                               fontSize: isLargeScreen ? 20 : 16,
                               fontWeight: FontWeight.bold,

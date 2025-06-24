@@ -1,25 +1,25 @@
-{
+﻿{
   "@@locale": "pt",
   
   "welcomeToSolar": "Bem-vindo ao Solar",
-  "welcomeDescription": "Um navegador moderno, rápido e seguro",
-  "termsOfService": "Ao continuar, você concorda com nossos Termos de Serviço e Política de Privacidade",
+  "welcomeDescription": "Um navegador moderno, rÃ¡pido e seguro",
+  "termsOfService": "Ao continuar, vocÃª concorda com nossos Termos de ServiÃ§o e PolÃ­tica de Privacidade",
   "chooseLanguage": "Escolha seu idioma",
   "chooseTheme": "Escolha seu tema",
   "chooseSearchEngine": "Escolha seu mecanismo de busca",
   "lightTheme": "Claro",
   "darkTheme": "Escuro",
-  "next": "Próximo",
+  "next": "PrÃ³ximo",
   "back": "Voltar",
   "skip": "Pular",
   "@skip": {
     "description": "Skip button text"
   },
-  "getStarted": "Começar",
-  "welcomeSubtitle": "Um navegador moderno, rápido e seguro para você",
+  "getStarted": "ComeÃ§ar",
+  "welcomeSubtitle": "Um navegador moderno, rÃ¡pido e seguro para vocÃª",
   "continueText": "Continuar",
   "updated": "Solar Browser atualizado!",
-  "version": "Versão {version}",
+  "version": "VersÃ£o {version}",
   "@version": {
     "placeholders": {
       "version": {
@@ -28,9 +28,9 @@
     }
   },
   "general": "Geral",
-  "appearance": "Aparência",
+  "appearance": "AparÃªncia",
   "downloads": "Downloads",
-  "settings": "Configurações",
+  "settings": "ConfiguraÃ§Ãµes",
   "help": "Ajuda",
   "about": "Sobre",
   "language": "Idioma",
@@ -41,24 +41,24 @@
   "download_location": "Local dos downloads",
   "ask_download_location": "Perguntar local de download",
   "rate_us": "Avalie-nos",
-  "privacy_policy": "Política de privacidade",
+  "privacy_policy": "PolÃ­tica de privacidade",
   "terms_of_use": "Termos de uso",
   "customize_browser": "Personalizar navegador",
   "learn_more": "Saiba mais",
   "tabs": "Abas",
   "keep_tabs_open": "Manter abas abertas",
-  "history": "Histórico",
+  "history": "HistÃ³rico",
   "bookmarks": "Favoritos",
-  "search_in_page": "Pesquisar na página",
+  "search_in_page": "Pesquisar na pÃ¡gina",
   "app_name": "Solar Browser",
-  "search_or_enter_address": "Pesquisar ou digitar endereço",
-  "current_location": "Localização atual",
-  "change_location": "Alterar localização",
+  "search_or_enter_address": "Pesquisar ou digitar endereÃ§o",
+  "current_location": "LocalizaÃ§Ã£o atual",
+  "change_location": "Alterar localizaÃ§Ã£o",
   "clear_browser_data": "Limpar dados do navegador",
-  "browsing_history": "Histórico de navegação",
+  "browsing_history": "HistÃ³rico de navegaÃ§Ã£o",
   "cookies": "Cookies",
   "cache": "Cache",
-  "form_data": "Dados de formulários",
+  "form_data": "Dados de formulÃ¡rios",
   "saved_passwords": "Senhas salvas",
   "cancel": "Cancelar",
   "clear": "Limpar",
@@ -67,7 +67,7 @@
   "no_downloads": "Nenhum download",
   "no_bookmarks": "Nenhum favorito",
   "download_started": "Download iniciado",
-  "download_completed": "Download concluído",
+  "download_completed": "Download concluÃ­do",
   "download_failed": "Falha no download",
   "open": "Abrir",
   "delete": "Excluir",
@@ -75,53 +75,53 @@
   "delete_bookmark": "Excluir favorito",
   "add_bookmark": "Adicionar aos favoritos",
   "bookmark_added": "Adicionado aos favoritos",
-  "bookmark_exists": "Já está nos favoritos",
+  "bookmark_exists": "JÃ¡ estÃ¡ nos favoritos",
   "share": "Compartilhar",
   "copy_link": "Copiar link",
   "paste_and_go": "Colar e ir",
-  "find_in_page": "Localizar na página",
-  "desktop_site": "Versão para desktop",
+  "find_in_page": "Localizar na pÃ¡gina",
+  "desktop_site": "VersÃ£o para desktop",
   "new_tab": "Nova aba",
   "close_tab": "Fechar aba",
-  "tab_overview": "Visão geral das abas",
-  "home": "Página inicial",
+  "tab_overview": "VisÃ£o geral das abas",
+  "home": "PÃ¡gina inicial",
   "reload": "Recarregar",
   "stop": "Parar",
-  "forward": "Avançar",
-  "more": "Mais opções",
+  "forward": "AvanÃ§ar",
+  "more": "Mais opÃ§Ãµes",
   "reset_browser": "Redefinir navegador",
-  "reset_browser_confirm": "Isso apagará todos os seus dados, incluindo histórico, favoritos e configurações. Esta ação não pode ser desfeita.",
+  "reset_browser_confirm": "Isso apagarÃ¡ todos os seus dados, incluindo histÃ³rico, favoritos e configuraÃ§Ãµes. Esta aÃ§Ã£o nÃ£o pode ser desfeita.",
   "reset": "Redefinir",
   "reset_complete": "O navegador foi redefinido",
-  "permission_denied": "Permissão de armazenamento negada",
+  "permission_denied": "PermissÃ£o de armazenamento negada",
   "download_location_changed": "Local de download alterado",
   "error_changing_location": "Erro ao alterar o local",
   "enable_cookies": "Ativar cookies",
   "enable_javascript": "Ativar JavaScript",
-  "hardware_acceleration": "Aceleração de hardware",
-  "save_form_data": "Salvar dados de formulários",
-  "do_not_track": "Não rastrear",
+  "hardware_acceleration": "AceleraÃ§Ã£o de hardware",
+  "save_form_data": "Salvar dados de formulÃ¡rios",
+  "do_not_track": "NÃ£o rastrear",
   "download_location_description": "Escolha onde salvar os arquivos baixados",
-  "text_size_description": "Ajuste o tamanho do texto nas páginas web",
+  "text_size_description": "Ajuste o tamanho do texto nas pÃ¡ginas web",
   "text_size_small": "Pequeno",
-  "text_size_medium": "Médio",
+  "text_size_medium": "MÃ©dio",
   "text_size_large": "Grande",
   "text_size_very_large": "Muito grande",
   "cookies_description": "Permitir que os sites salvem e leiam dados de cookies",
   "javascript_description": "Ativar JavaScript para melhor funcionalidade dos sites",
   "hardware_acceleration_description": "Usar GPU para melhor desempenho",
-  "form_data_description": "Salvar informações inseridas em formulários",
-  "do_not_track_description": "Solicitar aos sites que não rastreiem sua atividade",
+  "form_data_description": "Salvar informaÃ§Ãµes inseridas em formulÃ¡rios",
+  "do_not_track_description": "Solicitar aos sites que nÃ£o rastreiem sua atividade",
   "exit_app": "Sair do aplicativo",
   "exit_app_confirm": "Tem certeza que deseja sair?",
   "exit": "Sair",
   "size": "Tamanho",
   "auto_open_downloads": "Abrir downloads automaticamente",
-  "clear_downloads_history": "Limpar histórico de downloads",
-  "downloads_history_cleared": "Histórico de downloads limpo",
-  "delete_download_confirm": "Deseja excluir {fileName} do histórico de downloads?\nO arquivo baixado não será excluído.",
+  "clear_downloads_history": "Limpar histÃ³rico de downloads",
+  "downloads_history_cleared": "HistÃ³rico de downloads limpo",
+  "delete_download_confirm": "Deseja excluir {fileName} do histÃ³rico de downloads?\nO arquivo baixado nÃ£o serÃ¡ excluÃ­do.",
   "@delete_download_confirm": {
-    "description": "Mensagem de confirmação para excluir um download do histórico",
+    "description": "Mensagem de confirmaÃ§Ã£o para excluir um download do histÃ³rico",
     "placeholders": {
       "fileName": {
         "type": "String",
@@ -129,7 +129,7 @@
       }
     }
   },
-  "download_removed": "Download removido do histórico",
+  "download_removed": "Download removido do histÃ³rico",
   "download_size": "Tamanho: {size}",
   "@download_size": {
     "placeholders": {
@@ -138,17 +138,17 @@
       }
     }
   },
-  "clear_downloads_history_confirm": "Isso limpará apenas o histórico de downloads, não os arquivos baixados.",
-  "clear_downloads_history_title": "Limpar histórico de downloads",
+  "clear_downloads_history_confirm": "Isso limparÃ¡ apenas o histÃ³rico de downloads, nÃ£o os arquivos baixados.",
+  "clear_downloads_history_title": "Limpar histÃ³rico de downloads",
   "slide_up_panel": "Deslizar painel para cima",
   "slide_down_panel": "Deslizar painel para baixo",
   "move_url_bar": "Mover barra de URL",
-  "url_bar_icon": "Ícone da barra de URL",
+  "url_bar_icon": "Ãcone da barra de URL",
   "url_bar_expanded": "Barra de URL expandida",
   "search_or_type_url": "Pesquisar ou digitar URL",
-  "secure_connection": "Conexão segura",
-  "insecure_connection": "Conexão não segura",
-  "refresh_page": "Atualizar página",
+  "secure_connection": "ConexÃ£o segura",
+  "insecure_connection": "ConexÃ£o nÃ£o segura",
+  "refresh_page": "Atualizar pÃ¡gina",
   "close_search": "Fechar pesquisa",
   "allow_popups": "Pop-ups",
   "allow_popups_description": "Permitir janelas pop-up",
@@ -160,7 +160,7 @@
   "no_blocked_popups": "Nenhum pop-up bloqueado",
   "allow_popups_from": "Permitir pop-ups de {domain}",
   "@allow_popups_from": {
-    "description": "Mensagem exibida ao permitir pop-ups de um domínio específico",
+    "description": "Mensagem exibida ao permitir pop-ups de um domÃ­nio especÃ­fico",
     "placeholders": {
       "domain": {
         "type": "String",
@@ -170,15 +170,15 @@
   },
   "and": "e",
   "data_collection": "Coleta de dados",
-  "data_collection_details": "• Coletamos os dados mínimos necessários para a funcionalidade do navegador\n• Seu histórico de navegação permanece no seu dispositivo\n• Não rastreamos sua atividade online\n• Você pode limpar todos os dados a qualquer momento",
+  "data_collection_details": "â€¢ Coletamos os dados mÃ­nimos necessÃ¡rios para a funcionalidade do navegador\nâ€¢ Seu histÃ³rico de navegaÃ§Ã£o permanece no seu dispositivo\nâ€¢ NÃ£o rastreamos sua atividade online\nâ€¢ VocÃª pode limpar todos os dados a qualquer momento",
   "whats_new": "Novidades",
   "exit_confirmation": "Sair do aplicativo",
-  "flutter_version": "Versão do Flutter",
-  "photoncore_version": "Versão do Photoncore",
+  "flutter_version": "VersÃ£o do Flutter",
+  "photoncore_version": "VersÃ£o do Photoncore",
   "@photoncore_version": {
     "description": "Label for Photoncore version in settings"
   },
-  "engine_version": "Versão do motor",
+  "engine_version": "VersÃ£o do motor",
   "@engine_version": {
     "description": "Label for engine version in settings"
   },
@@ -194,27 +194,27 @@
     "description": "Message shown when user needs to press back again to exit the app"
   },
   "error_opening_file": "Erro ao abrir o arquivo. Por favor, instale um aplicativo adequado para abrir este tipo de arquivo.",
-  "storage_permission_required": "Permissão de armazenamento necessária",
-  "storage_permission_denied": "A permissão de armazenamento é necessária para baixar arquivos",
+  "storage_permission_required": "PermissÃ£o de armazenamento necessÃ¡ria",
+  "storage_permission_denied": "A permissÃ£o de armazenamento Ã© necessÃ¡ria para baixar arquivos",
   "download_in_progress": "Download em andamento",
   "download_paused": "Download pausado",
   "download_canceled": "Download cancelado",
   "download_error": "Erro no download: {error}",
   "open_downloads_folder": "Abrir pasta de downloads",
-  "file_exists": "O arquivo já existe",
+  "file_exists": "O arquivo jÃ¡ existe",
   "file_saved": "Arquivo salvo em Downloads",
   "no_tabs_open": "Nenhuma aba aberta",
-  "incognito": "Navegação anônima",
+  "incognito": "NavegaÃ§Ã£o anÃ´nima",
   "clear_all": "Limpar tudo",
-  "clear_history": "Limpar histórico",
-  "clear_history_confirmation": "Tem certeza que deseja limpar o histórico de navegação?",
-  "no_history": "Nenhum histórico de navegação",
+  "clear_history": "Limpar histÃ³rico",
+  "clear_history_confirmation": "Tem certeza que deseja limpar o histÃ³rico de navegaÃ§Ã£o?",
+  "no_history": "Nenhum histÃ³rico de navegaÃ§Ã£o",
   "today": "Hoje",
   "yesterday": "Ontem",
-  "days_ago": "há {days} dias",
-  "weeks_ago": "há {weeks} semanas",
-  "months_ago": "há {months} meses",
-  "new_incognito_tab": "Nova aba anônima",
+  "days_ago": "hÃ¡ {days} dias",
+  "weeks_ago": "hÃ¡ {weeks} semanas",
+  "months_ago": "hÃ¡ {months} meses",
+  "new_incognito_tab": "Nova aba anÃ´nima",
   "@new_incognito_tab": {
     "description": "Label for new incognito tab button"
   },
@@ -222,7 +222,7 @@
   "@update1": {
     "description": "Title for first update note"
   },
-  "update1desc": "Novo sistema de temas com mais opções de cores e melhor suporte ao modo escuro",
+  "update1desc": "Novo sistema de temas com mais opÃ§Ãµes de cores e melhor suporte ao modo escuro",
   "@update1desc": {
     "description": "Description for first update"
   },
@@ -230,7 +230,7 @@
   "@update2": {
     "description": "Title for second update note"
   },
-  "update2desc": "Carregamento de páginas mais rápido e experiência de rolagem mais suave",
+  "update2desc": "Carregamento de pÃ¡ginas mais rÃ¡pido e experiÃªncia de rolagem mais suave",
   "@update2desc": {
     "description": "Description for second update"
   },
@@ -238,7 +238,7 @@
   "@update3": {
     "description": "Title for third update note"
   },
-  "update3desc": "Proteção aprimorada contra rastreamento e otimizações do modo anônimo",
+  "update3desc": "ProteÃ§Ã£o aprimorada contra rastreamento e otimizaÃ§Ãµes do modo anÃ´nimo",
   "@update3desc": {
     "description": "Description for third update"
   },
@@ -246,17 +246,403 @@
   "@update4": {
     "description": "Title for fourth update note"
   },
-  "update4desc": "Interface do usuário aprimorada com melhor navegação e acessibilidade",
+  "update4desc": "Interface do usuÃ¡rio aprimorada com melhor navegaÃ§Ã£o e acessibilidade",
   "@update4desc": {
     "description": "Description for fourth update"
   },
   "searchTheWeb": "Pesquisar na web",
   "recentSearches": "Pesquisas recentes",
-  "storage_permission_granted": "Permissão de armazenamento concedida",
+  "storage_permission_granted": "PermissÃ£o de armazenamento concedida",
   
   "summary_length": "Comprimento do resumo",
   "summary_language": "Idioma do resumo",
   
-  "classic_navigation": "Navegação Clássica",
-  "classic_navigation_description": "Exibir botões de navegação na parte inferior da tela"
+  "classic_navigation": "NavegaÃ§Ã£o ClÃ¡ssica",  "classic_navigation_description": "Exibir botÃµes de navegaÃ§Ã£o na parte inferior da tela",
+  "ok": "OK",
+  "welcome_screen_reset": "Redefinir tela de boas-vindas",
+  "welcome_screen_reset_message": "A tela de boas-vindas serÃ¡ exibida na prÃ³xima inicializaÃ§Ã£o do aplicativo. Reinicie o aplicativo para ver a polÃ­tica de privacidade e os termos de serviÃ§o atualizados.",
+  "customize_navigation": "Personalizar navegaÃ§Ã£o",
+  "bookmark_removed": "Marcador removido",
+  "navigation_buttons": "BotÃµes de navegaÃ§Ã£o",
+  "available_buttons": "BotÃµes disponÃ­veis",
+  "enabled_buttons": "BotÃµes habilitados",
+  "button_back": "Voltar",
+  "button_forward": "AvanÃ§ar",
+  "button_bookmark": "Marcador",
+  "button_share": "Compartilhar",
+  "button_menu": "Menu",
+  "button_bookmarks": "Marcadores",
+  "navigation_bar_animations": "AnimaÃ§Ãµes da barra de navegaÃ§Ã£o",
+  "restore_defaults": "Restaurar padrÃµes",  "drag_to_reorder": "Arraste para reordenar",
+  "add": "ADICIONAR",  "restored_tab": "Aba Restaurada",
+  "rename": "Renomear",
+  "rename_pwa": "Renomear PWA",
+  "pwa_name": "Nome do PWA",
+  "pwa_renamed": "PWA e atalho da tela inicial renomeados",  "pwa_removed": "PWA e atalho da tela inicial removidos",
+  "remove": "Remover",
+  "@remove": {
+    "description": "Button text for removing something"
+  },
+
+  "install_packages_permission": "PermissÃ£o de InstalaÃ§Ã£o de Pacotes",
+  "@install_packages_permission": {
+    "description": "Install packages permission title"
+  },
+  "install_packages_permission_description": "Permitir a instalaÃ§Ã£o de aplicativos deste navegador",
+  "@install_packages_permission_description": {
+    "description": "Install packages permission description"
+  },
+  "permission_install_packages_required": "PermissÃ£o de instalaÃ§Ã£o de pacotes necessÃ¡ria",
+  "@permission_install_packages_required": {
+    "description": "Install packages permission required message"
+  },
+  "storage_permission_install_packages_required": "PermissÃ£o de Armazenamento e InstalaÃ§Ã£o de Pacotes",
+  "@storage_permission_install_packages_required": {
+    "description": "Storage and install packages permission title"
+  },
+  "storage_permission_install_packages_description": "O navegador Solar precisa de permissÃ£o para acessar o armazenamento para downloads e instalar pacotes para instalaÃ§Ãµes APK",
+  "@storage_permission_install_packages_description": {
+    "description": "Storage and install packages permission description"
+  },
+  "software_team": "Equipe de Software",
+  "@software_team": {
+    "description": "Software team label"
+  },
+  "storage_permission_description": "Este aplicativo precisa de permissÃ£o para acessar arquivos para funcionalidade de download.",
+  "@storage_permission_description": {
+    "description": "Description text for the permission request"
+  },
+  "app_should_work_normally": "O aplicativo deve agora funcionar normalmente com funcionalidade completa.",
+  "@app_should_work_normally": {
+    "description": "Description text shown when all permissions are granted"
+  },
+  "grant_permission": "Conceder PermissÃ£o",
+  "@grant_permission": {
+    "description": "Text for the permission grant button"
+  },
+  "incognito_mode": "Modo IncÃ³gnito",
+  "@incognito_mode": {
+    "description": "Label for incognito mode"
+  },
+  "incognito_description": "No modo incÃ³gnito:\nâ€¢ O histÃ³rico de navegaÃ§Ã£o nÃ£o Ã© salvo\nâ€¢ Os cookies sÃ£o limpos quando vocÃª fecha as abas\nâ€¢ Nenhum dado Ã© armazenado localmente",
+  "@incognito_description": {
+    "description": "Description of incognito mode features"
+  },
+  "previous_summaries": "Resumos Anteriores",
+  "@previous_summaries": {
+    "description": "Label for accessing previously generated summaries"
+  },
+  "summarize_selected": "Resumir Selecionado",
+  "@summarize_selected": {
+    "description": "Label for summarizing selected text"
+  },
+  "summarize_page": "Resumir PÃ¡gina",
+  "@summarize_page": {
+    "description": "Label for summarizing the entire page"
+  },
+  "ai_preferences": "PreferÃªncias de IA",
+  "@ai_preferences": {
+    "description": "Label for AI preferences section"
+  },
+  "ai_provider": "Provedor de IA",
+  "@ai_provider": {
+    "description": "Label for AI provider selection"
+  },
+  "length_short": "Curto",
+  "@length_short": {
+    "description": "Label for short summary length"
+  },
+  "length_medium": "MÃ©dio",
+  "@length_medium": {
+    "description": "Label for medium summary length"
+  },
+  "length_long": "Longo",
+  "@length_long": {
+    "description": "Label for long summary length"
+  },
+  "summary_length_short": "Curto (75 palavras)",
+  "@summary_length_short": {
+    "description": "Label for short summary length with word count"
+  },
+  "summary_length_medium": "MÃ©dio (150 palavras)",
+  "@summary_length_medium": {
+    "description": "Label for medium summary length with word count"
+  },
+  "summary_length_long": "Longo (250 palavras)",
+  "@summary_length_long": {
+    "description": "Label for long summary length with word count"
+  },
+  "summary_language_english": "InglÃªs",
+  "@summary_language_english": {
+    "description": "Label for English language option"
+  },
+  "summary_language_turkish": "Turco",
+  "@summary_language_turkish": {
+    "description": "Label for Turkish language option"
+  },
+  "add_to_pwa": "Adicionar ao PWA",
+  "@add_to_pwa": {
+    "description": "Option to add current website as a PWA"
+  },
+  "remove_from_pwa": "Remover do PWA",
+  "@remove_from_pwa": {
+    "description": "Option to remove website from PWA list"
+  },
+  "added_to_pwa": "Adicionado ao PWA",
+  "@added_to_pwa": {
+    "description": "Confirmation message when site is added as PWA"
+  },
+  "removed_from_pwa": "Removido do PWA",
+  "@removed_from_pwa": {
+    "description": "Confirmation message when site is removed from PWA list"
+  },
+  "pwa_info": "Aplicativos Web Progressivos funcionam como aplicativos instalados sem controles do navegador",
+  "@pwa_info": {
+    "description": "Information about what PWAs are"
+  },
+  "create_shortcut": "Criar Atalho",
+  "@create_shortcut": {
+    "description": "Title for the shortcut creation dialog"
+  },
+  "enter_shortcut_name": "Digite um nome para este atalho:",
+  "@enter_shortcut_name": {
+    "description": "Prompt for entering the shortcut name"
+  },
+  "shortcut_name": "Nome do atalho",
+  "@shortcut_name": {
+    "description": "Hint for the shortcut name input field"
+  },
+  "keep_tabs_open_description": "Manter abas abertas entre sessÃµes",
+  "@keep_tabs_open_description": {
+    "description": "Description for keep tabs open setting"
+  },
+  "developer": "Desenvolvedor",
+  "@developer": {
+    "description": "Developer section title"
+  },  "reset_welcome_screen": "Redefinir Tela de Boas-vindas",
+  "@reset_welcome_screen": {
+    "description": "Reset welcome screen option"
+  },
+  "restored_tab": "Aba restaurada",
+  "@restored_tab": {
+    "description": "Message when a tab is restored"
+  },
+  "welcome_screen_reset": "Redefinir Tela de Boas-vindas",
+  "@welcome_screen_reset": {
+    "description": "Dialog title for resetting welcome screen"
+  },
+  "welcome_screen_reset_message": "Isso redefinirÃ¡ a tela de boas-vindas para que ela apareÃ§a novamente na prÃ³xima vez que vocÃª iniciar o app.",
+  "@welcome_screen_reset_message": {
+    "description": "Dialog message for resetting welcome screen"
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "OK button text"
+  },
+  "customize_navigation": "Personalizar NavegaÃ§Ã£o",
+  "@customize_navigation": {
+    "description": "Title for navigation customization"
+  },
+  "button_back": "Voltar",
+  "@button_back": {
+    "description": "Back button label"
+  },
+  "button_forward": "AvanÃ§ar",
+  "@button_forward": {
+    "description": "Forward button label"
+  },
+  "button_bookmark": "Favorito",
+  "@button_bookmark": {
+    "description": "Bookmark button label"
+  },
+  "button_bookmarks": "Favoritos",
+  "@button_bookmarks": {
+    "description": "Bookmarks button label"
+  },
+  "button_share": "Compartilhar",
+  "@button_share": {
+    "description": "Share button label"
+  },
+  "button_menu": "Menu",
+  "@button_menu": {
+    "description": "Menu button label"
+  },
+  "available_buttons": "BotÃµes disponÃ­veis",
+  "@available_buttons": {
+    "description": "Label for available navigation buttons"
+  },
+  "add": "Adicionar",
+  "@add": {
+    "description": "Add button text"
+  },
+  "rename_pwa": "Renomear PWA",
+  "@rename_pwa": {
+    "description": "Option to rename a PWA"
+  },
+  "pwa_name": "Nome do PWA",
+  "@pwa_name": {
+    "description": "Hint for PWA name input field"
+  },
+  "rename": "Renomear",
+  "@rename": {
+    "description": "Rename button text"
+  },
+  "pwa_renamed": "PWA renomeado",
+  "@pwa_renamed": {
+    "description": "Confirmation message when PWA is renamed"
+  },
+  "remove": "Remover",
+  "@remove": {
+    "description": "Remove button text"
+  },
+  "pwa_removed": "PWA removido",
+  "@pwa_removed": {
+    "description": "Confirmation message when PWA is removed"
+  },  "bookmark_removed": "Favorito removido",
+  "@bookmark_removed": {
+    "description": "Confirmation message when bookmark is removed"
+  },
+  "untitled": "Sem tÃ­tulo",
+  "@untitled": {
+    "description": "Default title for untitled pages/tabs"
+  },
+  "show_welcome_screen_next_launch": "Mostrar tela de boas-vindas na prÃ³xima inicializaÃ§Ã£o",
+  "@show_welcome_screen_next_launch": {
+    "description": "Setting description for showing welcome screen"
+  },
+  "automatically_open_downloaded_files": "Abrir automaticamente arquivos baixados",
+  "@automatically_open_downloaded_files": {
+    "description": "Setting description for auto-opening downloads"
+  },
+  "ask_where_to_save_files": "Perguntar onde salvar arquivos antes de baixar",
+  "@ask_where_to_save_files": {
+    "description": "Setting description for asking download location"
+  },
+  "clear_all_history": "Limpar Todo o HistÃ³rico",
+  "@clear_all_history": {
+    "description": "Button text for clearing all browsing history"
+  },
+  "clear_all_history_confirm": "Isso excluirÃ¡ permanentemente todo o seu histÃ³rico de navegaÃ§Ã£o. Esta aÃ§Ã£o nÃ£o pode ser desfeita.",
+  "@clear_all_history_confirm": {
+    "description": "Confirmation message for clearing all history"
+  },
+  "history_cleared": "HistÃ³rico limpo",
+  "@history_cleared": {
+    "description": "Confirmation message when history is cleared"
+  },
+  "navigation_controls": "Controles de NavegaÃ§Ã£o",
+  "@navigation_controls": {
+    "description": "Title for navigation controls settings"
+  },
+  "classic_navigation": "NavegaÃ§Ã£o ClÃ¡ssica",
+  "@classic_navigation": {
+    "description": "Label for classic navigation mode"
+  },
+  "classic_navigation_description": "Usar controles de navegaÃ§Ã£o estilo navegador clÃ¡ssico",
+  "@classic_navigation_description": {
+    "description": "Description for classic navigation setting"
+  },
+  "ai_settings": "ConfiguraÃ§Ãµes de IA",
+  "@ai_settings": {
+    "description": "Title for AI settings section"
+  },
+  "ai_summary_settings": "ConfiguraÃ§Ãµes de Resumo de IA",
+  "@ai_summary_settings": {
+    "description": "Title for AI summary settings"
+  },
+  "auto_open_downloads": "Abrir Downloads Automaticamente",
+  "@auto_open_downloads": {
+    "description": "Setting title for auto-opening downloads"
+  },  "ask_download_location_title": "Perguntar Local de Download",
+  "@ask_download_location_title": {
+    "description": "Setting title for asking download location"
+  },
+  "enable_incognito_mode": "Ativar Modo IncÃ³gnito",
+  "@enable_incognito_mode": {
+    "description": "Button to enable incognito mode"
+  },
+  "disable_incognito_mode": "Desativar Modo IncÃ³gnito",
+  "@disable_incognito_mode": {
+    "description": "Button to disable incognito mode"
+  },
+  "close_all_tabs": "Fechar Todas as Abas",
+  "@close_all_tabs": {
+    "description": "Button to close all tabs"
+  },
+  "close_all_tabs_confirm": "Tem certeza de que deseja fechar todas as abas? Esta aÃ§Ã£o nÃ£o pode ser desfeita.",
+  "@close_all_tabs_confirm": {
+    "description": "Confirmation message for closing all tabs"
+  },
+  "close_all_tabs_in_group": "Fechar todas as abas em \"{groupName}\"? Esta aÃ§Ã£o nÃ£o pode ser desfeita.",
+  "@close_all_tabs_in_group": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    },
+    "description": "Confirmation message for closing all tabs in a group"
+  },
+  "other": "Outro",
+  "@other": {
+    "description": "Settings group title for other options"
+  },
+  "ai": "IA",
+  "@ai": {
+    "description": "Settings group title for AI options"
+  },
+  "rearrange_navigation_buttons": "Reorganizar botÃµes de navegaÃ§Ã£o",
+  "@rearrange_navigation_buttons": {
+    "description": "Setting subtitle for navigation customization"
+  },
+  "current_navigation_bar": "Barra de NavegaÃ§Ã£o Atual:",
+  "@current_navigation_bar": {
+    "description": "Label for current navigation bar display"
+  },
+  "tap_to_check_permission_status": "Toque para verificar o status das permissÃµes",
+  "@tap_to_check_permission_status": {
+    "description": "Instruction for checking permission status"
+  },
+  "create_tab_group": "Criar Grupo de Abas",
+  "@create_tab_group": {
+    "description": "Dialog title for creating a new tab group"
+  },
+  "manage_groups": "Gerenciar Grupos",
+  "@manage_groups": {
+    "description": "Dialog title for managing tab groups"
+  },
+  "no_groups_created_yet": "Nenhum grupo criado ainda",
+  "@no_groups_created_yet": {
+    "description": "Message when no tab groups exist"
+  },
+  "group_name": "Nome do Grupo",
+  "@group_name": {
+    "description": "Input label for tab group name"
+  },  "color": "Cor",
+  "@color": {
+    "description": "Color selection label"
+  },
+  "close_group": "Fechar Grupo",
+  "@close_group": {
+    "description": "Dialog title for closing a tab group"
+  },
+  "create": "Criar",
+  "summarize": "Resumir",
+  "previous_summaries": "Resumos Anteriores",
+  "no_summaries_available": "Nenhum resumo disponÃ­vel",
+  "page_summary": "Resumo da PÃ¡gina",
+  "failed_to_generate_summary": "Falha ao gerar resumo",
+  "try_again": "Tentar Novamente",
+  "no_page_to_summarize": "Nenhuma pÃ¡gina para resumir",
+  "no_content_found_to_summarize": "Nenhum conteÃºdo encontrado para resumir",
+  "theme": "Tema",
+  "check": "Verificar",
+  "pwa": "PWA",
+  "confirm": "Confirmar",
+  "input_required": "Entrada Necessária",
+  "alert": "Alerta",
+  "settings": "Configurações",
+  "add_tabs_to_group": "Adicionar Abas ao Grupo",
+  "ungroup_tabs": "Desagrupar abas",
+  "delete_group": "Excluir grupo",
+  "copy_summary": "Copiar Resumo"
 }

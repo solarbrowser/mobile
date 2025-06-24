@@ -1,4 +1,4 @@
-{
+﻿{
   "@@locale": "ko",
   
   "welcomeToSolar": "Solar에 오신 것을 환영합니다",
@@ -29,7 +29,6 @@
   "and": "및",
   "data_collection": "데이터 수집",
   "data_collection_details": "• 브라우저 기능에 필요한 최소한의 데이터만 수집합니다\n• 검색 기록은 기기에 저장됩니다\n• 온라인 활동을 추적하지 않습니다\n• 언제든지 모든 데이터를 삭제할 수 있습니다",
-
   "general": "일반",
   "appearance": "모양",
   "downloads": "다운로드",
@@ -230,5 +229,441 @@
   "summary_language": "요약 언어",
   
   "classic_navigation": "클래식 내비게이션",
-  "classic_navigation_description": "화면 하단에 탐색 버튼 표시"
+  "classic_navigation_description": "화면 하단에 탐색 버튼 표시",
+  "ok": "확인",
+  "welcome_screen_reset": "환영 화면 재설정",
+  "welcome_screen_reset_message": "다음 앱 시작 시 환영 화면이 표시됩니다. 업데이트된 개인정보처리방침과 이용약관을 보려면 앱을 다시 시작하세요.",
+  "customize_navigation": "내비게이션 사용자 지정",
+  "bookmark_removed": "북마크가 제거되었습니다",
+  "navigation_buttons": "내비게이션 버튼",
+  "available_buttons": "사용 가능한 버튼",
+  "enabled_buttons": "활성화된 버튼",
+  "button_back": "뒤로",
+  "button_forward": "앞으로",
+  "button_bookmark": "북마크",
+  "button_share": "공유",
+  "button_menu": "메뉴",
+  "button_bookmarks": "북마크",
+  "navigation_bar_animations": "내비게이션 바 애니메이션",
+  "restore_defaults": "기본값 복원",
+  "drag_to_reorder": "드래그하여 순서 변경",
+  "add": "추가",
+  "restored_tab": "복원된 탭",
+  "rename": "이름 바꾸기",
+  "rename_pwa": "PWA 이름 바꾸기",
+  "pwa_name": "PWA 이름",
+  "pwa_renamed": "PWA 및 홈 화면 바로가기 이름이 변경되었습니다",
+  "pwa_removed": "PWA 및 홈 화면 바로가기가 제거되었습니다",
+  "remove": "제거",
+  "@remove": {
+    "description": "Button text for removing something"
+  },
+
+  "install_packages_permission": "패키지 설치 권한",
+  "@install_packages_permission": {
+    "description": "Install packages permission title"
+  },
+  "install_packages_permission_description": "이 브라우저에서 앱 설치 허용",
+  "@install_packages_permission_description": {
+    "description": "Install packages permission description"
+  },
+  "permission_install_packages_required": "패키지 설치 권한이 필요합니다",
+  "@permission_install_packages_required": {
+    "description": "Install packages permission required message"
+  },
+  "storage_permission_install_packages_required": "저장소 및 패키지 설치 권한",
+  "@storage_permission_install_packages_required": {
+    "description": "Storage and install packages permission title"
+  },
+  "storage_permission_install_packages_description": "Solar 브라우저는 다운로드를 위한 저장소 액세스와 APK 설치를 위한 패키지 설치 권한이 필요합니다",
+  "@storage_permission_install_packages_description": {
+    "description": "Storage and install packages permission description"
+  },
+  "photoncore_version": "Photoncore 버전",
+  "@photoncore_version": {
+    "description": "Label for Photoncore version in settings"
+  },
+  "engine_version": "엔진 버전",
+  "@engine_version": {
+    "description": "Label for engine version in settings"
+  },
+  "storage_permission_required": "권한 부여",
+  "@storage_permission_required": {
+    "description": "Title for the permission request banner"
+  },
+  "storage_permission_description": "이 앱은 다운로드 기능을 위해 파일 액세스 권한이 필요합니다.",
+  "@storage_permission_description": {
+    "description": "Description text for the permission request"
+  },
+  "app_should_work_normally": "앱이 완전한 기능으로 정상적으로 작동해야 합니다.",
+  "@app_should_work_normally": {
+    "description": "Description text shown when all permissions are granted"
+  },
+  "grant_permission": "권한 부여",
+  "@grant_permission": {
+    "description": "Text for the permission grant button"
+  },
+  "storage_permission_denied": "파일을 다운로드하려면 저장소 권한이 필요합니다",
+  "@storage_permission_denied": {
+    "description": "Message shown when storage permission is denied"
+  },
+  "new_incognito_tab": "새 시크릿 탭",
+  "@new_incognito_tab": {
+    "description": "Label for new incognito tab button"
+  },
+  "incognito_mode": "시크릿 모드",
+  "@incognito_mode": {
+    "description": "Label for incognito mode"
+  },
+  "incognito_description": "시크릿 모드에서:\n• 브라우징 기록이 저장되지 않습니다\n• 탭을 닫을 때 쿠키가 삭제됩니다\n• 데이터가 로컬에 저장되지 않습니다",
+  "@incognito_description": {
+    "description": "Description of incognito mode features"
+  },
+  "error_opening_file": "파일 열기 오류",
+  "@error_opening_file": {
+    "description": "Error message when a file cannot be opened"
+  },
+  "download_in_progress": "다운로드 진행 중",
+  "@download_in_progress": {
+    "description": "Message shown when a download is in progress"
+  },
+  "download_paused": "다운로드 일시정지",
+  "@download_paused": {
+    "description": "Message shown when a download is paused"
+  },
+  "download_canceled": "다운로드 취소됨",
+  "@download_canceled": {
+    "description": "Message shown when a download is canceled"
+  },
+  "download_error": "다운로드 오류: {error}",
+  "@download_error": {
+    "description": "Message shown when there is an error during download",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "Network error"
+      }
+    }
+  },
+  "open_downloads_folder": "다운로드 폴더 열기",
+  "@open_downloads_folder": {
+    "description": "Label for button to open downloads folder"
+  },
+  "file_exists": "파일이 이미 존재합니다",
+  "@file_exists": {
+    "description": "Message shown when trying to download a file that already exists"
+  },
+  "file_saved": "파일이 다운로드에 저장되었습니다",
+  "@file_saved": {
+    "description": "Message shown when a file is successfully saved"
+  },
+  "no_tabs_open": "열린 탭이 없습니다",
+  "incognito": "시크릿",
+  "clear_all": "모두 지우기",
+  "clear_history": "기록 지우기",
+  "clear_history_confirmation": "브라우징 기록을 지우시겠습니까?",
+  "no_history": "브라우징 기록이 없습니다",
+  "today": "오늘",
+  "yesterday": "어제",
+  "days_ago": "{days}일 전",
+  "@days_ago": {
+    "description": "Shows how many days ago something happened",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "weeks_ago": "{weeks}주 전",
+  "@weeks_ago": {
+    "description": "Shows how many weeks ago something happened",
+    "placeholders": {
+      "weeks": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "months_ago": "{months}개월 전",
+  "@months_ago": {
+    "description": "Shows how many months ago something happened",
+    "placeholders": {
+      "months": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "previous_summaries": "이전 요약",
+  "@previous_summaries": {
+    "description": "Label for accessing previously generated summaries"
+  },
+  "summarize_selected": "선택된 부분 요약",
+  "@summarize_selected": {
+    "description": "Label for summarizing selected text"
+  },
+  "summarize_page": "페이지 요약",
+  "@summarize_page": {
+    "description": "Label for summarizing the entire page"
+  },
+  "ai_preferences": "AI 설정",
+  "@ai_preferences": {
+    "description": "Label for AI preferences section"
+  },
+  "ai_provider": "AI 제공업체",
+  "@ai_provider": {
+    "description": "Label for AI provider selection"
+  },
+  "length_short": "짧게",
+  "@length_short": {
+    "description": "Label for short summary length"
+  },
+  "length_medium": "보통",
+  "@length_medium": {
+    "description": "Label for medium summary length"
+  },
+  "length_long": "길게",
+  "@length_long": {
+    "description": "Label for long summary length"
+  },
+  "summary_length_short": "짧게 (75단어)",
+  "@summary_length_short": {
+    "description": "Label for short summary length with word count"
+  },
+  "summary_length_medium": "보통 (150단어)",
+  "@summary_length_medium": {
+    "description": "Label for medium summary length with word count"
+  },
+  "summary_length_long": "길게 (250단어)",
+  "@summary_length_long": {
+    "description": "Label for long summary length with word count"
+  },
+  "summary_language_english": "영어",
+  "@summary_language_english": {
+    "description": "Label for English language option"
+  },
+  "summary_language_turkish": "터키어",
+  "@summary_language_turkish": {
+    "description": "Label for Turkish language option"
+  },
+  "add_to_pwa": "PWA에 추가",
+  "@add_to_pwa": {
+    "description": "Option to add current website as a PWA"
+  },
+  "remove_from_pwa": "PWA에서 제거",
+  "@remove_from_pwa": {
+    "description": "Option to remove website from PWA list"
+  },
+  "added_to_pwa": "PWA에 추가됨",
+  "@added_to_pwa": {
+    "description": "Confirmation message when site is added as PWA"
+  },
+  "removed_from_pwa": "PWA에서 제거됨",
+  "@removed_from_pwa": {
+    "description": "Confirmation message when site is removed from PWA list"
+  },
+  "pwa_info": "프로그레시브 웹 앱은 브라우저 컨트롤 없이 설치된 앱처럼 실행됩니다",
+  "@pwa_info": {
+    "description": "Information about what PWAs are"
+  },
+  "create_shortcut": "바로가기 만들기",
+  "@create_shortcut": {
+    "description": "Title for the shortcut creation dialog"
+  },
+  "enter_shortcut_name": "이 바로가기의 이름을 입력하세요:",
+  "@enter_shortcut_name": {
+    "description": "Prompt for entering the shortcut name"
+  },
+  "shortcut_name": "바로가기 이름",
+  "@shortcut_name": {
+    "description": "Hint for the shortcut name input field"
+  },
+  "keep_tabs_open_description": "세션 간에 탭 열어두기",
+  "@keep_tabs_open_description": {
+    "description": "Description for keep tabs open setting"
+  },
+  "developer": "개발자",
+  "@developer": {
+    "description": "Developer section title"
+  },
+  "reset_welcome_screen": "환영 화면 재설정",
+  "@reset_welcome_screen": {
+    "description": "Reset welcome screen option"
+  },
+  "welcome_screen_reset_message": "이렇게 하면 환영 화면이 재설정되어 다음에 앱을 시작할 때 다시 나타납니다.",
+  "@welcome_screen_reset_message": {
+    "description": "Dialog message for resetting welcome screen"
+  },
+  "@ok": {
+    "description": "OK button text"
+  },
+  "customize_navigation": "내비게이션 사용자 정의",
+  "@customize_navigation": {
+    "description": "Title for navigation customization"
+  },
+  "@button_back": {
+    "description": "Back button label"
+  },
+  "@button_forward": {
+    "description": "Forward button label"
+  },
+  "@button_bookmark": {
+    "description": "Bookmark button label"
+  },
+  "@button_bookmarks": {
+    "description": "Bookmarks button label"
+  },
+  "@button_share": {
+    "description": "Share button label"
+  },
+  "@button_menu": {
+    "description": "Menu button label"
+  },
+  "@available_buttons": {
+    "description": "Label for available navigation buttons"
+  },
+  "@add": {
+    "description": "Add button text"
+  },
+  "pwa_renamed": "PWA 이름이 변경되었습니다",
+  "@pwa_renamed": {
+    "description": "Confirmation message when PWA is renamed"
+  },
+  "pwa_removed": "PWA가 제거되었습니다",
+  "@pwa_removed": {
+    "description": "Confirmation message when PWA is removed"
+  },
+  "untitled": "제목 없음",
+  "@untitled": {
+    "description": "Default title for untitled pages/tabs"
+  },
+  "show_welcome_screen_next_launch": "다음 실행 시 환영 화면 표시",
+  "@show_welcome_screen_next_launch": {
+    "description": "Setting description for showing welcome screen"
+  },
+  "automatically_open_downloaded_files": "다운로드한 파일 자동으로 열기",
+  "@automatically_open_downloaded_files": {
+    "description": "Setting description for auto-opening downloads"
+  },
+  "ask_where_to_save_files": "다운로드 전에 파일 저장 위치 묻기",
+  "@ask_where_to_save_files": {
+    "description": "Setting description for asking download location"
+  },
+  "clear_all_history": "모든 기록 지우기",
+  "@clear_all_history": {
+    "description": "Button text for clearing all browsing history"
+  },
+  "clear_all_history_confirm": "모든 탐색 기록이 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.",
+  "@clear_all_history_confirm": {
+    "description": "Confirmation message for clearing all history"
+  },
+  "history_cleared": "기록이 지워졌습니다",
+  "@history_cleared": {
+    "description": "Confirmation message when history is cleared"
+  },
+  "navigation_controls": "내비게이션 컨트롤",
+  "@navigation_controls": {
+    "description": "Title for navigation controls settings"
+  },
+  "classic_navigation_description": "클래식 브라우저 스타일 내비게이션 컨트롤 사용",
+  "@classic_navigation_description": {
+    "description": "Description for classic navigation setting"
+  },
+  "ai_summary_settings": "AI 요약 설정",
+  "@ai_summary_settings": {
+    "description": "Title for AI summary settings"
+  },
+  "ask_download_location_title": "다운로드 위치 묻기",
+  "@ask_download_location_title": {
+    "description": "Setting title for asking download location"
+  },
+  "enable_incognito_mode": "시크릿 모드 활성화",
+  "@enable_incognito_mode": {
+    "description": "Button to enable incognito mode"
+  },
+  "disable_incognito_mode": "시크릿 모드 비활성화",
+  "@disable_incognito_mode": {
+    "description": "Button to disable incognito mode"
+  },
+  "close_all_tabs": "모든 탭 닫기",
+  "@close_all_tabs": {
+    "description": "Button to close all tabs"
+  },
+  "close_all_tabs_confirm": "모든 탭을 닫으시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+  "@close_all_tabs_confirm": {
+    "description": "Confirmation message for closing all tabs"
+  },
+  "close_all_tabs_in_group": "\"{groupName}\"의 모든 탭을 닫으시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+  "@close_all_tabs_in_group": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    },
+    "description": "Confirmation message for closing all tabs in a group"
+  },
+  "other": "기타",
+  "@other": {
+    "description": "Settings group title for other options"
+  },
+  "ai": "AI",
+  "@ai": {
+    "description": "Settings group title for AI options"
+  },
+  "rearrange_navigation_buttons": "내비게이션 버튼 재배열",
+  "@rearrange_navigation_buttons": {
+    "description": "Setting subtitle for navigation customization"
+  },
+  "current_navigation_bar": "현재 내비게이션 바:",
+  "@current_navigation_bar": {
+    "description": "Label for current navigation bar display"
+  },
+  "tap_to_check_permission_status": "권한 상태를 확인하려면 탭하세요",
+  "@tap_to_check_permission_status": {
+    "description": "Instruction for checking permission status"
+  },
+  "create_tab_group": "탭 그룹 만들기",
+  "@create_tab_group": {
+    "description": "Dialog title for creating a new tab group"
+  },
+  "manage_groups": "그룹 관리",
+  "@manage_groups": {
+    "description": "Dialog title for managing tab groups"
+  },
+  "no_groups_created_yet": "아직 생성된 그룹이 없습니다",
+  "@no_groups_created_yet": {
+    "description": "Message when no tab groups exist"
+  },
+  "group_name": "그룹 이름",
+  "@group_name": {
+    "description": "Input label for tab group name"
+  },
+  "color": "색상",
+  "@color": {
+    "description": "Color selection label"
+  },
+  "close_group": "그룹 닫기",
+  "@close_group": {
+    "description": "Dialog title for closing a tab group"
+  },
+  "create": "생성",
+  "summarize": "요약",
+  "previous_summaries": "이전 요약",
+  "no_summaries_available": "사용 가능한 요약이 없습니다",
+  "page_summary": "페이지 요약",
+  "failed_to_generate_summary": "요약 생성 실패",
+  "try_again": "다시 시도",
+  "no_page_to_summarize": "요약할 페이지가 없습니다",
+  "no_content_found_to_summarize": "요약할 콘텐츠를 찾을 수 없습니다",
+  "theme": "테마",
+  "check": "확인",
+  "pwa": "PWA",
+  "confirm": "확인",
+  "input_required": "입력 필요",
+  "alert": "알림",
+  "add_tabs_to_group": "그룹에 탭 추가",
+  "ungroup_tabs": "탭 그룹 해제",
+  "delete_group": "그룹 삭제",
+  "copy_summary": "요약 복사"
 }

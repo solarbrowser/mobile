@@ -1,4 +1,4 @@
-{
+﻿{
   "@@locale": "hi",
   
   "welcomeToSolar": "Solar में आपका स्वागत है",
@@ -14,7 +14,7 @@
   "getStarted": "शुरू करें",
   "continueText": "जारी रखें",
   "updated": "Solar ब्राउज़र अपडेट हो गया!",
-  "version": "संस्करण",
+  "version": "संस्करण {version}",
   "flutter_version": "Flutter संस्करण",
   "photoncore_version": "Photoncore संस्करण",
   "@photoncore_version": {
@@ -27,7 +27,6 @@
   "and": "और",
   "data_collection": "डेटा संग्रह",
   "data_collection_details": "• हम ब्राउज़र की कार्यक्षमता के लिए न्यूनतम आवश्यक डेटा एकत्र करते हैं\n• आपका ब्राउज़िंग इतिहास आपके डिवाइस पर रहता है\n• हम आपकी ऑनलाइन गतिविधि को ट्रैक नहीं करते\n• आप किसी भी समय सभी डेटा मिटा सकते हैं",
-
   "general": "सामान्य",
   "appearance": "दिखावट",
   "downloads": "डाउनलोड",
@@ -109,7 +108,7 @@
   "hardware_acceleration": "हार्डवेयर एक्सेलरेशन",
   "save_form_data": "फ़ॉर्म डेटा सहेजें",
   "do_not_track": "ट्रैक न करें",
-  "download_location_description": "डाउनलोड की गई फ़ाइलें कहां सहेजी जाएं चुनें",
+  "download_location_description": "डाउनलोड की गई फ़ाइलें कहाँ सहेजी जाएं चुनें",
   "text_size_description": "वेब पेज पर टेक्स्ट का आकार समायोजित करें",
   "text_size_small": "छोटा",
   "text_size_medium": "मध्यम",
@@ -183,13 +182,13 @@
   "open_in_new_tab": "नए टैब में खोलें",
   "downloading": "डाउनलोड हो रहा है...",
   "no_downloads_yet": "कोई डाउनलोड नहीं",
-  "just_now": "अभी अभी",
+  "just_now": "अभी-अभी",
   "unknown": "अज्ञात",
   "press_back_to_exit": "बाहर निकलने के लिए दोबारा दबाएं",
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
   },
-  "error_opening_file": "फ़ाइल खोलने में त्रुटि। कृपया इस प्रकार की फ़ाइल खोलने के लिए उपयुक्त ऐप इंस्टॉल करें।",
+  "error_opening_file": "फ़ाइल खोलने में त्रुटि",
   "storage_permission_required": "स्टोरेज अनुमति आवश्यक है",
   "storage_permission_denied": "फ़ाइलें डाउनलोड करने के लिए स्टोरेज अनुमति आवश्यक है",
   "download_in_progress": "डाउनलोड जारी है",
@@ -249,5 +248,344 @@
   "searchTheWeb": "वेब खोजें",
   "recentSearches": "हाल की खोजें",
   "classic_navigation": "क्लासिक नेविगेशन",
-  "classic_navigation_description": "स्क्रीन के निचले हिस्से में नेविगेशन बटन दिखाएं"
+  "classic_navigation_description": "स्क्रीन के निचले हिस्से में नेविगेशन बटन दिखाएं",
+  "ok": "ठीक है",
+  "welcome_screen_reset": "स्वागत स्क्रीन रीसेट करें",
+  "welcome_screen_reset_message": "अगली ऐप शुरुआत पर स्वागत स्क्रीन दिखाई जाएगी। कृपया अपडेट की गई गोपनीयता नीति और सेवा की शर्तें देखने के लिए ऐप को पुनः आरंभ करें।",
+  "customize_navigation": "नेविगेशन कस्टमाइज़ करें",
+  "bookmark_removed": "बुकमार्क हटाया गया",
+  "navigation_buttons": "नेविगेशन बटन",
+  "available_buttons": "उपलब्ध बटन",
+  "enabled_buttons": "सक्षम बटन",
+  "button_back": "पीछे",
+  "button_forward": "आगे",
+  "button_bookmark": "बुकमार्क",
+  "button_share": "साझा करें",
+  "button_menu": "मेनू",
+  "button_bookmarks": "बुकमार्क",
+  "navigation_bar_animations": "नेविगेशन बार एनिमेशन",
+  "restore_defaults": "डिफ़ॉल्ट पुनर्स्थापित करें",
+  "drag_to_reorder": "फिर से क्रम में लगाने के लिए खींचें",
+  "add": "जोड़ें",
+  "restored_tab": "पुनर्स्थापित टैब",
+  "rename": "नाम बदलें",
+  "rename_pwa": "PWA का नाम बदलें",
+  "pwa_name": "PWA का नाम",
+  "pwa_renamed": "PWA और होम स्क्रीन शॉर्टकट का नाम बदल दिया गया",
+  "pwa_removed": "PWA और होम स्क्रीन शॉर्टकट हटा दिया गया",
+  "remove": "हटाएं",
+  "@remove": {
+    "description": "Button text for removing something"
+  },
+
+  "skip": "छोड़ें",
+  "@skip": {
+    "description": "Skip button text"
+  },
+  "install_packages_permission": "पैकेज इंस्टॉल अनुमति",
+  "@install_packages_permission": {
+    "description": "Install packages permission title"
+  },
+  "install_packages_permission_description": "इस ब्राउज़र से ऐप्स इंस्टॉल करने की अनुमति दें",
+  "@install_packages_permission_description": {
+    "description": "Install packages permission description"
+  },
+  "permission_install_packages_required": "पैकेज इंस्टॉल अनुमति आवश्यक",
+  "@permission_install_packages_required": {
+    "description": "Install packages permission required message"
+  },
+  "storage_permission_install_packages_required": "स्टोरेज और पैकेज इंस्टॉल अनुमति",
+  "@storage_permission_install_packages_required": {
+    "description": "Storage and install packages permission title"
+  },
+  "storage_permission_install_packages_description": "Solar ब्राउज़र को डाउनलोड के लिए स्टोरेज एक्सेस और APK इंस्टॉलेशन के लिए पैकेज इंस्टॉल की अनुमति चाहिए",
+  "@storage_permission_install_packages_description": {
+    "description": "Storage and install packages permission description"
+  },
+  "software_team": "सॉफ्टवेयर टीम",
+  "@software_team": {
+    "description": "Software team label"
+  },
+  "storage_permission_granted": "सभी अनुमतियाँ दी गईं",
+  "@storage_permission_granted": {
+    "description": "Title shown when all permissions are granted"
+  },
+  "storage_permission_description": "इस ऐप को डाउनलोड कार्यक्षमता के लिए फ़ाइलों तक पहुंच की अनुमति चाहिए।",
+  "@storage_permission_description": {
+    "description": "Description text for the permission request"
+  },
+  "app_should_work_normally": "ऐप अब पूर्ण कार्यक्षमता के साथ सामान्य रूप से काम करना चाहिए।",
+  "@app_should_work_normally": {
+    "description": "Description text shown when all permissions are granted"
+  },
+  "grant_permission": "अनुमति दें",
+  "@grant_permission": {
+    "description": "Text for the permission grant button"
+  },
+  "incognito_mode": "इंकॉग्निटो मोड",
+  "@incognito_mode": {
+    "description": "Label for incognito mode"
+  },
+  "incognito_description": "इंकॉग्निटो मोड में:\n• ब्राउज़िंग इतिहास सेव नहीं होता\n• टैब बंद करने पर कुकीज़ साफ़ हो जाती हैं\n• कोई डेटा स्थानीय रूप से स्टोर नहीं होता",
+  "@incognito_description": {
+    "description": "Description of incognito mode features"
+  },
+  "previous_summaries": "पिछले सारांश",
+  "@previous_summaries": {
+    "description": "Label for accessing previously generated summaries"
+  },
+  "summarize_selected": "चयनित को सारांश करें",
+  "@summarize_selected": {
+    "description": "Label for summarizing selected text"
+  },
+  "summarize_page": "पेज का सारांश करें",
+  "@summarize_page": {
+    "description": "Label for summarizing the entire page"
+  },
+  "ai_preferences": "AI प्राथमिकताएं",
+  "@ai_preferences": {
+    "description": "Label for AI preferences section"
+  },
+  "ai_provider": "AI प्रदाता",
+  "@ai_provider": {
+    "description": "Label for AI provider selection"
+  },
+  "summary_length": "सारांश लंबाई",
+  "@summary_length": {
+    "description": "Label for AI summary length preference"
+  },
+  "summary_language": "सारांश भाषा",
+  "@summary_language": {
+    "description": "Label for AI summary language preference"
+  },
+  "length_short": "छोटा",
+  "@length_short": {
+    "description": "Label for short summary length"
+  },
+  "length_medium": "मध्यम",
+  "@length_medium": {
+    "description": "Label for medium summary length"
+  },
+  "length_long": "लंबा",
+  "@length_long": {
+    "description": "Label for long summary length"
+  },
+  "summary_length_short": "छोटा (75 शब्द)",
+  "@summary_length_short": {
+    "description": "Label for short summary length with word count"
+  },
+  "summary_length_medium": "मध्यम (150 शब्द)",
+  "@summary_length_medium": {
+    "description": "Label for medium summary length with word count"
+  },
+  "summary_length_long": "लंबा (250 शब्द)",
+  "@summary_length_long": {
+    "description": "Label for long summary length with word count"
+  },
+  "summary_language_english": "अंग्रेज़ी",
+  "@summary_language_english": {
+    "description": "Label for English language option"
+  },
+  "summary_language_turkish": "तुर्की",
+  "@summary_language_turkish": {
+    "description": "Label for Turkish language option"
+  },
+  "add_to_pwa": "PWA में जोड़ें",
+  "@add_to_pwa": {
+    "description": "Option to add current website as a PWA"
+  },
+  "remove_from_pwa": "PWA से हटाएं",
+  "@remove_from_pwa": {
+    "description": "Option to remove website from PWA list"
+  },
+  "added_to_pwa": "PWA में जोड़ा गया",
+  "@added_to_pwa": {
+    "description": "Confirmation message when site is added as PWA"
+  },
+  "removed_from_pwa": "PWA से हटाया गया",
+  "@removed_from_pwa": {
+    "description": "Confirmation message when site is removed from PWA list"
+  },
+  "pwa_info": "प्रोग्रेसिव वेब ऐप्स बिना ब्राउज़र कंट्रोल के इंस्टॉल किए गए ऐप्स की तरह चलते हैं",
+  "@pwa_info": {
+    "description": "Information about what PWAs are"
+  },
+  "create_shortcut": "शॉर्टकट बनाएं",
+  "@create_shortcut": {
+    "description": "Title for the shortcut creation dialog"
+  },
+  "enter_shortcut_name": "इस शॉर्टकट के लिए एक नाम दर्ज करें:",
+  "@enter_shortcut_name": {
+    "description": "Prompt for entering the shortcut name"
+  },
+  "shortcut_name": "शॉर्टकट नाम",
+  "@shortcut_name": {
+    "description": "Hint for the shortcut name input field"
+  },
+  "keep_tabs_open_description": "सत्रों के बीच टैब खुले रखें",
+  "@keep_tabs_open_description": {
+    "description": "Description for keep tabs open setting"
+  },
+  "developer": "डेवलपर",
+  "@developer": {
+    "description": "Developer section title"
+  },
+  "restored_tab": "टैब पुनर्स्थापित",
+  "@restored_tab": {
+    "description": "Message when a tab is restored"
+  },
+  "welcome_screen_reset_message": "यह स्वागत स्क्रीन को रीसेट कर देगा ताकि यह अगली बार ऐप शुरू करने पर फिर से दिखाई दे।",
+  "@welcome_screen_reset_message": {
+    "description": "Dialog message for resetting welcome screen"
+  },
+  "@ok": {
+    "description": "OK button text"
+  },
+  "pwa_renamed": "PWA का नाम बदल दिया गया",
+  "@pwa_renamed": {
+    "description": "Confirmation message when PWA is renamed"
+  },
+  "pwa_removed": "PWA हटाया गया",
+  "@pwa_removed": {
+    "description": "Confirmation message when PWA is removed"
+  },
+  "untitled": "शीर्षकहीन",
+  "@untitled": {
+    "description": "Default title for untitled pages/tabs"
+  },
+  "show_welcome_screen_next_launch": "अगली बार चालू करने पर स्वागत स्क्रीन दिखाएं",
+  "@show_welcome_screen_next_launch": {
+    "description": "Setting description for showing welcome screen"
+  },
+  "automatically_open_downloaded_files": "डाउनलोड की गई फाइलों को स्वचालित रूप से खोलें",
+  "@automatically_open_downloaded_files": {
+    "description": "Setting description for auto-opening downloads"
+  },
+  "ask_where_to_save_files": "डाउनलोड करने से पहले फाइलों को कहाँ सेव करना है पूछें",
+  "@ask_where_to_save_files": {
+    "description": "Setting description for asking download location"
+  },
+  "clear_all_history": "सभी इतिहास साफ़ करें",
+  "@clear_all_history": {
+    "description": "Button text for clearing all browsing history"
+  },
+  "clear_all_history_confirm": "यह आपके सभी ब्राउज़िंग इतिहास को स्थायी रूप से हटा देगा। इस क्रिया को पूर्ववत् नहीं किया जा सकता।",
+  "@clear_all_history_confirm": {
+    "description": "Confirmation message for clearing all history"
+  },
+  "history_cleared": "इतिहास साफ़ किया गया",
+  "@history_cleared": {
+    "description": "Confirmation message when history is cleared"
+  },
+  "navigation_controls": "नेविगेशन नियंत्रण",
+  "@navigation_controls": {
+    "description": "Title for navigation controls settings"
+  },
+  "classic_navigation_description": "क्लासिक ब्राउज़र शैली नेविगेशन नियंत्रण का उपयोग करें",
+  "@classic_navigation_description": {
+    "description": "Description for classic navigation setting"
+  },
+  "ai_settings": "AI सेटिंग्स",
+  "@ai_settings": {
+    "description": "Title for AI settings section"
+  },
+  "ai_summary_settings": "AI सारांश सेटिंग्स",
+  "@ai_summary_settings": {
+    "description": "Title for AI summary settings"
+  },
+  "auto_open_downloads": "डाउनलोड्स स्वचालित रूप से खोलें",
+  "@auto_open_downloads": {
+    "description": "Setting title for auto-opening downloads"
+  },
+  "ask_download_location_title": "डाउनलोड स्थान पूछें",
+  "@ask_download_location_title": {
+    "description": "Setting title for asking download location"
+  },
+  "enable_incognito_mode": "इंकॉग्निटो मोड सक्षम करें",
+  "@enable_incognito_mode": {
+    "description": "Button to enable incognito mode"
+  },
+  "disable_incognito_mode": "इंकॉग्निटो मोड अक्षम करें",
+  "@disable_incognito_mode": {
+    "description": "Button to disable incognito mode"
+  },
+  "close_all_tabs": "सभी टैब बंद करें",
+  "@close_all_tabs": {
+    "description": "Button to close all tabs"
+  },
+  "close_all_tabs_confirm": "क्या आप सभी टैब बंद करना चाहते हैं? यह क्रिया वापस नहीं की जा सकती।",
+  "@close_all_tabs_confirm": {
+    "description": "Confirmation message for closing all tabs"
+  },
+  "close_all_tabs_in_group": "\"{groupName}\" में सभी टैब बंद करें? यह क्रिया वापस नहीं की जा सकती।",
+  "@close_all_tabs_in_group": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    },
+    "description": "Confirmation message for closing all tabs in a group"
+  },
+  "other": "अन्य",
+  "@other": {
+    "description": "Settings group title for other options"
+  },
+  "ai": "AI",
+  "@ai": {
+    "description": "Settings group title for AI options"
+  },
+  "rearrange_navigation_buttons": "नेविगेशन बटन पुनर्व्यवस्थित करें",
+  "@rearrange_navigation_buttons": {
+    "description": "Setting subtitle for navigation customization"
+  },
+  "current_navigation_bar": "वर्तमान नेविगेशन बार:",
+  "@current_navigation_bar": {
+    "description": "Label for current navigation bar display"
+  },
+  "tap_to_check_permission_status": "अनुमति स्थिति जांचने के लिए टैप करें",
+  "@tap_to_check_permission_status": {
+    "description": "Instruction for checking permission status"
+  },
+  "create_tab_group": "टैब समूह बनाएं",
+  "@create_tab_group": {
+    "description": "Dialog title for creating a new tab group"
+  },
+  "manage_groups": "समूह प्रबंधित करें",
+  "@manage_groups": {
+    "description": "Dialog title for managing tab groups"
+  },
+  "no_groups_created_yet": "अभी तक कोई समूह नहीं बनाया गया",
+  "@no_groups_created_yet": {
+    "description": "Message when no tab groups exist"
+  },
+  "group_name": "समूह का नाम",
+  "@group_name": {
+    "description": "Input label for tab group name"
+  },
+  "color": "रंग",
+  "@color": {
+    "description": "Color selection label"
+  },
+  "close_group": "समूह बंद करें",
+  "@close_group": {
+    "description": "Dialog title for closing a tab group"
+  },
+  "create": "बनाएं",
+  "summarize": "सारांश",
+  "no_summaries_available": "कोई सारांश उपलब्ध नहीं",
+  "page_summary": "पृष्ठ सारांश",
+  "failed_to_generate_summary": "सारांश बनाने में विफल",
+  "try_again": "पुनः प्रयास करें",
+  "no_page_to_summarize": "सारांश के लिए कोई पृष्ठ नहीं",
+  "no_content_found_to_summarize": "सारांश के लिए कोई सामग्री नहीं मिली",
+  "theme": "थीम",
+  "check": "जांचें",
+  "pwa": "PWA",
+  "confirm": "पुष्टि करें",
+  "input_required": "इनपुट आवश्यक",
+  "alert": "चेतावनी",
+  "add_tabs_to_group": "समूह में टैब जोड़ें",
+  "ungroup_tabs": "टैब को अलग करें",
+  "delete_group": "समूह हटाएं",
+  "copy_summary": "सारांश कॉपी करें"
 }

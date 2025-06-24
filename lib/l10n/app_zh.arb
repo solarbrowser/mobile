@@ -1,6 +1,5 @@
-{
+﻿{
   "@@locale": "zh",
-  
   "welcomeToSolar": "欢迎使用 Solar",
   "welcomeDescription": "现代、快速、安全的浏览器",
   "termsOfService": "继续即表示您同意我们的服务条款和隐私政策",
@@ -28,8 +27,7 @@
   },
   "and": "和",
   "data_collection": "数据收集",
-  "data_collection_details": "• 我们仅收集浏览器功能所需的最少数据\n• 您的浏览历史保存在您的设备上\n• 我们不会跟踪您的在线活动\n• 您可以随时清除所有数据",
-
+  "data_collection_details": "• 我们仅收集浏览器功能所需的最小数据\n• 您的浏览历史保存在您的设备上\n• 我们不会跟踪您的在线活动\n• 您可以随时清除所有数据",
   "general": "通用设置",
   "appearance": "外观设置",
   "downloads": "下载管理",
@@ -58,7 +56,7 @@
   "app_name": "Solar Browser",
   "search_or_enter_address": "搜索或输入网址",
   "clear_browser_data": "清除浏览器数据",
-  "browsing_history": "浏览历史",
+  "Browse_history": "浏览历史",
   "cookies": "Cookie",
   "cache": "缓存",
   "form_data": "表单数据",
@@ -145,9 +143,9 @@
   "clear_downloads_history_title": "清除下载历史",
   "slide_up_panel": "向上滑动面板",
   "slide_down_panel": "向下滑动面板",
-  "move_url_bar": "移动网址栏",
-  "url_bar_icon": "网址栏图标",
-  "url_bar_expanded": "网址栏展开",
+  "move_url_bar": "移动地址栏",
+  "url_bar_icon": "地址栏图标",
+  "url_bar_expanded": "地址栏展开",
   "search_or_type_url": "搜索或输入网址",
   "secure_connection": "安全连接",
   "insecure_connection": "不安全连接",
@@ -232,10 +230,467 @@
   "searchTheWeb": "搜索网页",
   "recentSearches": "最近搜索",
   "storage_permission_granted": "已授予存储权限",
-  
   "summary_length": "摘要长度",
   "summary_language": "摘要语言",
-  
   "classic_navigation": "经典导航",
-  "classic_navigation_description": "在屏幕底部显示导航按钮"
+  "classic_navigation_description": "在屏幕底部显示导航按钮",
+  "ok": "确定",
+  "welcome_screen_reset": "重置欢迎屏幕",
+  "welcome_screen_reset_message": "欢迎屏幕将在下次应用启动时显示。请重新启动应用以查看更新的隐私政策和服务条款。",
+  "customize_navigation": "自定义导航",
+  "bookmark_removed": "书签已移除",
+  "navigation_buttons": "导航按钮",
+  "available_buttons": "可用按钮",
+  "enabled_buttons": "已启用按钮",
+  "button_back": "返回",
+  "button_forward": "前进",
+  "button_bookmark": "书签",
+  "button_share": "分享",
+  "button_menu": "菜单",
+  "button_bookmarks": "书签",
+  "navigation_bar_animations": "导航栏动画",
+  "restore_defaults": "恢复默认",
+  "drag_to_reorder": "拖拽重新排序",
+  "add": "添加",
+  "restored_tab": "已恢复的标签页",
+  "rename": "重命名",
+  "rename_pwa": "重命名PWA",
+  "pwa_name": "PWA名称",
+  "pwa_renamed": "PWA和主屏幕快捷方式已重命名",
+  "pwa_removed": "PWA和主屏幕快捷方式已移除",
+  "remove": "移除",
+  "@remove": {
+    "description": "Button text for removing something"
+  },
+  "install_packages_permission": "安装包权限",
+  "@install_packages_permission": {
+    "description": "Install packages permission title"
+  },
+  "install_packages_permission_description": "允许从此浏览器安装应用",
+  "@install_packages_permission_description": {
+    "description": "Install packages permission description"
+  },
+  "permission_install_packages_required": "需要安装包权限",
+  "@permission_install_packages_required": {
+    "description": "Install packages permission required message"
+  },
+  "storage_permission_install_packages_required": "存储和安装包权限",
+  "@storage_permission_install_packages_required": {
+    "description": "Storage and install packages permission title"
+  },
+  "storage_permission_install_packages_description": "Solar 浏览器需要存储访问权限用于下载和安装包权限用于APK安装",
+  "@storage_permission_install_packages_description": {
+    "description": "Storage and install packages permission description"
+  },
+  "software_team": "软件团队",
+  "@software_team": {
+    "description": "Software team label"
+  },
+  "storage_permission_required": "授予权限",
+  "@storage_permission_required": {
+    "description": "Title for the permission request banner"
+  },
+  "storage_permission_description": "此应用需要文件访问权限以实现下载功能。",
+  "@storage_permission_description": {
+    "description": "Description text for the permission request"
+  },
+  "app_should_work_normally": "应用现在应该能够正常工作并具有完整功能。",
+  "@app_should_work_normally": {
+    "description": "Description text shown when all permissions are granted"
+  },
+  "grant_permission": "授予权限",
+  "@grant_permission": {
+    "description": "Text for the permission grant button"
+  },
+  "storage_permission_denied": "下载文件需要存储权限",
+  "@storage_permission_denied": {
+    "description": "Message shown when storage permission is denied"
+  },
+  "incognito_mode": "隐身模式",
+  "@incognito_mode": {
+    "description": "Label for incognito mode"
+  },
+  "incognito_description": "在隐身模式下：\n• 浏览记录不会被保存\n• 关闭标签页时清除Cookie\n• 不会在本地存储任何数据",
+  "@incognito_description": {
+    "description": "Description of incognito mode features"
+  },
+  "error_opening_file": "打开文件时出错",
+  "@error_opening_file": {
+    "description": "Error message when a file cannot be opened"
+  },
+  "download_in_progress": "下载进行中",
+  "@download_in_progress": {
+    "description": "Message shown when a download is in progress"
+  },
+  "download_paused": "下载已暂停",
+  "@download_paused": {
+    "description": "Message shown when a download is paused"
+  },
+  "download_canceled": "下载已取消",
+  "@download_canceled": {
+    "description": "Message shown when a download is canceled"
+  },
+  "download_error": "下载错误: {error}",
+  "@download_error": {
+    "description": "Message shown when there is an error during download",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "Network error"
+      }
+    }
+  },
+  "open_downloads_folder": "打开下载文件夹",
+  "@open_downloads_folder": {
+    "description": "Label for button to open downloads folder"
+  },
+  "file_exists": "文件已存在",
+  "@file_exists": {
+    "description": "Message shown when trying to download a file that already exists"
+  },
+  "file_saved": "文件已保存到下载",
+  "@file_saved": {
+    "description": "Message shown when a file is successfully saved"
+  },
+  "no_tabs_open": "没有打开的标签页",
+  "incognito": "隐身",
+  "clear_all": "全部清除",
+  "clear_history": "清除历史记录",
+  "clear_history_confirmation": "您确定要清除浏览历史记录吗？",
+  "no_history": "没有浏览历史记录",
+  "today": "今天",
+  "yesterday": "昨天",
+  "days_ago": "{days}天前",
+  "@days_ago": {
+    "description": "Shows how many days ago something happened",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "weeks_ago": "{weeks}周前",
+  "@weeks_ago": {
+    "description": "Shows how many weeks ago something happened",
+    "placeholders": {
+      "weeks": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "months_ago": "{months}个月前",
+  "@months_ago": {
+    "description": "Shows how many months ago something happened",
+    "placeholders": {
+      "months": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "previous_summaries": "之前的摘要",
+  "@previous_summaries": {
+    "description": "Label for accessing previously generated summaries"
+  },
+  "summarize_selected": "摘要所选内容",
+  "@summarize_selected": {
+    "description": "Label for summarizing selected text"
+  },
+  "summarize_page": "摘要页面",
+  "@summarize_page": {
+    "description": "Label for summarizing the entire page"
+  },
+  "ai_preferences": "AI偏好设置",
+  "@ai_preferences": {
+    "description": "Label for AI preferences section"
+  },
+  "ai_provider": "AI提供商",
+  "@ai_provider": {
+    "description": "Label for AI provider selection"
+  },
+  "length_short": "短",
+  "@length_short": {
+    "description": "Label for short summary length"
+  },
+  "length_medium": "中",
+  "@length_medium": {
+    "description": "Label for medium summary length"
+  },
+  "length_long": "长",
+  "@length_long": {
+    "description": "Label for long summary length"
+  },
+  "summary_length_short": "短（75词）",
+  "@summary_length_short": {
+    "description": "Label for short summary length with word count"
+  },
+  "summary_length_medium": "中（150词）",
+  "@summary_length_medium": {
+    "description": "Label for medium summary length with word count"
+  },
+  "summary_length_long": "长（250词）",
+  "@summary_length_long": {
+    "description": "Label for long summary length with word count"
+  },
+  "summary_language_english": "英语",
+  "@summary_language_english": {
+    "description": "Label for English language option"
+  },
+  "summary_language_turkish": "土耳其语",
+  "@summary_language_turkish": {
+    "description": "Label for Turkish language option"
+  },
+  "add_to_pwa": "添加到PWA",
+  "@add_to_pwa": {
+    "description": "Option to add current website as a PWA"
+  },
+  "remove_from_pwa": "从PWA移除",
+  "@remove_from_pwa": {
+    "description": "Option to remove website from PWA list"
+  },
+  "added_to_pwa": "已添加到PWA",
+  "@added_to_pwa": {
+    "description": "Confirmation message when site is added as PWA"
+  },
+  "removed_from_pwa": "已从PWA移除",
+  "@removed_from_pwa": {
+    "description": "Confirmation message when site is removed from PWA list"
+  },
+  "pwa_info": "渐进式Web应用程序像已安装的应用程序一样运行，无需浏览器控件",
+  "@pwa_info": {
+    "description": "Information about what PWAs are"
+  },
+  "create_shortcut": "创建快捷方式",
+  "@create_shortcut": {
+    "description": "Title for the shortcut creation dialog"
+  },
+  "enter_shortcut_name": "为此快捷方式输入名称：",
+  "@enter_shortcut_name": {
+    "description": "Prompt for entering the shortcut name"
+  },
+  "shortcut_name": "快捷方式名称",
+  "@shortcut_name": {
+    "description": "Hint for the shortcut name input field"
+  },
+  "keep_tabs_open_description": "在会话之间保持标签页打开",
+  "@keep_tabs_open_description": {
+    "description": "Description for keep tabs open setting"
+  },
+  "developer": "开发者",
+  "@developer": {
+    "description": "Developer section title"
+  },
+  "reset_welcome_screen": "重置欢迎屏幕",
+  "@reset_welcome_screen": {
+    "description": "Reset welcome screen option"
+  },
+  "restored_tab": "标签页已恢复",
+  "@restored_tab": {
+    "description": "Message when a tab is restored"
+  },
+  "welcome_screen_reset_message": "这将重置欢迎屏幕，使其在下次启动应用时再次出现。",
+  "@welcome_screen_reset_message": {
+    "description": "Dialog message for resetting welcome screen"
+  },
+  "button_back": "后退",
+  "@button_back": {
+    "description": "Back button label"
+  },
+  "button_forward": "前进",
+  "@button_forward": {
+    "description": "Forward button label"
+  },
+  "button_bookmark": "书签",
+  "@button_bookmark": {
+    "description": "Bookmark button label"
+  },
+  "button_bookmarks": "书签",
+  "@button_bookmarks": {
+    "description": "Bookmarks button label"
+  },
+  "button_share": "分享",
+  "@button_share": {
+    "description": "Share button label"
+  },
+  "button_menu": "菜单",
+  "@button_menu": {
+    "description": "Menu button label"
+  },
+  "available_buttons": "可用按钮",
+  "@available_buttons": {
+    "description": "Label for available navigation buttons"
+  },
+  "add": "添加",
+  "@add": {
+    "description": "Add button text"
+  },
+  "rename_pwa": "重命名PWA",
+  "@rename_pwa": {
+    "description": "Option to rename a PWA"
+  },
+  "pwa_name": "PWA名称",
+  "@pwa_name": {
+    "description": "Hint for PWA name input field"
+  },
+  "rename": "重命名",
+  "@rename": {
+    "description": "Rename button text"
+  },
+  "pwa_renamed": "PWA已重命名",
+  "@pwa_renamed": {
+    "description": "Confirmation message when PWA is renamed"
+  },
+  "remove": "移除",
+  "@remove": {
+    "description": "Remove button text"
+  },
+  "pwa_removed": "PWA已移除",
+  "@pwa_removed": {
+    "description": "Confirmation message when PWA is removed"
+  },
+  "bookmark_removed": "书签已删除",
+  "@bookmark_removed": {
+    "description": "Confirmation message when bookmark is removed"
+  },
+  "untitled": "无标题",
+  "@untitled": {
+    "description": "Default title for untitled pages/tabs"
+  },
+  "show_welcome_screen_next_launch": "下次启动时显示欢迎屏幕",
+  "@show_welcome_screen_next_launch": {
+    "description": "Setting description for showing welcome screen"
+  },
+  "automatically_open_downloaded_files": "自动打开已下载的文件",
+  "@automatically_open_downloaded_files": {
+    "description": "Setting description for auto-opening downloads"
+  },
+  "ask_where_to_save_files": "下载前询问文件保存位置",
+  "@ask_where_to_save_files": {
+    "description": "Setting description for asking download location"
+  },
+  "clear_all_history": "清除所有历史记录",
+  "@clear_all_history": {
+    "description": "Button text for clearing all Browse history"
+  },
+  "clear_all_history_confirm": "这将永久删除您的所有浏览历史记录。此操作无法撤销。",
+  "@clear_all_history_confirm": {
+    "description": "Confirmation message for clearing all history"
+  },
+  "history_cleared": "历史记录已清除",
+  "@history_cleared": {
+    "description": "Confirmation message when history is cleared"
+  },
+  "navigation_controls": "导航控件",
+  "@navigation_controls": {
+    "description": "Title for navigation controls settings"
+  },
+  "classic_navigation_description": "使用经典浏览器风格的导航控件",
+  "@classic_navigation_description": {
+    "description": "Description for classic navigation setting"
+  },
+  "ai_settings": "AI设置",
+  "@ai_settings": {
+    "description": "Title for AI settings section"
+  },
+  "ai_summary_settings": "AI摘要设置",
+  "@ai_summary_settings": {
+    "description": "Title for AI summary settings"
+  },
+  "auto_open_downloads": "自动打开下载",
+  "@auto_open_downloads": {
+    "description": "Setting title for auto-opening downloads"
+  },
+  "ask_download_location_title": "询问下载位置",
+  "@ask_download_location_title": {
+    "description": "Setting title for asking download location"
+  },
+  "enable_incognito_mode": "启用隐身模式",
+  "@enable_incognito_mode": {
+    "description": "Button to enable incognito mode"
+  },
+  "disable_incognito_mode": "禁用隐身模式",
+  "@disable_incognito_mode": {
+    "description": "Button to disable incognito mode"
+  },
+  "close_all_tabs": "关闭所有标签页",
+  "@close_all_tabs": {
+    "description": "Button to close all tabs"
+  },
+  "close_all_tabs_confirm": "您确定要关闭所有标签页吗？此操作无法撤销。",
+  "@close_all_tabs_confirm": {
+    "description": "Confirmation message for closing all tabs"
+  },
+  "close_all_tabs_in_group": "关闭“{groupName}”中的所有标签页？此操作无法撤销。",
+  "@close_all_tabs_in_group": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    },
+    "description": "Confirmation message for closing all tabs in a group"
+  },
+  "other": "其他",
+  "@other": {
+    "description": "Settings group title for other options"
+  },
+  "ai": "人工智能",
+  "@ai": {
+    "description": "Settings group title for AI options"
+  },
+  "rearrange_navigation_buttons": "重新排列导航按钮",
+  "@rearrange_navigation_buttons": {
+    "description": "Setting subtitle for navigation customization"
+  },
+  "current_navigation_bar": "当前导航栏：",
+  "@current_navigation_bar": {
+    "description": "Label for current navigation bar display"
+  },
+  "tap_to_check_permission_status": "点击检查权限状态",
+  "@tap_to_check_permission_status": {
+    "description": "Instruction for checking permission status"
+  },
+  "create_tab_group": "创建标签页组",
+  "@create_tab_group": {
+    "description": "Dialog title for creating a new tab group"
+  },
+  "manage_groups": "管理组",
+  "@manage_groups": {
+    "description": "Dialog title for managing tab groups"
+  },
+  "no_groups_created_yet": "尚未创建任何组",
+  "@no_groups_created_yet": {
+    "description": "Message when no tab groups exist"
+  },
+  "group_name": "组名",
+  "@group_name": {
+    "description": "Input label for tab group name"
+  },
+  "color": "颜色",
+  "@color": {
+    "description": "Color selection label"
+  },
+  "close_group": "关闭组",
+  "@close_group": {
+    "description": "Dialog title for closing a tab group"
+  },
+  "create": "创建",
+  "summarize": "总结",
+  "no_summaries_available": "没有可用的总结",
+  "page_summary": "页面总结",
+  "failed_to_generate_summary": "生成总结失败",
+  "try_again": "再试一次",
+  "no_page_to_summarize": "没有页面要总结",
+  "no_content_found_to_summarize": "未找到要总结的内容",
+  "theme": "主题",
+  "check": "检查",
+  "pwa": "PWA",
+  "confirm": "确认",
+  "input_required": "需要输入",
+  "alert": "警报",
+  "add_tabs_to_group": "将标签页添加到组",
+  "ungroup_tabs": "取消组合标签页",
+  "delete_group": "删除组",
+  "copy_summary": "复制摘要"
 }

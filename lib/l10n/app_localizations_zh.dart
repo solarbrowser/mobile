@@ -96,7 +96,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get data_collection => '数据收集';
 
   @override
-  String get data_collection_details => '• 我们仅收集浏览器功能所需的最少数据\n• 您的浏览历史保存在您的设备上\n• 我们不会跟踪您的在线活动\n• 您可以随时清除所有数据';
+  String get data_collection_details => '• 我们仅收集浏览器功能所需的最小数据\n• 您的浏览历史保存在您的设备上\n• 我们不会跟踪您的在线活动\n• 您可以随时清除所有数据';
 
   @override
   String get general => '通用设置';
@@ -183,7 +183,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get clear_browser_data => '清除浏览器数据';
 
   @override
-  String get browsing_history => '浏览历史';
+  String get browsing_history => 'Browsing History';
 
   @override
   String get cookies => 'Cookie';
@@ -366,7 +366,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get size => '大小';
 
   @override
-  String get auto_open_downloads => '自动打开下载项';
+  String get auto_open_downloads => '自动打开下载';
 
   @override
   String get clear_downloads_history => '清除下载历史';
@@ -388,19 +388,19 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get install_packages_permission => 'Install Packages Permission';
+  String get install_packages_permission => '安装包权限';
 
   @override
-  String get install_packages_permission_description => 'Allow installation of apps from this browser';
+  String get install_packages_permission_description => '允许从此浏览器安装应用';
 
   @override
-  String get permission_install_packages_required => 'Install packages permission required';
+  String get permission_install_packages_required => '需要安装包权限';
 
   @override
-  String get storage_permission_install_packages_required => 'Storage & Install Packages Permission';
+  String get storage_permission_install_packages_required => '存储和安装包权限';
 
   @override
-  String get storage_permission_install_packages_description => 'Solar Browser needs permission to access storage for downloads and install packages for APK installations';
+  String get storage_permission_install_packages_description => 'Solar 浏览器需要存储访问权限用于下载和安装包权限用于APK安装';
 
   @override
   String get clear_downloads_history_confirm => '这只会清除下载历史，不会删除已下载的文件。';
@@ -415,13 +415,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get slide_down_panel => '向下滑动面板';
 
   @override
-  String get move_url_bar => '移动网址栏';
+  String get move_url_bar => '移动地址栏';
 
   @override
-  String get url_bar_icon => '网址栏图标';
+  String get url_bar_icon => '地址栏图标';
 
   @override
-  String get url_bar_expanded => '网址栏展开';
+  String get url_bar_expanded => '地址栏展开';
 
   @override
   String get search_or_type_url => '搜索或输入网址';
@@ -471,7 +471,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get classic_navigation => '经典导航';
 
   @override
-  String get classic_navigation_description => '在屏幕底部显示导航按钮';
+  String get classic_navigation_description => '使用经典浏览器风格的导航控件';
 
   @override
   String get exit_confirmation => '退出应用';
@@ -486,7 +486,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get engine_version => '引擎版本';
 
   @override
-  String get software_team => 'Software Team';
+  String get software_team => '软件团队';
 
   @override
   String get download_image => '下载图片';
@@ -510,95 +510,95 @@ class AppLocalizationsZh extends AppLocalizations {
   String get press_back_to_exit => '再按一次退出';
 
   @override
-  String get storage_permission_required => 'Give Permission';
+  String get storage_permission_required => '授予权限';
 
   @override
   String get storage_permission_granted => '已授予存储权限';
 
   @override
-  String get storage_permission_description => 'This app needs permission to access files for download functionality.';
+  String get storage_permission_description => '此应用需要文件访问权限以实现下载功能。';
 
   @override
-  String get app_should_work_normally => 'The app should now work normally with full functionality.';
+  String get app_should_work_normally => '应用现在应该能够正常工作并具有完整功能。';
 
   @override
-  String get grant_permission => 'Give Permission';
+  String get grant_permission => '授予权限';
 
   @override
-  String get storage_permission_denied => 'Storage permission is required to download files';
+  String get storage_permission_denied => '下载文件需要存储权限';
 
   @override
   String get new_incognito_tab => '新建隐身标签页';
 
   @override
-  String get incognito_mode => 'Incognito Mode';
+  String get incognito_mode => '隐身模式';
 
   @override
-  String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
+  String get incognito_description => '在隐身模式下：\n• 浏览记录不会被保存\n• 关闭标签页时清除Cookie\n• 不会在本地存储任何数据';
 
   @override
-  String get error_opening_file => 'Error opening file';
+  String get error_opening_file => '打开文件时出错';
 
   @override
-  String get download_in_progress => 'Download in progress';
+  String get download_in_progress => '下载进行中';
 
   @override
-  String get download_paused => 'Download paused';
+  String get download_paused => '下载已暂停';
 
   @override
-  String get download_canceled => 'Download canceled';
+  String get download_canceled => '下载已取消';
 
   @override
   String download_error(String error) {
-    return 'Download error: $error';
+    return '下载错误: $error';
   }
 
   @override
-  String get open_downloads_folder => 'Open downloads folder';
+  String get open_downloads_folder => '打开下载文件夹';
 
   @override
-  String get file_exists => 'File already exists';
+  String get file_exists => '文件已存在';
 
   @override
-  String get file_saved => 'File saved to Downloads';
+  String get file_saved => '文件已保存到下载';
 
   @override
-  String get no_tabs_open => 'No tabs open';
+  String get no_tabs_open => '没有打开的标签页';
 
   @override
-  String get incognito => 'Incognito';
+  String get incognito => '隐身';
 
   @override
-  String get clear_all => 'Clear All';
+  String get clear_all => '全部清除';
 
   @override
-  String get clear_history => 'Clear History';
+  String get clear_history => '清除历史记录';
 
   @override
-  String get clear_history_confirmation => 'Are you sure you want to clear your browsing history?';
+  String get clear_history_confirmation => '您确定要清除浏览历史记录吗？';
 
   @override
-  String get no_history => 'No browsing history';
+  String get no_history => '没有浏览历史记录';
 
   @override
-  String get today => 'Today';
+  String get today => '今天';
 
   @override
-  String get yesterday => 'Yesterday';
+  String get yesterday => '昨天';
 
   @override
   String days_ago(int days) {
-    return '$days days ago';
+    return '$days天前';
   }
 
   @override
   String weeks_ago(int weeks) {
-    return '$weeks weeks ago';
+    return '$weeks周前';
   }
 
   @override
   String months_ago(int months) {
-    return '$months months ago';
+    return '$months个月前';
   }
 
   @override
@@ -632,19 +632,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get recentSearches => '最近搜索';
 
   @override
-  String get previous_summaries => 'Previous Summaries';
+  String get previous_summaries => '之前的摘要';
 
   @override
-  String get summarize_selected => 'Summarize Selected';
+  String get summarize_selected => '摘要所选内容';
 
   @override
-  String get summarize_page => 'Summarize Page';
+  String get summarize_page => '摘要页面';
 
   @override
-  String get ai_preferences => 'AI Preferences';
+  String get ai_preferences => 'AI偏好设置';
 
   @override
-  String get ai_provider => 'AI Provider';
+  String get ai_provider => 'AI提供商';
 
   @override
   String get summary_length => '摘要长度';
@@ -653,53 +653,256 @@ class AppLocalizationsZh extends AppLocalizations {
   String get summary_language => '摘要语言';
 
   @override
-  String get length_short => 'Short';
+  String get length_short => '短';
 
   @override
-  String get length_medium => 'Medium';
+  String get length_medium => '中';
 
   @override
-  String get length_long => 'Long';
+  String get length_long => '长';
 
   @override
-  String get summary_length_short => 'Short (75 words)';
+  String get summary_length_short => '短（75词）';
 
   @override
-  String get summary_length_medium => 'Medium (150 words)';
+  String get summary_length_medium => '中（150词）';
 
   @override
-  String get summary_length_long => 'Long (250 words)';
+  String get summary_length_long => '长（250词）';
 
   @override
-  String get summary_language_english => 'English';
+  String get summary_language_english => '英语';
 
   @override
-  String get summary_language_turkish => 'Türkçe';
+  String get summary_language_turkish => '土耳其语';
 
   @override
-  String get add_to_pwa => 'Add to PWA';
+  String get add_to_pwa => '添加到PWA';
 
   @override
-  String get remove_from_pwa => 'Remove from PWA';
+  String get remove_from_pwa => '从PWA移除';
 
   @override
-  String get added_to_pwa => 'Added to PWA';
+  String get added_to_pwa => '已添加到PWA';
 
   @override
-  String get removed_from_pwa => 'Removed from PWA';
+  String get removed_from_pwa => '已从PWA移除';
 
   @override
-  String get pwa_info => 'Progressive Web Apps run like installed apps without browser controls';
+  String get pwa_info => '渐进式Web应用程序像已安装的应用程序一样运行，无需浏览器控件';
 
   @override
-  String get create_shortcut => 'Create Shortcut';
+  String get create_shortcut => '创建快捷方式';
 
   @override
-  String get enter_shortcut_name => 'Enter a name for this shortcut:';
+  String get enter_shortcut_name => '为此快捷方式输入名称：';
 
   @override
-  String get shortcut_name => 'Shortcut name';
+  String get shortcut_name => '快捷方式名称';
 
   @override
-  String get add => 'ADD';
+  String get keep_tabs_open_description => '在会话之间保持标签页打开';
+
+  @override
+  String get developer => '开发者';
+
+  @override
+  String get reset_welcome_screen => '重置欢迎屏幕';
+
+  @override
+  String get restored_tab => '标签页已恢复';
+
+  @override
+  String get welcome_screen_reset => '重置欢迎屏幕';
+
+  @override
+  String get welcome_screen_reset_message => '这将重置欢迎屏幕，使其在下次启动应用时再次出现。';
+
+  @override
+  String get ok => '确定';
+
+  @override
+  String get customize_navigation => '自定义导航';
+
+  @override
+  String get button_back => '后退';
+
+  @override
+  String get button_forward => '前进';
+
+  @override
+  String get button_bookmark => '书签';
+
+  @override
+  String get button_bookmarks => '书签';
+
+  @override
+  String get button_share => '分享';
+
+  @override
+  String get button_menu => '菜单';
+
+  @override
+  String get available_buttons => '可用按钮';
+
+  @override
+  String get add => '添加';
+
+  @override
+  String get rename_pwa => '重命名PWA';
+
+  @override
+  String get pwa_name => 'PWA名称';
+
+  @override
+  String get rename => '重命名';
+
+  @override
+  String get pwa_renamed => 'PWA已重命名';
+
+  @override
+  String get remove => '移除';
+
+  @override
+  String get pwa_removed => 'PWA已移除';
+
+  @override
+  String get bookmark_removed => '书签已删除';
+
+  @override
+  String get untitled => '无标题';
+
+  @override
+  String get show_welcome_screen_next_launch => '下次启动时显示欢迎屏幕';
+
+  @override
+  String get automatically_open_downloaded_files => '自动打开已下载的文件';
+
+  @override
+  String get ask_where_to_save_files => '下载前询问文件保存位置';
+
+  @override
+  String get clear_all_history => '清除所有历史记录';
+
+  @override
+  String get clear_all_history_confirm => '这将永久删除您的所有浏览历史记录。此操作无法撤销。';
+
+  @override
+  String get history_cleared => '历史记录已清除';
+
+  @override
+  String get navigation_controls => '导航控件';
+
+  @override
+  String get ai_settings => 'AI设置';
+
+  @override
+  String get ai_summary_settings => 'AI摘要设置';
+
+  @override
+  String get ask_download_location_title => '询问下载位置';
+
+  @override
+  String get enable_incognito_mode => '启用隐身模式';
+
+  @override
+  String get disable_incognito_mode => '禁用隐身模式';
+
+  @override
+  String get close_all_tabs => '关闭所有标签页';
+
+  @override
+  String get close_all_tabs_confirm => '您确定要关闭所有标签页吗？此操作无法撤销。';
+
+  @override
+  String close_all_tabs_in_group(String groupName) {
+    return '关闭“$groupName”中的所有标签页？此操作无法撤销。';
+  }
+
+  @override
+  String get other => '其他';
+
+  @override
+  String get ai => '人工智能';
+
+  @override
+  String get rearrange_navigation_buttons => '重新排列导航按钮';
+
+  @override
+  String get current_navigation_bar => '当前导航栏：';
+
+  @override
+  String get tap_to_check_permission_status => '点击检查权限状态';
+
+  @override
+  String get create_tab_group => '创建标签页组';
+
+  @override
+  String get manage_groups => '管理组';
+
+  @override
+  String get no_groups_created_yet => '尚未创建任何组';
+
+  @override
+  String get group_name => '组名';
+
+  @override
+  String get color => '颜色';
+
+  @override
+  String get close_group => '关闭组';
+
+  @override
+  String get create => '创建';
+
+  @override
+  String get summarize => '总结';
+
+  @override
+  String get no_summaries_available => '没有可用的总结';
+
+  @override
+  String get page_summary => '页面总结';
+
+  @override
+  String get failed_to_generate_summary => '生成总结失败';
+
+  @override
+  String get try_again => '再试一次';
+
+  @override
+  String get no_page_to_summarize => '没有页面要总结';
+
+  @override
+  String get no_content_found_to_summarize => '未找到要总结的内容';
+
+  @override
+  String get theme => '主题';
+
+  @override
+  String get check => '检查';
+
+  @override
+  String get pwa => 'PWA';
+
+  @override
+  String get confirm => '确认';
+
+  @override
+  String get input_required => '需要输入';
+
+  @override
+  String get alert => '警报';
+
+  @override
+  String get add_tabs_to_group => '将标签页添加到组';
+
+  @override
+  String get ungroup_tabs => '取消组合标签页';
+
+  @override
+  String get delete_group => '删除组';
+
+  @override
+  String get copy_summary => '复制摘要';
 }

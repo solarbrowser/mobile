@@ -70,7 +70,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get back => 'Geri';
 
   @override
-  String get skip => 'Skip';
+  String get skip => 'Atla';
 
   @override
   String get getStarted => 'Başlayın';
@@ -183,7 +183,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get clear_browser_data => 'Verileri Temizle';
 
   @override
-  String get browsing_history => 'Gezinme Geçmişi';
+  String get browsing_history => 'Browsing History';
 
   @override
   String get cookies => 'Çerezler';
@@ -366,7 +366,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get size => 'Boyut';
 
   @override
-  String get auto_open_downloads => 'İndirmeleri otomatik aç';
+  String get auto_open_downloads => 'İndirmeleri Otomatik Aç';
 
   @override
   String get clear_downloads_history => 'İndirme geçmişini temizle';
@@ -388,19 +388,19 @@ class AppLocalizationsTr extends AppLocalizations {
   }
 
   @override
-  String get install_packages_permission => 'Install Packages Permission';
+  String get install_packages_permission => 'Paket Kurulum İzni';
 
   @override
-  String get install_packages_permission_description => 'Allow installation of apps from this browser';
+  String get install_packages_permission_description => 'Bu tarayıcıdan uygulama kurulumuna izin ver';
 
   @override
-  String get permission_install_packages_required => 'Install packages permission required';
+  String get permission_install_packages_required => 'Paket kurulum izni gerekli';
 
   @override
-  String get storage_permission_install_packages_required => 'Storage & Install Packages Permission';
+  String get storage_permission_install_packages_required => 'Depolama ve Paket Kurulum İzni';
 
   @override
-  String get storage_permission_install_packages_description => 'Solar Browser needs permission to access storage for downloads and install packages for APK installations';
+  String get storage_permission_install_packages_description => 'Solar Tarayıcı, indirmeler için depolama erişimine ve APK kurulumları için paket kurulumuna izin gerektirir';
 
   @override
   String get clear_downloads_history_confirm => 'Bu işlem sadece indirme geçmişini temizleyecek, indirilen dosyalar silinmeyecektir.';
@@ -471,7 +471,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get classic_navigation => 'Klasik Navigasyon';
 
   @override
-  String get classic_navigation_description => 'Ekranın altında gezinme düğmelerini göster';
+  String get classic_navigation_description => 'Klasik tarayıcı tarzı navigasyon kontrollerini kullan';
 
   @override
   String get exit_confirmation => 'Uygulamadan Çık';
@@ -486,10 +486,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get engine_version => 'Motor Sürümü';
 
   @override
-  String get software_team => 'Software Team';
+  String get software_team => 'Yazılım Ekibi';
 
   @override
-  String get download_image => 'Download Image';
+  String get download_image => 'Resmi İndir';
 
   @override
   String get share_image => 'Resmi Paylaş';
@@ -516,13 +516,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get storage_permission_granted => 'Depolama izni verildi';
 
   @override
-  String get storage_permission_description => 'This app needs permission to access files for download functionality.';
+  String get storage_permission_description => 'Bu uygulama, indirme işlevi için dosyalara erişim izni gerektirir.';
 
   @override
-  String get app_should_work_normally => 'The app should now work normally with full functionality.';
+  String get app_should_work_normally => 'Uygulama artık tam işlevsellikle normal çalışmalıdır.';
 
   @override
-  String get grant_permission => 'Give Permission';
+  String get grant_permission => 'İzin Ver';
 
   @override
   String get storage_permission_denied => 'Dosyaları indirmek için depolama izni gerekli';
@@ -531,13 +531,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get new_incognito_tab => 'Yeni gizli sekme';
 
   @override
-  String get incognito_mode => 'Incognito Mode';
+  String get incognito_mode => 'Gizli Mod';
 
   @override
-  String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
+  String get incognito_description => 'Gizli modda:\n• Tarama geçmişi kaydedilmez\n• Sekmeleri kapattığınızda çerezler temizlenir\n• Hiçbir veri yerel olarak depolanmaz';
 
   @override
-  String get error_opening_file => 'Dosya açılırken hata oluştu. Lütfen bu dosya türünü açmak için uygun bir uygulama yükleyin.';
+  String get error_opening_file => 'Dosya açılırken hata oluştu. Lütfen bu türünü açmak için uygun bir uygulama yükleyin.';
 
   @override
   String get download_in_progress => 'İndirme devam ediyor';
@@ -644,7 +644,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get ai_preferences => 'Yapay Zeka Ayarları';
 
   @override
-  String get ai_provider => 'AI Provider';
+  String get ai_provider => 'AI Sağlayıcısı';
 
   @override
   String get summary_length => 'Özet Uzunluğu';
@@ -653,13 +653,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get summary_language => 'Özet Dili';
 
   @override
-  String get length_short => 'Short';
+  String get length_short => 'Kısa';
 
   @override
-  String get length_medium => 'Medium';
+  String get length_medium => 'Orta';
 
   @override
-  String get length_long => 'Long';
+  String get length_long => 'Uzun';
 
   @override
   String get summary_length_short => 'Kısa (75 kelime)';
@@ -677,29 +677,232 @@ class AppLocalizationsTr extends AppLocalizations {
   String get summary_language_turkish => 'Türkçe';
 
   @override
-  String get add_to_pwa => 'Add to PWA';
+  String get add_to_pwa => 'PWA\'ya Ekle';
 
   @override
-  String get remove_from_pwa => 'Remove from PWA';
+  String get remove_from_pwa => 'PWA\'dan Kaldır';
 
   @override
-  String get added_to_pwa => 'Added to PWA';
+  String get added_to_pwa => 'PWA\'ya Eklendi';
 
   @override
-  String get removed_from_pwa => 'Removed from PWA';
+  String get removed_from_pwa => 'PWA\'dan Kaldırıldı';
 
   @override
-  String get pwa_info => 'Progressive Web Apps run like installed apps without browser controls';
+  String get pwa_info => 'İlerici Web Uygulamaları, tarayıcı kontrolü olmadan kurulu uygulamalar gibi çalışır';
 
   @override
-  String get create_shortcut => 'Create Shortcut';
+  String get create_shortcut => 'Kısayol Oluştur';
 
   @override
-  String get enter_shortcut_name => 'Enter a name for this shortcut:';
+  String get enter_shortcut_name => 'Bu kısayol için bir isim girin:';
 
   @override
-  String get shortcut_name => 'Shortcut name';
+  String get shortcut_name => 'Kısayol adı';
 
   @override
-  String get add => 'ADD';
+  String get keep_tabs_open_description => 'Oturumlar arasında sekmeleri açık tut';
+
+  @override
+  String get developer => 'Geliştirici';
+
+  @override
+  String get reset_welcome_screen => 'Hoş Geldin Ekranını Sıfırla';
+
+  @override
+  String get restored_tab => 'Sekme geri yüklendi';
+
+  @override
+  String get welcome_screen_reset => 'Karşılama Ekranını Sıfırla';
+
+  @override
+  String get welcome_screen_reset_message => 'Bu, hoş geldin ekranını sıfırlayacak ve uygulamayı bir sonraki başlatışınızda tekrar görünecek.';
+
+  @override
+  String get ok => 'Tamam';
+
+  @override
+  String get customize_navigation => 'Navigasyonu Özelleştir';
+
+  @override
+  String get button_back => 'Geri';
+
+  @override
+  String get button_forward => 'İleri';
+
+  @override
+  String get button_bookmark => 'Yer İmi';
+
+  @override
+  String get button_bookmarks => 'Yer İmleri';
+
+  @override
+  String get button_share => 'Paylaş';
+
+  @override
+  String get button_menu => 'Menü';
+
+  @override
+  String get available_buttons => 'Mevcut düğmeler';
+
+  @override
+  String get add => 'Ekle';
+
+  @override
+  String get rename_pwa => 'PWA\'yı Yeniden Adlandır';
+
+  @override
+  String get pwa_name => 'PWA adı';
+
+  @override
+  String get rename => 'Yeniden Adlandır';
+
+  @override
+  String get pwa_renamed => 'PWA yeniden adlandırıldı';
+
+  @override
+  String get remove => 'Kaldır';
+
+  @override
+  String get pwa_removed => 'PWA kaldırıldı';
+
+  @override
+  String get bookmark_removed => 'Yer imi kaldırıldı';
+
+  @override
+  String get untitled => 'Başlıksız';
+
+  @override
+  String get show_welcome_screen_next_launch => 'Bir sonraki açılışta hoş geldin ekranını göster';
+
+  @override
+  String get automatically_open_downloaded_files => 'İndirilen dosyaları otomatik olarak aç';
+
+  @override
+  String get ask_where_to_save_files => 'İndirmeden önce dosyaların kaydedileceği yeri sor';
+
+  @override
+  String get clear_all_history => 'Tüm Geçmişi Temizle';
+
+  @override
+  String get clear_all_history_confirm => 'Bu işlem tüm tarama geçmişinizi kalıcı olarak silecektir. Bu işlem geri alınamaz.';
+
+  @override
+  String get history_cleared => 'Geçmiş temizlendi';
+
+  @override
+  String get navigation_controls => 'Navigasyon Kontrolleri';
+
+  @override
+  String get ai_settings => 'AI Ayarları';
+
+  @override
+  String get ai_summary_settings => 'AI Özet Ayarları';
+
+  @override
+  String get ask_download_location_title => 'İndirme Konumunu Sor';
+
+  @override
+  String get enable_incognito_mode => 'Gizli Modu Etkinleştir';
+
+  @override
+  String get disable_incognito_mode => 'Gizli Modu Devre Dışı Bırak';
+
+  @override
+  String get close_all_tabs => 'Tüm Sekmeleri Kapat';
+
+  @override
+  String get close_all_tabs_confirm => 'Tüm sekmeleri kapatmak istediğinizden emin misiniz? Bu işlem geri alınamaz.';
+
+  @override
+  String close_all_tabs_in_group(String groupName) {
+    return '\"$groupName\" grubundaki tüm sekmeleri kapat? Bu işlem geri alınamaz.';
+  }
+
+  @override
+  String get other => 'Diğer';
+
+  @override
+  String get ai => 'AI';
+
+  @override
+  String get rearrange_navigation_buttons => 'Navigasyon düğmelerini yeniden düzenle';
+
+  @override
+  String get current_navigation_bar => 'Mevcut Navigasyon Çubuğu:';
+
+  @override
+  String get tap_to_check_permission_status => 'İzin durumunu kontrol etmek için dokunun';
+
+  @override
+  String get create_tab_group => 'Sekme Grubu Oluştur';
+
+  @override
+  String get manage_groups => 'Grupları Yönet';
+
+  @override
+  String get no_groups_created_yet => 'Henüz grup oluşturulmadı';
+
+  @override
+  String get group_name => 'Grup Adı';
+
+  @override
+  String get color => 'Renk';
+
+  @override
+  String get close_group => 'Grubu Kapat';
+
+  @override
+  String get create => 'Oluştur';
+
+  @override
+  String get summarize => 'Özetle';
+
+  @override
+  String get no_summaries_available => 'Özet mevcut değil';
+
+  @override
+  String get page_summary => 'Sayfa Özeti';
+
+  @override
+  String get failed_to_generate_summary => 'Özet oluşturulamadı';
+
+  @override
+  String get try_again => 'Tekrar Dene';
+
+  @override
+  String get no_page_to_summarize => 'Özetlenecek sayfa yok';
+
+  @override
+  String get no_content_found_to_summarize => 'Özetlenecek içerik bulunamadı';
+
+  @override
+  String get theme => 'Tema';
+
+  @override
+  String get check => 'Kontrol Et';
+
+  @override
+  String get pwa => 'PWA';
+
+  @override
+  String get confirm => 'Onayla';
+
+  @override
+  String get input_required => 'Giriş Gerekli';
+
+  @override
+  String get alert => 'Uyarı';
+
+  @override
+  String get add_tabs_to_group => 'Gruba Sekme Ekle';
+
+  @override
+  String get ungroup_tabs => 'Sekmeleri ayır';
+
+  @override
+  String get delete_group => 'Grubu sil';
+
+  @override
+  String get copy_summary => 'Özeti Kopyala';
 }

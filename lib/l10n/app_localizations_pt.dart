@@ -10,10 +10,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get welcomeToSolar => 'Bem-vindo ao Solar';
 
   @override
-  String get welcomeDescription => 'Um navegador moderno, rápido e seguro';
+  String get welcomeDescription => 'Um navegador moderno, rÃ¡pido e seguro';
 
   @override
-  String get termsOfService => 'Ao continuar, você concorda com nossos Termos de Serviço e Política de Privacidade';
+  String get termsOfService => 'Ao continuar, vocÃª concorda com nossos Termos de ServiÃ§o e PolÃ­tica de Privacidade';
 
   @override
   String get whats_new => 'Novidades';
@@ -64,7 +64,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get gruvboxLightTheme => 'Gruvbox Light';
 
   @override
-  String get next => 'Próximo';
+  String get next => 'PrÃ³ximo';
 
   @override
   String get back => 'Voltar';
@@ -73,7 +73,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get skip => 'Pular';
 
   @override
-  String get getStarted => 'Começar';
+  String get getStarted => 'ComeÃ§ar';
 
   @override
   String get continueText => 'Continuar';
@@ -86,7 +86,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String version(String version) {
-    return 'Versão $version';
+    return 'VersÃ£o $version';
   }
 
   @override
@@ -96,13 +96,13 @@ class AppLocalizationsPt extends AppLocalizations {
   String get data_collection => 'Coleta de dados';
 
   @override
-  String get data_collection_details => '• Coletamos os dados mínimos necessários para a funcionalidade do navegador\n• Seu histórico de navegação permanece no seu dispositivo\n• Não rastreamos sua atividade online\n• Você pode limpar todos os dados a qualquer momento';
+  String get data_collection_details => 'â€¢ Coletamos os dados mÃ­nimos necessÃ¡rios para a funcionalidade do navegador\nâ€¢ Seu histÃ³rico de navegaÃ§Ã£o permanece no seu dispositivo\nâ€¢ NÃ£o rastreamos sua atividade online\nâ€¢ VocÃª pode limpar todos os dados a qualquer momento';
 
   @override
   String get general => 'Geral';
 
   @override
-  String get appearance => 'Aparência';
+  String get appearance => 'AparÃªncia';
 
   @override
   String get downloads => 'Downloads';
@@ -141,7 +141,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get rate_us => 'Avalie-nos';
 
   @override
-  String get privacy_policy => 'Política de privacidade';
+  String get privacy_policy => 'PolÃ­tica de privacidade';
 
   @override
   String get terms_of_use => 'Termos de uso';
@@ -159,31 +159,31 @@ class AppLocalizationsPt extends AppLocalizations {
   String get keep_tabs_open => 'Manter abas abertas';
 
   @override
-  String get history => 'Histórico';
+  String get history => 'HistÃ³rico';
 
   @override
   String get bookmarks => 'Favoritos';
 
   @override
-  String get search_in_page => 'Pesquisar na página';
+  String get search_in_page => 'Pesquisar na pÃ¡gina';
 
   @override
   String get app_name => 'Solar Browser';
 
   @override
-  String get search_or_enter_address => 'Pesquisar ou digitar endereço';
+  String get search_or_enter_address => 'Pesquisar ou digitar endereÃ§o';
 
   @override
-  String get current_location => 'Localização atual';
+  String get current_location => 'LocalizaÃ§Ã£o atual';
 
   @override
-  String get change_location => 'Alterar localização';
+  String get change_location => 'Alterar localizaÃ§Ã£o';
 
   @override
   String get clear_browser_data => 'Limpar dados do navegador';
 
   @override
-  String get browsing_history => 'Histórico de navegação';
+  String get browsing_history => 'HistÃ³rico de navegaÃ§Ã£o';
 
   @override
   String get cookies => 'Cookies';
@@ -192,7 +192,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get cache => 'Cache';
 
   @override
-  String get form_data => 'Dados de formulários';
+  String get form_data => 'Dados de formulÃ¡rios';
 
   @override
   String get saved_passwords => 'Senhas salvas';
@@ -219,7 +219,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get download_started => 'Download iniciado';
 
   @override
-  String get download_completed => 'Download concluído';
+  String get download_completed => 'Download concluÃ­do';
 
   @override
   String get download_failed => 'Falha no download';
@@ -243,7 +243,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get bookmark_added => 'Adicionado aos favoritos';
 
   @override
-  String get bookmark_exists => 'Já está nos favoritos';
+  String get bookmark_exists => 'JÃ¡ estÃ¡ nos favoritos';
 
   @override
   String get share => 'Compartilhar';
@@ -255,10 +255,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get paste_and_go => 'Colar e ir';
 
   @override
-  String get find_in_page => 'Localizar na página';
+  String get find_in_page => 'Localizar na pÃ¡gina';
 
   @override
-  String get desktop_site => 'Versão para desktop';
+  String get desktop_site => 'VersÃ£o para desktop';
 
   @override
   String get new_tab => 'Nova aba';
@@ -267,10 +267,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get close_tab => 'Fechar aba';
 
   @override
-  String get tab_overview => 'Visão geral das abas';
+  String get tab_overview => 'VisÃ£o geral das abas';
 
   @override
-  String get home => 'Página inicial';
+  String get home => 'PÃ¡gina inicial';
 
   @override
   String get reload => 'Recarregar';
@@ -279,16 +279,16 @@ class AppLocalizationsPt extends AppLocalizations {
   String get stop => 'Parar';
 
   @override
-  String get forward => 'Avançar';
+  String get forward => 'AvanÃ§ar';
 
   @override
-  String get more => 'Mais opções';
+  String get more => 'Mais opÃ§Ãµes';
 
   @override
   String get reset_browser => 'Redefinir navegador';
 
   @override
-  String get reset_browser_confirm => 'Isso apagará todos os seus dados, incluindo histórico, favoritos e configurações. Esta ação não pode ser desfeita.';
+  String get reset_browser_confirm => 'Isso apagarÃ¡ todos os seus dados, incluindo histÃ³rico, favoritos e configuraÃ§Ãµes. Esta aÃ§Ã£o nÃ£o pode ser desfeita.';
 
   @override
   String get reset => 'Redefinir';
@@ -297,7 +297,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get reset_complete => 'O navegador foi redefinido';
 
   @override
-  String get permission_denied => 'Permissão de armazenamento negada';
+  String get permission_denied => 'PermissÃ£o de armazenamento negada';
 
   @override
   String get download_location_changed => 'Local de download alterado';
@@ -312,25 +312,25 @@ class AppLocalizationsPt extends AppLocalizations {
   String get enable_javascript => 'Ativar JavaScript';
 
   @override
-  String get hardware_acceleration => 'Aceleração de hardware';
+  String get hardware_acceleration => 'AceleraÃ§Ã£o de hardware';
 
   @override
-  String get save_form_data => 'Salvar dados de formulários';
+  String get save_form_data => 'Salvar dados de formulÃ¡rios';
 
   @override
-  String get do_not_track => 'Não rastrear';
+  String get do_not_track => 'NÃ£o rastrear';
 
   @override
   String get download_location_description => 'Escolha onde salvar os arquivos baixados';
 
   @override
-  String get text_size_description => 'Ajuste o tamanho do texto nas páginas web';
+  String get text_size_description => 'Ajuste o tamanho do texto nas pÃ¡ginas web';
 
   @override
   String get text_size_small => 'Pequeno';
 
   @override
-  String get text_size_medium => 'Médio';
+  String get text_size_medium => 'MÃ©dio';
 
   @override
   String get text_size_large => 'Grande';
@@ -348,10 +348,10 @@ class AppLocalizationsPt extends AppLocalizations {
   String get hardware_acceleration_description => 'Usar GPU para melhor desempenho';
 
   @override
-  String get form_data_description => 'Salvar informações inseridas em formulários';
+  String get form_data_description => 'Salvar informaÃ§Ãµes inseridas em formulÃ¡rios';
 
   @override
-  String get do_not_track_description => 'Solicitar aos sites que não rastreiem sua atividade';
+  String get do_not_track_description => 'Solicitar aos sites que nÃ£o rastreiem sua atividade';
 
   @override
   String get exit_app => 'Sair do aplicativo';
@@ -366,21 +366,21 @@ class AppLocalizationsPt extends AppLocalizations {
   String get size => 'Tamanho';
 
   @override
-  String get auto_open_downloads => 'Abrir downloads automaticamente';
+  String get auto_open_downloads => 'Abrir Downloads Automaticamente';
 
   @override
-  String get clear_downloads_history => 'Limpar histórico de downloads';
+  String get clear_downloads_history => 'Limpar histÃ³rico de downloads';
 
   @override
-  String get downloads_history_cleared => 'Histórico de downloads limpo';
+  String get downloads_history_cleared => 'HistÃ³rico de downloads limpo';
 
   @override
   String delete_download_confirm(String fileName) {
-    return 'Deseja excluir $fileName do histórico de downloads?\nO arquivo baixado não será excluído.';
+    return 'Deseja excluir $fileName do histÃ³rico de downloads?\nO arquivo baixado nÃ£o serÃ¡ excluÃ­do.';
   }
 
   @override
-  String get download_removed => 'Download removido do histórico';
+  String get download_removed => 'Download removido do histÃ³rico';
 
   @override
   String download_size(String size) {
@@ -388,25 +388,25 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get install_packages_permission => 'Install Packages Permission';
+  String get install_packages_permission => 'PermissÃ£o de InstalaÃ§Ã£o de Pacotes';
 
   @override
-  String get install_packages_permission_description => 'Allow installation of apps from this browser';
+  String get install_packages_permission_description => 'Permitir a instalaÃ§Ã£o de aplicativos deste navegador';
 
   @override
-  String get permission_install_packages_required => 'Install packages permission required';
+  String get permission_install_packages_required => 'PermissÃ£o de instalaÃ§Ã£o de pacotes necessÃ¡ria';
 
   @override
-  String get storage_permission_install_packages_required => 'Storage & Install Packages Permission';
+  String get storage_permission_install_packages_required => 'PermissÃ£o de Armazenamento e InstalaÃ§Ã£o de Pacotes';
 
   @override
-  String get storage_permission_install_packages_description => 'Solar Browser needs permission to access storage for downloads and install packages for APK installations';
+  String get storage_permission_install_packages_description => 'O navegador Solar precisa de permissÃ£o para acessar o armazenamento para downloads e instalar pacotes para instalaÃ§Ãµes APK';
 
   @override
-  String get clear_downloads_history_confirm => 'Isso limpará apenas o histórico de downloads, não os arquivos baixados.';
+  String get clear_downloads_history_confirm => 'Isso limparÃ¡ apenas o histÃ³rico de downloads, nÃ£o os arquivos baixados.';
 
   @override
-  String get clear_downloads_history_title => 'Limpar histórico de downloads';
+  String get clear_downloads_history_title => 'Limpar histÃ³rico de downloads';
 
   @override
   String get slide_up_panel => 'Deslizar painel para cima';
@@ -418,7 +418,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get move_url_bar => 'Mover barra de URL';
 
   @override
-  String get url_bar_icon => 'Ícone da barra de URL';
+  String get url_bar_icon => 'Ãcone da barra de URL';
 
   @override
   String get url_bar_expanded => 'Barra de URL expandida';
@@ -427,13 +427,13 @@ class AppLocalizationsPt extends AppLocalizations {
   String get search_or_type_url => 'Pesquisar ou digitar URL';
 
   @override
-  String get secure_connection => 'Conexão segura';
+  String get secure_connection => 'ConexÃ£o segura';
 
   @override
-  String get insecure_connection => 'Conexão não segura';
+  String get insecure_connection => 'ConexÃ£o nÃ£o segura';
 
   @override
-  String get refresh_page => 'Atualizar página';
+  String get refresh_page => 'Atualizar pÃ¡gina';
 
   @override
   String get close_search => 'Fechar pesquisa';
@@ -468,25 +468,25 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get classic_navigation => 'Navegação Clássica';
+  String get classic_navigation => 'NavegaÃ§Ã£o ClÃ¡ssica';
 
   @override
-  String get classic_navigation_description => 'Exibir botões de navegação na parte inferior da tela';
+  String get classic_navigation_description => 'Usar controles de navegaÃ§Ã£o estilo navegador clÃ¡ssico';
 
   @override
   String get exit_confirmation => 'Sair do aplicativo';
 
   @override
-  String get flutter_version => 'Versão do Flutter';
+  String get flutter_version => 'VersÃ£o do Flutter';
 
   @override
-  String get photoncore_version => 'Versão do Photoncore';
+  String get photoncore_version => 'VersÃ£o do Photoncore';
 
   @override
-  String get engine_version => 'Versão do motor';
+  String get engine_version => 'VersÃ£o do motor';
 
   @override
-  String get software_team => 'Software Team';
+  String get software_team => 'Equipe de Software';
 
   @override
   String get download_image => 'Baixar imagem';
@@ -510,31 +510,31 @@ class AppLocalizationsPt extends AppLocalizations {
   String get press_back_to_exit => 'Pressione voltar novamente para sair';
 
   @override
-  String get storage_permission_required => 'Permissão de armazenamento necessária';
+  String get storage_permission_required => 'PermissÃ£o de armazenamento necessÃ¡ria';
 
   @override
-  String get storage_permission_granted => 'Permissão de armazenamento concedida';
+  String get storage_permission_granted => 'PermissÃ£o de armazenamento concedida';
 
   @override
-  String get storage_permission_description => 'This app needs permission to access files for download functionality.';
+  String get storage_permission_description => 'Este aplicativo precisa de permissÃ£o para acessar arquivos para funcionalidade de download.';
 
   @override
-  String get app_should_work_normally => 'The app should now work normally with full functionality.';
+  String get app_should_work_normally => 'O aplicativo deve agora funcionar normalmente com funcionalidade completa.';
 
   @override
-  String get grant_permission => 'Give Permission';
+  String get grant_permission => 'Conceder PermissÃ£o';
 
   @override
-  String get storage_permission_denied => 'A permissão de armazenamento é necessária para baixar arquivos';
+  String get storage_permission_denied => 'A permissÃ£o de armazenamento Ã© necessÃ¡ria para baixar arquivos';
 
   @override
-  String get new_incognito_tab => 'Nova aba anônima';
+  String get new_incognito_tab => 'Nova aba anÃ´nima';
 
   @override
-  String get incognito_mode => 'Incognito Mode';
+  String get incognito_mode => 'Modo IncÃ³gnito';
 
   @override
-  String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
+  String get incognito_description => 'No modo incÃ³gnito:\nâ€¢ O histÃ³rico de navegaÃ§Ã£o nÃ£o Ã© salvo\nâ€¢ Os cookies sÃ£o limpos quando vocÃª fecha as abas\nâ€¢ Nenhum dado Ã© armazenado localmente';
 
   @override
   String get error_opening_file => 'Erro ao abrir o arquivo. Por favor, instale um aplicativo adequado para abrir este tipo de arquivo.';
@@ -557,7 +557,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get open_downloads_folder => 'Abrir pasta de downloads';
 
   @override
-  String get file_exists => 'O arquivo já existe';
+  String get file_exists => 'O arquivo jÃ¡ existe';
 
   @override
   String get file_saved => 'Arquivo salvo em Downloads';
@@ -566,19 +566,19 @@ class AppLocalizationsPt extends AppLocalizations {
   String get no_tabs_open => 'Nenhuma aba aberta';
 
   @override
-  String get incognito => 'Navegação anônima';
+  String get incognito => 'NavegaÃ§Ã£o anÃ´nima';
 
   @override
   String get clear_all => 'Limpar tudo';
 
   @override
-  String get clear_history => 'Limpar histórico';
+  String get clear_history => 'Limpar histÃ³rico';
 
   @override
-  String get clear_history_confirmation => 'Tem certeza que deseja limpar o histórico de navegação?';
+  String get clear_history_confirmation => 'Tem certeza que deseja limpar o histÃ³rico de navegaÃ§Ã£o?';
 
   @override
-  String get no_history => 'Nenhum histórico de navegação';
+  String get no_history => 'Nenhum histÃ³rico de navegaÃ§Ã£o';
 
   @override
   String get today => 'Hoje';
@@ -588,42 +588,42 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String days_ago(int days) {
-    return 'há $days dias';
+    return 'hÃ¡ $days dias';
   }
 
   @override
   String weeks_ago(int weeks) {
-    return 'há $weeks semanas';
+    return 'hÃ¡ $weeks semanas';
   }
 
   @override
   String months_ago(int months) {
-    return 'há $months meses';
+    return 'hÃ¡ $months meses';
   }
 
   @override
   String get update1 => 'Sistema de temas aprimorado';
 
   @override
-  String get update1desc => 'Novo sistema de temas com mais opções de cores e melhor suporte ao modo escuro';
+  String get update1desc => 'Novo sistema de temas com mais opÃ§Ãµes de cores e melhor suporte ao modo escuro';
 
   @override
   String get update2 => 'Melhorias de desempenho';
 
   @override
-  String get update2desc => 'Carregamento de páginas mais rápido e experiência de rolagem mais suave';
+  String get update2desc => 'Carregamento de pÃ¡ginas mais rÃ¡pido e experiÃªncia de rolagem mais suave';
 
   @override
   String get update3 => 'Novos recursos de privacidade';
 
   @override
-  String get update3desc => 'Proteção aprimorada contra rastreamento e otimizações do modo anônimo';
+  String get update3desc => 'ProteÃ§Ã£o aprimorada contra rastreamento e otimizaÃ§Ãµes do modo anÃ´nimo';
 
   @override
   String get update4 => 'Melhorias na interface';
 
   @override
-  String get update4desc => 'Interface do usuário aprimorada com melhor navegação e acessibilidade';
+  String get update4desc => 'Interface do usuÃ¡rio aprimorada com melhor navegaÃ§Ã£o e acessibilidade';
 
   @override
   String get searchTheWeb => 'Pesquisar na web';
@@ -632,19 +632,19 @@ class AppLocalizationsPt extends AppLocalizations {
   String get recentSearches => 'Pesquisas recentes';
 
   @override
-  String get previous_summaries => 'Previous Summaries';
+  String get previous_summaries => 'Resumos Anteriores';
 
   @override
-  String get summarize_selected => 'Summarize Selected';
+  String get summarize_selected => 'Resumir Selecionado';
 
   @override
-  String get summarize_page => 'Summarize Page';
+  String get summarize_page => 'Resumir PÃ¡gina';
 
   @override
-  String get ai_preferences => 'AI Preferences';
+  String get ai_preferences => 'PreferÃªncias de IA';
 
   @override
-  String get ai_provider => 'AI Provider';
+  String get ai_provider => 'Provedor de IA';
 
   @override
   String get summary_length => 'Comprimento do resumo';
@@ -653,53 +653,256 @@ class AppLocalizationsPt extends AppLocalizations {
   String get summary_language => 'Idioma do resumo';
 
   @override
-  String get length_short => 'Short';
+  String get length_short => 'Curto';
 
   @override
-  String get length_medium => 'Medium';
+  String get length_medium => 'MÃ©dio';
 
   @override
-  String get length_long => 'Long';
+  String get length_long => 'Longo';
 
   @override
-  String get summary_length_short => 'Short (75 words)';
+  String get summary_length_short => 'Curto (75 palavras)';
 
   @override
-  String get summary_length_medium => 'Medium (150 words)';
+  String get summary_length_medium => 'MÃ©dio (150 palavras)';
 
   @override
-  String get summary_length_long => 'Long (250 words)';
+  String get summary_length_long => 'Longo (250 palavras)';
 
   @override
-  String get summary_language_english => 'English';
+  String get summary_language_english => 'InglÃªs';
 
   @override
-  String get summary_language_turkish => 'Türkçe';
+  String get summary_language_turkish => 'Turco';
 
   @override
-  String get add_to_pwa => 'Add to PWA';
+  String get add_to_pwa => 'Adicionar ao PWA';
 
   @override
-  String get remove_from_pwa => 'Remove from PWA';
+  String get remove_from_pwa => 'Remover do PWA';
 
   @override
-  String get added_to_pwa => 'Added to PWA';
+  String get added_to_pwa => 'Adicionado ao PWA';
 
   @override
-  String get removed_from_pwa => 'Removed from PWA';
+  String get removed_from_pwa => 'Removido do PWA';
 
   @override
-  String get pwa_info => 'Progressive Web Apps run like installed apps without browser controls';
+  String get pwa_info => 'Aplicativos Web Progressivos funcionam como aplicativos instalados sem controles do navegador';
 
   @override
-  String get create_shortcut => 'Create Shortcut';
+  String get create_shortcut => 'Criar Atalho';
 
   @override
-  String get enter_shortcut_name => 'Enter a name for this shortcut:';
+  String get enter_shortcut_name => 'Digite um nome para este atalho:';
 
   @override
-  String get shortcut_name => 'Shortcut name';
+  String get shortcut_name => 'Nome do atalho';
 
   @override
-  String get add => 'ADD';
+  String get keep_tabs_open_description => 'Manter abas abertas entre sessÃµes';
+
+  @override
+  String get developer => 'Desenvolvedor';
+
+  @override
+  String get reset_welcome_screen => 'Redefinir Tela de Boas-vindas';
+
+  @override
+  String get restored_tab => 'Aba restaurada';
+
+  @override
+  String get welcome_screen_reset => 'Redefinir Tela de Boas-vindas';
+
+  @override
+  String get welcome_screen_reset_message => 'Isso redefinirÃ¡ a tela de boas-vindas para que ela apareÃ§a novamente na prÃ³xima vez que vocÃª iniciar o app.';
+
+  @override
+  String get ok => 'OK';
+
+  @override
+  String get customize_navigation => 'Personalizar NavegaÃ§Ã£o';
+
+  @override
+  String get button_back => 'Voltar';
+
+  @override
+  String get button_forward => 'AvanÃ§ar';
+
+  @override
+  String get button_bookmark => 'Favorito';
+
+  @override
+  String get button_bookmarks => 'Favoritos';
+
+  @override
+  String get button_share => 'Compartilhar';
+
+  @override
+  String get button_menu => 'Menu';
+
+  @override
+  String get available_buttons => 'BotÃµes disponÃ­veis';
+
+  @override
+  String get add => 'Adicionar';
+
+  @override
+  String get rename_pwa => 'Renomear PWA';
+
+  @override
+  String get pwa_name => 'Nome do PWA';
+
+  @override
+  String get rename => 'Renomear';
+
+  @override
+  String get pwa_renamed => 'PWA renomeado';
+
+  @override
+  String get remove => 'Remover';
+
+  @override
+  String get pwa_removed => 'PWA removido';
+
+  @override
+  String get bookmark_removed => 'Favorito removido';
+
+  @override
+  String get untitled => 'Sem tÃ­tulo';
+
+  @override
+  String get show_welcome_screen_next_launch => 'Mostrar tela de boas-vindas na prÃ³xima inicializaÃ§Ã£o';
+
+  @override
+  String get automatically_open_downloaded_files => 'Abrir automaticamente arquivos baixados';
+
+  @override
+  String get ask_where_to_save_files => 'Perguntar onde salvar arquivos antes de baixar';
+
+  @override
+  String get clear_all_history => 'Limpar Todo o HistÃ³rico';
+
+  @override
+  String get clear_all_history_confirm => 'Isso excluirÃ¡ permanentemente todo o seu histÃ³rico de navegaÃ§Ã£o. Esta aÃ§Ã£o nÃ£o pode ser desfeita.';
+
+  @override
+  String get history_cleared => 'HistÃ³rico limpo';
+
+  @override
+  String get navigation_controls => 'Controles de NavegaÃ§Ã£o';
+
+  @override
+  String get ai_settings => 'ConfiguraÃ§Ãµes de IA';
+
+  @override
+  String get ai_summary_settings => 'ConfiguraÃ§Ãµes de Resumo de IA';
+
+  @override
+  String get ask_download_location_title => 'Perguntar Local de Download';
+
+  @override
+  String get enable_incognito_mode => 'Ativar Modo IncÃ³gnito';
+
+  @override
+  String get disable_incognito_mode => 'Desativar Modo IncÃ³gnito';
+
+  @override
+  String get close_all_tabs => 'Fechar Todas as Abas';
+
+  @override
+  String get close_all_tabs_confirm => 'Tem certeza de que deseja fechar todas as abas? Esta aÃ§Ã£o nÃ£o pode ser desfeita.';
+
+  @override
+  String close_all_tabs_in_group(String groupName) {
+    return 'Fechar todas as abas em \"$groupName\"? Esta aÃ§Ã£o nÃ£o pode ser desfeita.';
+  }
+
+  @override
+  String get other => 'Outro';
+
+  @override
+  String get ai => 'IA';
+
+  @override
+  String get rearrange_navigation_buttons => 'Reorganizar botÃµes de navegaÃ§Ã£o';
+
+  @override
+  String get current_navigation_bar => 'Barra de NavegaÃ§Ã£o Atual:';
+
+  @override
+  String get tap_to_check_permission_status => 'Toque para verificar o status das permissÃµes';
+
+  @override
+  String get create_tab_group => 'Criar Grupo de Abas';
+
+  @override
+  String get manage_groups => 'Gerenciar Grupos';
+
+  @override
+  String get no_groups_created_yet => 'Nenhum grupo criado ainda';
+
+  @override
+  String get group_name => 'Nome do Grupo';
+
+  @override
+  String get color => 'Cor';
+
+  @override
+  String get close_group => 'Fechar Grupo';
+
+  @override
+  String get create => 'Criar';
+
+  @override
+  String get summarize => 'Resumir';
+
+  @override
+  String get no_summaries_available => 'Nenhum resumo disponÃ­vel';
+
+  @override
+  String get page_summary => 'Resumo da PÃ¡gina';
+
+  @override
+  String get failed_to_generate_summary => 'Falha ao gerar resumo';
+
+  @override
+  String get try_again => 'Tentar Novamente';
+
+  @override
+  String get no_page_to_summarize => 'Nenhuma pÃ¡gina para resumir';
+
+  @override
+  String get no_content_found_to_summarize => 'Nenhum conteÃºdo encontrado para resumir';
+
+  @override
+  String get theme => 'Tema';
+
+  @override
+  String get check => 'Verificar';
+
+  @override
+  String get pwa => 'PWA';
+
+  @override
+  String get confirm => 'Confirmar';
+
+  @override
+  String get input_required => 'Entrada Necessária';
+
+  @override
+  String get alert => 'Alerta';
+
+  @override
+  String get add_tabs_to_group => 'Adicionar Abas ao Grupo';
+
+  @override
+  String get ungroup_tabs => 'Desagrupar abas';
+
+  @override
+  String get delete_group => 'Excluir grupo';
+
+  @override
+  String get copy_summary => 'Copiar Resumo';
 }

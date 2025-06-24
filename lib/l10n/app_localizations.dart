@@ -315,7 +315,7 @@ abstract class AppLocalizations {
   /// **'Downloads'**
   String get downloads;
 
-  /// No description provided for @settings.
+  /// Settings button label
   ///
   /// In en, this message translates to:
   /// **'Settings'**
@@ -507,7 +507,7 @@ abstract class AppLocalizations {
   /// **'Clear'**
   String get clear;
 
-  /// No description provided for @close.
+  /// Generic close button text
   ///
   /// In en, this message translates to:
   /// **'Close'**
@@ -831,10 +831,10 @@ abstract class AppLocalizations {
   /// **'Size'**
   String get size;
 
-  /// No description provided for @auto_open_downloads.
+  /// Setting title for auto-opening downloads
   ///
   /// In en, this message translates to:
-  /// **'Auto-open downloads'**
+  /// **'Auto-open Downloads'**
   String get auto_open_downloads;
 
   /// No description provided for @clear_downloads_history.
@@ -1023,16 +1023,16 @@ abstract class AppLocalizations {
   /// **'Allow pop-ups from {domain}'**
   String allow_popups_from(String domain);
 
-  /// Option to enable classic navigation mode with buttons at the bottom
+  /// Label for classic navigation mode
   ///
   /// In en, this message translates to:
   /// **'Classic Navigation'**
   String get classic_navigation;
 
-  /// Description text for classic navigation mode setting
+  /// Description for classic navigation setting
   ///
   /// In en, this message translates to:
-  /// **'Show navigation buttons at the bottom of the screen'**
+  /// **'Use classic browser-style navigation controls'**
   String get classic_navigation_description;
 
   /// No description provided for @exit_confirmation.
@@ -1149,7 +1149,7 @@ abstract class AppLocalizations {
   /// **'New Incognito Tab'**
   String get new_incognito_tab;
 
-  /// Label for incognito mode
+  /// Incognito mode label
   ///
   /// In en, this message translates to:
   /// **'Incognito Mode'**
@@ -1335,7 +1335,7 @@ abstract class AppLocalizations {
   /// **'Recent Searches'**
   String get recentSearches;
 
-  /// Label for accessing previously generated summaries
+  /// Previous summaries button text
   ///
   /// In en, this message translates to:
   /// **'Previous Summaries'**
@@ -1473,11 +1473,413 @@ abstract class AppLocalizations {
   /// **'Shortcut name'**
   String get shortcut_name;
 
+  /// Description for keep tabs open setting
+  ///
+  /// In en, this message translates to:
+  /// **'Keep tabs open between sessions'**
+  String get keep_tabs_open_description;
+
+  /// Developer section title
+  ///
+  /// In en, this message translates to:
+  /// **'Developer'**
+  String get developer;
+
+  /// Reset welcome screen option
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Welcome Screen'**
+  String get reset_welcome_screen;
+
+  /// Message when a tab is restored
+  ///
+  /// In en, this message translates to:
+  /// **'Restored tab'**
+  String get restored_tab;
+
+  /// Dialog title for resetting welcome screen
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Welcome Screen'**
+  String get welcome_screen_reset;
+
+  /// Dialog message for resetting welcome screen
+  ///
+  /// In en, this message translates to:
+  /// **'This will reset the welcome screen so it appears again next time you start the app.'**
+  String get welcome_screen_reset_message;
+
+  /// OK button text
+  ///
+  /// In en, this message translates to:
+  /// **'OK'**
+  String get ok;
+
+  /// Title for navigation customization
+  ///
+  /// In en, this message translates to:
+  /// **'Customize Navigation'**
+  String get customize_navigation;
+
+  /// Back button label
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get button_back;
+
+  /// Forward button label
+  ///
+  /// In en, this message translates to:
+  /// **'Forward'**
+  String get button_forward;
+
+  /// Bookmark button label
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmark'**
+  String get button_bookmark;
+
+  /// Bookmarks button label
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmarks'**
+  String get button_bookmarks;
+
+  /// Share button label
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get button_share;
+
+  /// Menu button label
+  ///
+  /// In en, this message translates to:
+  /// **'Menu'**
+  String get button_menu;
+
+  /// Label for available navigation buttons
+  ///
+  /// In en, this message translates to:
+  /// **'Available buttons'**
+  String get available_buttons;
+
   /// Add button text
   ///
   /// In en, this message translates to:
-  /// **'ADD'**
+  /// **'Add'**
   String get add;
+
+  /// Option to rename a PWA
+  ///
+  /// In en, this message translates to:
+  /// **'Rename PWA'**
+  String get rename_pwa;
+
+  /// Hint for PWA name input field
+  ///
+  /// In en, this message translates to:
+  /// **'PWA name'**
+  String get pwa_name;
+
+  /// Rename button text
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get rename;
+
+  /// Confirmation message when PWA is renamed
+  ///
+  /// In en, this message translates to:
+  /// **'PWA renamed'**
+  String get pwa_renamed;
+
+  /// Remove button text
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// Confirmation message when PWA is removed
+  ///
+  /// In en, this message translates to:
+  /// **'PWA removed'**
+  String get pwa_removed;
+
+  /// Confirmation message when bookmark is removed
+  ///
+  /// In en, this message translates to:
+  /// **'Bookmark removed'**
+  String get bookmark_removed;
+
+  /// Default title for untitled pages/tabs
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled'**
+  String get untitled;
+
+  /// Setting description for showing welcome screen
+  ///
+  /// In en, this message translates to:
+  /// **'Show welcome screen on next launch'**
+  String get show_welcome_screen_next_launch;
+
+  /// Setting description for auto-opening downloads
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically open downloaded files'**
+  String get automatically_open_downloaded_files;
+
+  /// Setting description for asking download location
+  ///
+  /// In en, this message translates to:
+  /// **'Ask where to save files before downloading'**
+  String get ask_where_to_save_files;
+
+  /// Button text for clearing all browsing history
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All History'**
+  String get clear_all_history;
+
+  /// Confirmation message for clearing all history
+  ///
+  /// In en, this message translates to:
+  /// **'This will permanently delete all your browsing history. This action cannot be undone.'**
+  String get clear_all_history_confirm;
+
+  /// Confirmation message when history is cleared
+  ///
+  /// In en, this message translates to:
+  /// **'History cleared'**
+  String get history_cleared;
+
+  /// Title for navigation controls settings
+  ///
+  /// In en, this message translates to:
+  /// **'Navigation Controls'**
+  String get navigation_controls;
+
+  /// Title for AI settings section
+  ///
+  /// In en, this message translates to:
+  /// **'AI Settings'**
+  String get ai_settings;
+
+  /// Title for AI summary settings
+  ///
+  /// In en, this message translates to:
+  /// **'AI Summary Settings'**
+  String get ai_summary_settings;
+
+  /// Setting title for asking download location
+  ///
+  /// In en, this message translates to:
+  /// **'Ask Download Location'**
+  String get ask_download_location_title;
+
+  /// Button to enable incognito mode
+  ///
+  /// In en, this message translates to:
+  /// **'Enable Incognito Mode'**
+  String get enable_incognito_mode;
+
+  /// Button to disable incognito mode
+  ///
+  /// In en, this message translates to:
+  /// **'Disable Incognito Mode'**
+  String get disable_incognito_mode;
+
+  /// Button to close all tabs
+  ///
+  /// In en, this message translates to:
+  /// **'Close All Tabs'**
+  String get close_all_tabs;
+
+  /// Confirmation message for closing all tabs
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to close all tabs? This action cannot be undone.'**
+  String get close_all_tabs_confirm;
+
+  /// Confirmation message for closing all tabs in a group
+  ///
+  /// In en, this message translates to:
+  /// **'Close all tabs in \"{groupName}\"? This action cannot be undone.'**
+  String close_all_tabs_in_group(String groupName);
+
+  /// Settings group title for other options
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get other;
+
+  /// Settings group title for AI options
+  ///
+  /// In en, this message translates to:
+  /// **'AI'**
+  String get ai;
+
+  /// Setting subtitle for navigation customization
+  ///
+  /// In en, this message translates to:
+  /// **'Rearrange navigation buttons'**
+  String get rearrange_navigation_buttons;
+
+  /// Label for current navigation bar display
+  ///
+  /// In en, this message translates to:
+  /// **'Current Navigation Bar:'**
+  String get current_navigation_bar;
+
+  /// Instruction for checking permission status
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to check permission status'**
+  String get tap_to_check_permission_status;
+
+  /// Dialog title for creating a new tab group
+  ///
+  /// In en, this message translates to:
+  /// **'Create Tab Group'**
+  String get create_tab_group;
+
+  /// Dialog title for managing tab groups
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Groups'**
+  String get manage_groups;
+
+  /// Message when no tab groups exist
+  ///
+  /// In en, this message translates to:
+  /// **'No groups created yet'**
+  String get no_groups_created_yet;
+
+  /// Input label for tab group name
+  ///
+  /// In en, this message translates to:
+  /// **'Group Name'**
+  String get group_name;
+
+  /// Color selection label
+  ///
+  /// In en, this message translates to:
+  /// **'Color'**
+  String get color;
+
+  /// Dialog title for closing a tab group
+  ///
+  /// In en, this message translates to:
+  /// **'Close Group'**
+  String get close_group;
+
+  /// Create button text
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get create;
+
+  /// Summarize button text
+  ///
+  /// In en, this message translates to:
+  /// **'Summarize'**
+  String get summarize;
+
+  /// Message when no summaries are available
+  ///
+  /// In en, this message translates to:
+  /// **'No summaries available'**
+  String get no_summaries_available;
+
+  /// Page summary dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Page Summary'**
+  String get page_summary;
+
+  /// Error message when summary generation fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to generate summary'**
+  String get failed_to_generate_summary;
+
+  /// Try again button text
+  ///
+  /// In en, this message translates to:
+  /// **'Try Again'**
+  String get try_again;
+
+  /// Error message when there's no page to summarize
+  ///
+  /// In en, this message translates to:
+  /// **'No page to summarize'**
+  String get no_page_to_summarize;
+
+  /// Error message when no content is found to summarize
+  ///
+  /// In en, this message translates to:
+  /// **'No content found to summarize'**
+  String get no_content_found_to_summarize;
+
+  /// Theme settings title
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get theme;
+
+  /// Check button text
+  ///
+  /// In en, this message translates to:
+  /// **'Check'**
+  String get check;
+
+  /// Progressive Web App button label
+  ///
+  /// In en, this message translates to:
+  /// **'PWA'**
+  String get pwa;
+
+  /// Confirm dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// Input dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Input Required'**
+  String get input_required;
+
+  /// Alert dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Alert'**
+  String get alert;
+
+  /// Dialog title for adding tabs to a group
+  ///
+  /// In en, this message translates to:
+  /// **'Add Tabs to Group'**
+  String get add_tabs_to_group;
+
+  /// Tooltip for ungrouping tabs
+  ///
+  /// In en, this message translates to:
+  /// **'Ungroup tabs'**
+  String get ungroup_tabs;
+
+  /// Tooltip for deleting a tab group
+  ///
+  /// In en, this message translates to:
+  /// **'Delete group'**
+  String get delete_group;
+
+  /// Button text for copying AI summary
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Summary'**
+  String get copy_summary;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

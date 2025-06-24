@@ -248,6 +248,394 @@
   },
   "searchTheWeb": "Rechercher sur le web",
   "recentSearches": "Recherches récentes",
+  "classic_navigation": "Navigation Classique",  "classic_navigation_description": "Afficher les boutons de navigation en bas de l'écran",
+  "ok": "OK",
+  "welcome_screen_reset": "Réinitialiser l'écran d'accueil",
+  "welcome_screen_reset_message": "L'écran d'accueil sera affiché au prochain démarrage de l'application. Veuillez redémarrer l'application pour voir la politique de confidentialité et les conditions d'utilisation mises à jour.",
+  "customize_navigation": "Personnaliser la navigation",
+  "bookmark_removed": "Signet supprimé",
+  "navigation_buttons": "Boutons de navigation",
+  "available_buttons": "Boutons disponibles",
+  "enabled_buttons": "Boutons activés",
+  "button_back": "Retour",
+  "button_forward": "Suivant",
+  "button_bookmark": "Signet",
+  "button_share": "Partager",
+  "button_menu": "Menu",
+  "button_bookmarks": "Signets",
+  "navigation_bar_animations": "Animations de la barre de navigation",
+  "restore_defaults": "Restaurer les paramètres par défaut",  "drag_to_reorder": "Glisser pour réorganiser",
+  "add": "AJOUTER",  "restored_tab": "Onglet Restauré",
+  "rename": "Renommer",
+  "rename_pwa": "Renommer PWA",
+  "pwa_name": "Nom de PWA",
+  "pwa_renamed": "PWA et raccourci d'écran d'accueil renommés",  "pwa_removed": "PWA et raccourci d'écran d'accueil supprimés",
+  "remove": "Supprimer",
+  "@remove": {
+    "description": "Button text for removing something"
+  },
+
+  "skip": "Ignorer",
+  "@skip": {
+    "description": "Skip button text"
+  },
+  "install_packages_permission": "Permission d'Installation de Paquets",
+  "@install_packages_permission": {
+    "description": "Install packages permission title"
+  },
+  "install_packages_permission_description": "Autoriser l'installation d'applications depuis ce navigateur",
+  "@install_packages_permission_description": {
+    "description": "Install packages permission description"
+  },
+  "permission_install_packages_required": "Permission d'installation de paquets requise",
+  "@permission_install_packages_required": {
+    "description": "Install packages permission required message"
+  },
+  "storage_permission_install_packages_required": "Permission de Stockage et d'Installation de Paquets",
+  "@storage_permission_install_packages_required": {
+    "description": "Storage and install packages permission title"
+  },
+  "storage_permission_install_packages_description": "Le navigateur Solar a besoin de la permission d'accéder au stockage pour les téléchargements et d'installer des paquets pour les installations APK",
+  "@storage_permission_install_packages_description": {
+    "description": "Storage and install packages permission description"
+  },
+  "photoncore_version": "Version Photoncore",
+  "@photoncore_version": {
+    "description": "Label for Photoncore version in settings"
+  },
+  "storage_permission_denied": "Permission de stockage refusée",
+  "@storage_permission_denied": {
+    "description": "Message shown when storage permission is denied"
+  },
+  "incognito_mode": "Mode Navigation Privée",
+  "@incognito_mode": {
+    "description": "Label for incognito mode"
+  },
+  "incognito_description": "En mode navigation privée:\n• L'historique de navigation n'est pas sauvegardé\n• Les cookies sont supprimés à la fermeture des onglets\n• Aucune donnée n'est stockée localement",
+  "@incognito_description": {
+    "description": "Description of incognito mode features"
+  },
+  "previous_summaries": "Résumés Précédents",
+  "@previous_summaries": {
+    "description": "Label for accessing previously generated summaries"
+  },
+  "summarize_selected": "Résumer la Sélection",
+  "@summarize_selected": {
+    "description": "Label for summarizing selected text"
+  },
+  "summarize_page": "Résumer la Page",
+  "@summarize_page": {
+    "description": "Label for summarizing the entire page"
+  },
+  "ai_preferences": "Préférences IA",
+  "@ai_preferences": {
+    "description": "Label for AI preferences section"
+  },
+  "ai_provider": "Fournisseur IA",
+  "@ai_provider": {
+    "description": "Label for AI provider selection"
+  },
+  "summary_length": "Longueur du Résumé",
+  "@summary_length": {
+    "description": "Label for AI summary length preference"
+  },
+  "summary_language": "Langue du Résumé",
+  "@summary_language": {
+    "description": "Label for AI summary language preference"
+  },
+  "length_short": "Court",
+  "@length_short": {
+    "description": "Label for short summary length"
+  },
+  "length_medium": "Moyen",
+  "@length_medium": {
+    "description": "Label for medium summary length"
+  },
+  "length_long": "Long",
+  "@length_long": {
+    "description": "Label for long summary length"
+  },
+  "summary_length_short": "Court (75 mots)",
+  "@summary_length_short": {
+    "description": "Label for short summary length with word count"
+  },
+  "summary_length_medium": "Moyen (150 mots)",
+  "@summary_length_medium": {
+    "description": "Label for medium summary length with word count"
+  },
+  "summary_length_long": "Long (250 mots)",
+  "@summary_length_long": {
+    "description": "Label for long summary length with word count"
+  },
+  "summary_language_english": "Anglais",
+  "@summary_language_english": {
+    "description": "Label for English language option"
+  },
+  "summary_language_turkish": "Turc",
+  "@summary_language_turkish": {
+    "description": "Label for Turkish language option"
+  },
+  "add_to_pwa": "Ajouter à PWA",
+  "@add_to_pwa": {
+    "description": "Option to add current website as a PWA"
+  },
+  "remove_from_pwa": "Supprimer de PWA",
+  "@remove_from_pwa": {
+    "description": "Option to remove website from PWA list"
+  },
+  "added_to_pwa": "Ajouté à PWA",
+  "@added_to_pwa": {
+    "description": "Confirmation message when site is added as PWA"
+  },
+  "removed_from_pwa": "Supprimé de PWA",
+  "@removed_from_pwa": {
+    "description": "Confirmation message when site is removed from PWA list"
+  },
+  "pwa_info": "Les applications web progressives fonctionnent comme des applications installées sans contrôles de navigateur",
+  "@pwa_info": {
+    "description": "Information about what PWAs are"
+  },
+  "create_shortcut": "Créer un Raccourci",
+  "@create_shortcut": {
+    "description": "Title for the shortcut creation dialog"
+  },
+  "enter_shortcut_name": "Entrez un nom pour ce raccourci:",
+  "@enter_shortcut_name": {
+    "description": "Prompt for entering the shortcut name"
+  },
+  "shortcut_name": "Nom du raccourci",
+  "@shortcut_name": {
+    "description": "Hint for the shortcut name input field"
+  },
+  "keep_tabs_open_description": "Garder les onglets ouverts entre les sessions",
+  "@keep_tabs_open_description": {
+    "description": "Description for keep tabs open setting"
+  },
+  "developer": "Développeur",
+  "@developer": {
+    "description": "Developer section title"
+  },  "reset_welcome_screen": "Réinitialiser l'écran d'accueil",
+  "@reset_welcome_screen": {
+    "description": "Reset welcome screen option"
+  },
+  "restored_tab": "Onglet restauré",
+  "@restored_tab": {
+    "description": "Message when a tab is restored"
+  },
+  "welcome_screen_reset": "Réinitialiser l'écran d'accueil",
+  "@welcome_screen_reset": {
+    "description": "Dialog title for resetting welcome screen"
+  },
+  "welcome_screen_reset_message": "Cela réinitialisera l'écran d'accueil pour qu'il apparaisse à nouveau la prochaine fois que vous démarrez l'application.",
+  "@welcome_screen_reset_message": {
+    "description": "Dialog message for resetting welcome screen"
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "OK button text"
+  },
+  "customize_navigation": "Personnaliser la navigation",
+  "@customize_navigation": {
+    "description": "Title for navigation customization"
+  },
+  "button_back": "Retour",
+  "@button_back": {
+    "description": "Back button label"
+  },
+  "button_forward": "Suivant",
+  "@button_forward": {
+    "description": "Forward button label"
+  },
+  "button_bookmark": "Signet",
+  "@button_bookmark": {
+    "description": "Bookmark button label"
+  },
+  "button_bookmarks": "Signets",
+  "@button_bookmarks": {
+    "description": "Bookmarks button label"
+  },
+  "button_share": "Partager",
+  "@button_share": {
+    "description": "Share button label"
+  },
+  "button_menu": "Menu",
+  "@button_menu": {
+    "description": "Menu button label"
+  },
+  "available_buttons": "Boutons disponibles",
+  "@available_buttons": {
+    "description": "Label for available navigation buttons"
+  },
+  "add": "Ajouter",
+  "@add": {
+    "description": "Add button text"
+  },
+  "rename_pwa": "Renommer PWA",
+  "@rename_pwa": {
+    "description": "Option to rename a PWA"
+  },
+  "pwa_name": "Nom PWA",
+  "@pwa_name": {
+    "description": "Hint for PWA name input field"
+  },
+  "rename": "Renommer",
+  "@rename": {
+    "description": "Rename button text"
+  },
+  "pwa_renamed": "PWA renommé",
+  "@pwa_renamed": {
+    "description": "Confirmation message when PWA is renamed"
+  },
+  "remove": "Supprimer",
+  "@remove": {
+    "description": "Remove button text"
+  },
+  "pwa_removed": "PWA supprimé",
+  "@pwa_removed": {
+    "description": "Confirmation message when PWA is removed"
+  },  "bookmark_removed": "Signet supprimé",
+  "@bookmark_removed": {
+    "description": "Confirmation message when bookmark is removed"
+  },
+  "untitled": "Sans titre",
+  "@untitled": {
+    "description": "Default title for untitled pages/tabs"
+  },
+  "show_welcome_screen_next_launch": "Afficher l'écran de bienvenue au prochain lancement",
+  "@show_welcome_screen_next_launch": {
+    "description": "Setting description for showing welcome screen"
+  },
+  "automatically_open_downloaded_files": "Ouvrir automatiquement les fichiers téléchargés",
+  "@automatically_open_downloaded_files": {
+    "description": "Setting description for auto-opening downloads"
+  },
+  "ask_where_to_save_files": "Demander où enregistrer les fichiers avant de télécharger",
+  "@ask_where_to_save_files": {
+    "description": "Setting description for asking download location"
+  },
+  "clear_all_history": "Effacer Tout l'Historique",
+  "@clear_all_history": {
+    "description": "Button text for clearing all browsing history"
+  },
+  "clear_all_history_confirm": "Cela supprimera définitivement tout votre historique de navigation. Cette action ne peut pas être annulée.",
+  "@clear_all_history_confirm": {
+    "description": "Confirmation message for clearing all history"
+  },
+  "history_cleared": "Historique effacé",
+  "@history_cleared": {
+    "description": "Confirmation message when history is cleared"
+  },
+  "navigation_controls": "Contrôles de Navigation",
+  "@navigation_controls": {
+    "description": "Title for navigation controls settings"
+  },
   "classic_navigation": "Navigation Classique",
-  "classic_navigation_description": "Afficher les boutons de navigation en bas de l'écran"
+  "@classic_navigation": {
+    "description": "Label for classic navigation mode"
+  },
+  "classic_navigation_description": "Utiliser les contrôles de navigation de style navigateur classique",
+  "@classic_navigation_description": {
+    "description": "Description for classic navigation setting"
+  },
+  "ai_settings": "Paramètres IA",
+  "@ai_settings": {
+    "description": "Title for AI settings section"
+  },
+  "ai_summary_settings": "Paramètres de Résumé IA",
+  "@ai_summary_settings": {
+    "description": "Title for AI summary settings"
+  },
+  "auto_open_downloads": "Ouvrir Automatiquement les Téléchargements",
+  "@auto_open_downloads": {
+    "description": "Setting title for auto-opening downloads"
+  },  "ask_download_location_title": "Demander l'Emplacement de Téléchargement",
+  "@ask_download_location_title": {
+    "description": "Setting title for asking download location"
+  },
+  "enable_incognito_mode": "Activer le Mode Incognito",
+  "@enable_incognito_mode": {
+    "description": "Button to enable incognito mode"
+  },
+  "disable_incognito_mode": "Désactiver le Mode Incognito",
+  "@disable_incognito_mode": {
+    "description": "Button to disable incognito mode"
+  },
+  "close_all_tabs": "Fermer Tous les Onglets",
+  "@close_all_tabs": {
+    "description": "Button to close all tabs"
+  },
+  "close_all_tabs_confirm": "Êtes-vous sûr de vouloir fermer tous les onglets ? Cette action ne peut pas être annulée.",
+  "@close_all_tabs_confirm": {
+    "description": "Confirmation message for closing all tabs"
+  },
+  "close_all_tabs_in_group": "Fermer tous les onglets dans \"{groupName}\" ? Cette action ne peut pas être annulée.",
+  "@close_all_tabs_in_group": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    },
+    "description": "Confirmation message for closing all tabs in a group"
+  },
+  "other": "Autre",
+  "@other": {
+    "description": "Settings group title for other options"
+  },
+  "ai": "IA",
+  "@ai": {
+    "description": "Settings group title for AI options"
+  },
+  "rearrange_navigation_buttons": "Réorganiser les boutons de navigation",
+  "@rearrange_navigation_buttons": {
+    "description": "Setting subtitle for navigation customization"
+  },
+  "current_navigation_bar": "Barre de Navigation Actuelle :",
+  "@current_navigation_bar": {
+    "description": "Label for current navigation bar display"
+  },
+  "tap_to_check_permission_status": "Appuyez pour vérifier le statut des permissions",
+  "@tap_to_check_permission_status": {
+    "description": "Instruction for checking permission status"
+  },
+  "create_tab_group": "Créer un Groupe d'Onglets",
+  "@create_tab_group": {
+    "description": "Dialog title for creating a new tab group"
+  },
+  "manage_groups": "Gérer les Groupes",
+  "@manage_groups": {
+    "description": "Dialog title for managing tab groups"
+  },
+  "no_groups_created_yet": "Aucun groupe créé pour le moment",
+  "@no_groups_created_yet": {
+    "description": "Message when no tab groups exist"
+  },
+  "group_name": "Nom du Groupe",
+  "@group_name": {
+    "description": "Input label for tab group name"
+  },  "color": "Couleur",
+  "@color": {
+    "description": "Color selection label"
+  },  "close_group": "Fermer le Groupe",
+  "@close_group": {
+    "description": "Dialog title for closing a tab group"
+  },
+  "create": "Créer",
+  "summarize": "Résumer",
+  "previous_summaries": "Résumés Précédents",
+  "no_summaries_available": "Aucun résumé disponible",
+  "page_summary": "Résumé de Page",
+  "failed_to_generate_summary": "Échec de génération du résumé",
+  "try_again": "Réessayer",
+  "no_page_to_summarize": "Aucune page à résumer",  "no_content_found_to_summarize": "Aucun contenu trouvé à résumer",
+  "theme": "Thème",
+  "check": "Vérifier",
+  "pwa": "PWA",
+  "confirm": "Confirmer",
+  "input_required": "Saisie Requise",
+  "alert": "Alerte",
+  "settings": "Paramètres",
+  "add_tabs_to_group": "Ajouter des Onglets au Groupe",
+  "ungroup_tabs": "Dégrouper les onglets",
+  "delete_group": "Supprimer le groupe",
+  "copy_summary": "Copier le Résumé"
 }

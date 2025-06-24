@@ -84,12 +84,9 @@ class GeminiService {
       final content = jsonResponse['candidates'][0]['content']['parts'][0]['text'] as String;
       if (content.isEmpty) {
         throw Exception('Empty response from AI');
-      }
-
-      // Clean up the response by removing any "Assistant:" prefix
+      }      // Clean up the response by removing any "Assistant:" prefix
       final cleanContent = content.replaceAll(RegExp(r'^Assistant:\s*', caseSensitive: false), '').trim();
       
-      await saveSummary(cleanContent);
       return cleanContent;
     } catch (e) {
       debugPrint('Error summarizing text with Gemini: $e');
@@ -119,17 +116,30 @@ class GeminiService {
     
     return results;
   }
-
-  static Future<void> saveSummary(String summary) async {
+  static Future<void> saveSummary(String summary, [String? url, String? title]) async {
     final prefs = await SharedPreferences.getInstance();
     final summariesJson = prefs.getStringList(_summariesKey) ?? [];
+    
+    String siteName = 'Unknown Site';
+    if (url != null && url.isNotEmpty) {
+      try {
+        final uri = Uri.parse(url);
+        siteName = title?.isNotEmpty == true ? title! : uri.host.replaceFirst('www.', '');
+      } catch (e) {
+        siteName = title ?? 'Unknown Site';
+      }
+    } else if (title?.isNotEmpty == true) {
+      siteName = title!;
+    }
     
     // Create new summary with timestamp
     final newSummary = {
       'text': summary,
       'date': DateTime.now().toIso8601String(),
       'model': 'Gemini 2.0-Flash',
-      'language': 'English'
+      'language': 'English',
+      'url': url ?? '',
+      'siteName': siteName,
     };
     
     // Add new summary at the beginning

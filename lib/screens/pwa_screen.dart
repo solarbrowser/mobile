@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -246,7 +245,7 @@ class _PWAScreenState extends State<PWAScreen> {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          'Rename PWA',
+                          AppLocalizations.of(context)!.rename_pwa,
                           style: TextStyle(
                             color: ThemeManager.textColor(),
                             fontSize: 14,
@@ -273,7 +272,7 @@ class _PWAScreenState extends State<PWAScreen> {
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          AppLocalizations.of(context)?.remove_from_pwa ?? 'Remove from PWA',
+                          AppLocalizations.of(context)!.remove_from_pwa,
                           style: TextStyle(
                             color: ThemeManager.textColor(),
                             fontSize: 14,
@@ -324,7 +323,7 @@ class _PWAScreenState extends State<PWAScreen> {
           borderRadius: BorderRadius.circular(16),
         ),
         title: Text(
-          'Rename PWA',
+          AppLocalizations.of(context)!.rename_pwa,
           style: TextStyle(
             color: textColor,
             fontWeight: FontWeight.bold,
@@ -356,7 +355,7 @@ class _PWAScreenState extends State<PWAScreen> {
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   border: InputBorder.none,
-                  hintText: 'PWA name',
+                  hintText: AppLocalizations.of(context)!.pwa_name,
                   hintStyle: TextStyle(
                     color: textColor.withOpacity(0.5),
                   ),
@@ -366,11 +365,10 @@ class _PWAScreenState extends State<PWAScreen> {
             ),
           ],
         ),
-        actions: [
-          TextButton(
+        actions: [          TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: Text(
-              'Cancel',
+              AppLocalizations.of(context)!.cancel,
               style: TextStyle(
                 color: primaryColor,
               ),
@@ -385,10 +383,9 @@ class _PWAScreenState extends State<PWAScreen> {
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
-            onPressed: () => Navigator.of(context).pop(controller.text),
-            child: const Text(
-              'Rename',
-              style: TextStyle(
+            onPressed: () => Navigator.of(context).pop(controller.text),            child: Text(
+              AppLocalizations.of(context)!.rename,
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -415,7 +412,7 @@ class _PWAScreenState extends State<PWAScreen> {
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(
-                    'PWA and home screen shortcut renamed',
+                    AppLocalizations.of(context)!.pwa_renamed,
                     style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -447,7 +444,7 @@ class _PWAScreenState extends State<PWAScreen> {
           borderRadius: BorderRadius.circular(16),
         ),
         title: Text(
-          AppLocalizations.of(context)?.remove_from_pwa ?? 'Remove from PWA',
+          AppLocalizations.of(context)!.remove_from_pwa,
           style: TextStyle(
             color: textColor,
             fontWeight: FontWeight.bold,
@@ -459,11 +456,10 @@ class _PWAScreenState extends State<PWAScreen> {
             color: textColor,
           ),
         ),
-        actions: [
-          TextButton(
+        actions: [          TextButton(
             onPressed: () => Navigator.of(context).pop(false),
             child: Text(
-              'Cancel',
+              AppLocalizations.of(context)!.cancel,
               style: TextStyle(
                 color: primaryColor,
               ),
@@ -478,10 +474,9 @@ class _PWAScreenState extends State<PWAScreen> {
               ),
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             ),
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(
-              'Remove',
-              style: TextStyle(
+            onPressed: () => Navigator.of(context).pop(true),            child: Text(
+              AppLocalizations.of(context)!.remove,
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -496,7 +491,7 @@ class _PWAScreenState extends State<PWAScreen> {
         final success = await PWAManager.deletePWA(widget.url);
         if (success && mounted) {
           // Show a notification that the PWA was removed successfully
-          _showSuccessNotification('PWA and home screen shortcut removed');
+          _showSuccessNotification(AppLocalizations.of(context)!.pwa_removed);
           
           // Small delay to allow notification to be visible
           await Future.delayed(const Duration(milliseconds: 300));

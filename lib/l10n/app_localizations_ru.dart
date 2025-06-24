@@ -388,19 +388,19 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
-  String get install_packages_permission => 'Install Packages Permission';
+  String get install_packages_permission => 'Разрешение на установку пакетов';
 
   @override
-  String get install_packages_permission_description => 'Allow installation of apps from this browser';
+  String get install_packages_permission_description => 'Разрешить установку приложений из этого браузера';
 
   @override
-  String get permission_install_packages_required => 'Install packages permission required';
+  String get permission_install_packages_required => 'Требуется разрешение на установку пакетов';
 
   @override
-  String get storage_permission_install_packages_required => 'Storage & Install Packages Permission';
+  String get storage_permission_install_packages_required => 'Разрешение на хранение и установку пакетов';
 
   @override
-  String get storage_permission_install_packages_description => 'Solar Browser needs permission to access storage for downloads and install packages for APK installations';
+  String get storage_permission_install_packages_description => 'Браузеру Solar требуется разрешение на доступ к хранилищу для загрузок и установку пакетов для установки APK';
 
   @override
   String get clear_downloads_history_confirm => 'Это очистит только историю загрузок, загруженные файлы не будут удалены.';
@@ -486,7 +486,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get engine_version => 'Версия движка';
 
   @override
-  String get software_team => 'Software Team';
+  String get software_team => 'Команда разработчиков';
 
   @override
   String get download_image => 'Скачать изображение';
@@ -510,95 +510,95 @@ class AppLocalizationsRu extends AppLocalizations {
   String get press_back_to_exit => 'Нажмите ещё раз для выхода';
 
   @override
-  String get storage_permission_required => 'Give Permission';
+  String get storage_permission_required => 'Дать разрешение';
 
   @override
   String get storage_permission_granted => 'Разрешение на хранение предоставлено';
 
   @override
-  String get storage_permission_description => 'This app needs permission to access files for download functionality.';
+  String get storage_permission_description => 'Этому приложению требуется разрешение на доступ к файлам для функции загрузки.';
 
   @override
-  String get app_should_work_normally => 'The app should now work normally with full functionality.';
+  String get app_should_work_normally => 'Приложение должно работать нормально с полным функционалом.';
 
   @override
-  String get grant_permission => 'Give Permission';
+  String get grant_permission => 'Дать разрешение';
 
   @override
-  String get storage_permission_denied => 'Storage permission is required to download files';
+  String get storage_permission_denied => 'Для загрузки файлов требуется разрешение на доступ к хранилищу';
 
   @override
   String get new_incognito_tab => 'Новая вкладка в режиме инкогнито';
 
   @override
-  String get incognito_mode => 'Incognito Mode';
+  String get incognito_mode => 'Режим инкогнито';
 
   @override
-  String get incognito_description => 'In Incognito mode:\n• Browsing history isn\'t saved\n• Cookies are cleared when you close tabs\n• No data is stored locally';
+  String get incognito_description => 'В режиме инкогнито:\n• История браузера не сохраняется\n• Файлы cookie удаляются при закрытии вкладок\n• Данные не сохраняются локально';
 
   @override
-  String get error_opening_file => 'Error opening file';
+  String get error_opening_file => 'Ошибка открытия файла';
 
   @override
-  String get download_in_progress => 'Download in progress';
+  String get download_in_progress => 'Идет загрузка';
 
   @override
-  String get download_paused => 'Download paused';
+  String get download_paused => 'Загрузка приостановлена';
 
   @override
-  String get download_canceled => 'Download canceled';
+  String get download_canceled => 'Загрузка отменена';
 
   @override
   String download_error(String error) {
-    return 'Download error: $error';
+    return 'Ошибка загрузки: $error';
   }
 
   @override
-  String get open_downloads_folder => 'Open downloads folder';
+  String get open_downloads_folder => 'Открыть папку загрузок';
 
   @override
-  String get file_exists => 'File already exists';
+  String get file_exists => 'Файл уже существует';
 
   @override
-  String get file_saved => 'File saved to Downloads';
+  String get file_saved => 'Файл сохранен в Загрузки';
 
   @override
-  String get no_tabs_open => 'No tabs open';
+  String get no_tabs_open => 'Нет открытых вкладок';
 
   @override
-  String get incognito => 'Incognito';
+  String get incognito => 'Инкогнито';
 
   @override
-  String get clear_all => 'Clear All';
+  String get clear_all => 'Очистить все';
 
   @override
-  String get clear_history => 'Clear History';
+  String get clear_history => 'Очистить историю';
 
   @override
-  String get clear_history_confirmation => 'Are you sure you want to clear your browsing history?';
+  String get clear_history_confirmation => 'Вы уверены, что хотите очистить историю браузера?';
 
   @override
-  String get no_history => 'No browsing history';
+  String get no_history => 'Нет истории браузера';
 
   @override
-  String get today => 'Today';
+  String get today => 'Сегодня';
 
   @override
-  String get yesterday => 'Yesterday';
+  String get yesterday => 'Вчера';
 
   @override
   String days_ago(int days) {
-    return '$days days ago';
+    return '$days дней назад';
   }
 
   @override
   String weeks_ago(int weeks) {
-    return '$weeks weeks ago';
+    return '$weeks недель назад';
   }
 
   @override
   String months_ago(int months) {
-    return '$months months ago';
+    return '$months месяцев назад';
   }
 
   @override
@@ -632,19 +632,19 @@ class AppLocalizationsRu extends AppLocalizations {
   String get recentSearches => 'Недавние поиски';
 
   @override
-  String get previous_summaries => 'Previous Summaries';
+  String get previous_summaries => 'Предыдущие резюме';
 
   @override
-  String get summarize_selected => 'Summarize Selected';
+  String get summarize_selected => 'Сводка выбранного';
 
   @override
-  String get summarize_page => 'Summarize Page';
+  String get summarize_page => 'Сводка страницы';
 
   @override
-  String get ai_preferences => 'AI Preferences';
+  String get ai_preferences => 'Настройки ИИ';
 
   @override
-  String get ai_provider => 'AI Provider';
+  String get ai_provider => 'Провайдер ИИ';
 
   @override
   String get summary_length => 'Длина сводки';
@@ -653,53 +653,256 @@ class AppLocalizationsRu extends AppLocalizations {
   String get summary_language => 'Язык сводки';
 
   @override
-  String get length_short => 'Short';
+  String get length_short => 'Короткий';
 
   @override
-  String get length_medium => 'Medium';
+  String get length_medium => 'Средний';
 
   @override
-  String get length_long => 'Long';
+  String get length_long => 'Длинный';
 
   @override
-  String get summary_length_short => 'Short (75 words)';
+  String get summary_length_short => 'Короткий (75 слов)';
 
   @override
-  String get summary_length_medium => 'Medium (150 words)';
+  String get summary_length_medium => 'Средний (150 слов)';
 
   @override
-  String get summary_length_long => 'Long (250 words)';
+  String get summary_length_long => 'Длинный (250 слов)';
 
   @override
-  String get summary_language_english => 'English';
+  String get summary_language_english => 'Английский';
 
   @override
-  String get summary_language_turkish => 'Türkçe';
+  String get summary_language_turkish => 'Турецкий';
 
   @override
-  String get add_to_pwa => 'Add to PWA';
+  String get add_to_pwa => 'Добавить в PWA';
 
   @override
-  String get remove_from_pwa => 'Remove from PWA';
+  String get remove_from_pwa => 'Удалить из PWA';
 
   @override
-  String get added_to_pwa => 'Added to PWA';
+  String get added_to_pwa => 'Добавлено в PWA';
 
   @override
-  String get removed_from_pwa => 'Removed from PWA';
+  String get removed_from_pwa => 'Удалено из PWA';
 
   @override
-  String get pwa_info => 'Progressive Web Apps run like installed apps without browser controls';
+  String get pwa_info => 'Прогрессивные веб-приложения работают как установленные приложения без элементов управления браузера';
 
   @override
-  String get create_shortcut => 'Create Shortcut';
+  String get create_shortcut => 'Создать ярлык';
 
   @override
-  String get enter_shortcut_name => 'Enter a name for this shortcut:';
+  String get enter_shortcut_name => 'Введите имя для этого ярлыка:';
 
   @override
-  String get shortcut_name => 'Shortcut name';
+  String get shortcut_name => 'Имя ярлыка';
 
   @override
-  String get add => 'ADD';
+  String get keep_tabs_open_description => 'Сохранять вкладки между сессиями';
+
+  @override
+  String get developer => 'Разработчик';
+
+  @override
+  String get reset_welcome_screen => 'Сбросить экран приветствия';
+
+  @override
+  String get restored_tab => 'Вкладка восстановлена';
+
+  @override
+  String get welcome_screen_reset => 'Сброс экрана приветствия';
+
+  @override
+  String get welcome_screen_reset_message => 'Это сбросит экран приветствия, чтобы он снова появился при следующем запуске приложения.';
+
+  @override
+  String get ok => 'ОК';
+
+  @override
+  String get customize_navigation => 'Настроить навигацию';
+
+  @override
+  String get button_back => 'Назад';
+
+  @override
+  String get button_forward => 'Вперед';
+
+  @override
+  String get button_bookmark => 'Закладка';
+
+  @override
+  String get button_bookmarks => 'Закладки';
+
+  @override
+  String get button_share => 'Поделиться';
+
+  @override
+  String get button_menu => 'Меню';
+
+  @override
+  String get available_buttons => 'Доступные кнопки';
+
+  @override
+  String get add => 'ДОБАВИТЬ';
+
+  @override
+  String get rename_pwa => 'Переименовать PWA';
+
+  @override
+  String get pwa_name => 'Имя PWA';
+
+  @override
+  String get rename => 'Переименовать';
+
+  @override
+  String get pwa_renamed => 'PWA переименовано';
+
+  @override
+  String get remove => 'Удалить';
+
+  @override
+  String get pwa_removed => 'PWA удалено';
+
+  @override
+  String get bookmark_removed => 'Закладка удалена';
+
+  @override
+  String get untitled => 'Без названия';
+
+  @override
+  String get show_welcome_screen_next_launch => 'Показать экран приветствия при следующем запуске';
+
+  @override
+  String get automatically_open_downloaded_files => 'Автоматически открывать загруженные файлы';
+
+  @override
+  String get ask_where_to_save_files => 'Спрашивать, где сохранять файлы перед загрузкой';
+
+  @override
+  String get clear_all_history => 'Очистить Всю Историю';
+
+  @override
+  String get clear_all_history_confirm => 'Это навсегда удалит всю вашу историю просмотров. Это действие нельзя отменить.';
+
+  @override
+  String get history_cleared => 'История очищена';
+
+  @override
+  String get navigation_controls => 'Элементы Навигации';
+
+  @override
+  String get ai_settings => 'Настройки ИИ';
+
+  @override
+  String get ai_summary_settings => 'Настройки Резюме ИИ';
+
+  @override
+  String get ask_download_location_title => 'Спросить Местоположение Загрузки';
+
+  @override
+  String get enable_incognito_mode => 'Включить режим инкогнито';
+
+  @override
+  String get disable_incognito_mode => 'Отключить режим инкогнито';
+
+  @override
+  String get close_all_tabs => 'Закрыть все вкладки';
+
+  @override
+  String get close_all_tabs_confirm => 'Вы уверены, что хотите закрыть все вкладки? Это действие нельзя отменить.';
+
+  @override
+  String close_all_tabs_in_group(String groupName) {
+    return 'Закрыть все вкладки в \"$groupName\"? Это действие нельзя отменить.';
+  }
+
+  @override
+  String get other => 'Другое';
+
+  @override
+  String get ai => 'ИИ';
+
+  @override
+  String get rearrange_navigation_buttons => 'Переупорядочить кнопки навигации';
+
+  @override
+  String get current_navigation_bar => 'Текущая панель навигации:';
+
+  @override
+  String get tap_to_check_permission_status => 'Нажмите, чтобы проверить статус разрешений';
+
+  @override
+  String get create_tab_group => 'Создать группу вкладок';
+
+  @override
+  String get manage_groups => 'Управлять группами';
+
+  @override
+  String get no_groups_created_yet => 'Группы еще не созданы';
+
+  @override
+  String get group_name => 'Имя группы';
+
+  @override
+  String get color => 'Цвет';
+
+  @override
+  String get close_group => 'Закрыть группу';
+
+  @override
+  String get create => 'Создать';
+
+  @override
+  String get summarize => 'Резюмировать';
+
+  @override
+  String get no_summaries_available => 'Нет доступных резюме';
+
+  @override
+  String get page_summary => 'Резюме страницы';
+
+  @override
+  String get failed_to_generate_summary => 'Не удалось создать резюме';
+
+  @override
+  String get try_again => 'Попробовать снова';
+
+  @override
+  String get no_page_to_summarize => 'Нет страницы для резюмирования';
+
+  @override
+  String get no_content_found_to_summarize => 'Не найдено содержимое для резюмирования';
+
+  @override
+  String get theme => 'Тема';
+
+  @override
+  String get check => 'Проверить';
+
+  @override
+  String get pwa => 'PWA';
+
+  @override
+  String get confirm => 'Подтвердить';
+
+  @override
+  String get input_required => 'Требуется ввод';
+
+  @override
+  String get alert => 'Предупреждение';
+
+  @override
+  String get add_tabs_to_group => 'Добавить вкладки в группу';
+
+  @override
+  String get ungroup_tabs => 'Разгруппировать вкладки';
+
+  @override
+  String get delete_group => 'Удалить группу';
+
+  @override
+  String get copy_summary => 'Копировать резюме';
 }

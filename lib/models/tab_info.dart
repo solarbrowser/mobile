@@ -52,7 +52,7 @@ class BrowserTab {
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))  // Transparent background
       ..enableZoom(false)
-      ..setUserAgent('Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36');
+      ..setUserAgent('Mozilla/9999.9999 (Linux; Android 9999; Solar 0.3.0) AppleWebKit/9999.9999 (KHTML, like Gecko) Chrome/9999.9999 Mobile Safari/9999.9999');
       // Enable file access for Android WebView
     if (controller.platform is webview_flutter_android.AndroidWebViewController) {
       (controller.platform as webview_flutter_android.AndroidWebViewController).setAllowFileAccess(true);

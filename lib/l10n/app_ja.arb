@@ -1,4 +1,4 @@
-{
+﻿{
   "@@locale": "ja",
   "welcomeToSolar": "Solar へようこそ",
   "welcomeDescription": "モダンで高速、安全なブラウザ",
@@ -56,7 +56,7 @@
   "current_location": "現在の場所",
   "change_location": "場所を変更",
   "clear_browser_data": "ブラウザデータを消去",
-  "browsing_history": "閲覧履歴",
+  "Browse_history": "閲覧履歴",
   "cookies": "Cookie",
   "cache": "キャッシュ",
   "form_data": "フォームデータ",
@@ -229,5 +229,429 @@
   "summary_length": "要約の長さ",
   "summary_language": "要約の言語",
   "classic_navigation": "クラシックナビゲーション",
-  "classic_navigation_description": "画面下部にナビゲーションボタンを表示"
+  "classic_navigation_description": "画面下部にナビゲーションボタンを表示",
+  "ok": "OK",
+  "welcome_screen_reset": "ウェルカム画面をリセット",
+  "welcome_screen_reset_message": "次回アプリ起動時にウェルカム画面が表示されます。更新されたプライバシーポリシーと利用規約を確認するためにアプリを再起動してください。",
+  "customize_navigation": "ナビゲーションをカスタマイズ",
+  "bookmark_removed": "ブックマークが削除されました",
+  "navigation_buttons": "ナビゲーションボタン",
+  "available_buttons": "利用可能なボタン",
+  "enabled_buttons": "有効なボタン",
+  "button_back": "戻る",
+  "button_forward": "進む",
+  "button_bookmark": "ブックマーク",
+  "button_share": "共有",
+  "button_menu": "メニュー",
+  "button_bookmarks": "ブックマーク",
+  "navigation_bar_animations": "ナビゲーションバーアニメーション",
+  "restore_defaults": "デフォルトに戻す",
+  "drag_to_reorder": "ドラッグして並び替え",
+  "add": "追加",
+  "restored_tab": "復元されたタブ",
+  "rename": "名前を変更",
+  "rename_pwa": "PWAの名前を変更",
+  "pwa_name": "PWA名",
+  "pwa_renamed": "PWAとホーム画面ショートカットの名前を変更しました",
+  "pwa_removed": "PWAとホーム画面ショートカットを削除しました",
+  "remove": "削除",
+  "@remove": {
+    "description": "Button text for removing something"
+  },
+  "install_packages_permission": "パッケージインストール許可",
+  "@install_packages_permission": {
+    "description": "Install packages permission title"
+  },
+  "install_packages_permission_description": "このブラウザからアプリのインストールを許可する",
+  "@install_packages_permission_description": {
+    "description": "Install packages permission description"
+  },
+  "permission_install_packages_required": "パッケージインストール許可が必要です",
+  "@permission_install_packages_required": {
+    "description": "Install packages permission required message"
+  },
+  "storage_permission_install_packages_required": "ストレージ・パッケージインストール許可",
+  "@storage_permission_install_packages_required": {
+    "description": "Storage and install packages permission title"
+  },
+  "storage_permission_install_packages_description": "Solar ブラウザはダウンロード用のストレージアクセスとAPKインストール用のパッケージインストールの許可が必要です",
+  "@storage_permission_install_packages_description": {
+    "description": "Storage and install packages permission description"
+  },
+  "photoncore_version": "Photoncore バージョン",
+  "@photoncore_version": {
+    "description": "Label for Photoncore version in settings"
+  },
+  "engine_version": "エンジンバージョン",
+  "@engine_version": {
+    "description": "Label for engine version in settings"
+  },
+  "storage_permission_required": "許可を与える",
+  "@storage_permission_required": {
+    "description": "Title for the permission request banner"
+  },
+  "storage_permission_description": "このアプリはダウンロード機能のためにファイルへのアクセス許可が必要です。",
+  "@storage_permission_description": {
+    "description": "Description text for the permission request"
+  },
+  "app_should_work_normally": "アプリは完全な機能で正常に動作するはずです。",
+  "@app_should_work_normally": {
+    "description": "Description text shown when all permissions are granted"
+  },
+  "grant_permission": "許可を与える",
+  "@grant_permission": {
+    "description": "Text for the permission grant button"
+  },
+  "storage_permission_denied": "ファイルをダウンロードするにはストレージ許可が必要です",
+  "@storage_permission_denied": {
+    "description": "Message shown when storage permission is denied"
+  },
+  "new_incognito_tab": "新しいシークレットタブ",
+  "@new_incognito_tab": {
+    "description": "Label for new incognito tab button"
+  },
+  "incognito_mode": "シークレットモード",
+  "@incognito_mode": {
+    "description": "Label for incognito mode"
+  },
+  "incognito_description": "シークレットモードでは:\n• ブラウジング履歴は保存されません\n• タブを閉じるとクッキーがクリアされます\n• データはローカルに保存されません",
+  "@incognito_description": {
+    "description": "Description of incognito mode features"
+  },
+  "error_opening_file": "ファイルを開く際のエラー",
+  "@error_opening_file": {
+    "description": "Error message when a file cannot be opened"
+  },
+  "download_in_progress": "ダウンロード中",
+  "@download_in_progress": {
+    "description": "Message shown when a download is in progress"
+  },
+  "download_paused": "ダウンロード一時停止",
+  "@download_paused": {
+    "description": "Message shown when a download is paused"
+  },
+  "download_canceled": "ダウンロードキャンセル",
+  "@download_canceled": {
+    "description": "Message shown when a download is canceled"
+  },
+  "download_error": "ダウンロードエラー: {error}",
+  "@download_error": {
+    "description": "Message shown when there is an error during download",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "Network error"
+      }
+    }
+  },
+  "open_downloads_folder": "ダウンロードフォルダを開く",
+  "@open_downloads_folder": {
+    "description": "Label for button to open downloads folder"
+  },
+  "file_exists": "ファイルが既に存在します",
+  "@file_exists": {
+    "description": "Message shown when trying to download a file that already exists"
+  },
+  "file_saved": "ファイルがダウンロードに保存されました",
+  "@file_saved": {
+    "description": "Message shown when a file is successfully saved"
+  },
+  "no_tabs_open": "開いているタブがありません",
+  "incognito": "シークレット",
+  "clear_all": "すべてクリア",
+  "clear_history": "履歴をクリア",
+  "clear_history_confirmation": "ブラウジング履歴をクリアしてもよろしいですか？",
+  "no_history": "ブラウジング履歴がありません",
+  "today": "今日",
+  "yesterday": "昨日",
+  "days_ago": "{days}日前",
+  "@days_ago": {
+    "description": "Shows how many days ago something happened",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "weeks_ago": "{weeks}週間前",
+  "@weeks_ago": {
+    "description": "Shows how many weeks ago something happened",
+    "placeholders": {
+      "weeks": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "months_ago": "{months}ヶ月前",
+  "@months_ago": {
+    "description": "Shows how many months ago something happened",
+    "placeholders": {
+      "months": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
+  "previous_summaries": "以前の要約",
+  "@previous_summaries": {
+    "description": "Label for accessing previously generated summaries"
+  },
+  "summarize_selected": "選択部分を要約",
+  "@summarize_selected": {
+    "description": "Label for summarizing selected text"
+  },
+  "summarize_page": "ページを要約",
+  "@summarize_page": {
+    "description": "Label for summarizing the entire page"
+  },
+  "ai_preferences": "AI設定",
+  "@ai_preferences": {
+    "description": "Label for AI preferences section"
+  },
+  "ai_provider": "AIプロバイダー",
+  "@ai_provider": {
+    "description": "Label for AI provider selection"
+  },
+  "length_short": "短い",
+  "@length_short": {
+    "description": "Label for short summary length"
+  },
+  "length_medium": "中程度",
+  "@length_medium": {
+    "description": "Label for medium summary length"
+  },
+  "length_long": "長い",
+  "@length_long": {
+    "description": "Label for long summary length"
+  },
+  "summary_length_short": "短い（75単語）",
+  "@summary_length_short": {
+    "description": "Label for short summary length with word count"
+  },
+  "summary_length_medium": "中程度（150単語）",
+  "@summary_length_medium": {
+    "description": "Label for medium summary length with word count"
+  },
+  "summary_length_long": "長い（250単語）",
+  "@summary_length_long": {
+    "description": "Label for long summary length with word count"
+  },
+  "summary_language_english": "英語",
+  "@summary_language_english": {
+    "description": "Label for English language option"
+  },
+  "summary_language_turkish": "トルコ語",
+  "@summary_language_turkish": {
+    "description": "Label for Turkish language option"
+  },
+  "add_to_pwa": "PWAに追加",
+  "@add_to_pwa": {
+    "description": "Option to add current website as a PWA"
+  },
+  "remove_from_pwa": "PWAから削除",
+  "@remove_from_pwa": {
+    "description": "Option to remove website from PWA list"
+  },
+  "added_to_pwa": "PWAに追加されました",
+  "@added_to_pwa": {
+    "description": "Confirmation message when site is added as PWA"
+  },
+  "removed_from_pwa": "PWAから削除されました",
+  "@removed_from_pwa": {
+    "description": "Confirmation message when site is removed from PWA list"
+  },
+  "pwa_info": "プログレッシブウェブアプリはブラウザコントロールなしでインストールされたアプリのように動作します",
+  "@pwa_info": {
+    "description": "Information about what PWAs are"
+  },
+  "create_shortcut": "ショートカットを作成",
+  "@create_shortcut": {
+    "description": "Title for the shortcut creation dialog"
+  },
+  "enter_shortcut_name": "このショートカットの名前を入力してください:",
+  "@enter_shortcut_name": {
+    "description": "Prompt for entering the shortcut name"
+  },
+  "shortcut_name": "ショートカット名",
+  "@shortcut_name": {
+    "description": "Hint for the shortcut name input field"
+  },
+  "keep_tabs_open_description": "セッション間でタブを開いたままにする",
+  "@keep_tabs_open_description": {
+    "description": "Description for keep tabs open setting"
+  },
+  "developer": "開発者",
+  "@developer": {
+    "description": "Developer section title"
+  },
+  "reset_welcome_screen": "ウェルカム画面をリセット",
+  "@reset_welcome_screen": {
+    "description": "Reset welcome screen option"
+  },
+  "restored_tab": "タブが復元されました",
+  "@restored_tab": {
+    "description": "Message when a tab is restored"
+  },
+  "welcome_screen_reset_message": "これにより、ウェルカム画面がリセットされ、次回アプリを起動するときに再び表示されます。",
+  "@welcome_screen_reset_message": {
+    "description": "Dialog message for resetting welcome screen"
+  },
+  "customize_navigation": "ナビゲーションをカスタマイズ",
+  "@customize_navigation": {
+    "description": "Title for navigation customization"
+  },
+  "pwa_renamed": "PWAの名前が変更されました",
+  "@pwa_renamed": {
+    "description": "Confirmation message when PWA is renamed"
+  },
+  "pwa_removed": "PWAが削除されました",
+  "@pwa_removed": {
+    "description": "Confirmation message when PWA is removed"
+  },
+  "bookmark_removed": "ブックマークが削除されました",
+  "@bookmark_removed": {
+    "description": "Confirmation message when bookmark is removed"
+  },
+  "untitled": "無題",
+  "@untitled": {
+    "description": "Default title for untitled pages/tabs"
+  },
+  "show_welcome_screen_next_launch": "次回起動時にウェルカム画面を表示",
+  "@show_welcome_screen_next_launch": {
+    "description": "Setting description for showing welcome screen"
+  },
+  "automatically_open_downloaded_files": "ダウンロードしたファイルを自動的に開く",
+  "@automatically_open_downloaded_files": {
+    "description": "Setting description for auto-opening downloads"
+  },
+  "ask_where_to_save_files": "ダウンロード前にファイルの保存場所を尋ねる",
+  "@ask_where_to_save_files": {
+    "description": "Setting description for asking download location"
+  },
+  "clear_all_history": "すべての履歴を消去",
+  "@clear_all_history": {
+    "description": "Button text for clearing all Browse history"
+  },
+  "clear_all_history_confirm": "これにより、すべての閲覧履歴が完全に削除されます。この操作は元に戻せません。",
+  "@clear_all_history_confirm": {
+    "description": "Confirmation message for clearing all history"
+  },
+  "history_cleared": "履歴が消去されました",
+  "@history_cleared": {
+    "description": "Confirmation message when history is cleared"
+  },
+  "navigation_controls": "ナビゲーションコントロール",
+  "@navigation_controls": {
+    "description": "Title for navigation controls settings"
+  },
+  "classic_navigation_description": "クラシックブラウザスタイルのナビゲーションコントロールを使用",
+  "@classic_navigation_description": {
+    "description": "Description for classic navigation setting"
+  },
+  "ai_settings": "AI設定",
+  "@ai_settings": {
+    "description": "Title for AI settings section"
+  },
+  "ai_summary_settings": "AI要約設定",
+  "@ai_summary_settings": {
+    "description": "Title for AI summary settings"
+  },
+  "auto_open_downloads": "ダウンロードを自動で開く",
+  "@auto_open_downloads": {
+    "description": "Setting title for auto-opening downloads"
+  },
+  "ask_download_location_title": "ダウンロード場所を尋ねる",
+  "@ask_download_location_title": {
+    "description": "Setting title for asking download location"
+  },
+  "enable_incognito_mode": "シークレットモードを有効にする",
+  "@enable_incognito_mode": {
+    "description": "Button to enable incognito mode"
+  },
+  "disable_incognito_mode": "シークレットモードを無効にする",
+  "@disable_incognito_mode": {
+    "description": "Button to disable incognito mode"
+  },
+  "close_all_tabs": "すべてのタブを閉じる",
+  "@close_all_tabs": {
+    "description": "Button to close all tabs"
+  },
+  "close_all_tabs_confirm": "すべてのタブを閉じてもよろしいですか？この操作は元に戻せません。",
+  "@close_all_tabs_confirm": {
+    "description": "Confirmation message for closing all tabs"
+  },
+  "close_all_tabs_in_group": "\"{groupName}\"のすべてのタブを閉じますか？この操作は元に戻せません。",
+  "@close_all_tabs_in_group": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    },
+    "description": "Confirmation message for closing all tabs in a group"
+  },
+  "other": "その他",
+  "@other": {
+    "description": "Settings group title for other options"
+  },
+  "ai": "AI",
+  "@ai": {
+    "description": "Settings group title for AI options"
+  },
+  "rearrange_navigation_buttons": "ナビゲーションボタンを再配置",
+  "@rearrange_navigation_buttons": {
+    "description": "Setting subtitle for navigation customization"
+  },
+  "current_navigation_bar": "現在のナビゲーションバー：",
+  "@current_navigation_bar": {
+    "description": "Label for current navigation bar display"
+  },
+  "tap_to_check_permission_status": "タップして権限ステータスを確認",
+  "@tap_to_check_permission_status": {
+    "description": "Instruction for checking permission status"
+  },
+  "create_tab_group": "タブグループを作成",
+  "@create_tab_group": {
+    "description": "Dialog title for creating a new tab group"
+  },
+  "manage_groups": "グループを管理",
+  "@manage_groups": {
+    "description": "Dialog title for managing tab groups"
+  },
+  "no_groups_created_yet": "まだグループが作成されていません",
+  "@no_groups_created_yet": {
+    "description": "Message when no tab groups exist"
+  },
+  "group_name": "グループ名",
+  "@group_name": {
+    "description": "Input label for tab group name"
+  },
+  "color": "色",
+  "@color": {
+    "description": "Color selection label"
+  },
+  "close_group": "グループを閉じる",
+  "@close_group": {
+    "description": "Dialog title for closing a tab group"
+  },
+  "create": "作成",
+  "summarize": "要約",
+  "previous_summaries": "以前の要約",
+  "no_summaries_available": "利用可能な要約はありません",
+  "page_summary": "ページ要約",
+  "failed_to_generate_summary": "要約の生成に失敗しました",
+  "try_again": "再試行",
+  "no_page_to_summarize": "要約するページがありません",
+  "no_content_found_to_summarize": "要約するコンテンツが見つかりません",
+  "theme": "テーマ",
+  "check": "チェック",
+  "pwa": "PWA",
+  "confirm": "確認",
+  "input_required": "入力が必要",
+  "alert": "アラート",
+  "add_tabs_to_group": "タブをグループに追加",
+  "ungroup_tabs": "タブのグループ化を解除",
+  "delete_group": "グループを削除",
+  "copy_summary": "要約をコピー"
 }

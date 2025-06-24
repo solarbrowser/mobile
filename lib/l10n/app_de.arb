@@ -250,6 +250,399 @@
   },
   "classic_navigation": "Klassische Navigation",
   "classic_navigation_description": "Navigationsschaltflächen am unteren Bildschirmrand anzeigen",
-  "searchTheWeb": "Im Web suchen",
-  "recentSearches": "Letzte Suchen"
+  "searchTheWeb": "Im Web suchen",  "recentSearches": "Letzte Suchen",
+  "ok": "OK",
+  "welcome_screen_reset": "Willkommensbildschirm zurücksetzen",
+  "welcome_screen_reset_message": "Der Willkommensbildschirm wird beim nächsten App-Start angezeigt. Bitte starten Sie die App neu, um die aktualisierte Datenschutzrichtlinie und Nutzungsbedingungen zu sehen.",
+  "customize_navigation": "Navigation anpassen",
+  "bookmark_removed": "Lesezeichen entfernt",
+  "navigation_buttons": "Navigationsschaltflächen",
+  "available_buttons": "Verfügbare Schaltflächen",
+  "enabled_buttons": "Aktivierte Schaltflächen",
+  "button_back": "Zurück",
+  "button_forward": "Vorwärts",
+  "button_bookmark": "Lesezeichen",
+  "button_share": "Teilen",
+  "button_menu": "Menü",
+  "button_bookmarks": "Lesezeichen",
+  "navigation_bar_animations": "Navigationsleisten-Animationen",
+  "restore_defaults": "Standards wiederherstellen",  "drag_to_reorder": "Zum Neuordnen ziehen",
+  "add": "HINZUFÜGEN",  "restored_tab": "Wiederhergestellter Tab",
+  "rename": "Umbenennen",
+  "rename_pwa": "PWA umbenennen",
+  "pwa_name": "PWA-Name",
+  "pwa_renamed": "PWA und Startbildschirm-Verknüpfung umbenannt",  "pwa_removed": "PWA und Startbildschirm-Verknüpfung entfernt",
+  "remove": "Entfernen",
+  "@remove": {
+    "description": "Button text for removing something"
+  },
+
+  "skip": "Überspringen",
+  "@skip": {
+    "description": "Skip button text"
+  },
+  "install_packages_permission": "Pakete-Installationsberechtigung",
+  "@install_packages_permission": {
+    "description": "Install packages permission title"
+  },
+  "install_packages_permission_description": "Erlaube die Installation von Apps aus diesem Browser",
+  "@install_packages_permission_description": {
+    "description": "Install packages permission description"
+  },
+  "permission_install_packages_required": "Pakete-Installationsberechtigung erforderlich",
+  "@permission_install_packages_required": {
+    "description": "Install packages permission required message"
+  },
+  "storage_permission_install_packages_required": "Speicher- und Pakete-Installationsberechtigung",
+  "@storage_permission_install_packages_required": {
+    "description": "Storage and install packages permission title"
+  },
+  "storage_permission_install_packages_description": "Solar Browser benötigt Berechtigung für Speicherzugriff für Downloads und Paketinstallation für APK-Installationen",
+  "@storage_permission_install_packages_description": {
+    "description": "Storage and install packages permission description"
+  },
+  "software_team": "Software-Team",
+  "@software_team": {
+    "description": "Software team label"
+  },
+  "download_image": "Bild herunterladen",
+  "@download_image": {
+    "description": "Option to download an image"
+  },
+  "storage_permission_denied": "Speicherberechtigung verweigert",
+  "@storage_permission_denied": {
+    "description": "Message shown when storage permission is denied"
+  },
+  "incognito_mode": "Inkognito-Modus",
+  "@incognito_mode": {
+    "description": "Label for incognito mode"
+  },
+  "incognito_description": "Im Inkognito-Modus:\n• Browserverlauf wird nicht gespeichert\n• Cookies werden beim Schließen von Tabs gelöscht\n• Keine Daten werden lokal gespeichert",
+  "@incognito_description": {
+    "description": "Description of incognito mode features"
+  },
+  "previous_summaries": "Vorherige Zusammenfassungen",
+  "@previous_summaries": {
+    "description": "Label for accessing previously generated summaries"
+  },
+  "summarize_selected": "Auswahl zusammenfassen",
+  "@summarize_selected": {
+    "description": "Label for summarizing selected text"
+  },
+  "summarize_page": "Seite zusammenfassen",
+  "@summarize_page": {
+    "description": "Label for summarizing the entire page"
+  },
+  "ai_preferences": "KI-Einstellungen",
+  "@ai_preferences": {
+    "description": "Label for AI preferences section"
+  },
+  "ai_provider": "KI-Anbieter",
+  "@ai_provider": {
+    "description": "Label for AI provider selection"
+  },
+  "summary_length": "Zusammenfassungslänge",
+  "@summary_length": {
+    "description": "Label for AI summary length preference"
+  },
+  "summary_language": "Zusammenfassungssprache",
+  "@summary_language": {
+    "description": "Label for AI summary language preference"
+  },
+  "length_short": "Kurz",
+  "@length_short": {
+    "description": "Label for short summary length"
+  },
+  "length_medium": "Mittel",
+  "@length_medium": {
+    "description": "Label for medium summary length"
+  },
+  "length_long": "Lang",
+  "@length_long": {
+    "description": "Label for long summary length"
+  },
+  "summary_length_short": "Kurz (75 Wörter)",
+  "@summary_length_short": {
+    "description": "Label for short summary length with word count"
+  },
+  "summary_length_medium": "Mittel (150 Wörter)",
+  "@summary_length_medium": {
+    "description": "Label for medium summary length with word count"
+  },
+  "summary_length_long": "Lang (250 Wörter)",
+  "@summary_length_long": {
+    "description": "Label for long summary length with word count"
+  },
+  "summary_language_english": "Englisch",
+  "@summary_language_english": {
+    "description": "Label for English language option"
+  },
+  "summary_language_turkish": "Türkisch",
+  "@summary_language_turkish": {
+    "description": "Label for Turkish language option"
+  },
+  "add_to_pwa": "Zu PWA hinzufügen",
+  "@add_to_pwa": {
+    "description": "Option to add current website as a PWA"
+  },
+  "remove_from_pwa": "Von PWA entfernen",
+  "@remove_from_pwa": {
+    "description": "Option to remove website from PWA list"
+  },
+  "added_to_pwa": "Zu PWA hinzugefügt",
+  "@added_to_pwa": {
+    "description": "Confirmation message when site is added as PWA"
+  },
+  "removed_from_pwa": "Von PWA entfernt",
+  "@removed_from_pwa": {
+    "description": "Confirmation message when site is removed from PWA list"
+  },
+  "pwa_info": "Progressive Web Apps laufen wie installierte Apps ohne Browser-Steuerelemente",
+  "@pwa_info": {
+    "description": "Information about what PWAs are"
+  },
+  "create_shortcut": "Verknüpfung erstellen",
+  "@create_shortcut": {
+    "description": "Title for the shortcut creation dialog"
+  },
+  "enter_shortcut_name": "Geben Sie einen Namen für diese Verknüpfung ein:",
+  "@enter_shortcut_name": {
+    "description": "Prompt for entering the shortcut name"
+  },
+  "shortcut_name": "Verknüpfungsname",
+  "@shortcut_name": {
+    "description": "Hint for the shortcut name input field"
+  },
+  "keep_tabs_open_description": "Tabs zwischen Sitzungen offen halten",
+  "@keep_tabs_open_description": {
+    "description": "Description for keep tabs open setting"
+  },
+  "developer": "Entwickler",
+  "@developer": {
+    "description": "Developer section title"
+  },  "reset_welcome_screen": "Willkommensbildschirm zurücksetzen",
+  "@reset_welcome_screen": {
+    "description": "Reset welcome screen option"
+  },
+  "restored_tab": "Tab wiederhergestellt",
+  "@restored_tab": {
+    "description": "Message when a tab is restored"
+  },
+  "welcome_screen_reset": "Willkommensbildschirm zurücksetzen",
+  "@welcome_screen_reset": {
+    "description": "Dialog title for resetting welcome screen"
+  },
+  "welcome_screen_reset_message": "Dies wird den Willkommensbildschirm zurücksetzen, sodass er beim nächsten Start der App wieder angezeigt wird.",
+  "@welcome_screen_reset_message": {
+    "description": "Dialog message for resetting welcome screen"
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "OK button text"
+  },
+  "customize_navigation": "Navigation anpassen",
+  "@customize_navigation": {
+    "description": "Title for navigation customization"
+  },
+  "button_back": "Zurück",
+  "@button_back": {
+    "description": "Back button label"
+  },
+  "button_forward": "Vor",
+  "@button_forward": {
+    "description": "Forward button label"
+  },
+  "button_bookmark": "Lesezeichen",
+  "@button_bookmark": {
+    "description": "Bookmark button label"
+  },
+  "button_bookmarks": "Lesezeichen",
+  "@button_bookmarks": {
+    "description": "Bookmarks button label"
+  },
+  "button_share": "Teilen",
+  "@button_share": {
+    "description": "Share button label"
+  },
+  "button_menu": "Menü",
+  "@button_menu": {
+    "description": "Menu button label"
+  },
+  "available_buttons": "Verfügbare Schaltflächen",
+  "@available_buttons": {
+    "description": "Label for available navigation buttons"
+  },
+  "add": "Hinzufügen",
+  "@add": {
+    "description": "Add button text"
+  },
+  "rename_pwa": "PWA umbenennen",
+  "@rename_pwa": {
+    "description": "Option to rename a PWA"
+  },
+  "pwa_name": "PWA-Name",
+  "@pwa_name": {
+    "description": "Hint for PWA name input field"
+  },
+  "rename": "Umbenennen",
+  "@rename": {
+    "description": "Rename button text"
+  },
+  "pwa_renamed": "PWA umbenannt",
+  "@pwa_renamed": {
+    "description": "Confirmation message when PWA is renamed"
+  },
+  "remove": "Entfernen",
+  "@remove": {
+    "description": "Remove button text"
+  },
+  "pwa_removed": "PWA entfernt",
+  "@pwa_removed": {
+    "description": "Confirmation message when PWA is removed"
+  },  "bookmark_removed": "Lesezeichen entfernt",
+  "@bookmark_removed": {
+    "description": "Confirmation message when bookmark is removed"
+  },
+  "untitled": "Unbenannt",
+  "@untitled": {
+    "description": "Default title for untitled pages/tabs"
+  },
+  "show_welcome_screen_next_launch": "Willkommensbildschirm beim nächsten Start anzeigen",
+  "@show_welcome_screen_next_launch": {
+    "description": "Setting description for showing welcome screen"
+  },
+  "automatically_open_downloaded_files": "Heruntergeladene Dateien automatisch öffnen",
+  "@automatically_open_downloaded_files": {
+    "description": "Setting description for auto-opening downloads"
+  },
+  "ask_where_to_save_files": "Vor dem Herunterladen fragen, wo Dateien gespeichert werden sollen",
+  "@ask_where_to_save_files": {
+    "description": "Setting description for asking download location"
+  },
+  "clear_all_history": "Gesamten Verlauf Löschen",
+  "@clear_all_history": {
+    "description": "Button text for clearing all browsing history"
+  },
+  "clear_all_history_confirm": "Dies wird Ihren gesamten Browserverlauf dauerhaft löschen. Diese Aktion kann nicht rückgängig gemacht werden.",
+  "@clear_all_history_confirm": {
+    "description": "Confirmation message for clearing all history"
+  },
+  "history_cleared": "Verlauf gelöscht",
+  "@history_cleared": {
+    "description": "Confirmation message when history is cleared"
+  },
+  "navigation_controls": "Navigationssteuerungen",
+  "@navigation_controls": {
+    "description": "Title for navigation controls settings"
+  },
+  "classic_navigation": "Klassische Navigation",
+  "@classic_navigation": {
+    "description": "Label for classic navigation mode"
+  },
+  "classic_navigation_description": "Klassische Browser-Style-Navigationssteuerungen verwenden",
+  "@classic_navigation_description": {
+    "description": "Description for classic navigation setting"
+  },
+  "ai_settings": "KI-Einstellungen",
+  "@ai_settings": {
+    "description": "Title for AI settings section"
+  },
+  "ai_summary_settings": "KI-Zusammenfassung Einstellungen",
+  "@ai_summary_settings": {
+    "description": "Title for AI summary settings"
+  },
+  "auto_open_downloads": "Downloads Automatisch Öffnen",
+  "@auto_open_downloads": {
+    "description": "Setting title for auto-opening downloads"
+  },  "ask_download_location_title": "Download-Speicherort Abfragen",
+  "@ask_download_location_title": {
+    "description": "Setting title for asking download location"
+  },
+  "enable_incognito_mode": "Inkognito-Modus Aktivieren",
+  "@enable_incognito_mode": {
+    "description": "Button to enable incognito mode"
+  },
+  "disable_incognito_mode": "Inkognito-Modus Deaktivieren",
+  "@disable_incognito_mode": {
+    "description": "Button to disable incognito mode"
+  },
+  "close_all_tabs": "Alle Tabs Schließen",
+  "@close_all_tabs": {
+    "description": "Button to close all tabs"
+  },
+  "close_all_tabs_confirm": "Sind Sie sicher, dass Sie alle Tabs schließen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+  "@close_all_tabs_confirm": {
+    "description": "Confirmation message for closing all tabs"
+  },
+  "close_all_tabs_in_group": "Alle Tabs in \"{groupName}\" schließen? Diese Aktion kann nicht rückgängig gemacht werden.",
+  "@close_all_tabs_in_group": {
+    "placeholders": {
+      "groupName": {
+        "type": "String"
+      }
+    },
+    "description": "Confirmation message for closing all tabs in a group"
+  },
+  "other": "Andere",
+  "@other": {
+    "description": "Settings group title for other options"
+  },
+  "ai": "KI",
+  "@ai": {
+    "description": "Settings group title for AI options"
+  },
+  "rearrange_navigation_buttons": "Navigationsschaltflächen neu anordnen",
+  "@rearrange_navigation_buttons": {
+    "description": "Setting subtitle for navigation customization"
+  },
+  "current_navigation_bar": "Aktuelle Navigationsleiste:",
+  "@current_navigation_bar": {
+    "description": "Label for current navigation bar display"
+  },
+  "tap_to_check_permission_status": "Tippen Sie, um den Berechtigungsstatus zu überprüfen",
+  "@tap_to_check_permission_status": {
+    "description": "Instruction for checking permission status"
+  },
+  "create_tab_group": "Tab-Gruppe Erstellen",
+  "@create_tab_group": {
+    "description": "Dialog title for creating a new tab group"
+  },
+  "manage_groups": "Gruppen Verwalten",
+  "@manage_groups": {
+    "description": "Dialog title for managing tab groups"
+  },
+  "no_groups_created_yet": "Noch keine Gruppen erstellt",
+  "@no_groups_created_yet": {
+    "description": "Message when no tab groups exist"
+  },
+  "group_name": "Gruppenname",
+  "@group_name": {
+    "description": "Input label for tab group name"
+  },  "color": "Farbe",
+  "@color": {
+    "description": "Color selection label"
+  },
+  "close_group": "Gruppe Schließen",
+  "@close_group": {
+    "description": "Dialog title for closing a tab group"
+  },
+  "create": "Erstellen",
+  "summarize": "Zusammenfassen",
+  "previous_summaries": "Vorherige Zusammenfassungen",
+  "no_summaries_available": "Keine Zusammenfassungen verfügbar",
+  "page_summary": "Seitenzusammenfassung",
+  "failed_to_generate_summary": "Zusammenfassung konnte nicht generiert werden",
+  "try_again": "Erneut Versuchen",
+  "no_page_to_summarize": "Keine Seite zum Zusammenfassen",  "no_content_found_to_summarize": "Kein Inhalt zum Zusammenfassen gefunden",
+  "theme": "Thema",
+  "check": "Prüfen",
+  "pwa": "PWA",
+  "confirm": "Bestätigen",
+  "input_required": "Eingabe Erforderlich",
+  "alert": "Warnung",
+  "settings": "Einstellungen",
+  "add_tabs_to_group": "Tabs zur Gruppe Hinzufügen",
+  "ungroup_tabs": "Tabs entgruppieren",
+  "delete_group": "Gruppe löschen",
+  "copy_summary": "Zusammenfassung Kopieren"
 }
