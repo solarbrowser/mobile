@@ -249,9 +249,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   
   // <----HOME PAGE SETTINGS---->
   String _homeUrl = 'file:///android_asset/main.html';
-  String _searchEngine = 'google';
+  String _searchEngine = 'Google';
   bool _syncHomePageSearchEngine = true;
-  String _homePageSearchEngine = 'google';
+  String _homePageSearchEngine = 'Google';
   List<Map<String, String>> _homePageShortcuts = [];
   
   // <----HISTORY LOADING---->
@@ -985,7 +985,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     if (state == AppLifecycleState.paused || state == AppLifecycleState.detached) {
       _saveTabs();
     }
-  }  Future<void> _initializeControllers() async {    // Initialize all animation controllers with M12 optimizations
+  }
+  
+  Future<void> _initializeControllers() async {
+    // Initialize all animation controllers with M12 optimizations
     _slideUpController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 200)
@@ -1233,7 +1236,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       parent: _slideAnimationController,
       curve: Curves.easeOut, // Simpler curve
     ));
-  }  Future<void> _setupScrollHandling() async {
+  }
+  
+  Future<void> _setupScrollHandling() async {
     await controller.runJavaScript('''
       let lastScrollY = window.scrollY;
       let scrollThrottle = null;
@@ -1286,9 +1291,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             touchThrottle = null;
           }, THROTTLE_DELAY);
           touchStartY = currentY;
-        }
-      }, { passive: true });
-    ''');await controller.addJavaScriptChannel(
+        }      }, { passive: true });
+    ''');
+
+    await controller.addJavaScriptChannel(
       'onScroll',
       onMessageReceived: (JavaScriptMessage message) {
         if (!mounted) return;
@@ -1401,7 +1407,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         // Silently handle errors
       }
     });
-  }  Future<void> _initializeWebView() async {
+  }
+  
+  Future<void> _initializeWebView() async {
     print("Initializing WebView for optimal stability..."); // Debug print
     
     // Initialize optimization engine
@@ -1448,7 +1456,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       },
     );
 
-    // <----THEME HANDLER CHANNEL---->
+    // <----THEME HANDLER CHANNEL---->    // <----THEME HANDLER CHANNEL---->
     // JavaScript channel for theme communication with main.html
     await controller.addJavaScriptChannel(
       'ThemeHandler',
@@ -1458,7 +1466,23 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           await _sendThemeToMainHtml();
         }
       },
-    );    await controller.addJavaScriptChannel(
+    );
+
+    // <----LANGUAGE HANDLER CHANNEL---->
+    // JavaScript channel for language communication with main.html
+    await controller.addJavaScriptChannel(
+      'LanguageHandler',
+      onMessageReceived: (JavaScriptMessage message) async {
+        if (mounted && message.message == 'getLanguage') {
+          // Send current language to main.html
+          await _sendLanguageToMainHtml();
+        }
+      },
+    );
+
+    // <----SEARCH HANDLER CHANNEL---->
+    // JavaScript channel for search functionality from main.html
+    await controller.addJavaScriptChannel(
       'SearchHandler',
       onMessageReceived: (JavaScriptMessage message) {
         if (mounted && message.message.isNotEmpty) {
@@ -1473,7 +1497,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           
           controller.loadRequest(Uri.parse(searchUrl));
         }
-      },    );    // <----SEARCH ENGINE HANDLER CHANNEL---->
+      },
+    );
+
+    // <----SEARCH ENGINE HANDLER CHANNEL---->
     // JavaScript channel for search engine communication with main.html
     await controller.addJavaScriptChannel(
       'SearchEngineHandler',
@@ -1543,7 +1570,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
            lowerUrl.contains('/download/') ||
            lowerUrl.contains('downloadfile') ||
            lowerUrl.contains('getfile');
-  }  Future<void> _setupUrlMonitoring() async {
+  }
+  
+  Future<void> _setupUrlMonitoring() async {
     // Enhanced URL monitoring for better compatibility with modern websites like Google
     await controller.runJavaScript('''
       (function() {
@@ -1691,9 +1720,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           console.log('🧹 URL monitoring cleaned up');
         };
         
-        console.log('🚀 Enhanced URL monitoring initialized for:', window.location.href);
-      })();
-    ''');await controller.addJavaScriptChannel(
+        console.log('🚀 Enhanced URL monitoring initialized for:', window.location.href);      })();
+    ''');
+
+    await controller.addJavaScriptChannel(
       'UrlChanged',
       onMessageReceived: (JavaScriptMessage message) {
         if (!mounted) return;
@@ -1940,20 +1970,15 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       
     } catch (e) {
       print('Error sending search engine to main.html: $e');
-    }
-  }
+    }  }
 
   // Send language data to main.html
   Future<void> _sendLanguageToMainHtml() async {
     if (!mounted) return;
     
     try {
-      // Get current language from app localization
-      String currentLang = 'en'; // Default
-      if (mounted) {
-        final locale = Localizations.localeOf(context);
-        currentLang = locale.languageCode;
-      }
+      // Get current language from the stored locale
+      String currentLang = _currentLocale;
       
       final languageData = {
         'type': 'language',
@@ -2087,7 +2112,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     }
   }
 
-  Future<void> _setupWebViewCallbacks() async {    // Add JavaScript for handling long press with text selection support
+  Future<void> _setupWebViewCallbacks() async {
+    // Add JavaScript for handling long press with text selection support
     await controller.runJavaScript('''
       (function() {
         let longPressTimer;
@@ -2175,9 +2201,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               clearTimeout(longPressTimer);
             }
           }
-        }, true);
-      })();
-    ''');    await controller.addJavaScriptChannel(
+        }, true);      })();
+    ''');
+
+    await controller.addJavaScriptChannel(
       'ImageLongPress',
       onMessageReceived: (JavaScriptMessage message) {
         if (!mounted) return;
@@ -2941,143 +2968,73 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       ),
     );
   }
-
   void _showLanguageSelection(BuildContext context) {
     Navigator.of(context).push(
       _createSettingsRoute(
-        Scaffold(
-          backgroundColor: ThemeManager.backgroundColor(),          appBar: AppBar(
-            backgroundColor: ThemeManager.backgroundColor(),
-            elevation: 0,
-            centerTitle: true,
-            leading: IconButton(
-              icon: Icon(Icons.chevron_left, color: ThemeManager.textColor(), size: 20),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              AppLocalizations.of(context)!.language,
-              style: TextStyle(
-                color: ThemeManager.textColor(),
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
+        StatefulBuilder(
+          builder: (BuildContext context, StateSetter setLanguageScreenState) {
+            return Scaffold(
+              backgroundColor: ThemeManager.backgroundColor(),
+              appBar: AppBar(
+                backgroundColor: ThemeManager.backgroundColor(),
+                elevation: 0,
+                centerTitle: true,
+                leading: IconButton(
+                  icon: Icon(Icons.chevron_left, color: ThemeManager.textColor(), size: 20),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                title: Text(
+                  AppLocalizations.of(context)!.language,
+                  style: TextStyle(
+                    color: ThemeManager.textColor(),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-            ),
-          ),
-          body: FutureBuilder<String>(
-            future: _getCurrentLanguageName(),
-            builder: (context, snapshot) {
-              final currentLanguage = snapshot.data ?? 'English';
-              
-              return ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            children: [
-              _buildSettingsSection(
-                title: AppLocalizations.of(context)!.chooseLanguage,
+              body: FutureBuilder<String>(
+                future: _getCurrentLanguageName(),
+                builder: (context, snapshot) {
+                  final currentLanguage = snapshot.data ?? 'English';
+                  
+                  return ListView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     children: [
-                      _buildSettingsItem(
-                        title: 'English',
-                        trailing: currentLanguage == 'English' 
-                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
-                          : null,
-                        onTap: () => _setLocale('en'),
-                        isFirst: true,
-                      ),
-                      _buildSettingsItem(
-                        title: 'Türkçe',
-                        trailing: currentLanguage == 'Türkçe' 
-                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
-                          : null,
-                        onTap: () => _setLocale('tr'),
-                      ),
-                      _buildSettingsItem(
-                        title: 'Español',
-                        trailing: currentLanguage == 'Español' 
-                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
-                          : null,
-                        onTap: () => _setLocale('es'),
-                      ),
-                      _buildSettingsItem(
-                        title: 'العربية',
-                        trailing: currentLanguage == 'العربية' 
-                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
-                          : null,
-                        onTap: () => _setLocale('ar'),
-                      ),
-                      _buildSettingsItem(
-                        title: 'Deutsch',
-                        trailing: currentLanguage == 'Deutsch' 
-                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
-                          : null,
-                        onTap: () => _setLocale('de'),
-                      ),
-                      _buildSettingsItem(
-                        title: 'Français',
-                        trailing: currentLanguage == 'Français' 
-                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
-                          : null,
-                        onTap: () => _setLocale('fr'),
-                      ),
-                      _buildSettingsItem(
-                        title: 'Italiano',
-                        trailing: currentLanguage == 'Italiano' 
-                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
-                          : null,
-                        onTap: () => _setLocale('it'),
-                      ),
-                      _buildSettingsItem(
-                        title: '日本語',
-                        trailing: currentLanguage == '日本語' 
-                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
-                          : null,
-                        onTap: () => _setLocale('ja'),
-                      ),
-                      _buildSettingsItem(
-                        title: '한국어',
-                        trailing: currentLanguage == '한국어' 
-                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
-                          : null,
-                        onTap: () => _setLocale('ko'),
-                      ),
-                      _buildSettingsItem(
-                        title: 'Português',
-                        trailing: currentLanguage == 'Português' 
-                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
-                          : null,
-                        onTap: () => _setLocale('pt'),
-                      ),
-                      _buildSettingsItem(
-                        title: 'Русский',
-                        trailing: currentLanguage == 'Русский' 
-                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
-                          : null,
-                        onTap: () => _setLocale('ru'),
-                      ),
-                      _buildSettingsItem(
-                        title: '中文',
-                        trailing: currentLanguage == '中文' 
-                          ? Icon(Icons.check, color: ThemeManager.primaryColor()) 
-                          : null,
-                        onTap: () => _setLocale('zh'),
-                        isLast: true,
+                      _buildSettingsSection(
+                        title: AppLocalizations.of(context)!.chooseLanguage,
+                        children: [
+                          _buildAnimatedLanguageItem('English', 'en', currentLanguage, setLanguageScreenState, isFirst: true),
+                          _buildAnimatedLanguageItem('Türkçe', 'tr', currentLanguage, setLanguageScreenState),
+                          _buildAnimatedLanguageItem('Español', 'es', currentLanguage, setLanguageScreenState),
+                          _buildAnimatedLanguageItem('العربية', 'ar', currentLanguage, setLanguageScreenState),
+                          _buildAnimatedLanguageItem('Deutsch', 'de', currentLanguage, setLanguageScreenState),
+                          _buildAnimatedLanguageItem('Français', 'fr', currentLanguage, setLanguageScreenState),
+                          _buildAnimatedLanguageItem('Italiano', 'it', currentLanguage, setLanguageScreenState),
+                          _buildAnimatedLanguageItem('日本語', 'ja', currentLanguage, setLanguageScreenState),
+                          _buildAnimatedLanguageItem('한국어', 'ko', currentLanguage, setLanguageScreenState),
+                          _buildAnimatedLanguageItem('Português', 'pt', currentLanguage, setLanguageScreenState),
+                          _buildAnimatedLanguageItem('Русский', 'ru', currentLanguage, setLanguageScreenState),
+                          _buildAnimatedLanguageItem('中文', 'zh', currentLanguage, setLanguageScreenState, isLast: true),
+                        ],
                       ),
                     ],
-                  ),
-                ],
-              );
-            },
-          ),
+                  );
+                },
+              ),
+            );
+          }
         ),
       ),
     );
   }
-
   void _showSearchEngineSelection(BuildContext context) {
     Navigator.of(context).push(
       _createSettingsRoute(
         StatefulBuilder(
           builder: (BuildContext context, StateSetter setSearchEngineScreenState) {
             return Scaffold(
-              backgroundColor: ThemeManager.backgroundColor(),              appBar: AppBar(
+              backgroundColor: ThemeManager.backgroundColor(),
+              appBar: AppBar(
                 backgroundColor: ThemeManager.backgroundColor(),
                 elevation: 0,
                 centerTitle: true,
@@ -3105,18 +3062,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                       _buildSettingsSection(
                         title: AppLocalizations.of(context)!.chooseSearchEngine,
                         children: searchEngines.keys.map((engine) {
-                          return _buildSettingsItem(
-                            title: engine,
-                            trailing: currentSearchEngine == engine
-                              ? Icon(Icons.check, color: ThemeManager.primaryColor())
-                              : null,
-                            onTap: () {
-                              // Set search engine and update both screens
-                              _setSearchEngine(engine, setSearchEngineScreenState);
-                            },
-                            isFirst: engine == searchEngines.keys.first,
-                            isLast: engine == searchEngines.keys.last,
-                          );
+                          final isFirst = engine == searchEngines.keys.first;
+                          final isLast = engine == searchEngines.keys.last;
+                          return _buildAnimatedSearchEngineItem(engine, currentSearchEngine, setSearchEngineScreenState, isFirst: isFirst, isLast: isLast);
                         }).toList(),
                       ),
                     ],
@@ -3126,7 +3074,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             );
           },
         ),
-      ),    );
+      ),
+    );
   }
   
   void _setSearchEngine(String engine, [StateSetter? setSearchEngineScreenState]) {
@@ -3157,6 +3106,93 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   String _getSearchUrl(String query) {
     final engine = searchEngines[currentSearchEngine] ?? searchEngines['google']!;
     return engine.replaceAll('{query}', query);
+  }
+  Widget _buildAnimatedSearchEngineItem(String engine, String currentSearchEngine, StateSetter setSearchEngineScreenState, {bool isFirst = false, bool isLast = false}) {
+    final isSelected = engine == currentSearchEngine;
+    
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      margin: EdgeInsets.only(bottom: isLast ? 0 : 1),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _setSearchEngineWithAnimation(engine, setSearchEngineScreenState),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    engine,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: ThemeManager.textColor(),
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                ),
+                // Animated tick mark with expanding animation
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.elasticOut,
+                  width: isSelected ? 24 : 0,
+                  height: isSelected ? 24 : 0,
+                  child: isSelected 
+                    ? TweenAnimationBuilder<double>(
+                        duration: const Duration(milliseconds: 600),
+                        curve: Curves.elasticOut,
+                        tween: Tween<double>(begin: 0.0, end: 1.0),
+                        builder: (context, scale, child) {
+                          return Transform.scale(
+                            scale: scale,
+                            child: Icon(
+                              Icons.check_circle,
+                              color: ThemeManager.primaryColor(),
+                              size: 24,
+                            ),
+                          );
+                        },
+                      )
+                    : const SizedBox.shrink(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _setSearchEngineWithAnimation(String engine, StateSetter setSearchEngineScreenState) {
+    // Update state with animation
+    setSearchEngineScreenState(() {
+      currentSearchEngine = engine;
+      if (_syncHomePageSearchEngine) {
+        _homePageSearchEngine = engine;
+      }
+    });
+    
+    // Update main state
+    setState(() {
+      currentSearchEngine = engine;
+      if (_syncHomePageSearchEngine) {
+        _homePageSearchEngine = engine;
+      }
+    });
+    
+    // Save efficiently without await
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setString('searchEngine', engine);
+    });
+    
+    // Send updated search engine to main.html if it's currently loaded
+    if (_isHomePage(_displayUrl)) {
+      _sendSearchEngineToMainHtml();
+    }
+    
+    // Callback optimization
+    widget.onSearchEngineChange?.call(engine);
   }
   void _showAppearanceSettings() {
     Navigator.of(context).push(
@@ -4341,12 +4377,15 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         ),
       ),
     );
-  }
-  Widget _buildQuickActionsPanel() {
+  }  Widget _buildQuickActionsPanel() {
+    final width = MediaQuery.of(context).size.width - 32; // Match URL bar width calculation
+    
     return GestureDetector(
+      // Ensure touch events are properly handled
+      behavior: HitTestBehavior.opaque,
       // Add tap handler for dismissing by tapping outside
       onTap: () {
-        // This will be handled by the backdrop tap detector in the main UI
+        // Absorb tap events to prevent them from going to WebView underneath
       },
       onVerticalDragUpdate: (details) {
         if (details.delta.dy > 2) {
@@ -4359,7 +4398,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         }
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
+        width: width, // Use same width as URL bar
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(28),
           border: Border.all(
@@ -4376,14 +4415,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               color: ThemeManager.backgroundColor().withOpacity(0.7),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [_buildQuickActionButton(
+                children: [                  _buildQuickActionButton(
                     AppLocalizations.of(context)!.settings,
                     Icons.settings_rounded,
                     onPressed: () {
                       _showPanelWithAnimation('settings');
                       setState(() {
-                        _hideUrlBar = false;
-                        _hideUrlBarController.reverse();
                         _isSlideUpPanelVisible = false;
                         _slideUpController.reverse();
                       });
@@ -4394,8 +4431,6 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     onPressed: () {
                       _showPanelWithAnimation('downloads');
                       setState(() {
-                        _hideUrlBar = false;
-                        _hideUrlBarController.reverse();
                         _isSlideUpPanelVisible = false;
                         _slideUpController.reverse();
                       });
@@ -4405,6 +4440,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     Icons.tab_rounded,
                     onPressed: () {
                       _showPanelWithAnimation('tabs');
+                      setState(() {
+                        _isSlideUpPanelVisible = false;
+                        _slideUpController.reverse();
+                      });
                     },
                   ),
                   _buildQuickActionButton(
@@ -4412,8 +4451,6 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                     Icons.bookmark_rounded,
                     onPressed: () {
                       _showPanelWithAnimation('bookmarks');                      setState(() {
-                        _hideUrlBar = false;
-                        _hideUrlBarController.reverse();
                         _isSlideUpPanelVisible = false;
                         _slideUpController.reverse();
                       });
@@ -6026,18 +6063,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                         activeColor: ThemeManager.primaryColor(),
                       ),
                     ),
-                    if (_isClassicMode)                      _buildSettingsItem(
-                        title: AppLocalizations.of(context)!.customize_navigation,
-                        subtitle: AppLocalizations.of(context)!.rearrange_navigation_buttons,
-                        onTap: () => _showNavigationCustomization(),
-                        isLast: true,
-                      ),
-                    if (!_isClassicMode)
-                      _buildSettingsItem(
-                        title: '', // Empty item to maintain structure
-                        trailing: SizedBox.shrink(),
-                        isLast: true,
-                      ),
+                    // Always show navigation customization (synchronized with classic mode)
+                    _buildSettingsItem(
+                      title: AppLocalizations.of(context)!.customize_navigation,
+                      subtitle: AppLocalizations.of(context)!.rearrange_navigation_buttons,
+                      onTap: () => _showNavigationCustomization(),
+                      isLast: true,
+                    ),
                   ],
                 ),                // AI Section
                 _buildSettingsSection(
@@ -7113,14 +7145,22 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       _aiActionBarController.reverse();
     }
   }
-
   void _closeAiActionBar() {
     if (_isAiActionBarVisible) {
       setState(() {
         _isAiActionBarVisible = false;
       });
-      _aiActionBarController.reverse();
-    }  }
+      // Enhanced animation with smooth closing for classic mode
+      _aiActionBarController.reverse().then((_) {
+        // Additional cleanup after animation completes
+        if (mounted) {
+          setState(() {
+            // Ensure complete state reset
+          });
+        }
+      });
+    }
+  }
   void _handleSummarize() async {
     try {
       // Close the action bar first
@@ -7544,25 +7584,19 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   ),
                 ),
               ),
-              
-            // Bottom controls (URL bar and panels) - show when no panels are visible or classic mode is off
+                // Bottom controls (URL bar and panels) - show when no panels are visible or classic mode is off
             if (!isTabsVisible && !isSettingsVisible && !isBookmarksVisible && !isDownloadsVisible && !isHistoryVisible)
               Positioned(
                 left: 0,
                 right: 0,
-                // Position the URL bar above the keyboard and above navigation buttons when visible
-                bottom: keyboardVisible 
-                   ? (_isClassicMode 
-                      ? keyboardHeight + 56 // Classic mode - reduced from 65 to 56
-                      : keyboardHeight + 8) // Non-classic mode - small spacing above keyboard
-                   : (_isClassicMode 
-                      ? 56 + MediaQuery.of(context).padding.bottom // Classic mode fixed position - reduced from 70 to 56
-                      : MediaQuery.of(context).padding.bottom + 16), // Regular mode fixed position
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [                    // Quick actions and navigation panels - hide when keyboard is visible
+                top: 0,
+                // Position from top to bottom to allow slide panel to cover full screen
+                bottom: 0,                child: Stack(
+                  children: [
+                    // Quick actions and navigation panels - hide when keyboard is visible
                     if (!keyboardVisible)
-                      AnimatedBuilder(                        animation: _slideUpController,
+                      AnimatedBuilder(
+                        animation: _slideUpController,
                         builder: (context, child) {
                           // Using CurvedAnimation for smoother transitions
                           final slideValue = CurvedAnimation(
@@ -7574,52 +7608,65 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                             maintainState: false,
                             child: Stack(
                               children: [
-                                // Backdrop for tap-to-dismiss functionality
+                                // Backdrop - tapping here dismisses panel
                                 Positioned.fill(
                                   child: GestureDetector(
+                                    behavior: HitTestBehavior.translucent,
                                     onTap: () {
                                       _handleSlideUpPanelVisibility(false);
                                     },
                                     child: Container(
-                                      color: Colors.black.withOpacity(0.1 * slideValue),
+                                      color: Colors.black.withOpacity(0.05 * slideValue),
                                     ),
                                   ),
                                 ),
-                                // Actual panel content
-                                Transform.translate(
-                                  offset: Offset(0, 50 + (1 - slideValue) * 50), // Reduced offset for subtler animation
-                                  child: Opacity(
-                                    opacity: slideValue,
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          // Handle indicator
-                                          GestureDetector(
-                                            onVerticalDragUpdate: (details) {
-                                              if (details.delta.dy > 2) {
-                                                _handleSlideUpPanelVisibility(false);
-                                              }
-                                            },
-                                            onVerticalDragEnd: (details) {
-                                              if (details.primaryVelocity != null && details.primaryVelocity! > 50) {
-                                                _handleSlideUpPanelVisibility(false);
-                                              }
-                                            },
-                                            child: Container(
-                                              width: 32,
-                                              height: 4,
-                                              margin: const EdgeInsets.only(bottom: 8),
-                                              decoration: BoxDecoration(
-                                                color: ThemeManager.textColor().withOpacity(0.2),
-                                                borderRadius: BorderRadius.circular(2),
+                                // Panel content positioned at bottom
+                                Positioned(
+                                  left: 16,
+                                  right: 16,
+                                  bottom: keyboardVisible 
+                                     ? (_isClassicMode 
+                                        ? keyboardHeight + 56 // Classic mode - reduced from 65 to 56
+                                        : keyboardHeight + 8) // Non-classic mode - small spacing above keyboard
+                                     : (_isClassicMode 
+                                        ? 56 + MediaQuery.of(context).padding.bottom // Classic mode fixed position - reduced from 70 to 56
+                                        : MediaQuery.of(context).padding.bottom + 16), // Regular mode fixed position
+                                  child: Transform.translate(
+                                    offset: Offset(0, (1 - slideValue) * 200), // Slide from bottom of screen
+                                    child: Opacity(
+                                      opacity: slideValue,
+                                      child: Material(
+                                        color: Colors.transparent,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            // Handle indicator
+                                            GestureDetector(
+                                              onVerticalDragUpdate: (details) {
+                                                if (details.delta.dy > 2) {
+                                                  _handleSlideUpPanelVisibility(false);
+                                                }
+                                              },
+                                              onVerticalDragEnd: (details) {
+                                                if (details.primaryVelocity != null && details.primaryVelocity! > 50) {
+                                                  _handleSlideUpPanelVisibility(false);
+                                                }
+                                              },
+                                              child: Container(
+                                                width: 32,
+                                                height: 4,
+                                                margin: const EdgeInsets.only(bottom: 8),
+                                                decoration: BoxDecoration(
+                                                  color: ThemeManager.textColor().withOpacity(0.2),
+                                                  borderRadius: BorderRadius.circular(2),
+                                                ),
                                               ),
                                             ),
-                                          ),                                          _buildQuickActionsPanel(),
-                                          const SizedBox(height: 8),
-                                          _buildNavigationPanel(),
-                                        ],
+                                            _buildQuickActionsPanel(),
+                                            const SizedBox(height: 8),
+                                            _buildNavigationPanel(),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -7628,51 +7675,62 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                             ),
                           );
                         },
-                      ),                // URL bar with gesture detection - ensure it's always visible when classic mode is toggled off
-                    AnimatedOpacity(
-                      opacity: 1.0,
-                      duration: const Duration(milliseconds: 200),
-                      child: Column(
-                        children: [
-                          SlideTransition(
-                            position: _hideUrlBarAnimation,
-                            child: _isClassicMode
-                                ? _buildUrlBar() // No gesture detection in classic mode
-                              : GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onVerticalDragUpdate: (details) {
-                                    // Disable vertical drag gestures when keyboard is visible
-                                    if (keyboardVisible) return;
-                                    
-                                    if (!_isSlideUpPanelVisible) {
-                                      if (details.delta.dy < -5) {
-                                        _handleSlideUpPanelVisibility(true);
+                      ),                    // URL bar positioned at bottom
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: keyboardVisible 
+                         ? (_isClassicMode 
+                            ? keyboardHeight + 56 // Classic mode - reduced from 65 to 56
+                            : keyboardHeight + 8) // Non-classic mode - small spacing above keyboard
+                         : (_isClassicMode 
+                            ? 56 + MediaQuery.of(context).padding.bottom // Classic mode fixed position - reduced from 70 to 56
+                            : MediaQuery.of(context).padding.bottom + 16), // Regular mode fixed position
+                      child: AnimatedOpacity(
+                        opacity: 1.0,
+                        duration: const Duration(milliseconds: 200),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SlideTransition(
+                              position: _hideUrlBarAnimation,
+                              child: _isClassicMode
+                                  ? _buildUrlBar() // No gesture detection in classic mode
+                                : GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onVerticalDragUpdate: (details) {
+                                      // Disable vertical drag gestures when keyboard is visible
+                                      if (keyboardVisible) return;
+                                      
+                                      if (!_isSlideUpPanelVisible) {
+                                        if (details.delta.dy < -5) {
+                                          _handleSlideUpPanelVisibility(true);
+                                        }
+                                      } else {
+                                        if (details.delta.dy > 5) {
+                                          _handleSlideUpPanelVisibility(false);
+                                        }
                                       }
-                                    } else {
-                                      if (details.delta.dy > 5) {
-                                        _handleSlideUpPanelVisibility(false);
+                                    },
+                                    onVerticalDragEnd: (details) {
+                                      // Disable vertical drag gestures when keyboard is visible
+                                      if (keyboardVisible) return;
+                                      
+                                      if (details.primaryVelocity != null) {                                        if (!_isSlideUpPanelVisible && details.primaryVelocity! < -100) {
+                                          _handleSlideUpPanelVisibility(true);
+                                        } else if (_isSlideUpPanelVisible && details.primaryVelocity! > 100) {
+                                          _handleSlideUpPanelVisibility(false);
+                                        }
                                       }
-                                    }
-                                  },
-                                  onVerticalDragEnd: (details) {
-                                    // Disable vertical drag gestures when keyboard is visible
-                                    if (keyboardVisible) return;
-                                    
-                                    if (details.primaryVelocity != null) {
-                                      if (!_isSlideUpPanelVisible && details.primaryVelocity! < -100) {
-                                        _handleSlideUpPanelVisibility(true);
-                                      } else if (_isSlideUpPanelVisible && details.primaryVelocity! > 100) {
-                                        _handleSlideUpPanelVisibility(false);
-                                      }
-                                    }
-                                  },
-                                  child: _buildUrlBar(),
-                                ),
-                          ),
-                          // Summary panel for Task 3
-                          if (_isSummaryPanelVisible)
-                            _buildSummaryPanel(),
-                        ],
+                                    },
+                                    child: _buildUrlBar(),
+                                  ),
+                            ),
+                            // Summary panel for Task 3
+                            if (_isSummaryPanelVisible)
+                              _buildSummaryPanel(),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -7721,11 +7779,11 @@ Future<void> _handlePageStarted(String url) async {
     _handleUrlUpdate(url);
     
     await _updateNavigationState();
-    await _optimizationEngine.onPageStartLoad(url);
-    
-    // Send theme early for home page
+    await _optimizationEngine.onPageStartLoad(url);    // Send theme early for home page
     if (url.startsWith('file:///android_asset/main.html') || url == _homeUrl) {
       _sendThemeToWebView();
+      _sendLanguageToMainHtml();
+      _sendSearchEngineToMainHtml();
     }
   }
 
@@ -8598,9 +8656,15 @@ Future<void> _handlePageStarted(String url) async {
     } catch (e) {
       print('Error updating favicon: $e');
     }
-  }
-  Widget _buildNavigationPanel() {
+  }  Widget _buildNavigationPanel() {
+    final width = MediaQuery.of(context).size.width - 32; // Match URL bar width calculation
+    
     return GestureDetector(
+      // Ensure touch events are properly handled
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        // Absorb tap events to prevent them from going to WebView underneath
+      },
       onVerticalDragUpdate: (details) {
         if (details.delta.dy > 2) {
           _handleSlideUpPanelVisibility(false);
@@ -8612,95 +8676,66 @@ Future<void> _handlePageStarted(String url) async {
         }
       },
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),        decoration: BoxDecoration(
+        width: width, // Use same width as URL bar
+        height: 44, // Reduced from 48
+        decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(24), // Always keep full rounded corners
           border: Border.all(
             color: ThemeManager.textColor().withOpacity(0.08),
             width: 1,
           ),
           color: ThemeManager.backgroundColor().withOpacity(0.8), // Simplified without blur for M12
-        ),        child: Container(
-          height: 44, // Reduced from 48
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,            
-            children: [
-              IconButton(
-                icon: const Icon(Icons.chevron_left_rounded, size: 22), // Reduced size
-                color: canGoBack ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
-                onPressed: canGoBack ? () {
-                  _goBack();
-                  if (_hideUrlBar) {
-                    setState(() {
-                      _hideUrlBar = false;
-                      _hideUrlBarController.reverse();
-                    });
-                  }
-                } : null,
-              ),              // FIXED: Added home button with proper navigation
-              IconButton(
-                icon: const Icon(Icons.home_rounded, size: 22),
-                color: _isHomePage(_displayUrl) ? ThemeManager.primaryColor() : ThemeManager.textColor(),
-                onPressed: () async {
-                  try {
-                    await controller.loadRequest(Uri.parse(_homeUrl));
-                    _handleUrlUpdate(_homeUrl);
-                  } catch (e) {
-                    print('Error navigating to home: $e');
-                  }
-                  if (_hideUrlBar) {
-                    setState(() {
-                      _hideUrlBar = false;
-                      _hideUrlBarController.reverse();
-                    });
-                  }
-                },
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.chevron_left_rounded, size: 22), // Reduced size
+              color: canGoBack ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
+              onPressed: canGoBack ? () {
+                _goBack();
+              } : null,
+            ),
+            // FIXED: Added home button with proper navigation
+            IconButton(
+              icon: const Icon(Icons.home_rounded, size: 22),
+              color: _isHomePage(_displayUrl) ? ThemeManager.primaryColor() : ThemeManager.textColor(),
+              onPressed: () async {
+                try {
+                  await controller.loadRequest(Uri.parse(_homeUrl));
+                  _handleUrlUpdate(_homeUrl);
+                } catch (e) {
+                  print('Error navigating to home: $e');
+                }
+              },
+            ),
+            IconButton(
+              icon: Icon(
+                isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
+                size: 22, // Reduced size
               ),
-              IconButton(
-                icon: Icon(
-                  isCurrentPageBookmarked ? Icons.bookmark_rounded : Icons.bookmark_border_rounded,
-                  size: 22, // Reduced size
-                ),
-                color: ThemeManager.textSecondaryColor(),
-                onPressed: () {
-                  _addBookmark();
-                  if (_hideUrlBar) {
-                    setState(() {
-                      _hideUrlBar = false;
-                      _hideUrlBarController.reverse();
-                    });
-                  }
-                },
-              ),              
-              IconButton(
-                icon: const Icon(Icons.ios_share_rounded, size: 22), // Reduced size
-                color: ThemeManager.textSecondaryColor(),
-                onPressed: () async {
-                  if (currentUrl.isNotEmpty) {
-                    await Share.share(currentUrl);
-                  }
-                  if (_hideUrlBar) {
-                    setState(() {
-                      _hideUrlBar = false;
-                      _hideUrlBarController.reverse();
-                    });
-                  }
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.chevron_right_rounded, size: 22), // Reduced size
-                color: canGoForward ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
-                onPressed: canGoForward ? () {
-                  _goForward();
-                  if (_hideUrlBar) {
-                    setState(() {
-                      _hideUrlBar = false;
-                      _hideUrlBarController.reverse();
-                    });
-                  }
-                } : null,
-              ),
-            ],
-          ),
+              color: ThemeManager.textSecondaryColor(),
+              onPressed: () {
+                _addBookmark();
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.ios_share_rounded, size: 22), // Reduced size
+              color: ThemeManager.textSecondaryColor(),
+              onPressed: () async {
+                if (currentUrl.isNotEmpty) {
+                  await Share.share(currentUrl);
+                }
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.chevron_right_rounded, size: 22), // Reduced size
+              color: canGoForward ? ThemeManager.textColor() : ThemeManager.textColor().withOpacity(0.3),
+              onPressed: canGoForward ? () {
+                _goForward();
+              } : null,
+            ),
+          ],
         ),
       ),
     );
@@ -9534,6 +9569,18 @@ Future<void> _handlePageStarted(String url) async {
             } else {
               await _sendThemeToRestoredTab();
             }
+          }        },
+      );
+
+      // LanguageHandler channel
+      await webViewController.addJavaScriptChannel(
+        'LanguageHandler',
+        onMessageReceived: (JavaScriptMessage message) async {
+          if (mounted && message.message == 'getLanguage') {
+            final tabUrl = tab['url'] as String;
+            if (tabUrl == _homeUrl || tabUrl.contains('main.html')) {
+              await _sendLanguageToMainHtml();
+            }
           }
         },
       );
@@ -9875,7 +9922,6 @@ Future<void> _handlePageStarted(String url) async {
       return storage.isGranted;
     }
   }
-
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
@@ -9883,6 +9929,7 @@ Future<void> _handlePageStarted(String url) async {
       textScale = prefs.getDouble('textScale') ?? 1.0;      showImages = prefs.getBool('showImages') ?? true;
       _askDownloadLocation = prefs.getBool('askDownloadLocation') ?? true;
       _autoOpenDownloads = prefs.getBool('autoOpenDownloads') ?? false;
+      _currentLocale = prefs.getString('language') ?? 'en';
     });
   }
 
@@ -10917,8 +10964,74 @@ Future<void> _handlePageStarted(String url) async {
       });
     }
   }
-  // Add method to handle language changes
-  Future<void> _setLocale(String languageCode) async {
+  // Build animated language selection item with expanding tick mark
+  Widget _buildAnimatedLanguageItem(String displayName, String languageCode, String currentLanguage, StateSetter setLanguageScreenState, {bool isFirst = false, bool isLast = false}) {
+    final isSelected = currentLanguage == displayName;
+    
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      margin: EdgeInsets.only(bottom: isLast ? 0 : 1),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () async {
+            // Set locale and update immediately
+            await _setLocaleWithAnimation(languageCode, setLanguageScreenState);
+            
+            // Send updated language to main.html immediately
+            if (_isHomePage(_displayUrl)) {
+              await _sendLanguageToMainHtml();
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    displayName,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: ThemeManager.textColor(),
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                ),
+                // Animated tick mark with expanding animation
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.elasticOut,
+                  width: isSelected ? 24 : 0,
+                  height: isSelected ? 24 : 0,
+                  child: isSelected 
+                    ? TweenAnimationBuilder<double>(
+                        duration: const Duration(milliseconds: 600),
+                        curve: Curves.elasticOut,
+                        tween: Tween<double>(begin: 0.0, end: 1.0),
+                        builder: (context, scale, child) {
+                          return Transform.scale(
+                            scale: scale,
+                            child: Icon(
+                              Icons.check_circle,
+                              color: ThemeManager.primaryColor(),
+                              size: 24,
+                            ),
+                          );
+                        },
+                      )
+                    : const SizedBox.shrink(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Enhanced setLocale method with animation support
+  Future<void> _setLocaleWithAnimation(String languageCode, StateSetter setLanguageScreenState) async {
     final languages = {
       'en': 'English',
       'tr': 'Türkçe',
@@ -10940,12 +11053,21 @@ Future<void> _handlePageStarted(String url) async {
       currentLanguage = languages[languageCode] ?? 'English';
     });
     
+    // Update the language selection screen immediately
+    setLanguageScreenState(() {});
+    
     // Save the selected language to SharedPreferences
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('language', languageCode);
-      // Notify the app about locale change
+    
+    // Notify the app about locale change immediately
     if (widget.onLocaleChange != null) {
       widget.onLocaleChange!(languageCode);
+    }
+    
+    // Send updated language to main.html immediately if it's loaded
+    if (_isHomePage(_displayUrl)) {
+      await _sendLanguageToMainHtml();
     }
   }
 
