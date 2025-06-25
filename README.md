@@ -27,13 +27,13 @@
 | `1.0.0`      | Transition starts toward the C++ version using the Solar Web Engine     |
 | **Late 2025**| **Public beta release of the Solarist Web Engine (likely desktop-first)**  |
 
-> Note: **Solar Browser Mobile will continue to use WebView for a while**, even after the Solarist engine becomes available.
+> Note: **Solar Browser Mobile will continue to use WebView for a while**, even after the Solar engine becomes available.
 
 ---
 
 ## 📦 How to Run?
 
-This section is for those who want to run Solar Browser locally when no releases are available in the [Releases](#) tab or on the official website. It’s also for contributors.
+This section is for those who want to run Solar Browser locally when no releases are available in the [Releases](https://github.com/solarbrowser/mobile/releases) tab or on the official website. It’s also for contributors.
 
 ### ✅ Prerequisites
 
@@ -82,5 +82,5 @@ Hateful feedback is noise. Useful feedback is gold. Choose wisely
 Your support means everything!
 If you encounter issues or have suggestions, feel free to contribute or report them via the GitHub Issues page.
 
-Stay tuned for the Solarist Engine Beta — coming late summer 2025!
+Stay tuned for the Solar Engine Beta — coming late summer 2025!
 
