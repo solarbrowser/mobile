@@ -1,68 +1,86 @@
 # Solar Browser Mobile
 
-Solar Browser is a Flutter-based web browser for mobile. It uses **WebView for Flutter** as its core. Additionally, I aim to release a **C++ version** of Solar Browser, which will utilize **Solar's Solarist web engine** instead of the Chromium-based engine.
+**Solar Browser** is a Flutter-based web browser for mobile. It uses **WebView for Flutter** as its core. Additionally, a **C++ version** of Solar Browser is planned, which will utilize the custom **Solar Web Engine** instead of a Chromium-based backend.
 
-Thank you for your support!
-
----
-
-## Features (Planned and Current)
-- **Current:**
-  - Flutter-based application using WebView for Flutter.
-  - Easy-to-run setup for developers.
-
-- **Future:**
-  - C++ version with Solarist web engine for enhanced performance and compatibility.
+> ⚠️ **Notice:** This is currently a prototype. Please do not treat it as a production-ready browser. It's meant to gather early feedback and test concepts. So before asking *"is this even a browser?"*, check the [roadmap](browser.solar/roadmap). 🙂
 
 ---
 
-## How to Run?
-This section is for those who want to run Solar Browser when no releases are available in the [Releases](#) tab or on the official website. It is also intended for developers contributing to the project.
+## ✨ Features (Current & Planned)
 
-### Prerequisites
-1. **Install Flutter SDK**:
-   - Follow the official Flutter installation guide for your operating system: [https://flutter.dev/docs/get-started/install](https://flutter.dev/docs/get-started/install).
-   - Ensure to add Flutter to your system path as part of the installation process.
+### ✅ Current:
+- **Flutter-based application** using WebView for Flutter.
+- **Speed** – lightweight and responsive.
+- **Customizability** – adjustable UI and features for user preferences.
+- **Easy-to-run setup** for developers.
 
-2. **Install Required Dependencies**:
-   - Open a terminal and navigate to the project folder.
-   - Run the following command to fetch the required packages:
+### 🔮 Planned:
+- **C++ version** with Solar Web Engine for enhanced performance, privacy, and platform control.
 
-     ```bash
-     flutter pub get
-     ```
+---
 
-### Running Solar Browser
-1. Once the dependencies are installed, ensure you have an emulator or a physical device connected.
-2. Run the application using the following command:
+## 🚀 Roadmap
+
+| Version      | Description                                                                 |
+|--------------|-----------------------------------------------------------------------------|
+| `0.x`        | Ongoing improvements to the Flutter-based WebView version                  |
+| `1.0.0`      | Transition starts toward the C++ version using the Solar Web Engine     |
+| **Late 2025**| **Public beta release of the Solarist Web Engine (likely desktop-first)**  |
+
+> Note: **Solar Browser Mobile will continue to use WebView for a while**, even after the Solar engine becomes available.
+
+---
+
+## 📦 How to Run?
+
+This section is for those who want to run Solar Browser locally when no releases are available in the [Releases](https://github.com/solarbrowser/mobile/releases) tab or on the official website. It’s also for contributors.
+
+### ✅ Prerequisites
+
+1. **Install Flutter SDK**  
+   - Follow the official Flutter installation guide for your OS:  
+     [https://flutter.dev/docs/get-started/install](https://flutter.dev/docs/get-started/install)  
+   - Make sure to add Flutter to your system `PATH`.
+
+2. **Install Required Dependencies**
+
+   Navigate to the project folder and run:
 
    ```bash
-   flutter run --release or flutter run --debug
-   ```
+   flutter pub get
 
-3. Alternatively, you can build the project for release using:
+▶️ Running Solar Browser
+Make sure you have a device or emulator connected, then run:
+  ```
+  flutter run --release
+  ```
+or for debug mode:
+  ```
+  flutter run --debug
+  ```
 
-   ```bash
-   flutter build apk
-   ```
+📱 Building APK
+To build the project for release:
+  ```
+  flutter build apk
+  ```
+The generated APK will be located at:
+  ```
+  build/app/outputs/flutter-apk/app-release.apk
+  ```
 
-   The generated APK file can be found in the `build/app/outputs/flutter-apk/` directory.
+💬 Disclaimer
+This project is a prototype, not a finished product.
 
----
+Solar engine is not yet integrated into the mobile version.
 
-## For Developers
-For more detailed developer instructions, refer to the [Developer Guide](For%20Developers.md).
+The current version focuses on speed and user customizability.
 
----
+Hateful feedback is noise. Useful feedback is gold. Choose wisely
 
-## Roadmap
-- **Version 0.x**:
-  - Continued improvements and feature enhancements for the Flutter-based browser.
-- **Version 1.0+**:
-  - Transition to the C++ version with Solarist web engine.
+🙏 Thank You!
+Your support means everything!
+If you encounter issues or have suggestions, feel free to contribute or report them via the GitHub Issues page.
 
----
-
-### Thank You!
-Your support means everything! If you encounter issues or have suggestions, feel free to contribute or report them via the [GitHub Issues](https://github.com/solarbrowser/mobile/issues) page.
+Stay tuned for the Solar Engine Beta — coming late summer 2025!
 
