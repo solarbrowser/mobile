@@ -1,6 +1,6 @@
 # Solar Browser Mobile
 
-**Solar Browser** is a Flutter-based web browser for mobile. It uses **WebView for Flutter** as its core. Additionally, a **C++ version** of Solar Browser is planned, which will utilize the custom **Solarist Web Engine** instead of a Chromium-based backend.
+**Solar Browser** is a Flutter-based web browser for mobile. It uses **WebView for Flutter** as its core. Additionally, a **C++ version** of Solar Browser is planned, which will utilize the custom **Solar Web Engine** instead of a Chromium-based backend.
 
 > ⚠️ **Notice:** This is currently a prototype. Please do not treat it as a production-ready browser. It's meant to gather early feedback and test concepts. So before asking *"is this even a browser?"*, check the [roadmap](browser.solar/roadmap). 🙂
 
