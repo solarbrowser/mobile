@@ -165,7 +165,7 @@ class _UpdateScreenState extends State<UpdateScreen> with SingleTickerProviderSt
                             child: Hero(
                               tag: 'logo',
                               child: Image.asset(
-                                'assets/icon.png',
+                                'assets/logo.png',
                                 width: isLargeScreen ? 150 : 100,
                                 height: isLargeScreen ? 150 : 100,
                               ),

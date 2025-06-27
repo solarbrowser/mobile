@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'ai_manager.dart';
 
 class GeminiService {
-  static const String _apiKey = '';
+  static const String _apiKey = 'AIzaSyDb4B7zeUNFw-yon6b1IylzS3ZBCLse6kA';
   static const String _baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
   static const String _summariesKey = 'gemini_previous_summaries';
   static const int _maxSummaries = 50;

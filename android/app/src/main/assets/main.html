@@ -45,19 +45,26 @@
             flex-direction: column;
             align-items: center;
             gap: 40px;
-        }
-
-        .logo {
+        }        .logo {
             width: 80px; /* Increased from 64px */
             height: 80px; /* Increased from 64px */
             margin-bottom: 8px; /* Reduced for logo+label */
             border-radius: 16px;
             object-fit: cover;
-            transition: transform 0.3s ease;
+            transition: all 0.3s ease;
+            background: none !important;
+            box-shadow: 
+                0 0 20px rgba(33, 150, 243, 0.4),
+                0 0 40px rgba(33, 150, 243, 0.2),
+                0 0 60px rgba(33, 150, 243, 0.1);
         }
 
         .logo:hover {
             transform: scale(1.05);
+            box-shadow: 
+                0 0 30px rgba(33, 150, 243, 0.6),
+                0 0 50px rgba(33, 150, 243, 0.4),
+                0 0 80px rgba(33, 150, 243, 0.2);
         }
 
         .solar-label {
@@ -294,11 +301,72 @@
 
         .shortcut-item:hover .shortcut-menu {
             opacity: 1;
-        }
-
-        .shortcut-menu:hover {
+        }        .shortcut-menu:hover {
             background: var(--color-error);
             color: white;
+        }
+
+        .shortcut-remove {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 28px;
+            height: 28px;
+            background: var(--color-error);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            z-index: 10;
+            border: 2px solid var(--bg-primary);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            animation: editModeAppear 0.3s ease;
+        }
+
+        .shortcut-remove:hover {
+            background: #d32f2f;
+            transform: scale(1.1);
+        }
+
+        @keyframes editModeAppear {
+            from { transform: scale(0); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }        .edit-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            width: 40px;
+            height: 40px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .edit-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            background: var(--color-accent);
+        }
+
+        .edit-btn.active {
+            background: var(--color-success);
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.4);
         }
 
         .shortcut-item:hover {
@@ -429,9 +497,8 @@
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <img src="flutter_assets/assets/icon.png" alt="Solar Browser" class="logo" onerror="console.log('Logo failed to load'); this.style.display='none';" style="width: 120px; height: 120px;">
+<body>    <!-- Edit mode button -->
+      <div class="container">        <img src="logo.png" alt="Solar Browser" class="logo" onerror="console.log('Logo failed to load, trying alternative path'); this.src='flutter_assets/assets/logo.png';" style="width: 120px; height: 120px; border-radius: 16px; background: none !important; filter: drop-shadow(0 0 25px rgba(33, 150, 243, 0.6)) drop-shadow(0 0 50px rgba(33, 150, 243, 0.3)); transition: filter 0.3s ease;" onmouseover="this.style.filter='drop-shadow(0 0 40px rgba(33, 150, 243, 0.8)) drop-shadow(0 0 80px rgba(33, 150, 243, 0.4))'" onmouseout="this.style.filter='drop-shadow(0 0 25px rgba(33, 150, 243, 0.6)) drop-shadow(0 0 50px rgba(33, 150, 243, 0.3))'">
 
         <div class="search-container">
             <div class="search-input-container">
@@ -444,11 +511,8 @@
 
         <div class="shortcuts-container">
             <div class="shortcuts-grid" id="shortcutsGrid">
-                <!-- Dynamic shortcuts will be added here -->                <div class="shortcut-item add-new" onclick="addNewShortcut()">
-                    <div class="shortcut-icon">
-                        <span class="add-icon">+</span>
-                    </div>
-                    <div class="shortcut-title" id="addSiteText">Add Site</div>
+                <!-- Dynamic shortcuts will be added here -->               
+                    
                 </div>
             </div>
         </div>
@@ -527,7 +591,13 @@
                 showLess: 'عرض أقل',
                 enterWebsiteUrl: 'أدخل عنوان الموقع (مثال: google.com):',
                 enterShortcutTitle: 'أدخل عنوان الاختصار:',
-                removeShortcutConfirm: 'إزالة "{title}" من الاختصارات؟'
+                removeShortcutConfirm: 'إزالة "{title}" من الاختصارات؟',
+                downloadImage: 'تحميل الصورة',
+                copyImage: 'نسخ الصورة',
+                openImageNewTab: 'فتح الصورة في علامة تبويب جديدة',
+                copyText: 'نسخ',
+                pasteText: 'لصق',
+                cutText: 'قص'
             },
             'de': {
                 news: 'Vertex Nachrichten',
@@ -539,7 +609,13 @@
                 showLess: 'Weniger anzeigen',
                 enterWebsiteUrl: 'Website-URL eingeben (z.B. google.com):',
                 enterShortcutTitle: 'Verknüpfungstitel eingeben:',
-                removeShortcutConfirm: '"{title}" aus Verknüpfungen entfernen?'
+                removeShortcutConfirm: '"{title}" aus Verknüpfungen entfernen?',
+                downloadImage: 'Bild herunterladen',
+                copyImage: 'Bild kopieren',
+                openImageNewTab: 'Bild in neuem Tab öffnen',
+                copyText: 'Kopieren',
+                pasteText: 'Einfügen',
+                cutText: 'Ausschneiden'
             },
             'en': {
                 news: 'Vertex News',
@@ -551,7 +627,13 @@
                 showLess: 'Show Less',
                 enterWebsiteUrl: 'Enter website URL (e.g., google.com):',
                 enterShortcutTitle: 'Enter shortcut title:',
-                removeShortcutConfirm: 'Remove "{title}" from shortcuts?'
+                removeShortcutConfirm: 'Remove "{title}" from shortcuts?',
+                downloadImage: 'Download Image',
+                copyImage: 'Copy Image',
+                openImageNewTab: 'Open Image in New Tab',
+                copyText: 'Copy',
+                pasteText: 'Paste',
+                cutText: 'Cut'
             },
             'es': {
                 news: 'Noticias Vertex',
@@ -563,7 +645,13 @@
                 showLess: 'Mostrar Menos',
                 enterWebsiteUrl: 'Ingrese URL del sitio web (ej: google.com):',
                 enterShortcutTitle: 'Ingrese título del acceso directo:',
-                removeShortcutConfirm: '¿Eliminar "{title}" de los accesos directos?'
+                removeShortcutConfirm: '¿Eliminar "{title}" de los accesos directos?',
+                downloadImage: 'Descargar Imagen',
+                copyImage: 'Copiar Imagen',
+                openImageNewTab: 'Abrir Imagen en Nueva Pestaña',
+                copyText: 'Copiar',
+                pasteText: 'Pegar',
+                cutText: 'Cortar'
             },
             'fr': {
                 news: 'Actualités Vertex',
@@ -575,7 +663,13 @@
                 showLess: 'Afficher Moins',
                 enterWebsiteUrl: 'Entrez l\'URL du site web (ex: google.com):',
                 enterShortcutTitle: 'Entrez le titre du raccourci:',
-                removeShortcutConfirm: 'Supprimer "{title}" des raccourcis?'
+                removeShortcutConfirm: 'Supprimer "{title}" des raccourcis?',
+                downloadImage: 'Télécharger l\'Image',
+                copyImage: 'Copier l\'Image',
+                openImageNewTab: 'Ouvrir l\'Image dans un Nouvel Onglet',
+                copyText: 'Copier',
+                pasteText: 'Coller',
+                cutText: 'Couper'
             },
             'hi': {
                 news: 'वर्टेक्स समाचार',
@@ -587,7 +681,13 @@
                 showLess: 'कम दिखाएं',
                 enterWebsiteUrl: 'वेबसाइट URL दर्ज करें (जैसे: google.com):',
                 enterShortcutTitle: 'शॉर्टकट शीर्षक दर्ज करें:',
-                removeShortcutConfirm: 'शॉर्टकट से "{title}" हटाएं?'
+                removeShortcutConfirm: 'शॉर्टकट से "{title}" हटाएं?',
+                downloadImage: 'चित्र डाउनलोड करें',
+                copyImage: 'चित्र कॉपी करें',
+                openImageNewTab: 'नए टैब में चित्र खोलें',
+                copyText: 'कॉपी करें',
+                pasteText: 'पेस्ट करें',
+                cutText: 'कट करें'
             },
             'it': {
                 news: 'Notizie Vertex',
@@ -599,7 +699,13 @@
                 showLess: 'Mostra Meno',
                 enterWebsiteUrl: 'Inserisci URL del sito web (es: google.com):',
                 enterShortcutTitle: 'Inserisci titolo collegamento:',
-                removeShortcutConfirm: 'Rimuovere "{title}" dai collegamenti?'
+                removeShortcutConfirm: 'Rimuovere "{title}" dai collegamenti?',
+                downloadImage: 'Scarica Immagine',
+                copyImage: 'Copia Immagine',
+                openImageNewTab: 'Apri Immagine in Nuova Scheda',
+                copyText: 'Copia',
+                pasteText: 'Incolla',
+                cutText: 'Taglia'
             },
             'ja': {
                 news: 'Vertexニュース',
@@ -611,7 +717,13 @@
                 showLess: '少なく表示',
                 enterWebsiteUrl: 'ウェブサイトのURLを入力 (例: google.com):',
                 enterShortcutTitle: 'ショートカットのタイトルを入力:',
-                removeShortcutConfirm: 'ショートカットから"{title}"を削除しますか？'
+                removeShortcutConfirm: 'ショートカットから"{title}"を削除しますか？',
+                downloadImage: '画像をダウンロード',
+                copyImage: '画像をコピー',
+                openImageNewTab: '新しいタブで画像を開く',
+                copyText: 'コピー',
+                pasteText: '貼り付け',
+                cutText: '切り取り'
             },
             'ko': {
                 news: 'Vertex 뉴스',
@@ -623,7 +735,13 @@
                 showLess: '적게 보기',
                 enterWebsiteUrl: '웹사이트 URL 입력 (예: google.com):',
                 enterShortcutTitle: '바로가기 제목 입력:',
-                removeShortcutConfirm: '바로가기에서 "{title}"을(를) 제거하시겠습니까?'
+                removeShortcutConfirm: '바로가기에서 "{title}"을(를) 제거하시겠습니까?',
+                downloadImage: '이미지 다운로드',
+                copyImage: '이미지 복사',
+                openImageNewTab: '새 탭에서 이미지 열기',
+                copyText: '복사',
+                pasteText: '붙여넣기',
+                cutText: '잘라내기'
             },
             'pt': {
                 news: 'Notícias Vertex',
@@ -635,7 +753,13 @@
                 showLess: 'Mostrar Menos',
                 enterWebsiteUrl: 'Digite a URL do site (ex: google.com):',
                 enterShortcutTitle: 'Digite o título do atalho:',
-                removeShortcutConfirm: 'Remover "{title}" dos atalhos?'
+                removeShortcutConfirm: 'Remover "{title}" dos atalhos?',
+                downloadImage: 'Baixar Imagem',
+                copyImage: 'Copiar Imagem',
+                openImageNewTab: 'Abrir Imagem em Nova Aba',
+                copyText: 'Copiar',
+                pasteText: 'Colar',
+                cutText: 'Cortar'
             },
             'ru': {
                 news: 'Новости Vertex',
@@ -647,7 +771,13 @@
                 showLess: 'Показать Меньше',
                 enterWebsiteUrl: 'Введите URL сайта (например: google.com):',
                 enterShortcutTitle: 'Введите название ярлыка:',
-                removeShortcutConfirm: 'Удалить "{title}" из ярлыков?'
+                removeShortcutConfirm: 'Удалить "{title}" из ярлыков?',
+                downloadImage: 'Скачать Изображение',
+                copyImage: 'Копировать Изображение',
+                openImageNewTab: 'Открыть Изображение в Новой Вкладке',
+                copyText: 'Копировать',
+                pasteText: 'Вставить',
+                cutText: 'Вырезать'
             },
             'tr': {
                 news: 'Vertex Haberleri',
@@ -1262,26 +1392,54 @@
             }
         }
 
-        // Render shortcuts
+        // Render shortcuts        // Edit mode for shortcuts
+        let isEditMode = false;        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const editBtn = document.getElementById('editBtn');
+            if (editBtn) {
+                if (isEditMode) {
+                    editBtn.textContent = '✓';
+                    editBtn.classList.add('active');
+                    editBtn.title = 'Done editing';
+                } else {
+                    editBtn.textContent = '✏️';
+                    editBtn.classList.remove('active');
+                    editBtn.title = 'Edit shortcuts';
+                }
+            }
+            renderShortcuts();
+        }
+
         function renderShortcuts() {
             const grid = document.getElementById('shortcutsGrid');
             
             // Clear existing shortcuts except add button
             grid.innerHTML = '';
-            
-            // Add existing shortcuts
+              // Add existing shortcuts
             shortcuts.forEach((shortcut, index) => {
                 const shortcutElement = document.createElement('a');
                 shortcutElement.className = 'shortcut-item';
                 shortcutElement.href = shortcut.url.startsWith('http') ? shortcut.url : 'https://' + shortcut.url;
-                shortcutElement.onclick = function(e) {
-                    e.preventDefault();
-                    window.location.href = this.href;
-                };
+                
+                // Only add navigation if not in edit mode
+                if (!isEditMode) {
+                    shortcutElement.onclick = function(e) {
+                        e.preventDefault();
+                        window.location.href = this.href;
+                    };
+                } else {
+                    // Prevent navigation in edit mode
+                    shortcutElement.onclick = function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    };
+                    shortcutElement.style.cursor = 'default';
+                }
                 
                 const faviconUrl = getFaviconUrl(shortcut.url);
                 shortcutElement.innerHTML = `
-                    <div class="shortcut-menu" onclick="event.stopPropagation(); removeShortcut(${index})" title="Remove shortcut">⋯</div>
+                    ${isEditMode ? `<div class="shortcut-remove" onclick="event.stopPropagation(); event.preventDefault(); removeShortcut(${index}); return false;" title="Remove shortcut">×</div>` : ''}
                     <div class="shortcut-icon">
                         ${faviconUrl ? `<img src="${faviconUrl}" alt="" style="width: 100%; height: 100%; border-radius: 8px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">` : ''}
                         <span style="display: ${faviconUrl ? 'none' : 'block'};">${shortcut.title.charAt(0).toUpperCase()}</span>
@@ -1364,17 +1522,24 @@
                     });
                 }
             });
-        }
-
-        // Remove shortcut
+        }        // Remove shortcut
         function removeShortcut(index) {
             const shortcut = shortcuts[index];
-            const confirmMessage = getLocalizedText('removeShortcutConfirm').replace('{title}', shortcut.title);
-            showConfirmDialog(confirmMessage, () => {
+            
+            if (isEditMode) {
+                // In edit mode, remove immediately without confirmation
                 shortcuts.splice(index, 1);
                 localStorage.setItem('solarShortcuts', JSON.stringify(shortcuts));
                 renderShortcuts();
-            });
+            } else {
+                // In normal mode, show confirmation
+                const confirmMessage = getLocalizedText('removeShortcutConfirm').replace('{title}', shortcut.title);
+                showConfirmDialog(confirmMessage, () => {
+                    shortcuts.splice(index, 1);
+                    localStorage.setItem('solarShortcuts', JSON.stringify(shortcuts));
+                    renderShortcuts();
+                });
+            }
         }
 
         // Theme functions
@@ -1565,7 +1730,6 @@
             requestTheme();
             requestSearchEngine();
             updateLocalizedUI();
-            renderShortcuts();
             fetchNews(); // Load REAL news from Firebase API
             console.log('✅ Homepage initialized with REAL news from Firebase API');
         }, 100);

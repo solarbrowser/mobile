@@ -232,7 +232,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                                 Hero(
                                   tag: 'logo',
                                   child: Image.asset(
-                                    'assets/icon.png',
+                                    'assets/logo.png',
                                     width: isLargeScreen ? 120 : 80,
                                     height: isLargeScreen ? 120 : 80,
                                   ),

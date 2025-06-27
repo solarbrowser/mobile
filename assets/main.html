@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar Browser</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: #ffffff;
+            color: #333333;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .logo-container {
+            margin: 40px 0;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        .logo-text {
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .welcome-text {
+            font-size: 28px;
+            font-weight: 300;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 40px;
+        }
+
+        .search-container {
+            margin: 30px 0;
+        }
+
+        .search-box {
+            width: 100%;
+            max-width: 500px;
+            padding: 16px 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 50px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .search-box:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .shortcuts-container {
+            margin: 40px 0;
+        }
+
+        .shortcuts-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .shortcuts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 16px;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .shortcut-item {
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 16px;
+            padding: 16px 8px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .shortcut-item:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .shortcut-item.edit-mode {
+            border-color: #ff6b6b;
+            background: #fff5f5;
+        }
+
+        .shortcut-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .shortcut-title {
+            font-size: 12px;
+            font-weight: 500;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            line-height: 1;
+            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+        }
+
+        .shortcut-item.edit-mode .remove-btn {
+            display: flex;
+        }
+
+        .add-shortcut {
+            border: 2px dashed #ccc;
+            background: transparent;
+            color: #666;
+        }
+
+        .add-shortcut:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+            color: #667eea;
+        }
+
+        .edit-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            cursor: pointer;
+            font-size: 20px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            z-index: 1000;
+        }
+
+        .edit-toggle.active {
+            background: #ff6b6b;
+        }
+
+        .news-container {
+            margin: 40px 0;
+            text-align: left;
+        }
+
+        .news-title {
+            font-size: 18px;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+
+        .news-item {
+            background: white;
+            border: 1px solid #e1e5e9;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .news-item:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+
+        .news-item-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        .news-item-summary {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        .news-item-date {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* Dark mode styles */
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        body.dark-mode .welcome-text {
+            color: #ffffff;
+        }
+
+        body.dark-mode .subtitle {
+            color: #cccccc;
+        }
+
+        body.dark-mode .search-box {
+            background: #2a2a2a;
+            border-color: #444;
+            color: #ffffff;
+        }
+
+        body.dark-mode .search-box:focus {
+            border-color: #667eea;
+        }
+
+        body.dark-mode .shortcut-item {
+            background: #2a2a2a;
+            border-color: #444;
+            color: #ffffff;
+        }
+
+        body.dark-mode .shortcut-item:hover {
+            border-color: #667eea;
+            background: #333;
+        }
+
+        body.dark-mode .news-item {
+            background: #2a2a2a;
+            border-color: #444;
+        }
+
+        body.dark-mode .news-item-title {
+            color: #ffffff;
+        }
+
+        body.dark-mode .news-item-summary {
+            color: #cccccc;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 10px;
+            }
+            
+            .logo {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .logo-text {
+                font-size: 30px;
+            }
+            
+            .shortcuts-grid {
+                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="edit-toggle" onclick="toggleEditMode()">✏️</button>
+    
+    <div class="container">
+        <div class="logo-container">
+            <div class="logo">
+                <div class="logo-text">☀️</div>
+            </div>
+            <h1 class="welcome-text">Solar Browser</h1>
+            <p class="subtitle">Fast, Private, Beautiful</p>
+        </div>
+
+        <div class="search-container">
+            <input type="text" class="search-box" placeholder="Search or type URL..." 
+                   onkeypress="handleSearch(event)" id="searchInput">
+        </div>
+
+        <div class="shortcuts-container">
+            <h2 class="shortcuts-title">Quick Access</h2>
+            <div class="shortcuts-grid" id="shortcutsGrid">
+                <!-- Shortcuts will be populated here -->
+            </div>
+        </div>
+
+        <div class="news-container">
+            <h2 class="news-title">Latest News</h2>
+            <div id="newsContainer">
+                <div class="news-item">
+                    <div class="news-item-title">Loading news...</div>
+                    <div class="news-item-summary">Please wait while we fetch the latest news.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isEditMode = false;
+        let shortcuts = [];
+
+        // Default shortcuts
+        const defaultShortcuts = [
+            { title: 'Google', url: 'https://google.com', icon: '🔍' },
+            { title: 'YouTube', url: 'https://youtube.com', icon: '📺' },
+            { title: 'GitHub', url: 'https://github.com', icon: '💻' },
+            { title: 'Reddit', url: 'https://reddit.com', icon: '🟠' }
+        ];
+
+        function init() {
+            loadShortcuts();
+            loadTheme();
+            requestNews();
+        }
+
+        function loadShortcuts() {
+            const saved = localStorage.getItem('solar_shortcuts');
+            shortcuts = saved ? JSON.parse(saved) : [...defaultShortcuts];
+            renderShortcuts();
+        }
+
+        function saveShortcuts() {
+            localStorage.setItem('solar_shortcuts', JSON.stringify(shortcuts));
+        }
+
+        function renderShortcuts() {
+            const grid = document.getElementById('shortcutsGrid');
+            grid.innerHTML = '';
+
+            shortcuts.forEach((shortcut, index) => {
+                const item = document.createElement('div');
+                item.className = `shortcut-item ${isEditMode ? 'edit-mode' : ''}`;
+                item.innerHTML = `
+                    <button class="remove-btn" onclick="removeShortcut(${index})" title="Remove shortcut">×</button>
+                    <div class="shortcut-icon">${shortcut.icon}</div>
+                    <div class="shortcut-title">${shortcut.title}</div>
+                `;
+                
+                if (!isEditMode) {
+                    item.onclick = () => openUrl(shortcut.url);
+                }
+                
+                grid.appendChild(item);
+            });
+
+            // Add "Add shortcut" button
+            if (shortcuts.length < 8) {
+                const addItem = document.createElement('div');
+                addItem.className = 'shortcut-item add-shortcut';
+                addItem.innerHTML = `
+                    <div class="shortcut-icon">+</div>
+                    <div class="shortcut-title">Add</div>
+                `;
+                addItem.onclick = addShortcut;
+                grid.appendChild(addItem);
+            }
+        }
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const toggle = document.querySelector('.edit-toggle');
+            toggle.textContent = isEditMode ? '✓' : '✏️';
+            toggle.className = `edit-toggle ${isEditMode ? 'active' : ''}`;
+            renderShortcuts();
+        }
+
+        function removeShortcut(index) {
+            if (confirm('Remove this shortcut?')) {
+                shortcuts.splice(index, 1);
+                saveShortcuts();
+                renderShortcuts();
+            }
+        }
+
+        function addShortcut() {
+            const title = prompt('Shortcut title:');
+            if (!title) return;
+            
+            const url = prompt('URL:');
+            if (!url) return;
+            
+            const icon = prompt('Icon (emoji):') || '🔗';
+            
+            shortcuts.push({ title, url, icon });
+            saveShortcuts();
+            renderShortcuts();
+        }
+
+        function openUrl(url) {
+            window.location.href = url;
+        }
+
+        function handleSearch(event) {
+            if (event.key === 'Enter') {
+                const query = event.target.value.trim();
+                if (query) {
+                    // Send search to Flutter app
+                    window.location.href = `search://${encodeURIComponent(query)}`;
+                }
+            }
+        }
+
+        function loadTheme() {
+            // This will be called by Flutter
+        }
+
+        function applyTheme(themeData) {
+            const body = document.body;
+            body.className = themeData.isDark ? 'dark-mode' : '';
+            
+            // Apply theme colors
+            if (themeData.colors) {
+                document.documentElement.style.setProperty('--bg-color', themeData.colors.backgroundColor);
+                document.documentElement.style.setProperty('--text-color', themeData.colors.textColor);
+                document.documentElement.style.setProperty('--primary-color', themeData.colors.primaryColor);
+            }
+        }
+
+        function requestNews() {
+            try {
+                if (window.NewsRequester) {
+                    window.NewsRequester.postMessage('fetchNews');
+                }
+            } catch (e) {
+                console.log('News requester not available');
+            }
+        }
+
+        function displayNews(newsData) {
+            const container = document.getElementById('newsContainer');
+            
+            if (!newsData || newsData.length === 0) {
+                container.innerHTML = '<div class="news-item"><div class="news-item-title">No news available</div></div>';
+                return;
+            }
+
+            container.innerHTML = newsData.map(item => `
+                <div class="news-item" onclick="openUrl('${item.url}')">
+                    <div class="news-item-title">${item.title}</div>
+                    <div class="news-item-summary">${item.summary || item.description || ''}</div>
+                    <div class="news-item-date">${new Date(item.publishedAt || item.date).toLocaleDateString()}</div>
+                </div>
+            `).join('');
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Listen for messages from Flutter
+        window.addEventListener('message', function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                
+                if (data.type === 'fullTheme') {
+                    applyTheme(data);
+                } else if (data.type === 'news') {
+                    displayNews(data.articles);
+                }
+            } catch (e) {
+                console.log('Error parsing message:', e);
+            }
+        });
+    </script>
+</body>
+</html>

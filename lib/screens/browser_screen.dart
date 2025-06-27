@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart' as webview_flutter_android;
+import 'package:webview_flutter_android/webview_flutter_android.dart' show FileSelectorParams;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
 import '../l10n/app_localizations.dart';
@@ -1237,62 +1238,275 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       curve: Curves.easeOut, // Simpler curve
     ));
   }
-  
+
   Future<void> _setupScrollHandling() async {
-    await controller.runJavaScript('''
-      let lastScrollY = window.scrollY;
-      let scrollThrottle = null;
-      const SCROLL_THRESHOLD = 5;
-      const THROTTLE_DELAY = 50;
-
-      function throttledScrollHandler() {
-        const currentScrollY = window.scrollY;
-        const delta = currentScrollY - lastScrollY;
+    print('🔧 _setupScrollHandling called');
+    
+    try {
+      await controller.runJavaScript('''
+        console.log('🚀 Setting up image-only context menu...');
         
-        if (Math.abs(delta) > SCROLL_THRESHOLD) {
-          if (window.flutter_inappwebview) {
-            window.flutter_inappwebview.callHandler('onScroll', {
-              scrollY: currentScrollY,
-              delta: delta
-            });
-          }
-          lastScrollY = currentScrollY;
+        // Send debug message to Flutter to confirm JS is running
+        if (window.DebugHandler && window.DebugHandler.postMessage) {
+          window.DebugHandler.postMessage('🚀 JavaScript context menu loaded - images only!');
         }
-      }
+      
+        // Scroll handling variables
+        let lastScrollY = window.scrollY;
+        let scrollThrottle = null;
+        const SCROLL_THRESHOLD = 5;
+        const THROTTLE_DELAY = 50;
 
-      window.addEventListener('scroll', function() {
-        if (scrollThrottle) {
-          clearTimeout(scrollThrottle);
-        }
-        scrollThrottle = setTimeout(throttledScrollHandler, THROTTLE_DELAY);
-      }, { passive: true });
-
-      let touchStartY = 0;
-      let touchThrottle = null;
-
-      window.addEventListener('touchstart', function(e) {
-        touchStartY = e.touches[0].clientY;
-      }, { passive: true });
-
-      window.addEventListener('touchmove', function(e) {
-        if (touchThrottle) return;
+        // Image hold detection variables
+        let imageHoldDetector = {
+          active: false,
+          timer: null,
+          startX: 0,
+          startY: 0,
+          hasMoved: false,
+          target: null
+        };
         
-        const currentY = e.touches[0].clientY;
-        const delta = touchStartY - currentY;
-        
-        if (Math.abs(delta) > SCROLL_THRESHOLD) {
-          touchThrottle = setTimeout(() => {
+        const HOLD_TIME = 300; // Very fast response for images to avoid interfering with webpage clicks
+        const MAX_MOVEMENT = 15;
+
+        function handleScroll() {
+          const currentScrollY = window.scrollY;
+          const delta = currentScrollY - lastScrollY;
+          
+          if (Math.abs(delta) > SCROLL_THRESHOLD) {
             if (window.flutter_inappwebview) {
               window.flutter_inappwebview.callHandler('onScroll', {
-                scrollY: window.scrollY,
+                scrollY: currentScrollY,
                 delta: delta
               });
             }
-            touchThrottle = null;
-          }, THROTTLE_DELAY);
-          touchStartY = currentY;
-        }      }, { passive: true });
-    ''');
+            lastScrollY = currentScrollY;
+          }
+        }
+
+        // Normal scroll listener
+        window.addEventListener('scroll', function() {
+          if (scrollThrottle) clearTimeout(scrollThrottle);
+          scrollThrottle = setTimeout(handleScroll, THROTTLE_DELAY);
+        }, { passive: true });
+
+        // IMAGE & TEXT CONTEXT DETECTOR - Images get custom menu, Text gets native selection
+        window.addEventListener('touchstart', function(e) {
+          const target = e.target;
+          let actualTarget = target;
+          
+          // Better target detection
+          if (target.nodeType === Node.TEXT_NODE) {
+            actualTarget = target.parentElement;
+          }
+          
+          // Check for images (including background images)
+          const isImg = actualTarget.tagName === 'IMG' || 
+                       actualTarget.closest('img') ||
+                       (actualTarget.style && actualTarget.style.backgroundImage && actualTarget.style.backgroundImage !== 'none') ||
+                       getComputedStyle(actualTarget).backgroundImage !== 'none';
+          
+          // Check for text content
+          const isText = !isImg && (
+            actualTarget.textContent && actualTarget.textContent.trim().length > 0 ||
+            actualTarget.tagName === 'INPUT' || 
+            actualTarget.tagName === 'TEXTAREA' ||
+            actualTarget.isContentEditable ||
+            actualTarget.closest('[contenteditable="true"]')
+          );
+          
+          console.log('🎯 Target:', actualTarget.tagName || 'TEXT', 'Is Image:', isImg, 'Is Text:', isText);
+          if (window.DebugHandler && window.DebugHandler.postMessage) {
+            window.DebugHandler.postMessage('🎯 Target: ' + (actualTarget.tagName || 'TEXT') + ', Image: ' + isImg + ', Text: ' + isText);
+          }
+          
+          if (isImg) {
+            // IMAGES: Custom context menu with fast response (300ms)
+            console.log('🖼️ Image detected - starting hold timer');
+            if (window.DebugHandler && window.DebugHandler.postMessage) {
+              window.DebugHandler.postMessage('🖼️ Image detected - starting hold timer');
+            }
+            
+            imageHoldDetector.active = true;
+            imageHoldDetector.startX = e.touches[0].clientX;
+            imageHoldDetector.startY = e.touches[0].clientY;
+            imageHoldDetector.hasMoved = false;
+            imageHoldDetector.target = actualTarget;
+            
+            // Add subtle visual feedback
+            actualTarget.style.opacity = '0.9';
+            actualTarget.style.transition = 'opacity 0.2s ease';
+            
+            imageHoldDetector.timer = setTimeout(() => {
+              if (imageHoldDetector.active && !imageHoldDetector.hasMoved) {
+                console.log('⏰ IMAGE HOLD CONFIRMED!');
+                if (window.DebugHandler && window.DebugHandler.postMessage) {
+                  window.DebugHandler.postMessage('⏰ IMAGE HOLD CONFIRMED!');
+                }
+                
+                // Reset visual feedback
+                actualTarget.style.opacity = '1';
+                
+                // Get image URL
+                let imageUrl = '';
+                if (actualTarget.tagName === 'IMG') {
+                  imageUrl = actualTarget.src;
+                } else if (actualTarget.closest('img')) {
+                  imageUrl = actualTarget.closest('img').src;
+                } else {
+                  // Background image
+                  const bgImage = getComputedStyle(actualTarget).backgroundImage;
+                  const match = bgImage.match(/url\\(["']?([^"'\\)]+)["']?\\)/);
+                  if (match) {
+                    imageUrl = match[1];
+                  }
+                }
+                
+                console.log('🖼️ Showing image context menu for:', imageUrl);
+                if (window.DebugHandler && window.DebugHandler.postMessage) {
+                  window.DebugHandler.postMessage('🖼️ Showing image context menu for: ' + imageUrl);
+                }
+                
+                // Send image context menu message
+                if (window.SolarContextMenu && window.SolarContextMenu.postMessage && imageUrl) {
+                  window.SolarContextMenu.postMessage(JSON.stringify({
+                    type: 'image',
+                    imageUrl: imageUrl,
+                    x: imageHoldDetector.startX,
+                    y: imageHoldDetector.startY + window.scrollY
+                  }));
+                  console.log('✅ Image context menu sent');
+                }
+              }
+              imageHoldDetector.active = false;
+            }, 300); // Fast 300ms response for images
+            
+          } else if (isText) {
+            // TEXT: Enable native Android text selection immediately
+            console.log('📝 Text detected - enabling native Android selection');
+            if (window.DebugHandler && window.DebugHandler.postMessage) {
+              window.DebugHandler.postMessage('📝 Text detected - enabling native Android selection');
+            }
+            
+            // Enable text selection globally
+            document.body.style.webkitUserSelect = 'text';
+            document.body.style.userSelect = 'text';
+            actualTarget.style.webkitUserSelect = 'text';
+            actualTarget.style.userSelect = 'text';
+            
+            // For input fields, focus them to trigger native selection
+            if (actualTarget.tagName === 'INPUT' || actualTarget.tagName === 'TEXTAREA') {
+              actualTarget.focus();
+              console.log('📝 Input field focused - Android will handle selection');
+            } else {
+              // For regular text, create selection immediately to trigger Android's native menu
+              try {
+                const range = document.createRange();
+                
+                if (actualTarget.textContent && actualTarget.textContent.trim()) {
+                  const walker = document.createTreeWalker(
+                    actualTarget,
+                    NodeFilter.SHOW_TEXT,
+                    null,
+                    false
+                  );
+                  
+                  let textNode = walker.nextNode();
+                  if (textNode && textNode.textContent.trim()) {
+                    const text = textNode.textContent.trim();
+                    const words = text.split(/\\s+/);
+                    
+                    // Auto-select intelligently based on content length
+                    if (words.length <= 2) {
+                      // Short text - select all
+                      range.selectNodeContents(textNode);
+                    } else {
+                      // Longer text - select meaningful portion (first sentence or first 8 words)
+                      const sentences = text.split(/[.!?]+/);
+                      let textToSelect;
+                      
+                      if (sentences.length > 1 && sentences[0].length < 100) {
+                        // Select first sentence if reasonable length
+                        textToSelect = sentences[0].trim();
+                      } else {
+                        // Select first 8 words
+                        textToSelect = words.slice(0, Math.min(8, words.length)).join(' ');
+                      }
+                      
+                      const startIndex = text.indexOf(textToSelect);
+                      if (startIndex !== -1) {
+                        range.setStart(textNode, startIndex);
+                        range.setEnd(textNode, startIndex + textToSelect.length);
+                      } else {
+                        range.selectNodeContents(textNode);
+                      }
+                    }
+                    
+                    const selection = window.getSelection();
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                    
+                    console.log('📝 Text auto-selected for Android menu:', selection.toString().substr(0, 50));
+                    if (window.DebugHandler && window.DebugHandler.postMessage) {
+                      window.DebugHandler.postMessage('📝 Text auto-selected: ' + selection.toString().substr(0, 50));
+                    }
+                  }
+                }
+              } catch (e) {
+                console.log('📝 Selection error, will rely on native handling:', e);
+              }
+            }
+            
+            // Let Android's native selection system take over from here
+            // No custom context menu needed - Android will show its own copy/paste menu
+          }
+          // For everything else, do nothing - let system handle it normally
+        }, { passive: false });
+
+        window.addEventListener('touchmove', function(e) {
+          if (imageHoldDetector.active) {
+            const deltaX = Math.abs(e.touches[0].clientX - imageHoldDetector.startX);
+            const deltaY = Math.abs(e.touches[0].clientY - imageHoldDetector.startY);
+            const totalMove = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            
+            if (totalMove > MAX_MOVEMENT) {
+              console.log('🚫 Canceling image hold - movement detected');
+              if (window.DebugHandler && window.DebugHandler.postMessage) {
+                window.DebugHandler.postMessage('🚫 Canceling image hold - movement: ' + Math.round(totalMove) + 'px');
+              }
+              
+              imageHoldDetector.hasMoved = true;
+              imageHoldDetector.active = false;
+              
+              // Reset visual feedback
+              if (imageHoldDetector.target) {
+                imageHoldDetector.target.style.opacity = '1';
+              }
+              
+              if (imageHoldDetector.timer) {
+                clearTimeout(imageHoldDetector.timer);
+                imageHoldDetector.timer = null;
+              }
+            }
+          }
+        }, { passive: false });
+        
+        window.addEventListener('touchend', function(e) {
+          if (imageHoldDetector.active) {
+            console.log('👆 Touch ended - image hold timer still running');
+            if (window.DebugHandler && window.DebugHandler.postMessage) {
+              window.DebugHandler.postMessage('👆 Touch ended - image hold timer still running');
+            }
+            // Let the timer complete for hold detection
+          }
+        }, { passive: true });
+        
+        console.log('✅ Image-only context menu ready!');
+        if (window.DebugHandler && window.DebugHandler.postMessage) {
+          window.DebugHandler.postMessage('✅ Image-only context menu ready!');
+        }
+      ''');
 
     await controller.addJavaScriptChannel(
       'onScroll',
@@ -1334,6 +1548,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         });
       },
     );
+    
+    print('✅ _setupScrollHandling completed successfully');
+    } catch (e) {
+      print('❌ Error in _setupScrollHandling: $e');
+    }
   }  Future<WebViewController> _initializeWebViewController() async {
     final webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -1346,8 +1565,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     
     if (webViewController.platform is webview_flutter_android.AndroidWebViewController) {
       final androidController = webViewController.platform as webview_flutter_android.AndroidWebViewController;
-      
-      await Future.wait([
+        await Future.wait([
         androidController.setMediaPlaybackRequiresUserGesture(false),
         androidController.setBackgroundColor(Colors.transparent),
         androidController.setAllowFileAccess(true),
@@ -1355,6 +1573,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           'Mozilla/9999.9999 (Linux; Android 9999; Solar 0.3.0) AppleWebKit/9999.9999 (KHTML, like Gecko) Chrome/9999.9999 Mobile Safari/9999.9999'
         ),
       ]);
+        // Add context menu handler for images and text
+      await androidController.setOnShowFileSelector((params) async {
+        return await _onFileSelector(params);
+      });
+      
+      // Note: setOnContextMenuCallback doesn't exist in current WebView API
+      // Context menu will be handled via JavaScript injection and gesture detection
       
       Future.microtask(() async {
         try {
@@ -1510,9 +1735,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           await _sendSearchEngineToMainHtml();
         }
       },
-    );
-
-    // <----NEWS HANDLER CHANNEL---->
+    );    // <----NEWS HANDLER CHANNEL---->
     // JavaScript channel for news fetching communication with main.html
     await controller.addJavaScriptChannel(
       'NewsHandler',
@@ -1524,8 +1747,53 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       },
     );
 
+    // <----CONTEXT MENU CHANNELS---->
+    // JavaScript channel for debug messages
+    await controller.addJavaScriptChannel(
+      'DebugHandler',
+      onMessageReceived: (JavaScriptMessage message) {
+        print('🐛 JS Debug: ${message.message}');
+      },
+    );
+    
+    // JavaScript channel for image long press context menu
+    await controller.addJavaScriptChannel(
+      'SolarContextMenu',
+      onMessageReceived: (JavaScriptMessage message) {
+        print('🖼️ SolarContextMenu received: ${message.message}');
+        
+        if (!mounted) return;
+        
+        try {
+          final data = json.decode(message.message) as Map<String, dynamic>;
+          final type = data['type'] as String;
+          
+          if (type == 'image') {
+            final imageUrl = data['imageUrl'] as String;
+            final x = (data['x'] as num).toDouble();
+            final y = (data['y'] as num).toDouble();
+            
+            print('🖼️ Showing image context menu for: $imageUrl at ($x, $y)');
+            
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              setState(() {
+                _tapPosition = Offset(x, y);
+              });
+              _showImageContextMenu(context, imageUrl, controller);
+            });
+          }
+        } catch (e) {
+          print('❌ Error handling image long press: $e');
+        }
+      },
+    );
+
     // FIXED: Set navigation delegate BEFORE loading initial content
     controller.setNavigationDelegate(await _navigationDelegate);
+
+    // Setup scroll handling and context menu JavaScript
+    await _setupScrollHandling();
 
 // Load initial tab content efficiently with proper loading animation
     if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
@@ -2119,20 +2387,21 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         let longPressTimer;
         let isLongPress = false;
         let startX, startY;
-        
-        document.addEventListener('touchstart', function(e) {
+          document.addEventListener('touchstart', function(e) {
+          console.log('👆 Touch start detected at:', e.touches[0].clientX, e.touches[0].clientY);
           startX = e.touches[0].clientX;
           startY = e.touches[0].clientY;
           isLongPress = false;
-          
-          longPressTimer = setTimeout(() => {
+            longPressTimer = setTimeout(() => {
+            console.log('🔥 Long press timer triggered!');
             isLongPress = true;
             
             // Get the element under touch
             const element = document.elementFromPoint(startX, startY);
-            
-            // Check if the target is an image
+            console.log('🔍 Element at point:', element, element ? element.tagName : 'null');
+              // Check if the target is an image
             if (element && element.tagName === 'IMG') {
+              console.log('📸 Image detected:', element.src);
               const rect = element.getBoundingClientRect();
               const imageUrl = element.src;
               ImageLongPress.postMessage(JSON.stringify({
@@ -2167,10 +2436,15 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               (element.nodeType === Node.TEXT_NODE) ||
               (element.textContent && element.textContent.trim().length > 0)
             );
-            
-            // If there's selected text or we're touching text content, don't show custom menu
+              // If there's selected text or we're touching text content, show text context menu
             if (hasSelectedText || hasTextContent) {
-              // Let the native text selection work
+              console.log('Text detected, showing text context menu');
+              TextLongPress.postMessage(JSON.stringify({
+                text: hasSelectedText ? selection.toString().trim() : '',
+                x: startX,
+                y: startY + window.scrollY,
+                isInput: element.isContentEditable || element.tagName === 'INPUT' || element.tagName === 'TEXTAREA'
+              }));
               return;
             }
             
@@ -2204,10 +2478,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         }, true);      })();
     ''');
 
-    await controller.addJavaScriptChannel(
-      'ImageLongPress',
+    await controller.addJavaScriptChannel(      'ImageLongPress',
       onMessageReceived: (JavaScriptMessage message) {
         if (!mounted) return;
+        print('ImageLongPress received: ${message.message}');
         
         try {
           final data = json.decode(message.message) as Map<String, dynamic>;
@@ -2218,12 +2492,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
             final x = (data['x'] as num).toDouble();
             final y = (data['y'] as num).toDouble();
             
+            print('Showing image context menu for: $imageUrl at ($x, $y)');
+            
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
               setState(() {
                 _tapPosition = Offset(x, y);
               });
-              _showImageOptions(imageUrl, _tapPosition);
+              _showImageContextMenu(context, imageUrl, controller);
             });
           }
         } catch (e) {
@@ -2252,9 +2528,28 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               });
               _showGeneralContextMenu(_tapPosition);
             });
-          }
-        } catch (e) {
+          }        } catch (e) {
           print('Error handling general long press: $e');
+        }
+      },
+    );
+
+    await controller.addJavaScriptChannel(      'TextLongPress',
+      onMessageReceived: (JavaScriptMessage message) {
+        if (!mounted) return;
+        print('TextLongPress received: ${message.message}');
+        
+        try {
+          final data = json.decode(message.message) as Map<String, dynamic>;
+          final text = data['text'] as String? ?? '';
+          final x = (data['x'] as num).toDouble();
+          final y = (data['y'] as num).toDouble();
+          final isInput = data['isInput'] as bool? ?? false;
+          
+          print('Text context menu received but ignored - using native Android selection instead');
+          // Note: Custom text context menu disabled - using native Android text selection
+        } catch (e) {
+          print('Error handling text long press: $e');
         }
       },
     );
@@ -2322,12 +2617,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           await _saveToHistory(url, title);
           print('_saveToHistory completed'); // Debug log
         } catch (e) {
-          print('Error in _saveToHistory: $e'); // Debug log
-          print(e.toString());
+          print('Error in _saveToHistory: $e'); // Debug log          print(e.toString());
           print('Stack trace:');
           print('${StackTrace.current}');
         }
-          await _injectImageContextMenuJS();
+          // Context menu is now handled by _setupScrollHandling() - no need for separate injection
+          // await _injectImageContextMenuJS();
           // Initialize theme if this is the home page
         if (url.startsWith('file:///android_asset/main.html') || url == _homeUrl) {
           // Send theme immediately and with retries for better reliability
@@ -7399,13 +7694,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       ),
     );
   }
-
   Future<WebViewController> _createWebViewController() async {
     final controller = await _initializeWebViewController();
     
     // Simplified initialization for M12
     try {
-      await _injectImageContextMenuJS();
+      // Context menu is now handled by _setupScrollHandling() - no need for separate injection
+      // await _injectImageContextMenuJS();
     } catch (e) {
       // Silently handle errors
     }
@@ -7438,9 +7733,469 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       );
       
       _lastBackPressTime = DateTime.now();
-      return false;
-    }
+      return false;    }
     return true;
+  }
+
+  // Context menu functionality for images and text selection
+  Future<void> _showContextMenu(Map<String, dynamic> hitTestResult, WebViewController webViewController) async {
+    final BuildContext? context = this.context;
+    if (context == null || !mounted) return;
+
+    try {
+      // Get hit test information from JavaScript
+      final String jsResult = await webViewController.runJavaScriptReturningResult('''
+        (function() {
+          const selection = window.getSelection();
+          const selectedText = selection.toString().trim();
+          
+          // Check if user clicked on an image
+          const elementFromPoint = document.elementFromPoint(
+            window.lastTouchX || 0,
+            window.lastTouchY || 0
+          );
+          
+          let isImage = false;
+          let imageUrl = '';
+          
+          if (elementFromPoint) {
+            if (elementFromPoint.tagName === 'IMG') {
+              isImage = true;
+              imageUrl = elementFromPoint.src;
+            } else {
+              // Check if element has background image
+              const style = window.getComputedStyle(elementFromPoint);
+              const bgImage = style.backgroundImage;
+              if (bgImage && bgImage !== 'none') {
+                const match = bgImage.match(/url\\(["']?([^"'\\)]+)["']?\\)/);
+                if (match) {
+                  isImage = true;
+                  imageUrl = match[1];
+                }
+              }
+            }
+          }
+          
+          return JSON.stringify({
+            isImage: isImage,
+            imageUrl: imageUrl,
+            hasSelectedText: selectedText.length > 0,
+            selectedText: selectedText
+          });
+        })();
+      ''') as String;
+
+      final Map<String, dynamic> result = jsonDecode(jsResult.replaceAll('"', ''));
+      final bool isImage = result['isImage'] ?? false;
+      final String imageUrl = result['imageUrl'] ?? '';
+      final bool hasSelectedText = result['hasSelectedText'] ?? false;
+      final String selectedText = result['selectedText'] ?? '';
+
+      if (isImage && imageUrl.isNotEmpty) {
+        _showImageContextMenu(context, imageUrl, webViewController);
+      } else if (hasSelectedText) {
+        // Note: Text context menu disabled - using native Android text selection instead
+        print('Text selection detected but using native Android menu instead');
+      }
+    } catch (e) {
+      print('Error showing context menu: $e');
+    }
+  }
+  void _showImageContextMenu(BuildContext context, String imageUrl, WebViewController webViewController) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black26,
+      builder: (BuildContext context) {
+        return TweenAnimationBuilder<double>(
+          duration: const Duration(milliseconds: 250),
+          tween: Tween(begin: 0.0, end: 1.0),
+          curve: Curves.easeOutCubic,
+          builder: (context, value, child) {
+            return Transform.scale(
+              scale: 0.8 + (0.2 * value),
+              child: Opacity(
+                opacity: value,
+                child: Center(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Container(
+                      margin: const EdgeInsets.all(20),
+                      constraints: const BoxConstraints(maxWidth: 220),
+                      decoration: BoxDecoration(
+                        color: ThemeManager.surfaceColor(),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.15),
+                            blurRadius: 24,
+                            spreadRadius: 0,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(height: 8),
+                          _buildCompactContextMenuItem(
+                            icon: Icons.download_rounded,
+                            title: _getLocalizedContextText('downloadImage', 'Download'),
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              _downloadImage(imageUrl);
+                            },
+                          ),
+                          _buildMenuDivider(),
+                          _buildCompactContextMenuItem(
+                            icon: Icons.content_copy_rounded,
+                            title: _getLocalizedContextText('copyImage', 'Copy URL'),
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              _copyImageUrl(imageUrl);
+                            },
+                          ),
+                          _buildMenuDivider(),
+                          _buildCompactContextMenuItem(
+                            icon: Icons.open_in_new_rounded,
+                            title: _getLocalizedContextText('openImageNewTab', 'Open in New Tab'),
+                            onTap: () {
+                              Navigator.of(context).pop();
+                              _openImageInNewTab(imageUrl);
+                            },
+                          ),
+                          const SizedBox(height: 8),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+  Widget _buildContextMenuItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    bool enabled = true,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        borderRadius: BorderRadius.circular(12),
+        splashColor: ThemeManager.primaryColor().withOpacity(0.1),
+        highlightColor: ThemeManager.primaryColor().withOpacity(0.05),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: enabled 
+                    ? ThemeManager.primaryColor().withOpacity(0.1)
+                    : ThemeManager.textColor().withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Icon(
+                  icon,
+                  size: 16,
+                  color: enabled 
+                    ? ThemeManager.primaryColor()
+                    : ThemeManager.textColor().withOpacity(0.4),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Flexible(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: enabled 
+                      ? ThemeManager.textColor()
+                      : ThemeManager.textColor().withOpacity(0.4),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompactContextMenuItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+    bool enabled = true,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        borderRadius: BorderRadius.circular(8),
+        splashColor: ThemeManager.primaryColor().withOpacity(0.1),
+        highlightColor: ThemeManager.primaryColor().withOpacity(0.05),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 18,
+                color: enabled 
+                  ? ThemeManager.primaryColor()
+                  : ThemeManager.textColor().withOpacity(0.4),
+              ),
+              const SizedBox(width: 12),
+              Flexible(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: enabled 
+                      ? ThemeManager.textColor()
+                      : ThemeManager.textColor().withOpacity(0.4),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMenuDivider() {
+    return Container(
+      height: 1,
+      margin: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.transparent,
+            ThemeManager.textColor().withOpacity(0.08),
+            Colors.transparent,
+          ],
+        ),
+      ),
+    );
+  }
+  // Context menu actions - Removed old implementations, using improved versions below
+  bool get _hasClipboardContent {
+    // This should be updated to check actual clipboard content
+    // For now, we'll assume there might be content available
+    return true;
+  }
+
+  // Enhanced context menu actions with better error handling
+  Future<void> _downloadImage(String imageUrl) async {
+    try {
+      // Request storage permission
+      final status = await Permission.storage.request();
+      if (!status.isGranted) {
+        _showNotification(Text(_getLocalizedContextText('storagePermissionRequired', 'Storage permission required to download images')));
+        return;
+      }
+
+      _showNotification(Text(_getLocalizedContextText('downloadingImage', 'Downloading image...')));
+      
+      final response = await http.get(Uri.parse(imageUrl));
+      if (response.statusCode == 200) {
+        final directory = await getExternalStorageDirectory();
+        final fileName = 'solar_image_${DateTime.now().millisecondsSinceEpoch}.${_getImageExtension(imageUrl)}';
+        final file = File('${directory?.path}/$fileName');
+        
+        await file.writeAsBytes(response.bodyBytes);        _showNotification(Text(_getLocalizedContextText('imageDownloaded', 'Image downloaded successfully')));
+      } else {
+        _showNotification(Text(_getLocalizedContextText('downloadFailed', 'Failed to download image')));
+      }
+    } catch (e) {
+      _showNotification(Text(_getLocalizedContextText('downloadError', 'Error downloading image')));
+      print('Download error: $e');
+    }
+  }
+
+  String _getImageExtension(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri != null) {
+      final path = uri.path.toLowerCase();
+      if (path.endsWith('.jpg') || path.endsWith('.jpeg')) return 'jpg';
+      if (path.endsWith('.png')) return 'png';
+      if (path.endsWith('.gif')) return 'gif';
+      if (path.endsWith('.webp')) return 'webp';
+    }
+    return 'jpg'; // Default fallback
+  }
+
+  Future<void> _copyImageUrl(String imageUrl) async {
+    await Clipboard.setData(ClipboardData(text: imageUrl));
+    _showNotification(Text(_getLocalizedContextText('imageUrlCopied', 'Image URL copied to clipboard')));
+  }
+
+  void _openImageInNewTab(String imageUrl) {    setState(() {
+      _addNewTab(url: imageUrl);
+    });
+    _showNotification(Text(_getLocalizedContextText('imageOpenedNewTab', 'Image opened in new tab')));
+  }
+
+  Future<void> _copyText(String text) async {
+    await Clipboard.setData(ClipboardData(text: text));
+    _showNotification(Text(_getLocalizedContextText('textCopied', 'Text copied to clipboard')));
+  }
+
+  Future<void> _pasteText(WebViewController webViewController) async {
+    try {
+      final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+      if (clipboardData?.text != null && clipboardData!.text!.isNotEmpty) {
+        // Escape the text to prevent JavaScript injection
+        final escapedText = clipboardData.text!
+            .replaceAll('\\', '\\\\')
+            .replaceAll('"', '\\"')
+            .replaceAll('\n', '\\n')
+            .replaceAll('\r', '\\r');
+            
+        await webViewController.runJavaScript('''
+          const activeElement = document.activeElement;
+          if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.contentEditable === 'true')) {
+            const text = "$escapedText";
+            if (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') {
+              const start = activeElement.selectionStart || 0;
+              const end = activeElement.selectionEnd || 0;
+              const value = activeElement.value || '';
+              activeElement.value = value.substring(0, start) + text + value.substring(end);
+              activeElement.selectionStart = activeElement.selectionEnd = start + text.length;
+              
+              // Trigger input event for frameworks
+              activeElement.dispatchEvent(new Event('input', { bubbles: true }));
+            } else if (activeElement.contentEditable === 'true') {
+              document.execCommand('insertText', false, text);
+            }
+          }
+        ''');        _showNotification(Text(_getLocalizedContextText('textPasted', 'Text pasted')));
+      } else {
+        _showNotification(Text(_getLocalizedContextText('clipboardEmpty', 'Clipboard is empty')));
+      }
+    } catch (e) {
+      _showNotification(Text(_getLocalizedContextText('pasteError', 'Error pasting text')));
+      print('Paste error: $e');
+    }
+  }
+
+  Future<void> _cutText(String selectedText, WebViewController webViewController) async {
+    try {
+      await Clipboard.setData(ClipboardData(text: selectedText));
+      
+      // Remove the selected text from the input field
+      await webViewController.runJavaScript('''
+        const selection = window.getSelection();
+        const activeElement = document.activeElement;
+        
+        if (activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+          const start = activeElement.selectionStart || 0;
+          const end = activeElement.selectionEnd || 0;
+          const value = activeElement.value || '';
+          activeElement.value = value.substring(0, start) + value.substring(end);
+          activeElement.selectionStart = activeElement.selectionEnd = start;
+          
+          // Trigger input event for frameworks
+          activeElement.dispatchEvent(new Event('input', { bubbles: true }));
+        } else if (selection && selection.toString().trim() === "$selectedText") {
+          selection.deleteFromDocument();
+        }
+      ''');        _showNotification(Text(_getLocalizedContextText('textCut', 'Text cut to clipboard')));
+    } catch (e) {
+      _showNotification(Text(_getLocalizedContextText('cutError', 'Error cutting text')));
+      print('Cut error: $e');
+    }  }
+
+  // Helper method for context menu localization with fallback
+  String _getLocalizedContextText(String key, String fallback) {
+    try {
+      final localizations = AppLocalizations.of(context);
+      if (localizations == null) return fallback;
+      
+      // Map new context menu keys to existing localization keys where possible
+      switch (key) {
+        // Image context menu - use existing keys or fallback
+        case 'downloadImage':
+          return localizations.download_image;
+        case 'copyImage':
+          return 'Copy Image'; // Fallback to English
+        case 'openImageNewTab':
+          return localizations.new_tab;
+        
+        // Text context menu
+        case 'copyText':
+          return 'Copy'; // Fallback to English
+        case 'pasteText':
+          return 'Paste'; // Fallback to English        case 'cutText':
+          return 'Cut'; // Fallback to English
+        
+        // Notifications - use existing keys or fallback
+        case 'storagePermissionRequired':
+          return localizations.permission_denied;
+        case 'downloadingImage':
+          return localizations.downloading;
+        case 'imageDownloaded':
+          return localizations.download_completed;
+        case 'downloadFailed':
+          return localizations.download_failed;
+        case 'downloadError':
+          return localizations.download_failed;
+        case 'imageUrlCopied':
+          return 'Image URL copied';
+        case 'imageOpenedNewTab':
+          return 'Opened in new tab';
+        case 'textCopied':
+          return 'Text copied';
+        case 'textPasted':
+          return 'Text pasted';
+        case 'textCut':
+          return 'Text cut';
+        case 'clipboardEmpty':
+          return 'Clipboard is empty';
+        case 'pasteError':
+          return 'Error pasting text';
+        case 'cutError':
+          return 'Error cutting text';
+        
+        default:
+          return fallback;
+      }
+    } catch (e) {
+      return fallback;
+    }
+  }
+
+  Future<List<String>> _onFileSelector(FileSelectorParams params) async {
+    // Handle file selection if needed for web file inputs
+    try {      final result = await FilePicker.platform.pickFiles(
+        allowMultiple: false, // Use false as safe fallback since property doesn't exist
+        type: FileType.any,
+      );
+      
+      if (result != null && result.files.isNotEmpty) {
+        return result.files
+            .where((file) => file.path != null)
+            .map((file) => file.path!)
+            .toList();
+      }
+    } catch (e) {
+      print('File selector error: $e');
+    }
+    return [];
   }
 
   @override
@@ -7854,11 +8609,13 @@ Future<void> _handlePageStarted(String url) async {
           _hideUrlBar = false;
         });
         _hideUrlBarController.reverse();
-        
-        await _updateNavigationState();
+          await _updateNavigationState();
         await _optimizationEngine.onPageFinishLoad(url);
         await _updateFavicon(url);
-        await _saveToHistory(url, title);        await _injectImageContextMenuJS();
+        await _saveToHistory(url, title);        
+        
+        // Re-inject context menu JavaScript on every page load since JS context resets
+        await _setupScrollHandling();
       },      onUrlChange: (UrlChange change) {
         if (mounted && change.url != null) {
           final url = change.url!;
@@ -10025,14 +10782,17 @@ Future<void> _handlePageStarted(String url) async {
                 ),
               ],
             ),
-          ),
-        ),
+          ),        ),
       ),    );
   }
+  
   // Simplified JavaScript injection for M12 - Task 4: Allow native context menus
   Future<void> _injectImageContextMenuJS() async {
     try {
+      print('Injecting context menu JavaScript...');
       await controller.runJavaScript('''
+        console.log('Context menu JavaScript loaded!');
+        
         window.findImageAtPoint = function(x, y) {
           try {
             const element = document.elementFromPoint(x, y);
@@ -10056,45 +10816,125 @@ Future<void> _handlePageStarted(String url) async {
           } catch (e) {
             return null;
           }
+        };        // Improved touch handlers - better scroll tolerance for context menus
+        let contextMenuState = {
+          isTracking: false,
+          startTime: 0,
+          startX: 0,
+          startY: 0,
+          moved: false,
+          timer: null,
+          target: null
         };
-
-        // Modified touch handlers for M12 - allows native context menus to work
-        // Removed preventDefault() to allow native long-press context menus
-        document.addEventListener('touchstart', function(e) {
-          if (e.target.tagName === 'IMG' || e.target.closest('img')) {
-            let startTime = Date.now();
-            let moved = false;
-            
-            const handleTouchEnd = function() {
-              const duration = Date.now() - startTime;
-              // Reduced duration and removed preventDefault to allow native menus
-              if (duration > 700 && !moved) {
-                const imageUrl = e.target.tagName === 'IMG' ? e.target.src : e.target.closest('img').src;
-                // Only notify Flutter, don't prevent native behavior
-                if (window.ImageLongPress) {
-                  ImageLongPress.postMessage(JSON.stringify({
-                    url: imageUrl,
-                    x: e.touches[0].clientX,
-                    y: e.touches[0].clientY + window.scrollY
-                  }));
+        
+        const LONG_PRESS_DURATION = 800; // Increased for better UX
+        const MOVEMENT_THRESHOLD = 15; // Allow some movement before canceling
+        const SCROLL_THRESHOLD = 25; // Cancel only on significant scroll movement
+          document.addEventListener('touchstart', function(e) {
+          console.log('🤚 TouchStart detected:', e.touches[0].clientX, e.touches[0].clientY);
+          
+          // Only track images and text elements
+          const target = e.target;
+          const isImage = target.tagName === 'IMG' || target.closest('img');
+          const isTextNode = target.nodeType === Node.TEXT_NODE || 
+                           target.tagName === 'P' || target.tagName === 'DIV' || 
+                           target.tagName === 'SPAN' || target.tagName === 'A' ||
+                           target.isContentEditable || target.tagName === 'INPUT' || 
+                           target.tagName === 'TEXTAREA';
+          
+          console.log('🎯 Target element:', target.tagName, 'isImage:', isImage, 'isTextNode:', isTextNode);
+          
+          if (isImage || isTextNode) {
+            console.log('✅ Starting context menu tracking...');
+            contextMenuState.isTracking = true;
+            contextMenuState.startTime = Date.now();
+            contextMenuState.startX = e.touches[0].clientX;
+            contextMenuState.startY = e.touches[0].clientY;
+            contextMenuState.moved = false;
+            contextMenuState.target = target;            // Set timer for long press
+            contextMenuState.timer = setTimeout(() => {
+              if (contextMenuState.isTracking && !contextMenuState.moved) {
+                console.log('⏰ Long press timer triggered!', { isImage, isTextNode, target });
+                  if (isImage) {
+                  const imageUrl = target.tagName === 'IMG' ? target.src : target.closest('img').src;
+                  console.log('Image long press:', imageUrl);
+                  // Use the correct JavaScript channel call
+                  if (window.ImageLongPress && window.ImageLongPress.postMessage) {
+                    window.ImageLongPress.postMessage(JSON.stringify({
+                      type: 'image',
+                      url: imageUrl,
+                      x: contextMenuState.startX,
+                      y: contextMenuState.startY + window.scrollY
+                    }));
+                    console.log('✅ Image context menu message sent');
+                  } else {
+                    console.log('❌ ImageLongPress channel not available');
+                  }
+                } else if (isTextNode) {
+                  // Handle text selection context menu
+                  const selection = window.getSelection();
+                  const selectedText = selection.toString().trim();
+                  console.log('Text long press:', selectedText);
+                  // Use the correct JavaScript channel call
+                  if (window.TextLongPress && window.TextLongPress.postMessage) {
+                    window.TextLongPress.postMessage(JSON.stringify({
+                      text: selectedText,
+                      x: contextMenuState.startX,
+                      y: contextMenuState.startY + window.scrollY,
+                      isInput: target.isContentEditable || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA'
+                    }));
+                    console.log('✅ Text context menu message sent');
+                  } else {
+                    console.log('❌ TextLongPress channel not available');
+                  }
+                }
                 }
               }
-            };
-            
-            const handleTouchMove = function() {
-              moved = true;
-              cleanup();
-            };
-            
-            const cleanup = function() {
-              document.removeEventListener('touchend', handleTouchEnd);
-              document.removeEventListener('touchmove', handleTouchMove);
-            };
-            
-            document.addEventListener('touchend', handleTouchEnd, { once: true });
-            document.addEventListener('touchmove', handleTouchMove, { once: true });
+              contextMenuState.isTracking = false;
+            }, LONG_PRESS_DURATION);
           }
-        }, { passive: true }); // Changed to passive to improve performance and allow native events
+        }, { passive: true });
+        
+        document.addEventListener('touchmove', function(e) {
+          if (contextMenuState.isTracking) {
+            const deltaX = Math.abs(e.touches[0].clientX - contextMenuState.startX);
+            const deltaY = Math.abs(e.touches[0].clientY - contextMenuState.startY);
+            const totalMovement = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+            
+            // Only cancel if movement is significant (scrolling gesture)
+            if (totalMovement > SCROLL_THRESHOLD) {
+              contextMenuState.moved = true;
+              contextMenuState.isTracking = false;
+              if (contextMenuState.timer) {
+                clearTimeout(contextMenuState.timer);
+                contextMenuState.timer = null;
+              }
+            } else if (totalMovement > MOVEMENT_THRESHOLD) {
+              // Small movement - mark as moved but don't cancel yet
+              contextMenuState.moved = true;
+            }
+          }
+        }, { passive: true });
+        
+        document.addEventListener('touchend', function(e) {
+          if (contextMenuState.isTracking) {
+            contextMenuState.isTracking = false;
+            if (contextMenuState.timer) {
+              clearTimeout(contextMenuState.timer);
+              contextMenuState.timer = null;
+            }
+          }
+        }, { passive: true });
+        
+        document.addEventListener('touchcancel', function(e) {
+          if (contextMenuState.isTracking) {
+            contextMenuState.isTracking = false;
+            if (contextMenuState.timer) {
+              clearTimeout(contextMenuState.timer);
+              contextMenuState.timer = null;
+            }
+          }
+        }, { passive: true });
       ''');
     } catch (e) {
       // Silently handle JavaScript injection errors
