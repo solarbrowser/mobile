@@ -1,3 +1,5 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -96,7 +98,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get data_collection => '데이터 수집';
 
   @override
-  String get data_collection_details => '• 브라우저 기능에 필요한 최소한의 데이터만 수집합니다\n• 검색 기록은 기기에 저장됩니다\n• 온라인 활동을 추적하지 않습니다\n• 언제든지 모든 데이터를 삭제할 수 있습니다';
+  String get data_collection_details =>
+      '• 브라우저 기능에 필요한 최소한의 데이터만 수집합니다\n• 검색 기록은 기기에 저장됩니다\n• 온라인 활동을 추적하지 않습니다\n• 언제든지 모든 데이터를 삭제할 수 있습니다';
 
   @override
   String get general => '일반';
@@ -288,7 +291,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get reset_browser => '브라우저 초기화';
 
   @override
-  String get reset_browser_confirm => '모든 데이터(기록, 북마크, 설정 포함)가 삭제됩니다. 이 작업은 취소할 수 없습니다.';
+  String get reset_browser_confirm =>
+      '모든 데이터(기록, 북마크, 설정 포함)가 삭제됩니다. 이 작업은 취소할 수 없습니다.';
 
   @override
   String get reset => '초기화';
@@ -400,10 +404,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get storage_permission_install_packages_required => '저장소 및 패키지 설치 권한';
 
   @override
-  String get storage_permission_install_packages_description => 'Solar 브라우저는 다운로드를 위한 저장소 액세스와 APK 설치를 위한 패키지 설치 권한이 필요합니다';
+  String get storage_permission_install_packages_description =>
+      'Solar 브라우저는 다운로드를 위한 저장소 액세스와 APK 설치를 위한 패키지 설치 권한이 필요합니다';
 
   @override
-  String get clear_downloads_history_confirm => '다운로드 기록만 삭제되며 다운로드한 파일은 삭제되지 않습니다.';
+  String get clear_downloads_history_confirm =>
+      '다운로드 기록만 삭제되며 다운로드한 파일은 삭제되지 않습니다.';
 
   @override
   String get clear_downloads_history_title => '다운로드 기록 삭제';
@@ -498,6 +504,36 @@ class AppLocalizationsKo extends AppLocalizations {
   String get open_in_new_tab => '새 탭에서 열기';
 
   @override
+  String get copy_image_link => 'Copy Image Link';
+
+  @override
+  String get open_image_in_new_tab => 'Open Image in New Tab';
+
+  @override
+  String get open_link => 'Open Link';
+
+  @override
+  String get open_link_in_new_tab => 'Open Link in New Tab';
+
+  @override
+  String get copy_link_address => 'Copy Link Address';
+
+  @override
+  String get failed_to_download_image => 'Failed to download image';
+
+  @override
+  String get custom_home_page => 'Custom Home Page';
+
+  @override
+  String get set_home_page_url => 'Set Home Page URL';
+
+  @override
+  String get not_set => 'Not set';
+
+  @override
+  String get save => 'Save';
+
+  @override
   String get downloading => '다운로드 중...';
 
   @override
@@ -516,7 +552,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get storage_permission_granted => '저장소 권한이 승인되었습니다';
 
   @override
-  String get storage_permission_description => '이 앱은 다운로드 기능을 위해 파일 액세스 권한이 필요합니다.';
+  String get storage_permission_description =>
+      '이 앱은 다운로드 기능을 위해 파일 액세스 권한이 필요합니다.';
 
   @override
   String get app_should_work_normally => '앱이 완전한 기능으로 정상적으로 작동해야 합니다.';
@@ -534,7 +571,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get incognito_mode => '시크릿 모드';
 
   @override
-  String get incognito_description => '시크릿 모드에서:\n• 브라우징 기록이 저장되지 않습니다\n• 탭을 닫을 때 쿠키가 삭제됩니다\n• 데이터가 로컬에 저장되지 않습니다';
+  String get incognito_description =>
+      '시크릿 모드에서:\n• 브라우징 기록이 저장되지 않습니다\n• 탭을 닫을 때 쿠키가 삭제됩니다\n• 데이터가 로컬에 저장되지 않습니다';
 
   @override
   String get error_opening_file => '파일 열기 오류';
@@ -716,7 +754,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get welcome_screen_reset => '환영 화면 재설정';
 
   @override
-  String get welcome_screen_reset_message => '이렇게 하면 환영 화면이 재설정되어 다음에 앱을 시작할 때 다시 나타납니다.';
+  String get welcome_screen_reset_message =>
+      '이렇게 하면 환영 화면이 재설정되어 다음에 앱을 시작할 때 다시 나타납니다.';
 
   @override
   String get ok => '확인';
@@ -785,7 +824,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get clear_all_history => '모든 기록 지우기';
 
   @override
-  String get clear_all_history_confirm => '모든 탐색 기록이 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.';
+  String get clear_all_history_confirm =>
+      '모든 탐색 기록이 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.';
 
   @override
   String get history_cleared => '기록이 지워졌습니다';
@@ -905,4 +945,76 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get copy_summary => '요약 복사';
+
+  @override
+  String get image_link_copied => '이미지 링크가 클립보드에 복사되었습니다';
+
+  @override
+  String get link_copied => '링크가 클립보드에 복사되었습니다';
+
+  @override
+  String get error_loading_page => '페이지 로딩 중 오류 발생';
+
+  @override
+  String get no_page_to_install => 'PWA로 설치할 페이지가 없습니다';
+
+  @override
+  String get pwa_installed => 'PWA가 설치되었습니다';
+
+  @override
+  String get failed_to_install_pwa => 'PWA 설치에 실패했습니다';
+
+  @override
+  String get error_opening_file_install_app =>
+      '파일을 열 수 없습니다. 이 유형의 파일을 열 수 있는 적절한 앱을 설치해 주세요.';
+
+  @override
+  String get full_storage_access_needed =>
+      '미디어가 아닌 파일을 다운로드하려면 전체 저장소 접근 권한이 필요합니다';
+
+  @override
+  String get error_removing_download => '다운로드 제거 중 오류 발생';
+
+  @override
+  String get copy_image => '이미지 복사';
+
+  @override
+  String get text_copied => '텍스트가 복사되었습니다';
+
+  @override
+  String get text_pasted => '텍스트가 붙여넣어졌습니다';
+
+  @override
+  String get text_cut => '텍스트가 잘라내어졌습니다';
+
+  @override
+  String get clipboard_empty => '클립보드가 비어 있습니다';
+
+  @override
+  String get paste_error => '텍스트 붙여넣기 중 오류 발생';
+
+  @override
+  String get cut_error => '텍스트 잘라내기 중 오류 발생';
+
+  @override
+  String get image_url_copied => '이미지 URL이 복사되었습니다';
+
+  @override
+  String get opened_in_new_tab => '새 탭에서 열렸습니다';
+
+  @override
+  String get image_options => '이미지 옵션';
+
+  @override
+  String get copy => '복사';
+
+  @override
+  String get paste => '붙여넣기';
+
+  @override
+  String get cut => '잘라내기';
+
+  @override
+  String get asset_file_part_of_app =>
+      'This file is part of the app and cannot be downloaded';
 }

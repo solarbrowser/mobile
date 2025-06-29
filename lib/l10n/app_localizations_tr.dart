@@ -1,3 +1,5 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -13,7 +15,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get welcomeDescription => 'Modern, hızlı ve güvenli';
 
   @override
-  String get termsOfService => 'Devam ederek, Kullanım Koşullarımızı ve Gizlilik Politikamızı kabul etmiş olursunuz';
+  String get termsOfService =>
+      'Devam ederek, Kullanım Koşullarımızı ve Gizlilik Politikamızı kabul etmiş olursunuz';
 
   @override
   String get whats_new => 'Yenilikler';
@@ -96,7 +99,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get data_collection => 'Veri Toplama';
 
   @override
-  String get data_collection_details => '• Tarayıcı işlevselliği için gerekli minimum veriyi topluyoruz\n• Tarama geçmişiniz cihazınızda kalır\n• Çevrimiçi etkinliğinizi takip etmiyoruz\n• Tüm verileri istediğiniz zaman silebilirsiniz';
+  String get data_collection_details =>
+      '• Tarayıcı işlevselliği için gerekli minimum veriyi topluyoruz\n• Tarama geçmişiniz cihazınızda kalır\n• Çevrimiçi etkinliğinizi takip etmiyoruz\n• Tüm verileri istediğiniz zaman silebilirsiniz';
 
   @override
   String get general => 'Genel';
@@ -288,7 +292,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get reset_browser => 'Sıfırla';
 
   @override
-  String get reset_browser_confirm => 'Bu işlem geçmiş, yer imleri ve ayarlar dahil tüm verilerinizi temizleyecektir. Bu işlem geri alınamaz.';
+  String get reset_browser_confirm =>
+      'Bu işlem geçmiş, yer imleri ve ayarlar dahil tüm verilerinizi temizleyecektir. Bu işlem geri alınamaz.';
 
   @override
   String get reset => 'Sıfırla';
@@ -300,7 +305,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get permission_denied => 'Depolama izni reddedildi';
 
   @override
-  String get download_location_changed => 'İndirme konumu başarıyla değiştirildi';
+  String get download_location_changed =>
+      'İndirme konumu başarıyla değiştirildi';
 
   @override
   String get error_changing_location => 'Konum değiştirme hatası';
@@ -321,10 +327,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get do_not_track => 'İzleme Yapma';
 
   @override
-  String get download_location_description => 'İndirilen dosyaların kaydedileceği yeri seçin';
+  String get download_location_description =>
+      'İndirilen dosyaların kaydedileceği yeri seçin';
 
   @override
-  String get text_size_description => 'Web sayfalarındaki metin boyutunu ayarlayın';
+  String get text_size_description =>
+      'Web sayfalarındaki metin boyutunu ayarlayın';
 
   @override
   String get text_size_small => 'Küçük';
@@ -339,19 +347,23 @@ class AppLocalizationsTr extends AppLocalizations {
   String get text_size_very_large => 'Çok Büyük';
 
   @override
-  String get cookies_description => 'Web sitelerinin çerez verilerini kaydetmesine ve okumasına izin ver';
+  String get cookies_description =>
+      'Web sitelerinin çerez verilerini kaydetmesine ve okumasına izin ver';
 
   @override
-  String get javascript_description => 'Daha iyi web sitesi işlevselliği için JavaScript\'i etkinleştir';
+  String get javascript_description =>
+      'Daha iyi web sitesi işlevselliği için JavaScript\'i etkinleştir';
 
   @override
-  String get hardware_acceleration_description => 'Daha iyi performans için GPU kullan';
+  String get hardware_acceleration_description =>
+      'Daha iyi performans için GPU kullan';
 
   @override
   String get form_data_description => 'Formlara girilen bilgileri kaydet';
 
   @override
-  String get do_not_track_description => 'Web sitelerinden aktivitenizi izlememelerini iste';
+  String get do_not_track_description =>
+      'Web sitelerinden aktivitenizi izlememelerini iste';
 
   @override
   String get exit_app => 'Uygulamadan Çık';
@@ -391,19 +403,24 @@ class AppLocalizationsTr extends AppLocalizations {
   String get install_packages_permission => 'Paket Kurulum İzni';
 
   @override
-  String get install_packages_permission_description => 'Bu tarayıcıdan uygulama kurulumuna izin ver';
+  String get install_packages_permission_description =>
+      'Bu tarayıcıdan uygulama kurulumuna izin ver';
 
   @override
-  String get permission_install_packages_required => 'Paket kurulum izni gerekli';
+  String get permission_install_packages_required =>
+      'Paket kurulum izni gerekli';
 
   @override
-  String get storage_permission_install_packages_required => 'Depolama ve Paket Kurulum İzni';
+  String get storage_permission_install_packages_required =>
+      'Depolama ve Paket Kurulum İzni';
 
   @override
-  String get storage_permission_install_packages_description => 'Solar Tarayıcı, indirmeler için depolama erişimine ve APK kurulumları için paket kurulumuna izin gerektirir';
+  String get storage_permission_install_packages_description =>
+      'Solar Tarayıcı, indirmeler için depolama erişimine ve APK kurulumları için paket kurulumuna izin gerektirir';
 
   @override
-  String get clear_downloads_history_confirm => 'Bu işlem sadece indirme geçmişini temizleyecek, indirilen dosyalar silinmeyecektir.';
+  String get clear_downloads_history_confirm =>
+      'Bu işlem sadece indirme geçmişini temizleyecek, indirilen dosyalar silinmeyecektir.';
 
   @override
   String get clear_downloads_history_title => 'İndirme Geçmişini Temizle';
@@ -471,7 +488,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get classic_navigation => 'Klasik Navigasyon';
 
   @override
-  String get classic_navigation_description => 'Klasik tarayıcı tarzı navigasyon kontrollerini kullan';
+  String get classic_navigation_description =>
+      'Klasik tarayıcı tarzı navigasyon kontrollerini kullan';
 
   @override
   String get exit_confirmation => 'Uygulamadan Çık';
@@ -498,6 +516,36 @@ class AppLocalizationsTr extends AppLocalizations {
   String get open_in_new_tab => 'Yeni Sekmede Aç';
 
   @override
+  String get copy_image_link => 'Copy Image Link';
+
+  @override
+  String get open_image_in_new_tab => 'Open Image in New Tab';
+
+  @override
+  String get open_link => 'Open Link';
+
+  @override
+  String get open_link_in_new_tab => 'Open Link in New Tab';
+
+  @override
+  String get copy_link_address => 'Copy Link Address';
+
+  @override
+  String get failed_to_download_image => 'Failed to download image';
+
+  @override
+  String get custom_home_page => 'Custom Home Page';
+
+  @override
+  String get set_home_page_url => 'Set Home Page URL';
+
+  @override
+  String get not_set => 'Not set';
+
+  @override
+  String get save => 'Save';
+
+  @override
   String get downloading => 'İndiriliyor...';
 
   @override
@@ -516,16 +564,19 @@ class AppLocalizationsTr extends AppLocalizations {
   String get storage_permission_granted => 'Depolama izni verildi';
 
   @override
-  String get storage_permission_description => 'Bu uygulama, indirme işlevi için dosyalara erişim izni gerektirir.';
+  String get storage_permission_description =>
+      'Bu uygulama, indirme işlevi için dosyalara erişim izni gerektirir.';
 
   @override
-  String get app_should_work_normally => 'Uygulama artık tam işlevsellikle normal çalışmalıdır.';
+  String get app_should_work_normally =>
+      'Uygulama artık tam işlevsellikle normal çalışmalıdır.';
 
   @override
   String get grant_permission => 'İzin Ver';
 
   @override
-  String get storage_permission_denied => 'Dosyaları indirmek için depolama izni gerekli';
+  String get storage_permission_denied =>
+      'Dosyaları indirmek için depolama izni gerekli';
 
   @override
   String get new_incognito_tab => 'Yeni gizli sekme';
@@ -534,10 +585,12 @@ class AppLocalizationsTr extends AppLocalizations {
   String get incognito_mode => 'Gizli Mod';
 
   @override
-  String get incognito_description => 'Gizli modda:\n• Tarama geçmişi kaydedilmez\n• Sekmeleri kapattığınızda çerezler temizlenir\n• Hiçbir veri yerel olarak depolanmaz';
+  String get incognito_description =>
+      'Gizli modda:\n• Tarama geçmişi kaydedilmez\n• Sekmeleri kapattığınızda çerezler temizlenir\n• Hiçbir veri yerel olarak depolanmaz';
 
   @override
-  String get error_opening_file => 'Dosya açılırken hata oluştu. Lütfen bu türünü açmak için uygun bir uygulama yükleyin.';
+  String get error_opening_file =>
+      'Dosya açılırken hata oluştu. Lütfen bu türünü açmak için uygun bir uygulama yükleyin.';
 
   @override
   String get download_in_progress => 'İndirme devam ediyor';
@@ -575,7 +628,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get clear_history => 'Geçmişi temizle';
 
   @override
-  String get clear_history_confirmation => 'Tarama geçmişini silmek istediğinizden emin misiniz?';
+  String get clear_history_confirmation =>
+      'Tarama geçmişini silmek istediğinizden emin misiniz?';
 
   @override
   String get no_history => 'Tarama geçmişi yok';
@@ -605,25 +659,29 @@ class AppLocalizationsTr extends AppLocalizations {
   String get update1 => 'Geliştirilmiş Tema Sistemi';
 
   @override
-  String get update1desc => 'Daha fazla renk seçeneği ve geliştirilmiş karanlık mod desteği ile yeni tema sistemi';
+  String get update1desc =>
+      'Daha fazla renk seçeneği ve geliştirilmiş karanlık mod desteği ile yeni tema sistemi';
 
   @override
   String get update2 => 'Performans İyileştirmeleri';
 
   @override
-  String get update2desc => 'Daha hızlı sayfa yükleme ve daha akıcı kaydırma deneyimi';
+  String get update2desc =>
+      'Daha hızlı sayfa yükleme ve daha akıcı kaydırma deneyimi';
 
   @override
   String get update3 => 'Yeni Gizlilik Özellikleri';
 
   @override
-  String get update3desc => 'Geliştirilmiş izleme koruması ve gizli mod iyileştirmeleri';
+  String get update3desc =>
+      'Geliştirilmiş izleme koruması ve gizli mod iyileştirmeleri';
 
   @override
   String get update4 => 'Arayüz İyileştirmeleri';
 
   @override
-  String get update4desc => 'Daha iyi gezinme ve erişilebilirlik ile geliştirilmiş arayüz';
+  String get update4desc =>
+      'Daha iyi gezinme ve erişilebilirlik ile geliştirilmiş arayüz';
 
   @override
   String get searchTheWeb => 'Web\'de ara';
@@ -689,7 +747,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get removed_from_pwa => 'PWA\'dan Kaldırıldı';
 
   @override
-  String get pwa_info => 'İlerici Web Uygulamaları, tarayıcı kontrolü olmadan kurulu uygulamalar gibi çalışır';
+  String get pwa_info =>
+      'İlerici Web Uygulamaları, tarayıcı kontrolü olmadan kurulu uygulamalar gibi çalışır';
 
   @override
   String get create_shortcut => 'Kısayol Oluştur';
@@ -701,7 +760,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get shortcut_name => 'Kısayol adı';
 
   @override
-  String get keep_tabs_open_description => 'Oturumlar arasında sekmeleri açık tut';
+  String get keep_tabs_open_description =>
+      'Oturumlar arasında sekmeleri açık tut';
 
   @override
   String get developer => 'Geliştirici';
@@ -716,7 +776,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get welcome_screen_reset => 'Karşılama Ekranını Sıfırla';
 
   @override
-  String get welcome_screen_reset_message => 'Bu, hoş geldin ekranını sıfırlayacak ve uygulamayı bir sonraki başlatışınızda tekrar görünecek.';
+  String get welcome_screen_reset_message =>
+      'Bu, hoş geldin ekranını sıfırlayacak ve uygulamayı bir sonraki başlatışınızda tekrar görünecek.';
 
   @override
   String get ok => 'Tamam';
@@ -773,19 +834,23 @@ class AppLocalizationsTr extends AppLocalizations {
   String get untitled => 'Başlıksız';
 
   @override
-  String get show_welcome_screen_next_launch => 'Bir sonraki açılışta hoş geldin ekranını göster';
+  String get show_welcome_screen_next_launch =>
+      'Bir sonraki açılışta hoş geldin ekranını göster';
 
   @override
-  String get automatically_open_downloaded_files => 'İndirilen dosyaları otomatik olarak aç';
+  String get automatically_open_downloaded_files =>
+      'İndirilen dosyaları otomatik olarak aç';
 
   @override
-  String get ask_where_to_save_files => 'İndirmeden önce dosyaların kaydedileceği yeri sor';
+  String get ask_where_to_save_files =>
+      'İndirmeden önce dosyaların kaydedileceği yeri sor';
 
   @override
   String get clear_all_history => 'Tüm Geçmişi Temizle';
 
   @override
-  String get clear_all_history_confirm => 'Bu işlem tüm tarama geçmişinizi kalıcı olarak silecektir. Bu işlem geri alınamaz.';
+  String get clear_all_history_confirm =>
+      'Bu işlem tüm tarama geçmişinizi kalıcı olarak silecektir. Bu işlem geri alınamaz.';
 
   @override
   String get history_cleared => 'Geçmiş temizlendi';
@@ -812,7 +877,8 @@ class AppLocalizationsTr extends AppLocalizations {
   String get close_all_tabs => 'Tüm Sekmeleri Kapat';
 
   @override
-  String get close_all_tabs_confirm => 'Tüm sekmeleri kapatmak istediğinizden emin misiniz? Bu işlem geri alınamaz.';
+  String get close_all_tabs_confirm =>
+      'Tüm sekmeleri kapatmak istediğinizden emin misiniz? Bu işlem geri alınamaz.';
 
   @override
   String close_all_tabs_in_group(String groupName) {
@@ -826,13 +892,15 @@ class AppLocalizationsTr extends AppLocalizations {
   String get ai => 'AI';
 
   @override
-  String get rearrange_navigation_buttons => 'Navigasyon düğmelerini yeniden düzenle';
+  String get rearrange_navigation_buttons =>
+      'Navigasyon düğmelerini yeniden düzenle';
 
   @override
   String get current_navigation_bar => 'Mevcut Navigasyon Çubuğu:';
 
   @override
-  String get tap_to_check_permission_status => 'İzin durumunu kontrol etmek için dokunun';
+  String get tap_to_check_permission_status =>
+      'İzin durumunu kontrol etmek için dokunun';
 
   @override
   String get create_tab_group => 'Sekme Grubu Oluştur';
@@ -905,4 +973,76 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get copy_summary => 'Özeti Kopyala';
+
+  @override
+  String get image_link_copied => 'Resim bağlantısı panoya kopyalandı';
+
+  @override
+  String get link_copied => 'Bağlantı panoya kopyalandı';
+
+  @override
+  String get error_loading_page => 'Sayfa yüklenirken hata oluştu';
+
+  @override
+  String get no_page_to_install => 'PWA olarak yüklenecek sayfa yok';
+
+  @override
+  String get pwa_installed => 'PWA yüklendi';
+
+  @override
+  String get failed_to_install_pwa => 'PWA yüklenemedi';
+
+  @override
+  String get error_opening_file_install_app =>
+      'Dosya açılırken hata oluştu. Lütfen bu tür dosyaları açmak için uygun bir uygulama yükleyin.';
+
+  @override
+  String get full_storage_access_needed =>
+      'Medya olmayan dosyaları indirmek için tam depolama erişimi gerekiyor';
+
+  @override
+  String get error_removing_download => 'İndirme kaldırılırken hata oluştu';
+
+  @override
+  String get copy_image => 'Resmi kopyala';
+
+  @override
+  String get text_copied => 'Metin kopyalandı';
+
+  @override
+  String get text_pasted => 'Metin yapıştırıldı';
+
+  @override
+  String get text_cut => 'Metin kesildi';
+
+  @override
+  String get clipboard_empty => 'Pano boş';
+
+  @override
+  String get paste_error => 'Metin yapıştırılırken hata oluştu';
+
+  @override
+  String get cut_error => 'Metin kesilirken hata oluştu';
+
+  @override
+  String get image_url_copied => 'Resim URL\'si kopyalandı';
+
+  @override
+  String get opened_in_new_tab => 'Yeni sekmede açıldı';
+
+  @override
+  String get image_options => 'Resim seçenekleri';
+
+  @override
+  String get copy => 'Kopyala';
+
+  @override
+  String get paste => 'Yapıştır';
+
+  @override
+  String get cut => 'Kes';
+
+  @override
+  String get asset_file_part_of_app =>
+      'This file is part of the app and cannot be downloaded';
 }

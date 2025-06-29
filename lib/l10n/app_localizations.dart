@@ -73,7 +73,8 @@ import 'app_localizations_zh.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale)
+      : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -81,7 +82,8 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -93,7 +95,8 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
     delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalCupertinoLocalizations.delegate,
@@ -1083,6 +1086,66 @@ abstract class AppLocalizations {
   /// **'Open in New Tab'**
   String get open_in_new_tab;
 
+  /// Option to copy an image link
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Image Link'**
+  String get copy_image_link;
+
+  /// Text for opening an image in a new tab
+  ///
+  /// In en, this message translates to:
+  /// **'Open Image in New Tab'**
+  String get open_image_in_new_tab;
+
+  /// Option to open a link
+  ///
+  /// In en, this message translates to:
+  /// **'Open Link'**
+  String get open_link;
+
+  /// Option to open a link in a new tab
+  ///
+  /// In en, this message translates to:
+  /// **'Open Link in New Tab'**
+  String get open_link_in_new_tab;
+
+  /// Option to copy a link address
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Link Address'**
+  String get copy_link_address;
+
+  /// Error message when image download fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to download image'**
+  String get failed_to_download_image;
+
+  /// Setting to enable custom home page
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Home Page'**
+  String get custom_home_page;
+
+  /// Option to set the home page URL
+  ///
+  /// In en, this message translates to:
+  /// **'Set Home Page URL'**
+  String get set_home_page_url;
+
+  /// Indicates that a value is not set
+  ///
+  /// In en, this message translates to:
+  /// **'Not set'**
+  String get not_set;
+
+  /// Save button text
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
   /// Status message when a file is being downloaded
   ///
   /// In en, this message translates to:
@@ -1880,9 +1943,148 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copy Summary'**
   String get copy_summary;
+
+  /// Message shown when an image link is copied to clipboard
+  ///
+  /// In en, this message translates to:
+  /// **'Image link copied to clipboard'**
+  String get image_link_copied;
+
+  /// Message shown when a link is copied to clipboard
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied to clipboard'**
+  String get link_copied;
+
+  /// Message shown when there is an error loading a page
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading page'**
+  String get error_loading_page;
+
+  /// Message shown when there is no page to install as PWA
+  ///
+  /// In en, this message translates to:
+  /// **'No page to install as PWA'**
+  String get no_page_to_install;
+
+  /// Message shown when a PWA is successfully installed
+  ///
+  /// In en, this message translates to:
+  /// **'PWA installed'**
+  String get pwa_installed;
+
+  /// Message shown when PWA installation fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to install PWA'**
+  String get failed_to_install_pwa;
+
+  /// Message shown when there is an error opening a file due to missing app
+  ///
+  /// In en, this message translates to:
+  /// **'Error opening file. Please install a suitable app to open this type of file.'**
+  String get error_opening_file_install_app;
+
+  /// Message shown when full storage access is needed
+  ///
+  /// In en, this message translates to:
+  /// **'Full storage access is needed for downloading non-media files'**
+  String get full_storage_access_needed;
+
+  /// Message shown when there is an error removing a download
+  ///
+  /// In en, this message translates to:
+  /// **'Error removing download'**
+  String get error_removing_download;
+
+  /// Option to copy an image
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Image'**
+  String get copy_image;
+
+  /// Message shown when text is copied
+  ///
+  /// In en, this message translates to:
+  /// **'Text copied'**
+  String get text_copied;
+
+  /// Message shown when text is pasted
+  ///
+  /// In en, this message translates to:
+  /// **'Text pasted'**
+  String get text_pasted;
+
+  /// Message shown when text is cut
+  ///
+  /// In en, this message translates to:
+  /// **'Text cut'**
+  String get text_cut;
+
+  /// Message shown when clipboard is empty
+  ///
+  /// In en, this message translates to:
+  /// **'Clipboard is empty'**
+  String get clipboard_empty;
+
+  /// Message shown when there is an error pasting text
+  ///
+  /// In en, this message translates to:
+  /// **'Error pasting text'**
+  String get paste_error;
+
+  /// Message shown when there is an error cutting text
+  ///
+  /// In en, this message translates to:
+  /// **'Error cutting text'**
+  String get cut_error;
+
+  /// Message shown when image URL is copied
+  ///
+  /// In en, this message translates to:
+  /// **'Image URL copied'**
+  String get image_url_copied;
+
+  /// Message shown when something is opened in a new tab
+  ///
+  /// In en, this message translates to:
+  /// **'Opened in new tab'**
+  String get opened_in_new_tab;
+
+  /// Title for the image options dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Image Options'**
+  String get image_options;
+
+  /// Text for copy action
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get copy;
+
+  /// Text for paste action
+  ///
+  /// In en, this message translates to:
+  /// **'Paste'**
+  String get paste;
+
+  /// Text for cut action
+  ///
+  /// In en, this message translates to:
+  /// **'Cut'**
+  String get cut;
+
+  /// Message shown when trying to download an asset file
+  ///
+  /// In en, this message translates to:
+  /// **'This file is part of the app and cannot be downloaded'**
+  String get asset_file_part_of_app;
 }
 
-class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -1891,36 +2093,60 @@ class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> 
   }
 
   @override
-  bool isSupported(Locale locale) => <String>['ar', 'de', 'en', 'es', 'fr', 'hi', 'it', 'ja', 'ko', 'pt', 'ru', 'tr', 'zh'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>[
+        'ar',
+        'de',
+        'en',
+        'es',
+        'fr',
+        'hi',
+        'it',
+        'ja',
+        'ko',
+        'pt',
+        'ru',
+        'tr',
+        'zh'
+      ].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
-
-
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'ar': return AppLocalizationsAr();
-    case 'de': return AppLocalizationsDe();
-    case 'en': return AppLocalizationsEn();
-    case 'es': return AppLocalizationsEs();
-    case 'fr': return AppLocalizationsFr();
-    case 'hi': return AppLocalizationsHi();
-    case 'it': return AppLocalizationsIt();
-    case 'ja': return AppLocalizationsJa();
-    case 'ko': return AppLocalizationsKo();
-    case 'pt': return AppLocalizationsPt();
-    case 'ru': return AppLocalizationsRu();
-    case 'tr': return AppLocalizationsTr();
-    case 'zh': return AppLocalizationsZh();
+    case 'ar':
+      return AppLocalizationsAr();
+    case 'de':
+      return AppLocalizationsDe();
+    case 'en':
+      return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
+    case 'fr':
+      return AppLocalizationsFr();
+    case 'hi':
+      return AppLocalizationsHi();
+    case 'it':
+      return AppLocalizationsIt();
+    case 'ja':
+      return AppLocalizationsJa();
+    case 'ko':
+      return AppLocalizationsKo();
+    case 'pt':
+      return AppLocalizationsPt();
+    case 'ru':
+      return AppLocalizationsRu();
+    case 'tr':
+      return AppLocalizationsTr();
+    case 'zh':
+      return AppLocalizationsZh();
   }
 
   throw FlutterError(
-    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
-    'an issue with the localizations generation tool. Please file an issue '
-    'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.'
-  );
+      'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+      'an issue with the localizations generation tool. Please file an issue '
+      'on GitHub with a reproducible sample app and the gen-l10n configuration '
+      'that was used.');
 }

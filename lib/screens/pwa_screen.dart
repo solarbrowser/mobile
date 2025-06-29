@@ -230,8 +230,15 @@ class _PWAScreenState extends State<PWAScreen> {
                   color: ThemeManager.textColor(),
                   size: 24,
                 ),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(
+                    color: ThemeManager.textColor().withOpacity(0.1),
+                    width: 1,
+                  ),
+                ),
                 color: ThemeManager.surfaceColor(),
+                elevation: 8,
                 itemBuilder: (context) => [
                   PopupMenuItem(
                     height: 40,

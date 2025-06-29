@@ -210,8 +210,35 @@
   "today": "Heute",
   "yesterday": "Gestern",
   "days_ago": "vor {days} Tagen",
+  "@days_ago": {
+    "description": "Shows how many days ago something happened",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
   "weeks_ago": "vor {weeks} Wochen",
+  "@weeks_ago": {
+    "description": "Shows how many weeks ago something happened",
+    "placeholders": {
+      "weeks": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
   "months_ago": "vor {months} Monaten",
+  "@months_ago": {
+    "description": "Shows how many months ago something happened",
+    "placeholders": {
+      "months": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
   "new_incognito_tab": "Neuer Inkognito-Tab",
   "@new_incognito_tab": {
     "description": "Label for new incognito tab button"
@@ -644,5 +671,27 @@
   "add_tabs_to_group": "Tabs zur Gruppe Hinzufügen",
   "ungroup_tabs": "Tabs entgruppieren",
   "delete_group": "Gruppe löschen",
-  "copy_summary": "Zusammenfassung Kopieren"
+  "copy_summary": "Zusammenfassung Kopieren",
+  "image_link_copied": "Bildlink in die Zwischenablage kopiert",
+  "link_copied": "Link in die Zwischenablage kopiert",
+  "error_loading_page": "Fehler beim Laden der Seite",
+  "no_page_to_install": "Keine Seite zum Installieren als PWA",
+  "pwa_installed": "PWA installiert",
+  "failed_to_install_pwa": "Fehler bei der Installation der PWA",
+  "error_opening_file_install_app": "Fehler beim Öffnen der Datei. Bitte installieren Sie eine geeignete App, um diesen Dateityp zu öffnen.",
+  "full_storage_access_needed": "Vollständiger Speicherzugriff wird für das Herunterladen von Nicht-Mediendateien benötigt",
+  "error_removing_download": "Fehler beim Entfernen des Downloads",
+  "copy_image": "Bild kopieren",
+  "text_copied": "Text kopiert",
+  "text_pasted": "Text eingefügt",
+  "text_cut": "Text ausgeschnitten",
+  "clipboard_empty": "Zwischenablage ist leer",
+  "paste_error": "Fehler beim Einfügen des Textes",
+  "cut_error": "Fehler beim Ausschneiden des Textes",
+  "image_url_copied": "Bild-URL kopiert",
+  "opened_in_new_tab": "In neuem Tab geöffnet",
+  "image_options": "Bildoptionen",
+  "copy": "Kopieren",
+  "paste": "Einfügen",
+  "cut": "Ausschneiden"
 }

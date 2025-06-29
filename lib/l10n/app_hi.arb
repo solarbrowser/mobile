@@ -207,8 +207,35 @@
   "today": "आज",
   "yesterday": "कल",
   "days_ago": "{days} दिन पहले",
+  "@days_ago": {
+    "description": "Shows how many days ago something happened",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
   "weeks_ago": "{weeks} सप्ताह पहले",
+  "@weeks_ago": {
+    "description": "Shows how many weeks ago something happened",
+    "placeholders": {
+      "weeks": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
   "months_ago": "{months} महीने पहले",
+  "@months_ago": {
+    "description": "Shows how many months ago something happened",
+    "placeholders": {
+      "months": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
   "new_incognito_tab": "नया गुप्त टैब",
   "@new_incognito_tab": {
     "description": "Label for new incognito tab button"
@@ -382,7 +409,7 @@
   "@summary_length_long": {
     "description": "Label for long summary length with word count"
   },
-  "summary_language_english": "अंग्रेज़ी",
+  "summary_language_english": "अंग्रे़ी",
   "@summary_language_english": {
     "description": "Label for English language option"
   },
@@ -587,5 +614,27 @@
   "add_tabs_to_group": "समूह में टैब जोड़ें",
   "ungroup_tabs": "टैब को अलग करें",
   "delete_group": "समूह हटाएं",
-  "copy_summary": "सारांश कॉपी करें"
+  "copy_summary": "सारांश कॉपी करें",
+  "image_link_copied": "छवि लिंक क्लिपबोर्ड पर कॉपी किया गया",
+  "link_copied": "लिंक क्लिपबोर्ड पर कॉपी किया गया",
+  "error_loading_page": "पेज लोड करने में त्रुटि",
+  "no_page_to_install": "PWA के रूप में इंस्टॉल करने के लिए कोई पेज नहीं है",
+  "pwa_installed": "PWA इंस्टॉल किया गया",
+  "failed_to_install_pwa": "PWA इंस्टॉल करने में विफल",
+  "error_opening_file_install_app": "फ़ाइल खोलने में त्रुटि। इस प्रकार की फ़ाइल खोलने के लिए कृपया उपयुक्त ऐप इंस्टॉल करें।",
+  "full_storage_access_needed": "गैर-मीडिया फ़ाइलें डाउनलोड करने के लिए पूर्ण स्टोरेज एक्सेस की आवश्यकता है",
+  "error_removing_download": "डाउनलोड हटाने में त्रुटि",
+  "copy_image": "छवि कॉपी करें",
+  "text_copied": "टेक्स्ट कॉपी किया गया",
+  "text_pasted": "टेक्स्ट पेस्ट किया गया",
+  "text_cut": "टेक्स्ट कट किया गया",
+  "clipboard_empty": "क्लिपबोर्ड खाली है",
+  "paste_error": "टेक्स्ट पेस्ट करने में त्रुटि",
+  "cut_error": "टेक्स्ट कट करने में त्रुटि",
+  "image_url_copied": "छवि URL कॉपी किया गया",
+  "opened_in_new_tab": "नए टैब में खोला गया",
+  "image_options": "छवि विकल्प",
+  "copy": "कॉपी करें",
+  "paste": "पेस्ट करें",
+  "cut": "कट करें"
 }

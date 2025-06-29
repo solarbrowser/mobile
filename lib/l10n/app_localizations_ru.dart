@@ -1,3 +1,5 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -13,7 +15,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get welcomeDescription => 'Современный, быстрый и безопасный браузер';
 
   @override
-  String get termsOfService => 'Продолжая, вы соглашаетесь с нашими Условиями использования и Политикой конфиденциальности';
+  String get termsOfService =>
+      'Продолжая, вы соглашаетесь с нашими Условиями использования и Политикой конфиденциальности';
 
   @override
   String get whats_new => 'Что нового';
@@ -96,7 +99,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get data_collection => 'Сбор данных';
 
   @override
-  String get data_collection_details => '• Мы собираем минимум данных, необходимых для работы браузера\n• Ваша история просмотров остаётся на вашем устройстве\n• Мы не отслеживаем вашу онлайн-активность\n• Вы можете удалить все данные в любое время';
+  String get data_collection_details =>
+      '• Мы собираем минимум данных, необходимых для работы браузера\n• Ваша история просмотров остаётся на вашем устройстве\n• Мы не отслеживаем вашу онлайн-активность\n• Вы можете удалить все данные в любое время';
 
   @override
   String get general => 'Общие';
@@ -288,7 +292,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get reset_browser => 'Сбросить браузер';
 
   @override
-  String get reset_browser_confirm => 'Это действие удалит все ваши данные, включая историю, закладки и настройки. Это действие нельзя отменить.';
+  String get reset_browser_confirm =>
+      'Это действие удалит все ваши данные, включая историю, закладки и настройки. Это действие нельзя отменить.';
 
   @override
   String get reset => 'Сбросить';
@@ -321,10 +326,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get do_not_track => 'Не отслеживать';
 
   @override
-  String get download_location_description => 'Выберите папку для сохранения загруженных файлов';
+  String get download_location_description =>
+      'Выберите папку для сохранения загруженных файлов';
 
   @override
-  String get text_size_description => 'Настройте размер текста на веб-страницах';
+  String get text_size_description =>
+      'Настройте размер текста на веб-страницах';
 
   @override
   String get text_size_small => 'Мелкий';
@@ -339,19 +346,23 @@ class AppLocalizationsRu extends AppLocalizations {
   String get text_size_very_large => 'Очень крупный';
 
   @override
-  String get cookies_description => 'Разрешить сайтам сохранять и читать данные cookie';
+  String get cookies_description =>
+      'Разрешить сайтам сохранять и читать данные cookie';
 
   @override
-  String get javascript_description => 'Включить JavaScript для лучшей функциональности сайтов';
+  String get javascript_description =>
+      'Включить JavaScript для лучшей функциональности сайтов';
 
   @override
-  String get hardware_acceleration_description => 'Использовать GPU для повышения производительности';
+  String get hardware_acceleration_description =>
+      'Использовать GPU для повышения производительности';
 
   @override
   String get form_data_description => 'Сохранять информацию, введённую в формы';
 
   @override
-  String get do_not_track_description => 'Запрашивать у сайтов не отслеживать вашу активность';
+  String get do_not_track_description =>
+      'Запрашивать у сайтов не отслеживать вашу активность';
 
   @override
   String get exit_app => 'Выйти из приложения';
@@ -391,19 +402,24 @@ class AppLocalizationsRu extends AppLocalizations {
   String get install_packages_permission => 'Разрешение на установку пакетов';
 
   @override
-  String get install_packages_permission_description => 'Разрешить установку приложений из этого браузера';
+  String get install_packages_permission_description =>
+      'Разрешить установку приложений из этого браузера';
 
   @override
-  String get permission_install_packages_required => 'Требуется разрешение на установку пакетов';
+  String get permission_install_packages_required =>
+      'Требуется разрешение на установку пакетов';
 
   @override
-  String get storage_permission_install_packages_required => 'Разрешение на хранение и установку пакетов';
+  String get storage_permission_install_packages_required =>
+      'Разрешение на хранение и установку пакетов';
 
   @override
-  String get storage_permission_install_packages_description => 'Браузеру Solar требуется разрешение на доступ к хранилищу для загрузок и установку пакетов для установки APK';
+  String get storage_permission_install_packages_description =>
+      'Браузеру Solar требуется разрешение на доступ к хранилищу для загрузок и установку пакетов для установки APK';
 
   @override
-  String get clear_downloads_history_confirm => 'Это очистит только историю загрузок, загруженные файлы не будут удалены.';
+  String get clear_downloads_history_confirm =>
+      'Это очистит только историю загрузок, загруженные файлы не будут удалены.';
 
   @override
   String get clear_downloads_history_title => 'Очистить историю загрузок';
@@ -471,7 +487,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get classic_navigation => 'Классическая навигация';
 
   @override
-  String get classic_navigation_description => 'Показывать кнопки навигации внизу экрана';
+  String get classic_navigation_description =>
+      'Показывать кнопки навигации внизу экрана';
 
   @override
   String get exit_confirmation => 'Выйти из приложения';
@@ -498,6 +515,36 @@ class AppLocalizationsRu extends AppLocalizations {
   String get open_in_new_tab => 'Открыть в новой вкладке';
 
   @override
+  String get copy_image_link => 'Copy Image Link';
+
+  @override
+  String get open_image_in_new_tab => 'Open Image in New Tab';
+
+  @override
+  String get open_link => 'Open Link';
+
+  @override
+  String get open_link_in_new_tab => 'Open Link in New Tab';
+
+  @override
+  String get copy_link_address => 'Copy Link Address';
+
+  @override
+  String get failed_to_download_image => 'Failed to download image';
+
+  @override
+  String get custom_home_page => 'Custom Home Page';
+
+  @override
+  String get set_home_page_url => 'Set Home Page URL';
+
+  @override
+  String get not_set => 'Not set';
+
+  @override
+  String get save => 'Save';
+
+  @override
   String get downloading => 'Загрузка...';
 
   @override
@@ -513,19 +560,23 @@ class AppLocalizationsRu extends AppLocalizations {
   String get storage_permission_required => 'Дать разрешение';
 
   @override
-  String get storage_permission_granted => 'Разрешение на хранение предоставлено';
+  String get storage_permission_granted =>
+      'Разрешение на хранение предоставлено';
 
   @override
-  String get storage_permission_description => 'Этому приложению требуется разрешение на доступ к файлам для функции загрузки.';
+  String get storage_permission_description =>
+      'Этому приложению требуется разрешение на доступ к файлам для функции загрузки.';
 
   @override
-  String get app_should_work_normally => 'Приложение должно работать нормально с полным функционалом.';
+  String get app_should_work_normally =>
+      'Приложение должно работать нормально с полным функционалом.';
 
   @override
   String get grant_permission => 'Дать разрешение';
 
   @override
-  String get storage_permission_denied => 'Для загрузки файлов требуется разрешение на доступ к хранилищу';
+  String get storage_permission_denied =>
+      'Для загрузки файлов требуется разрешение на доступ к хранилищу';
 
   @override
   String get new_incognito_tab => 'Новая вкладка в режиме инкогнито';
@@ -534,7 +585,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get incognito_mode => 'Режим инкогнито';
 
   @override
-  String get incognito_description => 'В режиме инкогнито:\n• История браузера не сохраняется\n• Файлы cookie удаляются при закрытии вкладок\n• Данные не сохраняются локально';
+  String get incognito_description =>
+      'В режиме инкогнито:\n• История браузера не сохраняется\n• Файлы cookie удаляются при закрытии вкладок\n• Данные не сохраняются локально';
 
   @override
   String get error_opening_file => 'Ошибка открытия файла';
@@ -575,7 +627,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get clear_history => 'Очистить историю';
 
   @override
-  String get clear_history_confirmation => 'Вы уверены, что хотите очистить историю браузера?';
+  String get clear_history_confirmation =>
+      'Вы уверены, что хотите очистить историю браузера?';
 
   @override
   String get no_history => 'Нет истории браузера';
@@ -605,25 +658,29 @@ class AppLocalizationsRu extends AppLocalizations {
   String get update1 => 'Улучшенная система тем';
 
   @override
-  String get update1desc => 'Новая система тем с большим выбором цветов и улучшенной поддержкой тёмного режима';
+  String get update1desc =>
+      'Новая система тем с большим выбором цветов и улучшенной поддержкой тёмного режима';
 
   @override
   String get update2 => 'Улучшения производительности';
 
   @override
-  String get update2desc => 'Более быстрая загрузка страниц и плавная прокрутка';
+  String get update2desc =>
+      'Более быстрая загрузка страниц и плавная прокрутка';
 
   @override
   String get update3 => 'Новые функции конфиденциальности';
 
   @override
-  String get update3desc => 'Улучшенная защита от отслеживания и оптимизация режима инкогнито';
+  String get update3desc =>
+      'Улучшенная защита от отслеживания и оптимизация режима инкогнито';
 
   @override
   String get update4 => 'Улучшения интерфейса';
 
   @override
-  String get update4desc => 'Улучшенный пользовательский интерфейс с более удобной навигацией и доступностью';
+  String get update4desc =>
+      'Улучшенный пользовательский интерфейс с более удобной навигацией и доступностью';
 
   @override
   String get searchTheWeb => 'Поиск в интернете';
@@ -689,7 +746,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get removed_from_pwa => 'Удалено из PWA';
 
   @override
-  String get pwa_info => 'Прогрессивные веб-приложения работают как установленные приложения без элементов управления браузера';
+  String get pwa_info =>
+      'Прогрессивные веб-приложения работают как установленные приложения без элементов управления браузера';
 
   @override
   String get create_shortcut => 'Создать ярлык';
@@ -716,7 +774,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get welcome_screen_reset => 'Сброс экрана приветствия';
 
   @override
-  String get welcome_screen_reset_message => 'Это сбросит экран приветствия, чтобы он снова появился при следующем запуске приложения.';
+  String get welcome_screen_reset_message =>
+      'Это сбросит экран приветствия, чтобы он снова появился при следующем запуске приложения.';
 
   @override
   String get ok => 'ОК';
@@ -773,19 +832,23 @@ class AppLocalizationsRu extends AppLocalizations {
   String get untitled => 'Без названия';
 
   @override
-  String get show_welcome_screen_next_launch => 'Показать экран приветствия при следующем запуске';
+  String get show_welcome_screen_next_launch =>
+      'Показать экран приветствия при следующем запуске';
 
   @override
-  String get automatically_open_downloaded_files => 'Автоматически открывать загруженные файлы';
+  String get automatically_open_downloaded_files =>
+      'Автоматически открывать загруженные файлы';
 
   @override
-  String get ask_where_to_save_files => 'Спрашивать, где сохранять файлы перед загрузкой';
+  String get ask_where_to_save_files =>
+      'Спрашивать, где сохранять файлы перед загрузкой';
 
   @override
   String get clear_all_history => 'Очистить Всю Историю';
 
   @override
-  String get clear_all_history_confirm => 'Это навсегда удалит всю вашу историю просмотров. Это действие нельзя отменить.';
+  String get clear_all_history_confirm =>
+      'Это навсегда удалит всю вашу историю просмотров. Это действие нельзя отменить.';
 
   @override
   String get history_cleared => 'История очищена';
@@ -812,7 +875,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get close_all_tabs => 'Закрыть все вкладки';
 
   @override
-  String get close_all_tabs_confirm => 'Вы уверены, что хотите закрыть все вкладки? Это действие нельзя отменить.';
+  String get close_all_tabs_confirm =>
+      'Вы уверены, что хотите закрыть все вкладки? Это действие нельзя отменить.';
 
   @override
   String close_all_tabs_in_group(String groupName) {
@@ -832,7 +896,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get current_navigation_bar => 'Текущая панель навигации:';
 
   @override
-  String get tap_to_check_permission_status => 'Нажмите, чтобы проверить статус разрешений';
+  String get tap_to_check_permission_status =>
+      'Нажмите, чтобы проверить статус разрешений';
 
   @override
   String get create_tab_group => 'Создать группу вкладок';
@@ -874,7 +939,8 @@ class AppLocalizationsRu extends AppLocalizations {
   String get no_page_to_summarize => 'Нет страницы для резюмирования';
 
   @override
-  String get no_content_found_to_summarize => 'Не найдено содержимое для резюмирования';
+  String get no_content_found_to_summarize =>
+      'Не найдено содержимое для резюмирования';
 
   @override
   String get theme => 'Тема';
@@ -905,4 +971,77 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get copy_summary => 'Копировать резюме';
+
+  @override
+  String get image_link_copied =>
+      'Ссылка на изображение скопирована в буфер обмена';
+
+  @override
+  String get link_copied => 'Ссылка скопирована в буфер обмена';
+
+  @override
+  String get error_loading_page => 'Ошибка загрузки страницы';
+
+  @override
+  String get no_page_to_install => 'Нет страницы для установки как PWA';
+
+  @override
+  String get pwa_installed => 'PWA установлено';
+
+  @override
+  String get failed_to_install_pwa => 'Не удалось установить PWA';
+
+  @override
+  String get error_opening_file_install_app =>
+      'Ошибка при открытии файла. Пожалуйста, установите подходящее приложение для открытия этого типа файлов.';
+
+  @override
+  String get full_storage_access_needed =>
+      'Для загрузки немультимедийных файлов необходим полный доступ к хранилищу';
+
+  @override
+  String get error_removing_download => 'Ошибка при удалении загрузки';
+
+  @override
+  String get copy_image => 'Копировать изображение';
+
+  @override
+  String get text_copied => 'Текст скопирован';
+
+  @override
+  String get text_pasted => 'Текст вставлен';
+
+  @override
+  String get text_cut => 'Текст вырезан';
+
+  @override
+  String get clipboard_empty => 'Буфер обмена пуст';
+
+  @override
+  String get paste_error => 'Ошибка при вставке текста';
+
+  @override
+  String get cut_error => 'Ошибка при вырезании текста';
+
+  @override
+  String get image_url_copied => 'URL изображения скопирован';
+
+  @override
+  String get opened_in_new_tab => 'Открыто в новой вкладке';
+
+  @override
+  String get image_options => 'Параметры изображения';
+
+  @override
+  String get copy => 'Копировать';
+
+  @override
+  String get paste => 'Вставить';
+
+  @override
+  String get cut => 'Вырезать';
+
+  @override
+  String get asset_file_part_of_app =>
+      'This file is part of the app and cannot be downloaded';
 }

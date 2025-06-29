@@ -1,3 +1,5 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -96,7 +98,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get data_collection => 'データ収集';
 
   @override
-  String get data_collection_details => '• ブラウザの機能に必要な最小限のデータのみを収集します\n• 閲覧履歴はお使いのデバイスに保存されます\n• オンライン活動を追跡することはありません\n• データはいつでも消去できます';
+  String get data_collection_details =>
+      '• ブラウザの機能に必要な最小限のデータのみを収集します\n• 閲覧履歴はお使いのデバイスに保存されます\n• オンライン活動を追跡することはありません\n• データはいつでも消去できます';
 
   @override
   String get general => '一般';
@@ -288,7 +291,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get reset_browser => 'ブラウザをリセット';
 
   @override
-  String get reset_browser_confirm => '履歴、ブックマーク、設定などのすべてのデータが消去されます。この操作は元に戻せません。';
+  String get reset_browser_confirm =>
+      '履歴、ブックマーク、設定などのすべてのデータが消去されます。この操作は元に戻せません。';
 
   @override
   String get reset => 'リセット';
@@ -391,19 +395,23 @@ class AppLocalizationsJa extends AppLocalizations {
   String get install_packages_permission => 'パッケージインストール許可';
 
   @override
-  String get install_packages_permission_description => 'このブラウザからアプリのインストールを許可する';
+  String get install_packages_permission_description =>
+      'このブラウザからアプリのインストールを許可する';
 
   @override
   String get permission_install_packages_required => 'パッケージインストール許可が必要です';
 
   @override
-  String get storage_permission_install_packages_required => 'ストレージ・パッケージインストール許可';
+  String get storage_permission_install_packages_required =>
+      'ストレージ・パッケージインストール許可';
 
   @override
-  String get storage_permission_install_packages_description => 'Solar ブラウザはダウンロード用のストレージアクセスとAPKインストール用のパッケージインストールの許可が必要です';
+  String get storage_permission_install_packages_description =>
+      'Solar ブラウザはダウンロード用のストレージアクセスとAPKインストール用のパッケージインストールの許可が必要です';
 
   @override
-  String get clear_downloads_history_confirm => 'これはダウンロード履歴のみを消去し、ダウンロードしたファイルは削除されません。';
+  String get clear_downloads_history_confirm =>
+      'これはダウンロード履歴のみを消去し、ダウンロードしたファイルは削除されません。';
 
   @override
   String get clear_downloads_history_title => 'ダウンロード履歴を消去';
@@ -498,6 +506,36 @@ class AppLocalizationsJa extends AppLocalizations {
   String get open_in_new_tab => '新しいタブで開く';
 
   @override
+  String get copy_image_link => 'Copy Image Link';
+
+  @override
+  String get open_image_in_new_tab => 'Open Image in New Tab';
+
+  @override
+  String get open_link => 'Open Link';
+
+  @override
+  String get open_link_in_new_tab => 'Open Link in New Tab';
+
+  @override
+  String get copy_link_address => 'Copy Link Address';
+
+  @override
+  String get failed_to_download_image => 'Failed to download image';
+
+  @override
+  String get custom_home_page => 'Custom Home Page';
+
+  @override
+  String get set_home_page_url => 'Set Home Page URL';
+
+  @override
+  String get not_set => 'Not set';
+
+  @override
+  String get save => 'Save';
+
+  @override
   String get downloading => 'ダウンロード中...';
 
   @override
@@ -516,7 +554,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get storage_permission_granted => 'ストレージ権限が付与されました';
 
   @override
-  String get storage_permission_description => 'このアプリはダウンロード機能のためにファイルへのアクセス許可が必要です。';
+  String get storage_permission_description =>
+      'このアプリはダウンロード機能のためにファイルへのアクセス許可が必要です。';
 
   @override
   String get app_should_work_normally => 'アプリは完全な機能で正常に動作するはずです。';
@@ -534,7 +573,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get incognito_mode => 'シークレットモード';
 
   @override
-  String get incognito_description => 'シークレットモードでは:\n• ブラウジング履歴は保存されません\n• タブを閉じるとクッキーがクリアされます\n• データはローカルに保存されません';
+  String get incognito_description =>
+      'シークレットモードでは:\n• ブラウジング履歴は保存されません\n• タブを閉じるとクッキーがクリアされます\n• データはローカルに保存されません';
 
   @override
   String get error_opening_file => 'ファイルを開く際のエラー';
@@ -716,7 +756,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get welcome_screen_reset => 'ウェルカム画面をリセット';
 
   @override
-  String get welcome_screen_reset_message => 'これにより、ウェルカム画面がリセットされ、次回アプリを起動するときに再び表示されます。';
+  String get welcome_screen_reset_message =>
+      'これにより、ウェルカム画面がリセットされ、次回アプリを起動するときに再び表示されます。';
 
   @override
   String get ok => 'OK';
@@ -785,7 +826,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get clear_all_history => 'すべての履歴を消去';
 
   @override
-  String get clear_all_history_confirm => 'これにより、すべての閲覧履歴が完全に削除されます。この操作は元に戻せません。';
+  String get clear_all_history_confirm =>
+      'これにより、すべての閲覧履歴が完全に削除されます。この操作は元に戻せません。';
 
   @override
   String get history_cleared => '履歴が消去されました';
@@ -905,4 +947,76 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get copy_summary => '要約をコピー';
+
+  @override
+  String get image_link_copied => '画像リンクをクリップボードにコピーしました';
+
+  @override
+  String get link_copied => 'リンクをクリップボードにコピーしました';
+
+  @override
+  String get error_loading_page => 'ページの読み込み中にエラーが発生しました';
+
+  @override
+  String get no_page_to_install => 'PWAとしてインストールするページがありません';
+
+  @override
+  String get pwa_installed => 'PWAがインストールされました';
+
+  @override
+  String get failed_to_install_pwa => 'PWAのインストールに失敗しました';
+
+  @override
+  String get error_opening_file_install_app =>
+      'ファイルを開くときにエラーが発生しました。このタイプのファイルを開くには、適切なアプリをインストールしてください。';
+
+  @override
+  String get full_storage_access_needed =>
+      'メディア以外のファイルをダウンロードするには、ストレージへの完全なアクセスが必要です';
+
+  @override
+  String get error_removing_download => 'ダウンロードの削除中にエラーが発生しました';
+
+  @override
+  String get copy_image => '画像をコピー';
+
+  @override
+  String get text_copied => 'テキストをコピーしました';
+
+  @override
+  String get text_pasted => 'テキストを貼り付けました';
+
+  @override
+  String get text_cut => 'テキストを切り取りました';
+
+  @override
+  String get clipboard_empty => 'クリップボードが空です';
+
+  @override
+  String get paste_error => 'テキストの貼り付け中にエラーが発生しました';
+
+  @override
+  String get cut_error => 'テキストの切り取り中にエラーが発生しました';
+
+  @override
+  String get image_url_copied => '画像URLをコピーしました';
+
+  @override
+  String get opened_in_new_tab => '新しいタブで開きました';
+
+  @override
+  String get image_options => '画像オプション';
+
+  @override
+  String get copy => 'コピー';
+
+  @override
+  String get paste => '貼り付け';
+
+  @override
+  String get cut => '切り取り';
+
+  @override
+  String get asset_file_part_of_app =>
+      'This file is part of the app and cannot be downloaded';
 }

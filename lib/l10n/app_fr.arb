@@ -208,8 +208,35 @@
   "today": "Aujourd'hui",
   "yesterday": "Hier",
   "days_ago": "il y a {days} jours",
+  "@days_ago": {
+    "description": "Shows how many days ago something happened",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
   "weeks_ago": "il y a {weeks} semaines",
+  "@weeks_ago": {
+    "description": "Shows how many weeks ago something happened",
+    "placeholders": {
+      "weeks": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
   "months_ago": "il y a {months} mois",
+  "@months_ago": {
+    "description": "Shows how many months ago something happened",
+    "placeholders": {
+      "months": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
   "new_incognito_tab": "Nouvel onglet de navigation privée",
   "@new_incognito_tab": {
     "description": "Label for new incognito tab button"
@@ -637,5 +664,27 @@
   "add_tabs_to_group": "Ajouter des Onglets au Groupe",
   "ungroup_tabs": "Dégrouper les onglets",
   "delete_group": "Supprimer le groupe",
-  "copy_summary": "Copier le Résumé"
+  "copy_summary": "Copier le Résumé",
+  "image_link_copied": "Lien de l'image copié dans le presse-papiers",
+  "link_copied": "Lien copié dans le presse-papiers",
+  "error_loading_page": "Erreur lors du chargement de la page",
+  "no_page_to_install": "Aucune page à installer en tant que PWA",
+  "pwa_installed": "PWA installée",
+  "failed_to_install_pwa": "Échec de l'installation de la PWA",
+  "error_opening_file_install_app": "Erreur lors de l'ouverture du fichier. Veuillez installer une application appropriée pour ouvrir ce type de fichier.",
+  "full_storage_access_needed": "Un accès complet au stockage est nécessaire pour télécharger des fichiers non multimédias",
+  "error_removing_download": "Erreur lors de la suppression du téléchargement",
+  "copy_image": "Copier l'image",
+  "text_copied": "Texte copié",
+  "text_pasted": "Texte collé",
+  "text_cut": "Texte coupé",
+  "clipboard_empty": "Le presse-papiers est vide",
+  "paste_error": "Erreur lors du collage du texte",
+  "cut_error": "Erreur lors de la coupe du texte",
+  "image_url_copied": "URL de l'image copiée",
+  "opened_in_new_tab": "Ouvert dans un nouvel onglet",
+  "image_options": "Options d'image",
+  "copy": "Copier",
+  "paste": "Coller",
+  "cut": "Couper"
 }

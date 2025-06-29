@@ -9,7 +9,18 @@
     "oneDarkTheme",
     "catppuccinTheme",
     "nordLightTheme",
-    "gruvboxLightTheme"
+    "gruvboxLightTheme",
+    "copy_image_link",
+    "open_image_in_new_tab",
+    "open_link",
+    "open_link_in_new_tab",
+    "copy_link_address",
+    "failed_to_download_image",
+    "custom_home_page",
+    "set_home_page_url",
+    "not_set",
+    "save",
+    "asset_file_part_of_app"
   ],
 
   "de": [
@@ -22,7 +33,18 @@
     "oneDarkTheme",
     "catppuccinTheme",
     "nordLightTheme",
-    "gruvboxLightTheme"
+    "gruvboxLightTheme",
+    "copy_image_link",
+    "open_image_in_new_tab",
+    "open_link",
+    "open_link_in_new_tab",
+    "copy_link_address",
+    "failed_to_download_image",
+    "custom_home_page",
+    "set_home_page_url",
+    "not_set",
+    "save",
+    "asset_file_part_of_app"
   ],
 
   "es": [
@@ -35,7 +57,18 @@
     "oneDarkTheme",
     "catppuccinTheme",
     "nordLightTheme",
-    "gruvboxLightTheme"
+    "gruvboxLightTheme",
+    "copy_image_link",
+    "open_image_in_new_tab",
+    "open_link",
+    "open_link_in_new_tab",
+    "copy_link_address",
+    "failed_to_download_image",
+    "custom_home_page",
+    "set_home_page_url",
+    "not_set",
+    "save",
+    "asset_file_part_of_app"
   ],
 
   "fr": [
@@ -48,7 +81,18 @@
     "oneDarkTheme",
     "catppuccinTheme",
     "nordLightTheme",
-    "gruvboxLightTheme"
+    "gruvboxLightTheme",
+    "copy_image_link",
+    "open_image_in_new_tab",
+    "open_link",
+    "open_link_in_new_tab",
+    "copy_link_address",
+    "failed_to_download_image",
+    "custom_home_page",
+    "set_home_page_url",
+    "not_set",
+    "save",
+    "asset_file_part_of_app"
   ],
 
   "hi": [
@@ -62,7 +106,18 @@
     "catppuccinTheme",
     "nordLightTheme",
     "gruvboxLightTheme",
-    "reset_welcome_screen"
+    "copy_image_link",
+    "open_image_in_new_tab",
+    "open_link",
+    "open_link_in_new_tab",
+    "copy_link_address",
+    "failed_to_download_image",
+    "custom_home_page",
+    "set_home_page_url",
+    "not_set",
+    "save",
+    "reset_welcome_screen",
+    "asset_file_part_of_app"
   ],
 
   "it": [
@@ -76,7 +131,18 @@
     "catppuccinTheme",
     "nordLightTheme",
     "gruvboxLightTheme",
-    "browsing_history"
+    "browsing_history",
+    "copy_image_link",
+    "open_image_in_new_tab",
+    "open_link",
+    "open_link_in_new_tab",
+    "copy_link_address",
+    "failed_to_download_image",
+    "custom_home_page",
+    "set_home_page_url",
+    "not_set",
+    "save",
+    "asset_file_part_of_app"
   ],
 
   "ja": [
@@ -90,7 +156,18 @@
     "catppuccinTheme",
     "nordLightTheme",
     "gruvboxLightTheme",
-    "browsing_history"
+    "browsing_history",
+    "copy_image_link",
+    "open_image_in_new_tab",
+    "open_link",
+    "open_link_in_new_tab",
+    "copy_link_address",
+    "failed_to_download_image",
+    "custom_home_page",
+    "set_home_page_url",
+    "not_set",
+    "save",
+    "asset_file_part_of_app"
   ],
 
   "ko": [
@@ -104,7 +181,18 @@
     "catppuccinTheme",
     "nordLightTheme",
     "gruvboxLightTheme",
-    "ai_settings"
+    "copy_image_link",
+    "open_image_in_new_tab",
+    "open_link",
+    "open_link_in_new_tab",
+    "copy_link_address",
+    "failed_to_download_image",
+    "custom_home_page",
+    "set_home_page_url",
+    "not_set",
+    "save",
+    "ai_settings",
+    "asset_file_part_of_app"
   ],
 
   "pt": [
@@ -117,7 +205,18 @@
     "oneDarkTheme",
     "catppuccinTheme",
     "nordLightTheme",
-    "gruvboxLightTheme"
+    "gruvboxLightTheme",
+    "copy_image_link",
+    "open_image_in_new_tab",
+    "open_link",
+    "open_link_in_new_tab",
+    "copy_link_address",
+    "failed_to_download_image",
+    "custom_home_page",
+    "set_home_page_url",
+    "not_set",
+    "save",
+    "asset_file_part_of_app"
   ],
 
   "ru": [
@@ -130,7 +229,18 @@
     "oneDarkTheme",
     "catppuccinTheme",
     "nordLightTheme",
-    "gruvboxLightTheme"
+    "gruvboxLightTheme",
+    "copy_image_link",
+    "open_image_in_new_tab",
+    "open_link",
+    "open_link_in_new_tab",
+    "copy_link_address",
+    "failed_to_download_image",
+    "custom_home_page",
+    "set_home_page_url",
+    "not_set",
+    "save",
+    "asset_file_part_of_app"
   ],
 
   "tr": [
@@ -144,7 +254,18 @@
     "catppuccinTheme",
     "nordLightTheme",
     "gruvboxLightTheme",
-    "browsing_history"
+    "browsing_history",
+    "copy_image_link",
+    "open_image_in_new_tab",
+    "open_link",
+    "open_link_in_new_tab",
+    "copy_link_address",
+    "failed_to_download_image",
+    "custom_home_page",
+    "set_home_page_url",
+    "not_set",
+    "save",
+    "asset_file_part_of_app"
   ],
 
   "zh": [
@@ -158,6 +279,17 @@
     "catppuccinTheme",
     "nordLightTheme",
     "gruvboxLightTheme",
-    "browsing_history"
+    "browsing_history",
+    "copy_image_link",
+    "open_image_in_new_tab",
+    "open_link",
+    "open_link_in_new_tab",
+    "copy_link_address",
+    "failed_to_download_image",
+    "custom_home_page",
+    "set_home_page_url",
+    "not_set",
+    "save",
+    "asset_file_part_of_app"
   ]
 }

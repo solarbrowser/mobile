@@ -21,6 +21,10 @@ class CustomNotification extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      constraints: BoxConstraints(
+        maxHeight: 120, // Limit the height to prevent oversized notifications
+        maxWidth: MediaQuery.of(context).size.width - 32,
+      ),
       decoration: BoxDecoration(
         color: ThemeManager.surfaceColor(),
         borderRadius: BorderRadius.circular(8),
@@ -54,6 +58,8 @@ class CustomNotification extends StatelessWidget {
                 style: TextStyle(
                   color: ThemeManager.textColor(),
                 ),
+                maxLines: 3, // Limit to 3 lines
+                overflow: TextOverflow.ellipsis, // Add ellipsis if text overflows
               ),
             ),
           ),

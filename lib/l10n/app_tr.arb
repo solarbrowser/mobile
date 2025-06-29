@@ -205,8 +205,35 @@
   "today": "Bugün",
   "yesterday": "Dün",
   "days_ago": "{days} gün önce",
+  "@days_ago": {
+    "description": "Shows how many days ago something happened",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
   "weeks_ago": "{weeks} hafta önce",
+  "@weeks_ago": {
+    "description": "Shows how many weeks ago something happened",
+    "placeholders": {
+      "weeks": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
   "months_ago": "{months} ay önce",
+  "@months_ago": {
+    "description": "Shows how many months ago something happened",
+    "placeholders": {
+      "months": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
   "new_incognito_tab": "Yeni gizli sekme",
   "@new_incognito_tab": {
     "description": "Label for new incognito tab button"
@@ -586,5 +613,27 @@
   "add_tabs_to_group": "Gruba Sekme Ekle",
   "ungroup_tabs": "Sekmeleri ayır",
   "delete_group": "Grubu sil",
-  "copy_summary": "Özeti Kopyala"
+  "copy_summary": "Özeti Kopyala",
+  "image_link_copied": "Resim bağlantısı panoya kopyalandı",
+  "link_copied": "Bağlantı panoya kopyalandı",
+  "error_loading_page": "Sayfa yüklenirken hata oluştu",
+  "no_page_to_install": "PWA olarak yüklenecek sayfa yok",
+  "pwa_installed": "PWA yüklendi",
+  "failed_to_install_pwa": "PWA yüklenemedi",
+  "error_opening_file_install_app": "Dosya açılırken hata oluştu. Lütfen bu tür dosyaları açmak için uygun bir uygulama yükleyin.",
+  "full_storage_access_needed": "Medya olmayan dosyaları indirmek için tam depolama erişimi gerekiyor",
+  "error_removing_download": "İndirme kaldırılırken hata oluştu",
+  "copy_image": "Resmi kopyala",
+  "text_copied": "Metin kopyalandı",
+  "text_pasted": "Metin yapıştırıldı",
+  "text_cut": "Metin kesildi",
+  "clipboard_empty": "Pano boş",
+  "paste_error": "Metin yapıştırılırken hata oluştu",
+  "cut_error": "Metin kesilirken hata oluştu",
+  "image_url_copied": "Resim URL'si kopyalandı",
+  "opened_in_new_tab": "Yeni sekmede açıldı",
+  "image_options": "Resim seçenekleri",
+  "copy": "Kopyala",
+  "paste": "Yapıştır",
+  "cut": "Kes"
 }

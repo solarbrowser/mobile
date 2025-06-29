@@ -1,3 +1,5 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -13,7 +15,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get welcomeDescription => 'एक आधुनिक, तेज़ और सुरक्षित ब्राउज़र';
 
   @override
-  String get termsOfService => 'जारी रखकर, आप हमारी सेवा की शर्तों और गोपनीयता नीति से सहमत हैं';
+  String get termsOfService =>
+      'जारी रखकर, आप हमारी सेवा की शर्तों और गोपनीयता नीति से सहमत हैं';
 
   @override
   String get whats_new => 'नया क्या है';
@@ -96,7 +99,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get data_collection => 'डेटा संग्रह';
 
   @override
-  String get data_collection_details => '• हम ब्राउज़र की कार्यक्षमता के लिए न्यूनतम आवश्यक डेटा एकत्र करते हैं\n• आपका ब्राउज़िंग इतिहास आपके डिवाइस पर रहता है\n• हम आपकी ऑनलाइन गतिविधि को ट्रैक नहीं करते\n• आप किसी भी समय सभी डेटा मिटा सकते हैं';
+  String get data_collection_details =>
+      '• हम ब्राउज़र की कार्यक्षमता के लिए न्यूनतम आवश्यक डेटा एकत्र करते हैं\n• आपका ब्राउज़िंग इतिहास आपके डिवाइस पर रहता है\n• हम आपकी ऑनलाइन गतिविधि को ट्रैक नहीं करते\n• आप किसी भी समय सभी डेटा मिटा सकते हैं';
 
   @override
   String get general => 'सामान्य';
@@ -288,7 +292,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get reset_browser => 'ब्राउज़र रीसेट करें';
 
   @override
-  String get reset_browser_confirm => 'यह आपका सभी डेटा मिटा देगा, जिसमें इतिहास, बुकमार्क और सेटिंग्स शामिल हैं। यह क्रिया वापस नहीं की जा सकती।';
+  String get reset_browser_confirm =>
+      'यह आपका सभी डेटा मिटा देगा, जिसमें इतिहास, बुकमार्क और सेटिंग्स शामिल हैं। यह क्रिया वापस नहीं की जा सकती।';
 
   @override
   String get reset => 'रीसेट करें';
@@ -321,10 +326,12 @@ class AppLocalizationsHi extends AppLocalizations {
   String get do_not_track => 'ट्रैक न करें';
 
   @override
-  String get download_location_description => 'डाउनलोड की गई फ़ाइलें कहाँ सहेजी जाएं चुनें';
+  String get download_location_description =>
+      'डाउनलोड की गई फ़ाइलें कहाँ सहेजी जाएं चुनें';
 
   @override
-  String get text_size_description => 'वेब पेज पर टेक्स्ट का आकार समायोजित करें';
+  String get text_size_description =>
+      'वेब पेज पर टेक्स्ट का आकार समायोजित करें';
 
   @override
   String get text_size_small => 'छोटा';
@@ -339,19 +346,23 @@ class AppLocalizationsHi extends AppLocalizations {
   String get text_size_very_large => 'बहुत बड़ा';
 
   @override
-  String get cookies_description => 'वेबसाइटों को कुकीज़ डेटा सहेजने और पढ़ने की अनुमति दें';
+  String get cookies_description =>
+      'वेबसाइटों को कुकीज़ डेटा सहेजने और पढ़ने की अनुमति दें';
 
   @override
-  String get javascript_description => 'बेहतर वेबसाइट कार्यक्षमता के लिए JavaScript सक्षम करें';
+  String get javascript_description =>
+      'बेहतर वेबसाइट कार्यक्षमता के लिए JavaScript सक्षम करें';
 
   @override
-  String get hardware_acceleration_description => 'बेहतर प्रदर्शन के लिए GPU का उपयोग करें';
+  String get hardware_acceleration_description =>
+      'बेहतर प्रदर्शन के लिए GPU का उपयोग करें';
 
   @override
   String get form_data_description => 'फ़ॉर्म में दर्ज की गई जानकारी सहेजें';
 
   @override
-  String get do_not_track_description => 'वेबसाइटों से आपकी गतिविधि को ट्रैक न करने का अनुरोध करें';
+  String get do_not_track_description =>
+      'वेबसाइटों से आपकी गतिविधि को ट्रैक न करने का अनुरोध करें';
 
   @override
   String get exit_app => 'ऐप से बाहर निकलें';
@@ -391,19 +402,24 @@ class AppLocalizationsHi extends AppLocalizations {
   String get install_packages_permission => 'पैकेज इंस्टॉल अनुमति';
 
   @override
-  String get install_packages_permission_description => 'इस ब्राउज़र से ऐप्स इंस्टॉल करने की अनुमति दें';
+  String get install_packages_permission_description =>
+      'इस ब्राउज़र से ऐप्स इंस्टॉल करने की अनुमति दें';
 
   @override
-  String get permission_install_packages_required => 'पैकेज इंस्टॉल अनुमति आवश्यक';
+  String get permission_install_packages_required =>
+      'पैकेज इंस्टॉल अनुमति आवश्यक';
 
   @override
-  String get storage_permission_install_packages_required => 'स्टोरेज और पैकेज इंस्टॉल अनुमति';
+  String get storage_permission_install_packages_required =>
+      'स्टोरेज और पैकेज इंस्टॉल अनुमति';
 
   @override
-  String get storage_permission_install_packages_description => 'Solar ब्राउज़र को डाउनलोड के लिए स्टोरेज एक्सेस और APK इंस्टॉलेशन के लिए पैकेज इंस्टॉल की अनुमति चाहिए';
+  String get storage_permission_install_packages_description =>
+      'Solar ब्राउज़र को डाउनलोड के लिए स्टोरेज एक्सेस और APK इंस्टॉलेशन के लिए पैकेज इंस्टॉल की अनुमति चाहिए';
 
   @override
-  String get clear_downloads_history_confirm => 'यह केवल डाउनलोड इतिहास साफ़ करेगा, डाउनलोड की गई फ़ाइलें नहीं हटेंगी।';
+  String get clear_downloads_history_confirm =>
+      'यह केवल डाउनलोड इतिहास साफ़ करेगा, डाउनलोड की गई फ़ाइलें नहीं हटेंगी।';
 
   @override
   String get clear_downloads_history_title => 'डाउनलोड इतिहास साफ़ करें';
@@ -471,7 +487,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get classic_navigation => 'क्लासिक नेविगेशन';
 
   @override
-  String get classic_navigation_description => 'क्लासिक ब्राउज़र शैली नेविगेशन नियंत्रण का उपयोग करें';
+  String get classic_navigation_description =>
+      'क्लासिक ब्राउज़र शैली नेविगेशन नियंत्रण का उपयोग करें';
 
   @override
   String get exit_confirmation => 'ऐप से बाहर निकलें';
@@ -498,6 +515,36 @@ class AppLocalizationsHi extends AppLocalizations {
   String get open_in_new_tab => 'नए टैब में खोलें';
 
   @override
+  String get copy_image_link => 'Copy Image Link';
+
+  @override
+  String get open_image_in_new_tab => 'Open Image in New Tab';
+
+  @override
+  String get open_link => 'Open Link';
+
+  @override
+  String get open_link_in_new_tab => 'Open Link in New Tab';
+
+  @override
+  String get copy_link_address => 'Copy Link Address';
+
+  @override
+  String get failed_to_download_image => 'Failed to download image';
+
+  @override
+  String get custom_home_page => 'Custom Home Page';
+
+  @override
+  String get set_home_page_url => 'Set Home Page URL';
+
+  @override
+  String get not_set => 'Not set';
+
+  @override
+  String get save => 'Save';
+
+  @override
   String get downloading => 'डाउनलोड हो रहा है...';
 
   @override
@@ -516,16 +563,19 @@ class AppLocalizationsHi extends AppLocalizations {
   String get storage_permission_granted => 'सभी अनुमतियाँ दी गईं';
 
   @override
-  String get storage_permission_description => 'इस ऐप को डाउनलोड कार्यक्षमता के लिए फ़ाइलों तक पहुंच की अनुमति चाहिए।';
+  String get storage_permission_description =>
+      'इस ऐप को डाउनलोड कार्यक्षमता के लिए फ़ाइलों तक पहुंच की अनुमति चाहिए।';
 
   @override
-  String get app_should_work_normally => 'ऐप अब पूर्ण कार्यक्षमता के साथ सामान्य रूप से काम करना चाहिए।';
+  String get app_should_work_normally =>
+      'ऐप अब पूर्ण कार्यक्षमता के साथ सामान्य रूप से काम करना चाहिए।';
 
   @override
   String get grant_permission => 'अनुमति दें';
 
   @override
-  String get storage_permission_denied => 'फ़ाइलें डाउनलोड करने के लिए स्टोरेज अनुमति आवश्यक है';
+  String get storage_permission_denied =>
+      'फ़ाइलें डाउनलोड करने के लिए स्टोरेज अनुमति आवश्यक है';
 
   @override
   String get new_incognito_tab => 'नया गुप्त टैब';
@@ -534,7 +584,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get incognito_mode => 'इंकॉग्निटो मोड';
 
   @override
-  String get incognito_description => 'इंकॉग्निटो मोड में:\n• ब्राउज़िंग इतिहास सेव नहीं होता\n• टैब बंद करने पर कुकीज़ साफ़ हो जाती हैं\n• कोई डेटा स्थानीय रूप से स्टोर नहीं होता';
+  String get incognito_description =>
+      'इंकॉग्निटो मोड में:\n• ब्राउज़िंग इतिहास सेव नहीं होता\n• टैब बंद करने पर कुकीज़ साफ़ हो जाती हैं\n• कोई डेटा स्थानीय रूप से स्टोर नहीं होता';
 
   @override
   String get error_opening_file => 'फ़ाइल खोलने में त्रुटि';
@@ -575,7 +626,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get clear_history => 'इतिहास साफ़ करें';
 
   @override
-  String get clear_history_confirmation => 'क्या आप वाकई ब्राउज़िंग इतिहास साफ़ करना चाहते हैं?';
+  String get clear_history_confirmation =>
+      'क्या आप वाकई ब्राउज़िंग इतिहास साफ़ करना चाहते हैं?';
 
   @override
   String get no_history => 'कोई ब्राउज़िंग इतिहास नहीं';
@@ -605,7 +657,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get update1 => 'बेहतर थीम सिस्टम';
 
   @override
-  String get update1desc => 'अधिक रंग विकल्पों और बेहतर डार्क मोड समर्थन के साथ नई थीम प्रणाली';
+  String get update1desc =>
+      'अधिक रंग विकल्पों और बेहतर डार्क मोड समर्थन के साथ नई थीम प्रणाली';
 
   @override
   String get update2 => 'प्रदर्शन में सुधार';
@@ -671,7 +724,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get summary_length_long => 'लंबा (250 शब्द)';
 
   @override
-  String get summary_language_english => 'अंग्रेज़ी';
+  String get summary_language_english => 'अंग्रे़ी';
 
   @override
   String get summary_language_turkish => 'तुर्की';
@@ -689,7 +742,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get removed_from_pwa => 'PWA से हटाया गया';
 
   @override
-  String get pwa_info => 'प्रोग्रेसिव वेब ऐप्स बिना ब्राउज़र कंट्रोल के इंस्टॉल किए गए ऐप्स की तरह चलते हैं';
+  String get pwa_info =>
+      'प्रोग्रेसिव वेब ऐप्स बिना ब्राउज़र कंट्रोल के इंस्टॉल किए गए ऐप्स की तरह चलते हैं';
 
   @override
   String get create_shortcut => 'शॉर्टकट बनाएं';
@@ -716,7 +770,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get welcome_screen_reset => 'स्वागत स्क्रीन रीसेट करें';
 
   @override
-  String get welcome_screen_reset_message => 'यह स्वागत स्क्रीन को रीसेट कर देगा ताकि यह अगली बार ऐप शुरू करने पर फिर से दिखाई दे।';
+  String get welcome_screen_reset_message =>
+      'यह स्वागत स्क्रीन को रीसेट कर देगा ताकि यह अगली बार ऐप शुरू करने पर फिर से दिखाई दे।';
 
   @override
   String get ok => 'ठीक है';
@@ -773,19 +828,23 @@ class AppLocalizationsHi extends AppLocalizations {
   String get untitled => 'शीर्षकहीन';
 
   @override
-  String get show_welcome_screen_next_launch => 'अगली बार चालू करने पर स्वागत स्क्रीन दिखाएं';
+  String get show_welcome_screen_next_launch =>
+      'अगली बार चालू करने पर स्वागत स्क्रीन दिखाएं';
 
   @override
-  String get automatically_open_downloaded_files => 'डाउनलोड की गई फाइलों को स्वचालित रूप से खोलें';
+  String get automatically_open_downloaded_files =>
+      'डाउनलोड की गई फाइलों को स्वचालित रूप से खोलें';
 
   @override
-  String get ask_where_to_save_files => 'डाउनलोड करने से पहले फाइलों को कहाँ सेव करना है पूछें';
+  String get ask_where_to_save_files =>
+      'डाउनलोड करने से पहले फाइलों को कहाँ सेव करना है पूछें';
 
   @override
   String get clear_all_history => 'सभी इतिहास साफ़ करें';
 
   @override
-  String get clear_all_history_confirm => 'यह आपके सभी ब्राउज़िंग इतिहास को स्थायी रूप से हटा देगा। इस क्रिया को पूर्ववत् नहीं किया जा सकता।';
+  String get clear_all_history_confirm =>
+      'यह आपके सभी ब्राउज़िंग इतिहास को स्थायी रूप से हटा देगा। इस क्रिया को पूर्ववत् नहीं किया जा सकता।';
 
   @override
   String get history_cleared => 'इतिहास साफ़ किया गया';
@@ -812,7 +871,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get close_all_tabs => 'सभी टैब बंद करें';
 
   @override
-  String get close_all_tabs_confirm => 'क्या आप सभी टैब बंद करना चाहते हैं? यह क्रिया वापस नहीं की जा सकती।';
+  String get close_all_tabs_confirm =>
+      'क्या आप सभी टैब बंद करना चाहते हैं? यह क्रिया वापस नहीं की जा सकती।';
 
   @override
   String close_all_tabs_in_group(String groupName) {
@@ -832,7 +892,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get current_navigation_bar => 'वर्तमान नेविगेशन बार:';
 
   @override
-  String get tap_to_check_permission_status => 'अनुमति स्थिति जांचने के लिए टैप करें';
+  String get tap_to_check_permission_status =>
+      'अनुमति स्थिति जांचने के लिए टैप करें';
 
   @override
   String get create_tab_group => 'टैब समूह बनाएं';
@@ -874,7 +935,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get no_page_to_summarize => 'सारांश के लिए कोई पृष्ठ नहीं';
 
   @override
-  String get no_content_found_to_summarize => 'सारांश के लिए कोई सामग्री नहीं मिली';
+  String get no_content_found_to_summarize =>
+      'सारांश के लिए कोई सामग्री नहीं मिली';
 
   @override
   String get theme => 'थीम';
@@ -905,4 +967,77 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get copy_summary => 'सारांश कॉपी करें';
+
+  @override
+  String get image_link_copied => 'छवि लिंक क्लिपबोर्ड पर कॉपी किया गया';
+
+  @override
+  String get link_copied => 'लिंक क्लिपबोर्ड पर कॉपी किया गया';
+
+  @override
+  String get error_loading_page => 'पेज लोड करने में त्रुटि';
+
+  @override
+  String get no_page_to_install =>
+      'PWA के रूप में इंस्टॉल करने के लिए कोई पेज नहीं है';
+
+  @override
+  String get pwa_installed => 'PWA इंस्टॉल किया गया';
+
+  @override
+  String get failed_to_install_pwa => 'PWA इंस्टॉल करने में विफल';
+
+  @override
+  String get error_opening_file_install_app =>
+      'फ़ाइल खोलने में त्रुटि। इस प्रकार की फ़ाइल खोलने के लिए कृपया उपयुक्त ऐप इंस्टॉल करें।';
+
+  @override
+  String get full_storage_access_needed =>
+      'गैर-मीडिया फ़ाइलें डाउनलोड करने के लिए पूर्ण स्टोरेज एक्सेस की आवश्यकता है';
+
+  @override
+  String get error_removing_download => 'डाउनलोड हटाने में त्रुटि';
+
+  @override
+  String get copy_image => 'छवि कॉपी करें';
+
+  @override
+  String get text_copied => 'टेक्स्ट कॉपी किया गया';
+
+  @override
+  String get text_pasted => 'टेक्स्ट पेस्ट किया गया';
+
+  @override
+  String get text_cut => 'टेक्स्ट कट किया गया';
+
+  @override
+  String get clipboard_empty => 'क्लिपबोर्ड खाली है';
+
+  @override
+  String get paste_error => 'टेक्स्ट पेस्ट करने में त्रुटि';
+
+  @override
+  String get cut_error => 'टेक्स्ट कट करने में त्रुटि';
+
+  @override
+  String get image_url_copied => 'छवि URL कॉपी किया गया';
+
+  @override
+  String get opened_in_new_tab => 'नए टैब में खोला गया';
+
+  @override
+  String get image_options => 'छवि विकल्प';
+
+  @override
+  String get copy => 'कॉपी करें';
+
+  @override
+  String get paste => 'पेस्ट करें';
+
+  @override
+  String get cut => 'कट करें';
+
+  @override
+  String get asset_file_part_of_app =>
+      'This file is part of the app and cannot be downloaded';
 }

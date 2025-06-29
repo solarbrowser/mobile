@@ -279,6 +279,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   bool showImages = true;
   String currentLanguage = 'en';
   String currentSearchEngine = 'Google';
+  String customHomeUrl = ''; // Custom home page URL
+  bool useCustomHomePage = false; // Whether to use custom home page
   
   // <----TAB GROUPING---->
   List<TabGroup> _tabGroups = [];
@@ -304,6 +306,267 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   bool _isLowMemory = false;
   int _lastMemoryCheck = 0;
   static const int MEMORY_CHECK_INTERVAL = 30000;
+
+  // <----CONTEXT MENU TIMER---->
+  Timer? _contextMenuTimer;
+  Map<String, dynamic>? _pendingContextData;
+  bool _touchMoved = false;
+  DateTime? _touchStartTime;
+  bool _longPressTriggered = false;
+
+// --- CONTEXT MENU TIMER LOGIC REWRITE ---
+// Handles long-press detection for image/text context menu
+void _handleTouchStart(Map<String, dynamic> data) {
+  if (!mounted) return;
+  
+  print('🔍 _handleTouchStart called with data type: ${data['type']}');
+  
+  final type = data['type'] as String;
+    if (type == 'image_touch_start') {
+    print('📸 Showing image context menu immediately');
+    // Show image context menu without any delay or conditions
+    _showImageContextMenu(data);
+  }
+  
+  // For text selection, we don't need to do anything special
+  // The native text selection will work automatically
+}
+
+  // Variables for long press detection
+  Offset? _pointerDownPosition;
+  DateTime? _pointerDownTime;
+  bool _isPointerMoved = false;
+  Timer? _longPressTimer;
+  
+  // Check if there's an image or text at the given position and handle accordingly
+  Future<void> _checkForImageAtPosition(Offset position) async {
+    try {
+      // Convert position to web coordinates
+      final x = position.dx;
+      final y = position.dy;
+      
+      print('🔍 Checking for content at position ($x, $y)');
+      
+      // Add haptic feedback for better user experience
+      HapticFeedback.mediumImpact();
+      
+      // Get the element at this position and handle it directly
+      final result = await controller.runJavaScriptReturningResult('''
+        (function() {
+          try {
+            console.log('🔍 Checking for elements at position ($x, $y)');
+            
+            // Try to find any element at this position
+            let element = document.elementFromPoint($x, $y);
+            if (!element) {
+              console.log('🔍 No element found at position');
+              return JSON.stringify({"found": false});
+            }
+            
+            console.log('🔍 Found element: ' + element.tagName);
+            
+            // Determine if this is text or an image
+            // First check if we're dealing with an image
+            let img = null;
+            let parentLink = null;
+            let isTextElement = false;
+            
+            // Check if the element is a text node or contains primarily text
+            const tagName = element.tagName.toLowerCase();
+            const textTags = ['p', 'span', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'td', 'th', 'a', 'label', 'button'];
+            
+            if (textTags.includes(tagName) && element.innerText && element.innerText.trim().length > 0) {
+              // This is likely a text element
+              isTextElement = true;
+              
+              // Check if it's inside a link
+              let parent = element;
+              while (parent) {
+                if (parent.tagName === 'A') {
+                  parentLink = parent.href;
+                  break;
+                }
+                parent = parent.parentElement;
+              }
+            }
+            
+            // First check if the element itself is an image (only if not already identified as text)
+            if (!isTextElement && element.tagName === 'IMG') {
+              img = element;
+              // Check if image is inside a link
+              let parent = element.parentElement;
+              while (parent && !parentLink) {
+                if (parent.tagName === 'A') {
+                  parentLink = parent.href;
+                  break;
+                }
+                parent = parent.parentElement;
+              }
+            }
+            
+            // If not text or image yet, check if any of its parents or children are images
+            if (!isTextElement && !img) {
+              // Check parents (for cases where the image might be wrapped in a link or div)
+              let parent = element.parentElement;
+              for (let i = 0; i < 3 && parent; i++) { // Check up to 3 levels up
+                if (parent.tagName === 'IMG') {
+                  img = parent;
+                  break;
+                }
+                const childImg = parent.querySelector('img');
+                if (childImg) {
+                  img = childImg;
+                  break;
+                }
+                parent = parent.parentElement;
+              }
+              
+              // Check children
+              if (!img) {
+                const childImg = element.querySelector('img');
+                if (childImg) {
+                  img = childImg;
+                }
+              }
+              
+              // If we found an image, check if it's in a link
+              if (img) {
+                let parent = img.parentElement;
+                while (parent && !parentLink) {
+                  if (parent.tagName === 'A') {
+                    parentLink = parent.href;
+                    break;
+                  }
+                  parent = parent.parentElement;
+                }
+              }
+            }
+            
+            // If we found an image, return its data
+            if (img) {
+              console.log('🖼️ Found image: ' + img.src);
+              return JSON.stringify({
+                "found": true,
+                "type": "image",
+                "src": img.src,
+                "alt": img.alt || "",
+                "width": img.naturalWidth || img.width,
+                "height": img.naturalHeight || img.height,
+                "linkUrl": parentLink || null
+              });
+            }
+            
+            // If we identified this as a text element, handle text selection
+            if (isTextElement) {
+              console.log('📝 Found text element, selecting text');
+            
+            // Try to enable text selection mode
+            const range = document.createRange();
+            const selection = window.getSelection();
+            
+            try {
+              // Try to select all text in the element
+              range.selectNodeContents(element);
+              selection.removeAllRanges();
+              selection.addRange(range);
+              
+              const selectedText = selection.toString();
+              console.log('📝 Selected text: ' + selectedText);
+              
+              if (selectedText && selectedText.trim().length > 0) {
+                return JSON.stringify({
+                  "found": true,
+                  "type": "text",
+                  "text": selectedText,
+                  "linkUrl": parentLink || null
+                });
+              }
+            } catch (e) {
+              console.error('Error selecting text: ' + e);
+            }
+            }
+            
+            return JSON.stringify({"found": false});
+          } catch (e) {
+            console.error('Error in element detection: ' + e);
+            return JSON.stringify({"error": e.toString()});
+          }
+        })();
+      ''');
+      
+      // Parse the result
+      try {
+        final String resultString = result.toString();
+        print('🔍 Raw result from JavaScript: $resultString');
+        
+        // Handle potential string results that aren't valid JSON
+        if (resultString == "null" || resultString.isEmpty) {
+          print('❌ Empty or null result from JavaScript');
+          return;
+        }
+        
+        // Remove any quotes that might be wrapping the JSON string
+        String jsonString = resultString;
+        if (jsonString.startsWith('"') && jsonString.endsWith('"')) {
+          jsonString = jsonString.substring(1, jsonString.length - 1);
+          // Unescape any escaped quotes
+          jsonString = jsonString.replaceAll('\\"', '"');
+        }
+        
+        final Map<String, dynamic> data = json.decode(jsonString);
+        
+        if (data['found'] == true) {
+          if (data['type'] == 'image') {
+            print('🖼️ Found image: ${data['src']}');
+            _showImageContextMenu(data);
+          } else if (data['type'] == 'text') {
+            print('📝 Selected text: ${data['text']}');
+            // Text is already selected in the WebView, no need to do anything else
+            
+            // If the text is inside a link, we could show a special context menu here
+            if (data['linkUrl'] != null) {
+              print('🔗 Text is inside a link: ${data['linkUrl']}');
+              // For now we'll let the default text selection handle this
+            }
+          }
+        } else {
+          print('❌ No content found at position');
+        }
+      } catch (e) {
+        print('❌ Error parsing JavaScript result: $e');
+      }
+    } catch (e) {
+      print('❌ Error checking for content at position: $e');
+    }
+  }
+
+  // These methods are kept for compatibility 
+void _handleTouchMoved() {
+    print('📱 Touch moved event received');
+}
+
+void _handleTouchEnd() {
+    print('📱 Touch end event received');
+  }
+  
+  // Test method to manually trigger the image context menu
+  Future<void> _testImageContextMenu() async {
+    print('🧪 Testing image context menu manually');
+    try {
+      await controller.runJavaScript('''
+        if (typeof showImageContextMenu === 'function') {
+          showImageContextMenu('https://example.com/test-image.jpg');
+          console.log('🧪 Test image context menu triggered');
+        } else {
+          console.error('🧪 showImageContextMenu function not found');
+        }
+      ''');
+    } catch (e) {
+      print('🧪 Error testing image context menu: $e');
+    }
+  }
+  // Text selection is handled by the native system
+  // No custom text context menu is needed
 
   bool isInitialized = false;
 
@@ -573,9 +836,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     
     _initializeControllers();
 
+    // Initialize tabs (will be properly set after preferences are loaded)
     tabs = [{
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
-      'url': 'file:///android_asset/main.html',
+      'url': 'file:///android_asset/main.html', // This will be updated after preferences are loaded
       'title': AppLocalizations.of(context)?.new_tab ?? 'New Tab',
       'controller': WebViewController(),
       'isIncognito': false,
@@ -716,6 +980,640 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         });
       }
     });
+  }
+  
+
+  
+    void _showImageContextMenu(Map<String, dynamic> imageData) {
+    if (!mounted) return;
+    
+    print('📸 _showImageContextMenu called with data: $imageData');
+    
+    final imageUrl = imageData['src'] as String? ?? '';
+    final imageAlt = imageData['alt'] as String? ?? '';
+    final width = imageData['width'] as int? ?? 0;
+    final height = imageData['height'] as int? ?? 0;
+    final linkUrl = imageData['linkUrl'] as String?;
+    
+    print('📸 Image URL: $imageUrl, Alt: $imageAlt, Size: ${width}x${height}, Link: $linkUrl');
+    
+    if (imageUrl.isEmpty) {
+      print('📸 Empty image URL, skipping context menu');
+      return;
+    }
+    
+    // Extract filename from URL for download
+    String fileName = imageUrl.split('/').last.split('?').first;
+    if (fileName.isEmpty || !fileName.contains('.')) {
+      fileName = 'image_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    }
+    
+    // Show a modern, clean modal dialog with animation
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: ThemeManager.textColor().withOpacity(0.5),
+      transitionDuration: const Duration(milliseconds: 200),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Container(); // This is a placeholder, actual content is in transitionBuilder
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        );
+        
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.8, end: 1.0).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: animation,
+            child: AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              backgroundColor: ThemeManager.backgroundColor(),
+              elevation: 8,
+              title: Text(
+                AppLocalizations.of(context)!.image_options,
+                style: TextStyle(
+                  color: ThemeManager.textColor(),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Image preview (small)
+                  Container(
+                    height: 150,
+                    width: double.infinity,
+                    margin: const EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: ThemeManager.surfaceColor().withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: Image.network(
+                        imageUrl,
+                        fit: BoxFit.contain,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                                  : null,
+                              color: ThemeManager.primaryColor(),
+                            ),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          print('📸 Error loading image preview: $error');
+                          return Center(
+                            child: Icon(
+                              Icons.image_not_supported,
+                              color: ThemeManager.textSecondaryColor(),
+                              size: 40,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  
+                  // Download Image button
+                  ListTile(
+                    leading: Icon(Icons.download, color: ThemeManager.primaryColor()),
+                    title: Text(AppLocalizations.of(context)!.download_image, style: TextStyle(color: ThemeManager.textColor())),
+                    onTap: () {
+                      print('📸 Download image button tapped for: $imageUrl');
+                      Navigator.pop(context);
+                      
+                      // Extract proper filename with extension
+                      String filename = imageUrl.split('/').last.split('?').first;
+                      if (!filename.contains('.') || filename.isEmpty) {
+                        final extension = imageUrl.contains('.jpg') ? '.jpg' : 
+                                        imageUrl.contains('.png') ? '.png' :
+                                        imageUrl.contains('.gif') ? '.gif' :
+                                        imageUrl.contains('.webp') ? '.webp' : '.jpg';
+                        filename = 'image_${DateTime.now().millisecondsSinceEpoch}$extension';
+                      }
+                      
+                      // Show download starting notification
+                      _showCustomNotification(
+                        icon: Icons.download_rounded,
+                        title: AppLocalizations.of(context)!.download_started,
+                        message: filename,
+                        progress: 0.0,
+                        isDownload: true
+                      );
+                      
+                      // Start the download using the app's existing download system
+                      setState(() {
+                        isDownloading = true;
+                        currentDownloadUrl = imageUrl;
+                        _currentFileName = filename;
+                        downloadProgress = 0.0;
+                      });
+                      
+                      // Use the existing download method
+                      _downloadFile(imageUrl, filename);
+                    },
+                  ),
+                  
+                  // Copy Image Link button
+                  ListTile(
+                    leading: Icon(Icons.link, color: ThemeManager.primaryColor()),
+                    title: Text(AppLocalizations.of(context)!.copy_image_link, style: TextStyle(color: ThemeManager.textColor())),
+                    onTap: () {
+                      print('📸 Copy image link button tapped');
+                      Clipboard.setData(ClipboardData(text: imageUrl));
+                      Navigator.pop(context);
+                      _showCustomNotification(
+                        message: AppLocalizations.of(context)!.image_link_copied,
+                        icon: Icons.link,
+                        iconColor: ThemeManager.successColor(),
+                        duration: const Duration(seconds: 2),
+                      );
+                    },
+                  ),
+                  
+                  // Open in New Tab button
+                  ListTile(
+                    leading: Icon(Icons.open_in_new, color: ThemeManager.primaryColor()),
+                    title: Text(AppLocalizations.of(context)!.open_image_in_new_tab, style: TextStyle(color: ThemeManager.textColor())),
+                    onTap: () {
+                      print('📸 Open in new tab button tapped');
+                      Navigator.pop(context);
+                      
+                      // Create a new tab with the image URL
+                      // For asset URLs, we need special handling
+                      if (imageUrl.startsWith('file:///android_asset/')) {
+                        // For asset files, we need to use the home URL
+                        _addNewTab();
+                      } else {
+                        // For external URLs, make sure we have a proper URL
+                        final fullUrl = imageUrl.startsWith('http') ? imageUrl : 'https://$imageUrl';
+                        _addNewTab(url: fullUrl);
+                      }
+                    },
+                  ),
+                  
+                  // If the image is inside a link, show option to open link
+                  if (linkUrl != null && linkUrl.isNotEmpty)
+                    ListTile(
+                      leading: Icon(Icons.link_rounded, color: ThemeManager.primaryColor()),
+                      title: Text(AppLocalizations.of(context)!.open_link, style: TextStyle(color: ThemeManager.textColor())),
+                      onTap: () {
+                        print('📸 Open link button tapped: $linkUrl');
+                        Navigator.pop(context);
+                        
+                        // Load the link in the current tab
+                        _loadUrl(linkUrl);
+                      },
+                    ),
+                    
+                  // If the image is inside a link, show option to open link in new tab
+                  if (linkUrl != null && linkUrl.isNotEmpty)
+                    ListTile(
+                      leading: Icon(Icons.tab, color: ThemeManager.primaryColor()),
+                      title: Text(AppLocalizations.of(context)!.open_link_in_new_tab, style: TextStyle(color: ThemeManager.textColor())),
+                      onTap: () {
+                        print('📸 Open link in new tab button tapped: $linkUrl');
+                        Navigator.pop(context);
+                        
+                        // Create a new tab with the link URL
+                        // For asset URLs, we need special handling
+                        if (linkUrl.startsWith('file:///android_asset/')) {
+                          // For asset files, we need to use the home URL
+                          _addNewTab();
+                        } else {
+                          // For external URLs, make sure we have a proper URL
+                          final fullUrl = linkUrl.startsWith('http') ? linkUrl : 'https://$linkUrl';
+                          _addNewTab(url: fullUrl);
+                        }
+                      },
+                    ),
+                    
+                  // If the image is inside a link, show option to copy link
+                  if (linkUrl != null && linkUrl.isNotEmpty)
+                    ListTile(
+                      leading: Icon(Icons.content_copy, color: ThemeManager.primaryColor()),
+                      title: Text(AppLocalizations.of(context)!.copy_link_address, style: TextStyle(color: ThemeManager.textColor())),
+                      onTap: () {
+                        print('📸 Copy link address button tapped');
+                        Clipboard.setData(ClipboardData(text: linkUrl));
+                        Navigator.pop(context);
+                        _showCustomNotification(
+                                                  message: AppLocalizations.of(context)!.link_copied,
+                        icon: Icons.link,
+                        iconColor: ThemeManager.successColor(),
+                        duration: const Duration(seconds: 2),
+                        );
+                      },
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+  
+
+  
+  // This method has been removed as we now handle context menu directly
+  
+  Widget _buildContextMenuItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: ThemeManager.textColor(),
+              size: 24,
+            ),
+            const SizedBox(width: 16),
+            Text(
+              title,
+              style: TextStyle(
+                color: ThemeManager.textColor(),
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildContextMenuButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool isLast = false,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
+      child: Material(
+        color: ThemeManager.surfaceColor().withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  icon,
+                  color: ThemeManager.primaryColor(),
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: ThemeManager.textColor(),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+            ),
+          ),
+        );
+      }
+      
+  // Initialize a new tab's WebView controller
+  Future<void> _initializeTabController(Map<String, dynamic> tab) async {
+    if (!mounted) return;
+    
+    final WebViewController tabController = tab['controller'] as WebViewController;
+    
+    // Configure the WebView controller
+    tabController
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(Colors.transparent)
+      ..enableZoom(true);
+    
+    // Set up navigation delegate
+    tabController.setNavigationDelegate(await _navigationDelegate);
+    
+    // Enable file access for Android WebView
+    if (tabController.platform is webview_flutter_android.AndroidWebViewController) {
+      final androidController = tabController.platform as webview_flutter_android.AndroidWebViewController;
+      await androidController.setAllowFileAccess(true);
+    }
+    
+    // Set up JavaScript channels and context menu handlers
+    await _setupTabControllerChannels(tabController);
+    
+    // Load the URL
+    final url = tab['url'] as String;
+    if (url.isNotEmpty) {
+      await tabController.loadRequest(Uri.parse(url));
+    }
+  }
+  
+  // Set up JavaScript channels for a tab's WebView controller
+  Future<void> _setupTabControllerChannels(WebViewController controller) async {
+    // Add the context menu JavaScript channel
+    await controller.addJavaScriptChannel(
+      'SolarContextMenu',
+      onMessageReceived: (JavaScriptMessage message) {
+        if (!mounted) return;
+        try {
+          print('📱 SolarContextMenu message received: ${message.message}');
+          final data = json.decode(message.message) as Map<String, dynamic>;
+          final type = data['type'] as String;
+          
+          print('📱 Parsed message type: $type');
+          
+          switch (type) {
+            case 'image_touch_start':
+              print('📱 Handling image touch start');
+              _handleTouchStart(data);
+              break;
+            case 'text_touch_start':
+              print('📱 Handling text touch start');
+              _handleTouchStart(data);
+              break;
+            case 'touch_moved':
+              print('📱 Handling touch moved');
+              _handleTouchMoved();
+              break;
+            case 'touch_end':
+              print('📱 Handling touch end');
+              _handleTouchEnd();
+              break;
+          }
+    } catch (e) {
+          print('❌ Error processing context menu message: $e');
+          print('❌ Error details: ${e.toString()}');
+        }
+      },
+    );
+    
+    // Inject the context menu JavaScript
+    await _setupScrollHandlingForController(controller);
+  }
+  
+  // Set up scroll handling and context menu JavaScript for a specific controller
+  Future<void> _setupScrollHandlingForController(WebViewController controller) async {
+    try {
+      // Inject the same JavaScript code as in _setupScrollHandling
+      await controller.runJavaScript('''
+        (function() {
+          console.log('🔧 Setting up DIRECT context menu handling...');
+          
+          // Clean up any existing handlers
+          if (window.solarContextMenuCleanup) {
+            window.solarContextMenuCleanup();
+          }
+          
+          // --- SCROLL HANDLING ---
+          let lastScrollY = window.scrollY;
+          let scrollThrottle = null;
+          
+          function handleScroll() {
+            const currentScrollY = window.scrollY;
+            const delta = currentScrollY - lastScrollY;
+            if (Math.abs(delta) > 5) {
+              if (window.onScroll && window.onScroll.postMessage) {
+                  window.onScroll.postMessage(JSON.stringify({ "delta": delta }));
+              }
+              lastScrollY = currentScrollY;
+            }
+          }
+          
+          window.addEventListener('scroll', () => {
+            if (scrollThrottle) clearTimeout(scrollThrottle);
+            scrollThrottle = setTimeout(handleScroll, 50);
+          }, { passive: true });
+          
+          // --- DIRECT CONTEXT MENU OVERRIDE ---
+          // This is a more aggressive approach that should definitely work
+          
+          // Override the contextmenu event on all images
+          document.addEventListener('contextmenu', function(e) {
+            const target = e.target;
+            
+            if (target.tagName === 'IMG') {
+              console.log('🖼️ Context menu on image: ' + target.src);
+              e.preventDefault();
+              e.stopPropagation();
+              
+              if (window.SolarContextMenu) {
+                const data = {
+                  type: 'image_touch_start',
+                  src: target.src,
+                  alt: target.alt || ''
+                };
+                console.log('🖼️ Sending image data to Flutter: ', data);
+                window.SolarContextMenu.postMessage(JSON.stringify(data));
+              } else {
+                console.error('SolarContextMenu channel not available');
+              }
+              
+              return false;
+            }
+          }, false);
+          
+          // Track long press on all images
+          const LONG_PRESS_DURATION = 500;
+          let longPressTimer = null;
+          let touchStartElement = null;
+          
+          // Function to handle image long press
+          function handleImageLongPress(img) {
+            console.log('🖼️ Long press detected on image: ' + img.src);
+            
+            if (window.SolarContextMenu) {
+              const data = {
+                type: 'image_touch_start',
+                src: img.src,
+                alt: img.alt || ''
+              };
+              console.log('🖼️ Sending image data to Flutter: ', data);
+              window.SolarContextMenu.postMessage(JSON.stringify(data));
+            } else {
+              console.error('SolarContextMenu channel not available');
+            }
+          }
+          
+          // Touch start handler
+          document.addEventListener('touchstart', function(e) {
+            if (e.touches.length !== 1) return;
+            
+            const target = e.target;
+            if (target.tagName === 'IMG') {
+              console.log('🖼️ Touch start on image: ' + target.src);
+              
+              // Cancel any existing timer
+              if (longPressTimer) {
+                clearTimeout(longPressTimer);
+              }
+              
+              // Set the touched element
+              touchStartElement = target;
+              
+              // Start a new timer for long press
+              longPressTimer = setTimeout(() => {
+                if (touchStartElement === target) {
+                  handleImageLongPress(target);
+                }
+              }, LONG_PRESS_DURATION);
+            }
+          }, false);
+          
+          // Touch end handler
+          document.addEventListener('touchend', function() {
+            if (longPressTimer) {
+              clearTimeout(longPressTimer);
+              longPressTimer = null;
+            }
+            touchStartElement = null;
+          }, false);
+          
+          // Touch cancel handler
+          document.addEventListener('touchcancel', function() {
+            if (longPressTimer) {
+              clearTimeout(longPressTimer);
+              longPressTimer = null;
+            }
+            touchStartElement = null;
+          }, false);
+          
+          // Touch move handler
+          document.addEventListener('touchmove', function() {
+            if (longPressTimer) {
+              clearTimeout(longPressTimer);
+              longPressTimer = null;
+            }
+            touchStartElement = null;
+          }, false);
+          
+          // Create a function to manually trigger the context menu for testing
+          window.showImageContextMenu = function(imgSrc) {
+            if (window.SolarContextMenu) {
+              const data = {
+                type: 'image_touch_start',
+                src: imgSrc || 'https://example.com/test.jpg',
+                alt: 'Test image'
+              };
+              console.log('🖼️ Manually triggering image context menu: ', data);
+              window.SolarContextMenu.postMessage(JSON.stringify(data));
+              return true;
+            } else {
+              console.error('SolarContextMenu channel not available');
+              return false;
+            }
+          };
+          
+          // Add test button for debugging
+          function addTestButton() {
+            const existingButton = document.getElementById('solar-test-button');
+            if (existingButton) return;
+            
+            const button = document.createElement('button');
+            button.id = 'solar-test-button';
+            button.textContent = 'Test Image Menu';
+            button.style.position = 'fixed';
+            button.style.bottom = '10px';
+            button.style.right = '10px';
+            button.style.zIndex = '9999';
+            button.style.padding = '10px';
+            button.style.backgroundColor = '#268bd2';
+            button.style.color = 'white';
+            button.style.border = 'none';
+            button.style.borderRadius = '5px';
+            
+            button.addEventListener('click', function() {
+              window.showImageContextMenu();
+            });
+            
+            document.body.appendChild(button);
+          }
+          
+          // Add the test button in development mode
+          if (window.location.href.includes('localhost') || window.location.href.includes('127.0.0.1')) {
+            addTestButton();
+          }
+          
+          // Create cleanup function
+          window.solarContextMenuCleanup = function() {
+            console.log('🧹 Cleaning up context menu handlers');
+            if (longPressTimer) {
+              clearTimeout(longPressTimer);
+              longPressTimer = null;
+            }
+          };
+          
+          console.log('✅ Context menu setup complete');
+        })();
+      ''');
+    } catch (e) {
+      print('Error setting up scroll handling for tab: $e');
+    }
+  }
+  
+  // This method has been removed as we now use _startDownload directly
+  
+  Future<void> _downloadImage(String imageUrl) async {
+    try {
+      // Extract filename from URL or create one
+      String filename = imageUrl.split('/').last.split('?').first;
+      if (!filename.contains('.')) {
+        filename = 'image_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      }
+      
+      // Start download using the existing download system
+      setState(() {
+        isDownloading = true;
+        currentDownloadUrl = imageUrl;
+        _currentFileName = filename;
+        downloadProgress = 0.0;
+      });
+      
+      // Use the existing download method
+      await _downloadFile(imageUrl, filename);
+      
+    } catch (e) {
+      print('Error downloading image: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+                            content: Text('${AppLocalizations.of(context)!.failed_to_download_image}: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          isDownloading = false;
+          currentDownloadUrl = '';
+          _currentFileName = null;
+          downloadProgress = 0.0;
+        });
+      }
+    }
   }
   
   // New helper method to check for shared URL with retries
@@ -957,6 +1855,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     _urlBarIdleTimer?.cancel();
     _urlSyncTimer?.cancel(); // Clean up URL sync timer
     _developerModeTimer?.cancel();
+    _contextMenuTimer?.cancel(); // Clean up context menu timer
     
     // Clean up debouncers
     _debouncer.dispose();
@@ -1131,12 +2030,26 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       currentSearchEngine = prefs.getString('searchEngine') ?? 'Google';
       currentLanguage = prefs.getString('language') ?? 'en';
       _keepTabsOpen = prefs.getBool('keepTabsOpen') ?? false;
+      useCustomHomePage = prefs.getBool('useCustomHomePage') ?? false;
+      customHomeUrl = prefs.getString('customHomeUrl') ?? '';
       
       // Use widget parameter for classic mode or fall back to preference
       if (widget.initialClassicMode) {
         _isClassicMode = true;
       } else {
         _isClassicMode = prefs.getBool('isClassicMode') ?? false;
+      }
+      
+      // Update initial tab URL if custom homepage is enabled
+      if (tabs.isNotEmpty && useCustomHomePage && customHomeUrl.isNotEmpty) {
+        // Only update if we're on the home page
+        if (tabs[0]['url'] == _homeUrl || tabs[0]['url'] == 'file:///android_asset/main.html') {
+          tabs[0]['url'] = customHomeUrl;
+          _displayUrl = customHomeUrl;
+          if (!_urlFocusNode.hasFocus) {
+            _urlController.text = _formatUrl(customHomeUrl);
+          }
+        }
       }
     });
     
@@ -1155,6 +2068,114 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     await prefs.setString('homeUrl', _homeUrl);
     await prefs.setString('searchEngine', _searchEngine);
     await prefs.setBool('isClassicMode', _isClassicMode); // Save classic mode preference
+    await prefs.setBool('useCustomHomePage', useCustomHomePage);
+    await prefs.setString('customHomeUrl', customHomeUrl);
+  }
+  
+  void _showCustomHomeUrlDialog() {
+    final TextEditingController _urlController = TextEditingController(text: customHomeUrl);
+    
+    showCustomDialog(
+      context: context,
+      title: AppLocalizations.of(context)!.set_home_page_url,
+      isDarkMode: isDarkMode,
+      customContent: Container(
+        decoration: BoxDecoration(
+          color: ThemeManager.surfaceColor(),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: ThemeManager.primaryColor().withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+        child: TextField(
+          controller: _urlController,
+          decoration: InputDecoration(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            border: InputBorder.none,
+            hintText: 'https://example.com',
+            hintStyle: TextStyle(
+              color: ThemeManager.textColor().withOpacity(0.5),
+            ),
+          ),
+          style: TextStyle(color: ThemeManager.textColor()),
+          keyboardType: TextInputType.url,
+          autofocus: true,
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            AppLocalizations.of(context)!.cancel,
+            style: TextStyle(color: ThemeManager.textSecondaryColor()),
+          ),
+        ),
+        TextButton(
+          onPressed: () async {
+            String url = _urlController.text.trim();
+            
+            // Ensure URL has proper protocol and www if needed
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+              url = 'https://$url';
+            }
+            
+            // Add www if domain doesn't have it and doesn't have a subdomain
+            if (url.startsWith('https://') && !url.startsWith('https://www.')) {
+              // Check if it's a simple domain without subdomain
+              final domainPart = url.substring(8); // after https://
+              if (!domainPart.contains('/') && !domainPart.contains('.', domainPart.indexOf('.')+1)) {
+                url = url.replaceFirst('https://', 'https://www.');
+              }
+            }
+            
+            setState(() {
+              customHomeUrl = url;
+              // Enable custom home page if URL is set
+              if (customHomeUrl.isNotEmpty) {
+                useCustomHomePage = true;
+              }
+            });
+            
+            await _savePreferences();
+            Navigator.pop(context);
+            
+            // Apply the custom home page immediately if we're on the home page
+            if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+              final currentUrl = tabs[currentTabIndex]['url'];
+              if (currentUrl == _homeUrl || currentUrl == 'file:///android_asset/main.html') {
+                // Update tab data
+                tabs[currentTabIndex]['url'] = customHomeUrl;
+                
+                // Update UI
+                setState(() {
+                  _displayUrl = customHomeUrl;
+                  _urlController.text = _formatUrl(customHomeUrl);
+                  isSecure = customHomeUrl.startsWith('https://');
+                });
+                
+                // Load the custom home page
+                try {
+                  print('Loading custom homepage: $customHomeUrl');
+                  await controller.loadRequest(Uri.parse(customHomeUrl));
+                } catch (e) {
+                  print('Error loading custom homepage: $e');
+                  _showCustomNotification(
+                              message: '${AppLocalizations.of(context)!.error_loading_page}: $e',
+          icon: Icons.error,
+          iconColor: Colors.red,
+                  );
+                }
+              }
+            }
+          },
+          child: Text(
+            AppLocalizations.of(context)!.save,
+            style: TextStyle(color: ThemeManager.primaryColor()),
+          ),
+        ),
+      ],
+    );
   }
   Future<void> _initializeOptimizationEngine() async {
     // Lazy initialization to improve startup performance on M12
@@ -1239,321 +2260,307 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     ));
   }
 
-  Future<void> _setupScrollHandling() async {
-    print('🔧 _setupScrollHandling called');
-    
-    try {
-      await controller.runJavaScript('''
-        console.log('🚀 Setting up image-only context menu...');
+Future<void> _setupScrollHandling() async {
+  try {
+    // Inject JavaScript code for scroll handling and context menu
+    await controller.runJavaScript('''
+      (function() {
+        console.log('🔧 Setting up DIRECT context menu handling...');
         
-        // Send debug message to Flutter to confirm JS is running
-        if (window.DebugHandler && window.DebugHandler.postMessage) {
-          window.DebugHandler.postMessage('🚀 JavaScript context menu loaded - images only!');
-        }
-      
-        // Scroll handling variables
-        let lastScrollY = window.scrollY;
-        let scrollThrottle = null;
-        const SCROLL_THRESHOLD = 5;
-        const THROTTLE_DELAY = 50;
+        // Clean up any existing handlers
+        if (window.solarContextMenuCleanup) {
+          window.solarContextMenuCleanup();
+      }
 
-        // Image hold detection variables
-        let imageHoldDetector = {
-          active: false,
-          timer: null,
-          startX: 0,
-          startY: 0,
-          hasMoved: false,
-          target: null
+      // --- SCROLL HANDLING ---
+      let lastScrollY = window.scrollY;
+      let scrollThrottle = null;
+        
+      function handleScroll() {
+        const currentScrollY = window.scrollY;
+        const delta = currentScrollY - lastScrollY;
+        if (Math.abs(delta) > 5) {
+          if (window.onScroll && window.onScroll.postMessage) {
+              window.onScroll.postMessage(JSON.stringify({ "delta": delta }));
+          }
+          lastScrollY = currentScrollY;
+        }
+      }
+        
+      window.addEventListener('scroll', () => {
+        if (scrollThrottle) clearTimeout(scrollThrottle);
+        scrollThrottle = setTimeout(handleScroll, 50);
+      }, { passive: true });
+
+        // --- DIRECT CONTEXT MENU OVERRIDE ---
+        // Store event listeners for cleanup
+        const eventListeners = [];
+        
+        // Helper function to add event listeners and track them for cleanup
+        function addTrackedEventListener(element, type, listener, options) {
+          element.addEventListener(type, listener, options);
+          eventListeners.push({ element, type, listener });
+        }
+        
+        // Override the contextmenu event on all images
+        const contextMenuHandler = function(e) {
+          const target = e.target;
+          
+          if (target.tagName === 'IMG') {
+            console.log('🖼️ Context menu on image: ' + target.src);
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (window.SolarContextMenu) {
+              const data = {
+                type: 'image_touch_start',
+                src: target.src,
+                alt: target.alt || ''
+              };
+              console.log('🖼️ Sending image data to Flutter: ', data);
+              window.SolarContextMenu.postMessage(JSON.stringify(data));
+            } else {
+              console.error('SolarContextMenu channel not available');
+            }
+            
+            return false;
+          }
         };
         
-        const HOLD_TIME = 300; // Very fast response for images to avoid interfering with webpage clicks
-        const MAX_MOVEMENT = 15;
-
-        function handleScroll() {
-          const currentScrollY = window.scrollY;
-          const delta = currentScrollY - lastScrollY;
+        addTrackedEventListener(document, 'contextmenu', contextMenuHandler, false);
+        
+        // Track long press on all images
+        const LONG_PRESS_DURATION = 500;
+        let longPressTimer = null;
+        let touchStartElement = null;
+        
+        // Function to handle image long press
+        function handleImageLongPress(img) {
+          console.log('🖼️ Long press detected on image: ' + img.src);
           
-          if (Math.abs(delta) > SCROLL_THRESHOLD) {
-            if (window.flutter_inappwebview) {
-              window.flutter_inappwebview.callHandler('onScroll', {
-                scrollY: currentScrollY,
-                delta: delta
-              });
-            }
-            lastScrollY = currentScrollY;
+          if (window.SolarContextMenu) {
+            const data = {
+              type: 'image_touch_start',
+              src: img.src,
+              alt: img.alt || ''
+            };
+            console.log('🖼️ Sending image data to Flutter: ', data);
+            window.SolarContextMenu.postMessage(JSON.stringify(data));
+          } else {
+            console.error('SolarContextMenu channel not available');
           }
         }
-
-        // Normal scroll listener
-        window.addEventListener('scroll', function() {
-          if (scrollThrottle) clearTimeout(scrollThrottle);
-          scrollThrottle = setTimeout(handleScroll, THROTTLE_DELAY);
-        }, { passive: true });
-
-        // IMAGE & TEXT CONTEXT DETECTOR - Images get custom menu, Text gets native selection
-        window.addEventListener('touchstart', function(e) {
+        
+        // Touch start handler
+        const touchStartHandler = function(e) {
+          if (e.touches.length !== 1) return;
+          
           const target = e.target;
-          let actualTarget = target;
-          
-          // Better target detection
-          if (target.nodeType === Node.TEXT_NODE) {
-            actualTarget = target.parentElement;
-          }
-          
-          // Check for images (including background images)
-          const isImg = actualTarget.tagName === 'IMG' || 
-                       actualTarget.closest('img') ||
-                       (actualTarget.style && actualTarget.style.backgroundImage && actualTarget.style.backgroundImage !== 'none') ||
-                       getComputedStyle(actualTarget).backgroundImage !== 'none';
-          
-          // Check for text content
-          const isText = !isImg && (
-            actualTarget.textContent && actualTarget.textContent.trim().length > 0 ||
-            actualTarget.tagName === 'INPUT' || 
-            actualTarget.tagName === 'TEXTAREA' ||
-            actualTarget.isContentEditable ||
-            actualTarget.closest('[contenteditable="true"]')
-          );
-          
-          console.log('🎯 Target:', actualTarget.tagName || 'TEXT', 'Is Image:', isImg, 'Is Text:', isText);
-          if (window.DebugHandler && window.DebugHandler.postMessage) {
-            window.DebugHandler.postMessage('🎯 Target: ' + (actualTarget.tagName || 'TEXT') + ', Image: ' + isImg + ', Text: ' + isText);
-          }
-          
-          if (isImg) {
-            // IMAGES: Custom context menu with fast response (300ms)
-            console.log('🖼️ Image detected - starting hold timer');
-            if (window.DebugHandler && window.DebugHandler.postMessage) {
-              window.DebugHandler.postMessage('🖼️ Image detected - starting hold timer');
+        if (target.tagName === 'IMG') {
+            console.log('🖼️ Touch start on image: ' + target.src);
+            
+            // Cancel any existing timer
+            if (longPressTimer) {
+              clearTimeout(longPressTimer);
             }
             
-            imageHoldDetector.active = true;
-            imageHoldDetector.startX = e.touches[0].clientX;
-            imageHoldDetector.startY = e.touches[0].clientY;
-            imageHoldDetector.hasMoved = false;
-            imageHoldDetector.target = actualTarget;
+            // Set the touched element
+            touchStartElement = target;
             
-            // Add subtle visual feedback
-            actualTarget.style.opacity = '0.9';
-            actualTarget.style.transition = 'opacity 0.2s ease';
-            
-            imageHoldDetector.timer = setTimeout(() => {
-              if (imageHoldDetector.active && !imageHoldDetector.hasMoved) {
-                console.log('⏰ IMAGE HOLD CONFIRMED!');
-                if (window.DebugHandler && window.DebugHandler.postMessage) {
-                  window.DebugHandler.postMessage('⏰ IMAGE HOLD CONFIRMED!');
-                }
-                
-                // Reset visual feedback
-                actualTarget.style.opacity = '1';
-                
-                // Get image URL
-                let imageUrl = '';
-                if (actualTarget.tagName === 'IMG') {
-                  imageUrl = actualTarget.src;
-                } else if (actualTarget.closest('img')) {
-                  imageUrl = actualTarget.closest('img').src;
-                } else {
-                  // Background image
-                  const bgImage = getComputedStyle(actualTarget).backgroundImage;
-                  const match = bgImage.match(/url\\(["']?([^"'\\)]+)["']?\\)/);
-                  if (match) {
-                    imageUrl = match[1];
-                  }
-                }
-                
-                console.log('🖼️ Showing image context menu for:', imageUrl);
-                if (window.DebugHandler && window.DebugHandler.postMessage) {
-                  window.DebugHandler.postMessage('🖼️ Showing image context menu for: ' + imageUrl);
-                }
-                
-                // Send image context menu message
-                if (window.SolarContextMenu && window.SolarContextMenu.postMessage && imageUrl) {
-                  window.SolarContextMenu.postMessage(JSON.stringify({
-                    type: 'image',
-                    imageUrl: imageUrl,
-                    x: imageHoldDetector.startX,
-                    y: imageHoldDetector.startY + window.scrollY
-                  }));
-                  console.log('✅ Image context menu sent');
-                }
+            // Start a new timer for long press
+            longPressTimer = setTimeout(() => {
+              if (touchStartElement === target) {
+                handleImageLongPress(target);
               }
-              imageHoldDetector.active = false;
-            }, 300); // Fast 300ms response for images
-            
-          } else if (isText) {
-            // TEXT: Enable native Android text selection immediately
-            console.log('📝 Text detected - enabling native Android selection');
-            if (window.DebugHandler && window.DebugHandler.postMessage) {
-              window.DebugHandler.postMessage('📝 Text detected - enabling native Android selection');
-            }
-            
-            // Enable text selection globally
-            document.body.style.webkitUserSelect = 'text';
-            document.body.style.userSelect = 'text';
-            actualTarget.style.webkitUserSelect = 'text';
-            actualTarget.style.userSelect = 'text';
-            
-            // For input fields, focus them to trigger native selection
-            if (actualTarget.tagName === 'INPUT' || actualTarget.tagName === 'TEXTAREA') {
-              actualTarget.focus();
-              console.log('📝 Input field focused - Android will handle selection');
-            } else {
-              // For regular text, create selection immediately to trigger Android's native menu
-              try {
-                const range = document.createRange();
-                
-                if (actualTarget.textContent && actualTarget.textContent.trim()) {
-                  const walker = document.createTreeWalker(
-                    actualTarget,
-                    NodeFilter.SHOW_TEXT,
-                    null,
-                    false
-                  );
-                  
-                  let textNode = walker.nextNode();
-                  if (textNode && textNode.textContent.trim()) {
-                    const text = textNode.textContent.trim();
-                    const words = text.split(/\\s+/);
-                    
-                    // Auto-select intelligently based on content length
-                    if (words.length <= 2) {
-                      // Short text - select all
-                      range.selectNodeContents(textNode);
-                    } else {
-                      // Longer text - select meaningful portion (first sentence or first 8 words)
-                      const sentences = text.split(/[.!?]+/);
-                      let textToSelect;
-                      
-                      if (sentences.length > 1 && sentences[0].length < 100) {
-                        // Select first sentence if reasonable length
-                        textToSelect = sentences[0].trim();
-                      } else {
-                        // Select first 8 words
-                        textToSelect = words.slice(0, Math.min(8, words.length)).join(' ');
-                      }
-                      
-                      const startIndex = text.indexOf(textToSelect);
-                      if (startIndex !== -1) {
-                        range.setStart(textNode, startIndex);
-                        range.setEnd(textNode, startIndex + textToSelect.length);
-                      } else {
-                        range.selectNodeContents(textNode);
-                      }
-                    }
-                    
-                    const selection = window.getSelection();
-                    selection.removeAllRanges();
-                    selection.addRange(range);
-                    
-                    console.log('📝 Text auto-selected for Android menu:', selection.toString().substr(0, 50));
-                    if (window.DebugHandler && window.DebugHandler.postMessage) {
-                      window.DebugHandler.postMessage('📝 Text auto-selected: ' + selection.toString().substr(0, 50));
-                    }
-                  }
-                }
-              } catch (e) {
-                console.log('📝 Selection error, will rely on native handling:', e);
-              }
-            }
-            
-            // Let Android's native selection system take over from here
-            // No custom context menu needed - Android will show its own copy/paste menu
+            }, LONG_PRESS_DURATION);
           }
-          // For everything else, do nothing - let system handle it normally
-        }, { passive: false });
-
-        window.addEventListener('touchmove', function(e) {
-          if (imageHoldDetector.active) {
-            const deltaX = Math.abs(e.touches[0].clientX - imageHoldDetector.startX);
-            const deltaY = Math.abs(e.touches[0].clientY - imageHoldDetector.startY);
-            const totalMove = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-            
-            if (totalMove > MAX_MOVEMENT) {
-              console.log('🚫 Canceling image hold - movement detected');
-              if (window.DebugHandler && window.DebugHandler.postMessage) {
-                window.DebugHandler.postMessage('🚫 Canceling image hold - movement: ' + Math.round(totalMove) + 'px');
-              }
-              
-              imageHoldDetector.hasMoved = true;
-              imageHoldDetector.active = false;
-              
-              // Reset visual feedback
-              if (imageHoldDetector.target) {
-                imageHoldDetector.target.style.opacity = '1';
-              }
-              
-              if (imageHoldDetector.timer) {
-                clearTimeout(imageHoldDetector.timer);
-                imageHoldDetector.timer = null;
-              }
-            }
-          }
-        }, { passive: false });
+        };
         
-        window.addEventListener('touchend', function(e) {
-          if (imageHoldDetector.active) {
-            console.log('👆 Touch ended - image hold timer still running');
-            if (window.DebugHandler && window.DebugHandler.postMessage) {
-              window.DebugHandler.postMessage('👆 Touch ended - image hold timer still running');
-            }
-            // Let the timer complete for hold detection
-          }
-        }, { passive: true });
+        addTrackedEventListener(document, 'touchstart', touchStartHandler, false);
         
-        console.log('✅ Image-only context menu ready!');
-        if (window.DebugHandler && window.DebugHandler.postMessage) {
-          window.DebugHandler.postMessage('✅ Image-only context menu ready!');
+        // Touch end handler
+        const touchEndHandler = function() {
+          if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+          }
+          touchStartElement = null;
+        };
+        
+        addTrackedEventListener(document, 'touchend', touchEndHandler, false);
+        
+        // Touch cancel handler
+        const touchCancelHandler = function() {
+          if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+          }
+          touchStartElement = null;
+        };
+        
+        addTrackedEventListener(document, 'touchcancel', touchCancelHandler, false);
+        
+        // Touch move handler
+        const touchMoveHandler = function() {
+          if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+          }
+          touchStartElement = null;
+        };
+        
+        addTrackedEventListener(document, 'touchmove', touchMoveHandler, false);
+        
+        // Create a function to manually trigger the context menu for testing
+        window.showImageContextMenu = function(imgSrc) {
+          if (window.SolarContextMenu) {
+            const data = {
+              type: 'image_touch_start',
+              src: imgSrc || 'https://example.com/test.jpg',
+              alt: 'Test image'
+            };
+            console.log('🖼️ Manually triggering image context menu: ', data);
+            window.SolarContextMenu.postMessage(JSON.stringify(data));
+            return true;
+          } else {
+            console.error('SolarContextMenu channel not available');
+            return false;
+          }
+        };
+        
+        // Add test button for debugging
+        function addTestButton() {
+          const existingButton = document.getElementById('solar-test-button');
+          if (existingButton) return;
+          
+          const button = document.createElement('button');
+          button.id = 'solar-test-button';
+          button.textContent = 'Test Image Menu';
+          button.style.position = 'fixed';
+          button.style.bottom = '10px';
+          button.style.right = '10px';
+          button.style.zIndex = '9999';
+          button.style.padding = '10px';
+          button.style.backgroundColor = '#268bd2';
+          button.style.color = 'white';
+          button.style.border = 'none';
+          button.style.borderRadius = '5px';
+          
+          button.addEventListener('click', function() {
+            window.showImageContextMenu();
+          });
+          
+          document.body.appendChild(button);
         }
-      ''');
-
+        
+        // Add the test button in development mode
+        if (window.location.href.includes('localhost') || window.location.href.includes('127.0.0.1')) {
+          addTestButton();
+        }
+        
+        // Create cleanup function
+        window.solarContextMenuCleanup = function() {
+          console.log('🧹 Cleaning up context menu handlers');
+          if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+          }
+          
+          // Remove all tracked event listeners
+          eventListeners.forEach(({ element, type, listener }) => {
+            element.removeEventListener(type, listener);
+          });
+          eventListeners.length = 0;
+        };
+        
+        // Function to reinitialize context menu after use
+        window.reinitializeContextMenu = function() {
+          console.log('🔄 Reinitializing context menu');
+          if (window.solarContextMenuCleanup) {
+            window.solarContextMenuCleanup();
+          }
+          
+          // Re-add all event listeners
+          addTrackedEventListener(document, 'contextmenu', contextMenuHandler, false);
+          addTrackedEventListener(document, 'touchstart', touchStartHandler, false);
+          addTrackedEventListener(document, 'touchend', touchEndHandler, false);
+          addTrackedEventListener(document, 'touchcancel', touchCancelHandler, false);
+          addTrackedEventListener(document, 'touchmove', touchMoveHandler, false);
+        };
+        
+        console.log('✅ Context menu setup complete');
+      })();
+    ''');
+    
+    // --- DART KANAL DİNLEYİCİLERİ ---
+    
+    // Scroll Kanalı
     await controller.addJavaScriptChannel(
       'onScroll',
       onMessageReceived: (JavaScriptMessage message) {
         if (!mounted) return;
-          _scrollThrottle.run(() {
+        _scrollThrottle.run(() {
           try {
             final data = json.decode(message.message);
-            final delta = data['delta'] as double;
+            final delta = (data['delta'] as num).toDouble();
             
             if (delta.abs() > 3) {
-              if (delta > 0) {
+              if (delta < 0) {
                 if (!_hideUrlBar && !_isUpdatingState) {
                   _isUpdatingState = true;
-                  setState(() {
-                    _hideUrlBar = true;
-                    _hideUrlBarController.forward();
-                  });
-                  Future.delayed(const Duration(milliseconds: 300), () {
-                    _isUpdatingState = false;
-                  });
+                  setState(() { _hideUrlBar = true; _hideUrlBarController.forward(); });
+                  Future.delayed(const Duration(milliseconds: 300), () { _isUpdatingState = false; });
                 }
               } else {
                 if (_hideUrlBar && !_isUpdatingState) {
                   _isUpdatingState = true;
-                  setState(() {
-                    _hideUrlBar = false;
-                    _hideUrlBarController.reverse();
-                  });
-                  Future.delayed(const Duration(milliseconds: 300), () {
-                    _isUpdatingState = false;
-                  });
+                  setState(() { _hideUrlBar = false; _hideUrlBarController.reverse(); });
+                  Future.delayed(const Duration(milliseconds: 300), () { _isUpdatingState = false; });
                 }
               }
             }
           } catch (e) {
-            // Handle errors silently
+            // Hataları sessizce işle
           }
         });
       },
     );
-    
-    print('✅ _setupScrollHandling completed successfully');
-    } catch (e) {
-      print('❌ Error in _setupScrollHandling: $e');
-    }
-  }  Future<WebViewController> _initializeWebViewController() async {
+
+    // ContextMenu Kanalı
+    await controller.addJavaScriptChannel(
+      'SolarContextMenu',
+      onMessageReceived: (JavaScriptMessage message) {
+        if (!mounted) return;
+        try {
+          final data = json.decode(message.message) as Map<String, dynamic>;
+          final type = data['type'] as String;
+          
+          switch (type) {
+            case 'image_touch_start':
+            case 'text_touch_start':
+              _handleTouchStart(data);
+              break;
+            case 'touch_moved':
+              _handleTouchMoved();
+              break;
+            case 'touch_end':
+              _handleTouchEnd();
+              break;
+          }
+        } catch (e) {
+          print('❌ [V7] Error processing context menu message: $e');
+        }
+      },
+    );
+
+    print('✅ [V7] _setupScrollHandling completed successfully');
+  } catch (e) {
+    print('❌ [V7] Error in _setupScrollHandling: $e');
+  }
+}
+  
+  
+  Future<WebViewController> _initializeWebViewController() async {
     final webViewController = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.transparent)
@@ -1768,23 +2775,33 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
           final data = json.decode(message.message) as Map<String, dynamic>;
           final type = data['type'] as String;
           
-          if (type == 'image') {
-            final imageUrl = data['imageUrl'] as String;
-            final x = (data['x'] as num).toDouble();
-            final y = (data['y'] as num).toDouble();
-            
-            print('🖼️ Showing image context menu for: $imageUrl at ($x, $y)');
-            
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!mounted) return;
-              setState(() {
-                _tapPosition = Offset(x, y);
-              });
-              _showImageContextMenu(context, imageUrl, controller);
-            });
+          print('🖼️ Processing context menu type: $type');
+          
+          switch (type) {
+            case 'test':
+              print('🖼️ ✅ JavaScript channel test successful!');
+              break;
+            case 'image_touch_start':
+              print('🖼️ Calling _handleTouchStart for image');
+              _handleTouchStart(data);
+              break;
+            case 'text_touch_start':
+              print('📝 Calling _handleTouchStart for text');
+              _handleTouchStart(data);
+              break;
+            case 'touch_moved':
+              print('🖼️ Calling _handleTouchMoved');
+              _handleTouchMoved();
+              break;
+            case 'touch_end':
+              print('🖼️ Calling _handleTouchEnd');
+              _handleTouchEnd();
+              break;
+            default:
+              print('🖼️ Unknown context menu type: $type');
           }
         } catch (e) {
-          print('❌ Error handling image long press: $e');
+          print('❌ Error processing context menu message: $e');
         }
       },
     );
@@ -1797,11 +2814,30 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 
 // Load initial tab content efficiently with proper loading animation
     if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-      final initialUrl = tabs[currentTabIndex]['url'];
+      // Check if we should use the custom homepage
+      String initialUrl = tabs[currentTabIndex]['url'];
+      
+      // If this is the home page and custom homepage is enabled, use it instead
+      if ((initialUrl == _homeUrl || initialUrl == 'file:///android_asset/main.html') && 
+          useCustomHomePage && customHomeUrl.isNotEmpty) {
+        print('Using custom homepage on startup: $customHomeUrl');
+        initialUrl = customHomeUrl;
+        tabs[currentTabIndex]['url'] = initialUrl;
+        _displayUrl = initialUrl;
+        _urlController.text = _formatUrl(initialUrl);
+        isSecure = initialUrl.startsWith('https://');
+      }
+      
       if (initialUrl.isNotEmpty && initialUrl != 'about:blank') {
         // FIXED: Trigger loading animation for initial page load
         _setLoadingState(true);
+        
+        try {
+          print('Loading initial URL: $initialUrl');
         controller.loadRequest(Uri.parse(initialUrl));
+        } catch (e) {
+          print('Error loading initial URL: $e');
+        }
         
         // Initialize theme for home page if needed
         if (initialUrl.contains('main.html') || initialUrl == _homeUrl) {
@@ -2499,7 +3535,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
               setState(() {
                 _tapPosition = Offset(x, y);
               });
-              _showImageContextMenu(context, imageUrl, controller);
+              _showImageContextMenu({
+                'src': imageUrl,
+                'alt': '',
+              });
             });
           }
         } catch (e) {
@@ -3230,6 +4269,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: ThemeManager.textColor().withOpacity(0.1),
+      isDismissible: true,
+      enableDrag: true,
       builder: (context) => Container(
         height: height,
         decoration: BoxDecoration(
@@ -4852,7 +5893,8 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     if (index < 0 || index >= tabs.length) return;
     
     setState(() {
-      currentTabIndex = index;      controller = tabs[index]['controller'];
+      currentTabIndex = index;      
+      controller = tabs[index]['controller'];
       _displayUrl = tabs[index]['url'];
       
       // Update URL bar text properly
@@ -4870,6 +5912,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     
     // Update navigation state after switching tabs to ensure accuracy
     _updateNavigationState();
+    
+    // Reinitialize JavaScript handlers for the tab
+    _setupScrollHandlingForController(controller);
   }
 
   Widget _buildAppearanceSettings() {
@@ -6335,6 +7380,29 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                         },
                         activeColor: ThemeManager.primaryColor(),
                       ),
+                    ),
+                    _buildSettingsItem(
+                      title: AppLocalizations.of(context)!.custom_home_page,
+                      trailing: Switch(
+                        value: useCustomHomePage,
+                        onChanged: (value) {
+                          setState(() {
+                            useCustomHomePage = value;
+                            if (value && customHomeUrl.isEmpty) {
+                              _showCustomHomeUrlDialog();
+                            }
+                          });
+                          _savePreferences();
+                        },
+                        activeColor: ThemeManager.primaryColor(),
+                      ),
+                    ),
+                    _buildSettingsItem(
+                      title: AppLocalizations.of(context)!.set_home_page_url,
+                      subtitle: customHomeUrl.isEmpty ? 
+                        AppLocalizations.of(context)!.not_set : 
+                        customHomeUrl,
+                      onTap: () => _showCustomHomeUrlDialog(),
                       isLast: true,
                     ),
                   ],
@@ -7038,7 +8106,15 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
   
   void _addNewTab({String? url, bool isIncognito = false, String? groupId}) {
-    final targetUrl = url ?? _homeUrl;
+    // Use custom home page if enabled and url is empty or default home
+    String targetUrl;
+    if ((url == null || url == _homeUrl || url == 'file:///android_asset/main.html') && 
+        useCustomHomePage && customHomeUrl.isNotEmpty) {
+      print('Using custom home page URL: $customHomeUrl');
+      targetUrl = customHomeUrl;
+    } else {
+      targetUrl = url ?? (useCustomHomePage && customHomeUrl.isNotEmpty ? customHomeUrl : _homeUrl);
+    }
     final newTab = {
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
       'url': targetUrl,
@@ -7442,18 +8518,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   }
   void _closeAiActionBar() {
     if (_isAiActionBarVisible) {
+      // Mark as not visible immediately to prevent further interactions
       setState(() {
         _isAiActionBarVisible = false;
       });
-      // Enhanced animation with smooth closing for classic mode
-      _aiActionBarController.reverse().then((_) {
-        // Additional cleanup after animation completes
-        if (mounted) {
-          setState(() {
-            // Ensure complete state reset
-          });
-        }
-      });
+      
+      // Run the animation to hide it smoothly
+      _aiActionBarController.reverse();
     }
   }
   void _handleSummarize() async {
@@ -7561,7 +8632,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       if (currentUrl == null || currentUrl.isEmpty) {
         showCustomNotification(
           context: context,
-          message: "No page to install as PWA",
+          message: AppLocalizations.of(context)!.no_page_to_install,
           isDarkMode: ThemeManager.getCurrentTheme().isDark,
         );
         return;
@@ -7584,7 +8655,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       if (success) {
         showCustomNotification(
           context: context,
-          message: "PWA installed: $pageTitle",
+          message: "${AppLocalizations.of(context)!.pwa_installed}: $pageTitle",
           icon: Icons.check_circle,
           iconColor: Colors.green,
           isDarkMode: ThemeManager.getCurrentTheme().isDark,
@@ -7592,7 +8663,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       } else {
         showCustomNotification(
           context: context,
-          message: "Failed to install PWA",
+          message: AppLocalizations.of(context)!.failed_to_install_pwa,
           icon: Icons.error,
           iconColor: Colors.red,
           isDarkMode: ThemeManager.getCurrentTheme().isDark,
@@ -7602,7 +8673,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     } catch (e) {
       showCustomNotification(
         context: context,
-        message: "Failed to install PWA: ${e.toString()}",
+        message: "${AppLocalizations.of(context)!.failed_to_install_pwa}: ${e.toString()}",
         icon: Icons.error,
         iconColor: Colors.red,
         isDarkMode: ThemeManager.getCurrentTheme().isDark,
@@ -7792,7 +8863,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       final String selectedText = result['selectedText'] ?? '';
 
       if (isImage && imageUrl.isNotEmpty) {
-        _showImageContextMenu(context, imageUrl, webViewController);
+        _showImageContextMenu({
+          'src': imageUrl,
+          'alt': '',
+        });
       } else if (hasSelectedText) {
         // Note: Text context menu disabled - using native Android text selection instead
         print('Text selection detected but using native Android menu instead');
@@ -7801,253 +8875,12 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
       print('Error showing context menu: $e');
     }
   }
-  void _showImageContextMenu(BuildContext context, String imageUrl, WebViewController webViewController) {
-    showDialog(
-      context: context,
-      barrierColor: Colors.black26,
-      builder: (BuildContext context) {
-        return TweenAnimationBuilder<double>(
-          duration: const Duration(milliseconds: 250),
-          tween: Tween(begin: 0.0, end: 1.0),
-          curve: Curves.easeOutCubic,
-          builder: (context, value, child) {
-            return Transform.scale(
-              scale: 0.8 + (0.2 * value),
-              child: Opacity(
-                opacity: value,
-                child: Center(
-                  child: Material(
-                    color: Colors.transparent,
-                    child: Container(
-                      margin: const EdgeInsets.all(20),
-                      constraints: const BoxConstraints(maxWidth: 220),
-                      decoration: BoxDecoration(
-                        color: ThemeManager.surfaceColor(),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.15),
-                            blurRadius: 24,
-                            spreadRadius: 0,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const SizedBox(height: 8),
-                          _buildCompactContextMenuItem(
-                            icon: Icons.download_rounded,
-                            title: _getLocalizedContextText('downloadImage', 'Download'),
-                            onTap: () {
-                              Navigator.of(context).pop();
-                              _downloadImage(imageUrl);
-                            },
-                          ),
-                          _buildMenuDivider(),
-                          _buildCompactContextMenuItem(
-                            icon: Icons.content_copy_rounded,
-                            title: _getLocalizedContextText('copyImage', 'Copy URL'),
-                            onTap: () {
-                              Navigator.of(context).pop();
-                              _copyImageUrl(imageUrl);
-                            },
-                          ),
-                          _buildMenuDivider(),
-                          _buildCompactContextMenuItem(
-                            icon: Icons.open_in_new_rounded,
-                            title: _getLocalizedContextText('openImageNewTab', 'Open in New Tab'),
-                            onTap: () {
-                              Navigator.of(context).pop();
-                              _openImageInNewTab(imageUrl);
-                            },
-                          ),
-                          const SizedBox(height: 8),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-  Widget _buildContextMenuItem({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-    bool enabled = true,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: enabled ? onTap : null,
-        borderRadius: BorderRadius.circular(12),
-        splashColor: ThemeManager.primaryColor().withOpacity(0.1),
-        highlightColor: ThemeManager.primaryColor().withOpacity(0.05),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: enabled 
-                    ? ThemeManager.primaryColor().withOpacity(0.1)
-                    : ThemeManager.textColor().withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Icon(
-                  icon,
-                  size: 16,
-                  color: enabled 
-                    ? ThemeManager.primaryColor()
-                    : ThemeManager.textColor().withOpacity(0.4),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Flexible(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: enabled 
-                      ? ThemeManager.textColor()
-                      : ThemeManager.textColor().withOpacity(0.4),
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
-  Widget _buildCompactContextMenuItem({
-    required IconData icon,
-    required String title,
-    required VoidCallback onTap,
-    bool enabled = true,
-  }) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: enabled ? onTap : null,
-        borderRadius: BorderRadius.circular(8),
-        splashColor: ThemeManager.primaryColor().withOpacity(0.1),
-        highlightColor: ThemeManager.primaryColor().withOpacity(0.05),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 18,
-                color: enabled 
-                  ? ThemeManager.primaryColor()
-                  : ThemeManager.textColor().withOpacity(0.4),
-              ),
-              const SizedBox(width: 12),
-              Flexible(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: enabled 
-                      ? ThemeManager.textColor()
-                      : ThemeManager.textColor().withOpacity(0.4),
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMenuDivider() {
-    return Container(
-      height: 1,
-      margin: const EdgeInsets.symmetric(horizontal: 12),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.transparent,
-            ThemeManager.textColor().withOpacity(0.08),
-            Colors.transparent,
-          ],
-        ),
-      ),
-    );
-  }
-  // Context menu actions - Removed old implementations, using improved versions below
+  // Context menu actions - using existing download system
   bool get _hasClipboardContent {
     // This should be updated to check actual clipboard content
     // For now, we'll assume there might be content available
     return true;
-  }
-
-  // Enhanced context menu actions with better error handling
-  Future<void> _downloadImage(String imageUrl) async {
-    try {
-      // Request storage permission
-      final status = await Permission.storage.request();
-      if (!status.isGranted) {
-        _showNotification(Text(_getLocalizedContextText('storagePermissionRequired', 'Storage permission required to download images')));
-        return;
-      }
-
-      _showNotification(Text(_getLocalizedContextText('downloadingImage', 'Downloading image...')));
-      
-      final response = await http.get(Uri.parse(imageUrl));
-      if (response.statusCode == 200) {
-        final directory = await getExternalStorageDirectory();
-        final fileName = 'solar_image_${DateTime.now().millisecondsSinceEpoch}.${_getImageExtension(imageUrl)}';
-        final file = File('${directory?.path}/$fileName');
-        
-        await file.writeAsBytes(response.bodyBytes);        _showNotification(Text(_getLocalizedContextText('imageDownloaded', 'Image downloaded successfully')));
-      } else {
-        _showNotification(Text(_getLocalizedContextText('downloadFailed', 'Failed to download image')));
-      }
-    } catch (e) {
-      _showNotification(Text(_getLocalizedContextText('downloadError', 'Error downloading image')));
-      print('Download error: $e');
-    }
-  }
-
-  String _getImageExtension(String url) {
-    final uri = Uri.tryParse(url);
-    if (uri != null) {
-      final path = uri.path.toLowerCase();
-      if (path.endsWith('.jpg') || path.endsWith('.jpeg')) return 'jpg';
-      if (path.endsWith('.png')) return 'png';
-      if (path.endsWith('.gif')) return 'gif';
-      if (path.endsWith('.webp')) return 'webp';
-    }
-    return 'jpg'; // Default fallback
-  }
-
-  Future<void> _copyImageUrl(String imageUrl) async {
-    await Clipboard.setData(ClipboardData(text: imageUrl));
-    _showNotification(Text(_getLocalizedContextText('imageUrlCopied', 'Image URL copied to clipboard')));
-  }
-
-  void _openImageInNewTab(String imageUrl) {    setState(() {
-      _addNewTab(url: imageUrl);
-    });
-    _showNotification(Text(_getLocalizedContextText('imageOpenedNewTab', 'Image opened in new tab')));
   }
 
   Future<void> _copyText(String text) async {
@@ -8132,16 +8965,17 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         case 'downloadImage':
           return localizations.download_image;
         case 'copyImage':
-          return 'Copy Image'; // Fallback to English
+          return localizations.copy_image;
         case 'openImageNewTab':
-          return localizations.new_tab;
+          return localizations.open_image_in_new_tab;
         
         // Text context menu
         case 'copyText':
-          return 'Copy'; // Fallback to English
+          return localizations.copy;
         case 'pasteText':
-          return 'Paste'; // Fallback to English        case 'cutText':
-          return 'Cut'; // Fallback to English
+          return localizations.paste;
+        case 'cutText':
+          return localizations.cut;
         
         // Notifications - use existing keys or fallback
         case 'storagePermissionRequired':
@@ -8155,21 +8989,21 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
         case 'downloadError':
           return localizations.download_failed;
         case 'imageUrlCopied':
-          return 'Image URL copied';
+          return localizations.image_url_copied;
         case 'imageOpenedNewTab':
-          return 'Opened in new tab';
+          return localizations.opened_in_new_tab;
         case 'textCopied':
-          return 'Text copied';
+          return localizations.text_copied;
         case 'textPasted':
-          return 'Text pasted';
+          return localizations.text_pasted;
         case 'textCut':
-          return 'Text cut';
+          return localizations.text_cut;
         case 'clipboardEmpty':
-          return 'Clipboard is empty';
+          return localizations.clipboard_empty;
         case 'pasteError':
-          return 'Error pasting text';
+          return localizations.paste_error;
         case 'cutError':
-          return 'Error cutting text';
+          return localizations.cut_error;
         
         default:
           return fallback;
@@ -8266,8 +9100,41 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                   ignoring: _isSlideUpPanelVisible || keyboardVisible,
                   child: Listener(
                     behavior: HitTestBehavior.translucent,
-                    onPointerMove: (PointerMoveEvent event) {                    // Don't allow URL bar hide/show when keyboard is visible
+                                         onPointerDown: (PointerDownEvent event) {
+                      // Store the pointer down position and time for long press detection
+                      _pointerDownPosition = event.position;
+                      _pointerDownTime = DateTime.now();
+                      _isPointerMoved = false;
+                      
+                      // Start long press timer with shorter duration for better responsiveness
+                      _longPressTimer?.cancel();
+                      _longPressTimer = Timer(const Duration(milliseconds: 400), () {
+                        if (_isPointerMoved) return;
+                        
+                        // Vibrate to provide haptic feedback for long press
+                        HapticFeedback.mediumImpact();
+                        
+                        // Check if the pointer is still down and hasn't moved much
+                        if (_pointerDownPosition != null) {
+                          print('🖐️ Long press detected at ${_pointerDownPosition!}');
+                          
+                          // Trigger JavaScript to check if there's an image or text at this position
+                          _checkForImageAtPosition(_pointerDownPosition!);
+                        }
+                      });
+                    },
+                    onPointerMove: (PointerMoveEvent event) {
+                      // Don't allow URL bar hide/show when keyboard is visible
                       if (keyboardVisible) return;
+                      
+                      // Check if we've moved enough to cancel long press
+                      if (_pointerDownPosition != null) {
+                        final distance = (event.position - _pointerDownPosition!).distance;
+                        if (distance > 10) {
+                          _isPointerMoved = true;
+                          _longPressTimer?.cancel();
+                        }
+                      }
                       
                       // Handle scroll events for both classic and non-classic modes
                       if (!_isSlideUpPanelVisible && event.delta.dy.abs() > 5) {
@@ -8289,6 +9156,16 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
                           }
                         }
                       }
+                    },
+                    onPointerUp: (PointerUpEvent event) {
+                      // Cancel long press detection
+                      _longPressTimer?.cancel();
+                      _pointerDownPosition = null;
+                    },
+                    onPointerCancel: (PointerCancelEvent event) {
+                      // Cancel long press detection
+                      _longPressTimer?.cancel();
+                      _pointerDownPosition = null;
                     },
                   ),
                 ),
@@ -9857,6 +10734,15 @@ Future<void> _handlePageStarted(String url) async {
   }
   // In the method where you create new tabs
   void _createNewTab(String url) async {
+    // Use custom home page if enabled and url is empty (new tab) or default home
+    if (useCustomHomePage && customHomeUrl.isNotEmpty && 
+        (url.isEmpty || url == 'about:blank' || url == _homeUrl || url == 'file:///android_asset/main.html')) {
+      print('Using custom home page URL: $customHomeUrl');
+      url = customHomeUrl;
+    } else {
+      print('Using provided URL: $url');
+    }
+    
     final newTab = {
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
       'url': url,
@@ -9865,6 +10751,9 @@ Future<void> _handlePageStarted(String url) async {
       'controller': WebViewController(),
       'favicon': null,
       'groupId': null,
+      'canGoBack': false,
+      'canGoForward': false,
+      'lastActiveTime': DateTime.now(),
     };
     // Set up navigation delegate before adding the tab - use the centralized navigation delegate
     await newTab['controller'].setNavigationDelegate(await _navigationDelegate);
@@ -9878,10 +10767,26 @@ Future<void> _handlePageStarted(String url) async {
       _urlController.text = _formatUrl(url);
     });
 
-    // Ensure the page is loaded
+        // Ensure the page is loaded
     await Future.delayed(Duration(milliseconds: 100));
     if (url.isNotEmpty) {
-      await newTab['controller'].loadRequest(Uri.parse(url));
+      try {
+        // Format URL properly if needed
+        String formattedUrl = url;
+        if (!formattedUrl.startsWith('http://') && !formattedUrl.startsWith('https://')) {
+          formattedUrl = 'https://$formattedUrl';
+        }
+        
+        print('Loading URL in new tab: $formattedUrl');
+        await newTab['controller'].loadRequest(Uri.parse(formattedUrl));
+        
+        // Update the tab URL with the formatted version
+        if (formattedUrl != url) {
+          newTab['url'] = formattedUrl;
+        }
+      } catch (e) {
+        print('Error loading URL in new tab: $e');
+      }
     }
   }
 
@@ -10006,12 +10911,53 @@ Future<void> _handlePageStarted(String url) async {
     );
   }
 
-  void _showCustomNotification(String message, {
+  void _showCustomNotification({
+    required String message,
     IconData? icon,
+    String? title,
     Color? iconColor,
     Duration? duration,
     SnackBarAction? action,
+    double? progress,
+    bool isDownload = false,
   }) {
+    // For downloads, create a more detailed message
+    if (isDownload) {
+      // Create a formatted message string that includes the title
+      String formattedMessage = message;
+      if (title != null) {
+        formattedMessage = "$title\n$message";
+      }
+      
+      // Add progress indicator as a visual element
+      if (progress != null) {
+        // We can't include a progress bar in a string, but we'll show it in the UI
+        formattedMessage += "\n${(progress * 100).toInt()}% complete";
+      }
+
+      // Use the standard custom notification
+      showCustomNotification(
+        context: context,
+        message: formattedMessage,
+        icon: icon ?? Icons.download_done,
+        iconColor: iconColor ?? ThemeManager.primaryColor(),
+        isDarkMode: isDarkMode,
+        duration: duration ?? const Duration(seconds: 4),
+        action: action ?? SnackBarAction(
+          label: 'View',
+          onPressed: () {
+            setState(() {
+              isDownloadsVisible = true;
+              isTabsVisible = false;
+              isSettingsVisible = false;
+              isBookmarksVisible = false;
+              isHistoryVisible = false;
+            });
+          },
+        ),
+      );
+    } else {
+      // For regular notifications, use the standard method
     showCustomNotification(
       context: context,
       message: message,
@@ -10021,15 +10967,14 @@ Future<void> _handlePageStarted(String url) async {
       duration: duration,
       action: action,
     );
+    }
   }
 
   void _showBookmarkAddedNotification() {
-    showCustomNotification(
-      context: context,
+    _showCustomNotification(
       message: AppLocalizations.of(context)!.bookmark_added,
       icon: Icons.bookmark_added,
       iconColor: Colors.green,
-      isDarkMode: isDarkMode,
     );
   }
   // Modern dialog methods for JavaScript communication
@@ -10379,66 +11324,173 @@ Future<void> _handlePageStarted(String url) async {
     
     // Set the navigation delegate
     webViewController.setNavigationDelegate(await _navigationDelegate);
+    
+    // Set up context menu handling
+    await _setupTabControllerChannels(webViewController);
+    await _setupScrollHandlingForController(webViewController);
   }
 
   Future<void> _downloadFile(String url, String? suggestedFilename) async {
     try {
-      final status = await Permission.storage.status;
-      if (!status.isGranted) {
-        await Permission.storage.request();
+      // First, check if we have storage permission
+      bool hasPermission = false;
+      
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      final sdkInt = androidInfo.version.sdkInt;
+      
+      if (sdkInt >= 33) {
+        // For Android 13+, we need to use the MediaStore API
+        // Request notification permission for better UX
+        await Permission.notification.request();
+        hasPermission = true; // Android 13+ doesn't need explicit storage permission for downloads
+      } else {
+        // For older Android versions, we need storage permission
+        final status = await Permission.storage.request();
+        hasPermission = status.isGranted;
       }
-
-      if (await Permission.storage.isGranted) {
+      
+      if (!hasPermission) {
+        _showCustomNotification(
+          message: AppLocalizations.of(context)!.permission_denied,
+          icon: Icons.error_outline,
+          iconColor: ThemeManager.errorColor(),
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: 'Settings',
+            onPressed: () {
+              openAppSettings();
+            },
+          ),
+        );
+        return;
+      }
+      
+      // Set download state
         setState(() {
           isLoading = true;
+        isDownloading = true;
+        currentDownloadUrl = url;
+        _currentFileName = suggestedFilename;
+        downloadProgress = 0.0;
         });
 
-        final response = await http.get(Uri.parse(url));
-        final contentDisposition = response.headers['content-disposition'];
+      // Get file name from URL if not provided
         String fileName = suggestedFilename ?? '';
-        
-        if (fileName.isEmpty && contentDisposition != null) {
-          final match = RegExp(r'filename[^;=\n]*=([\w\.]+)').firstMatch(contentDisposition);
-          if (match != null) {
-            fileName = match.group(1) ?? '';
-          }
+      if (fileName.isEmpty) {
+        fileName = url.split('/').last.split('?').first;
+        if (fileName.isEmpty || !fileName.contains('.')) {
+          // Try to determine file type from URL
+          final extension = url.toLowerCase().contains('.jpg') || url.toLowerCase().contains('jpeg') ? '.jpg' : 
+                          url.toLowerCase().contains('.png') ? '.png' :
+                          url.toLowerCase().contains('.gif') ? '.gif' :
+                          url.toLowerCase().contains('.webp') ? '.webp' : '.jpg';
+          fileName = 'image_${DateTime.now().millisecondsSinceEpoch}$extension';
         }
-        
-        if (fileName.isEmpty) {
-          fileName = url.split('/').last;
-        }
-
+      }
+      
+      // Show download started notification
+      _showCustomNotification(
+        message: fileName,
+        title: AppLocalizations.of(context)!.download_started,
+        icon: Icons.download_rounded,
+        iconColor: ThemeManager.primaryColor(),
+        duration: const Duration(seconds: 4),
+        isDownload: true,
+        action: SnackBarAction(
+          label: 'View',
+          onPressed: () {
+            setState(() {
+              isDownloadsVisible = true;
+              isTabsVisible = false;
+              isSettingsVisible = false;
+              isBookmarksVisible = false;
+              isHistoryVisible = false;
+            });
+          },
+        ),
+      );
+      
+      // Download the file
+      final response = await http.get(Uri.parse(url), headers: {
+        'User-Agent': 'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36'
+      });
+      
+      if (response.statusCode != 200) {
+        throw Exception('Failed to download file: ${response.statusCode}');
+      }
+      
+      // Get file size
+      final fileSize = response.contentLength ?? 0;
+      
+      // Determine mime type
+      String mimeType = response.headers['content-type'] ?? 'application/octet-stream';
+      
+      // Get download directory
         final dir = await getExternalStorageDirectory();
-        if (dir != null) {
+      if (dir == null) {
+        throw Exception('Could not access storage directory');
+      }
+      
+      // Create download directory if it doesn't exist
           final downloadDir = Directory('${dir.path}/Download');
           if (!await downloadDir.exists()) {
             await downloadDir.create(recursive: true);
           }
 
+      // Full path to the file
           final filePath = '${downloadDir.path}/$fileName';
+      
+      // Write file to storage
           final file = File(filePath);
           await file.writeAsBytes(response.bodyBytes);
 
-          // Show download complete notification
-          _showNotification(
-            Row(
-              children: [
-                Icon(Icons.check_circle, color: ThemeManager.successColor()),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Text(AppLocalizations.of(context)!.download_completed + ': $fileName'),
-                ),
-              ],
-            ),
+      // Make the file visible to other apps
+      try {
+        const platform = MethodChannel('com.vertex.solar/browser');
+        await platform.invokeMethod('scanFile', {'path': filePath});
+      } catch (e) {
+        print('Error scanning file: $e');
+      }
+      
+      // Save download to history with correct file size
+      final downloadInfo = {
+        'url': url,
+        'filename': fileName,
+        'path': filePath,
+        'size': fileSize,
+        'timestamp': DateTime.now().toIso8601String(),
+        'mimeType': mimeType,
+      };
+      
+      // Add to downloads list
+      setState(() {
+        downloads.add(downloadInfo);
+      });
+      
+      // Save to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final downloadsList = prefs.getStringList('downloads') ?? [];
+      downloadsList.add(json.encode(downloadInfo));
+      await prefs.setStringList('downloads', downloadsList);
+      
+      // Show download completed notification
+      _showCustomNotification(
+        message: fileName,
+        title: AppLocalizations.of(context)!.download_completed,
+        icon: Icons.check_circle,
+        iconColor: ThemeManager.successColor(),
             duration: const Duration(seconds: 4),
+        isDownload: true,
             action: SnackBarAction(
               label: AppLocalizations.of(context)!.open,
               onPressed: () async {
                 try {
                   await OpenFile.open(filePath);
                 } catch (e) {
-                  _showNotification(
-                    Text("Error opening file. Please install a suitable app to open this type of file."),
+              _showCustomNotification(
+                message: AppLocalizations.of(context)!.error_opening_file_install_app,
+                icon: Icons.error,
+                iconColor: ThemeManager.errorColor(),
                     duration: const Duration(seconds: 4),
                   );
                 }
@@ -10446,36 +11498,21 @@ Future<void> _handlePageStarted(String url) async {
             ),
           );
 
-          // Make the file visible to other apps
-          const platform = MethodChannel('com.vertex.solar/browser');
-          try {
-            await platform.invokeMethod('scanFile', {'path': filePath});
-          } catch (e) {
-            print('Error scanning file: $e');
-          }
-
-          // Optionally refresh the media store
-          try {
-            await platform.invokeMethod('refreshMediaStore');
-          } catch (e) {
-            print('Error refreshing media store: $e');
-          }
-        }
-      } else {
-        _showNotification(
-          Text(AppLocalizations.of(context)!.permission_denied),
-          duration: const Duration(seconds: 4),
-        );
-      }
     } catch (e) {
       print('Download error: $e');
-      _showNotification(
-        Text("Download failed: ${e.toString()}"),
+      _showCustomNotification(
+        message: "${AppLocalizations.of(context)!.download_failed}: ${e.toString()}",
+        icon: Icons.error_outline,
+        iconColor: ThemeManager.errorColor(),
         duration: const Duration(seconds: 4),
       );
     } finally {
       setState(() {
         isLoading = false;
+        isDownloading = false;
+        currentDownloadUrl = '';
+        _currentFileName = null;
+        downloadProgress = 0.0;
       });
     }
   }
@@ -10509,7 +11546,7 @@ Future<void> _handlePageStarted(String url) async {
         final status = await Permission.manageExternalStorage.request();
         if (!status.isGranted) {
           _showNotification(
-            Text("Full storage access is needed for downloading non-media files"),
+            Text(AppLocalizations.of(context)!.full_storage_access_needed),
             duration: const Duration(seconds: 6),            action: SnackBarAction(
               label: AppLocalizations.of(context)!.settings,
               onPressed: () => openAppSettings(),
@@ -10655,7 +11692,7 @@ Future<void> _handlePageStarted(String url) async {
     } catch (e) {
       print('Error removing download: $e');
       _showNotification(
-        Text('Error removing download: ${e.toString()}'),
+        Text('${AppLocalizations.of(context)!.error_removing_download}: ${e.toString()}'),
         duration: const Duration(seconds: 4),
       );
     }
@@ -11149,8 +12186,8 @@ Future<void> _handlePageStarted(String url) async {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      isDismissible: false,
-      enableDrag: false,
+      isDismissible: true,
+      enableDrag: true,
       builder: (context) => Container(
         height: MediaQuery.of(context).size.height * 0.7,
         decoration: BoxDecoration(
@@ -11447,8 +12484,8 @@ Future<void> _handlePageStarted(String url) async {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      isDismissible: false,
-      enableDrag: false,
+      isDismissible: true,
+      enableDrag: true,
       builder: (context) => Container(
         height: modalHeight,
         decoration: BoxDecoration(
@@ -12922,6 +13959,8 @@ Future<void> _handlePageStarted(String url) async {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      isDismissible: true,
+      enableDrag: true,
       builder: (context) => _SummaryModal(
         url: url,
         content: content,
@@ -12974,18 +14013,37 @@ class _SummaryModalState extends State<_SummaryModal> {
       // Get page text content using the existing controller
       final pageContent = await widget.controller.runJavaScriptReturningResult('''
         (function() {
-          // Remove script and style elements
-          const scripts = document.querySelectorAll('script, style, nav, footer, header, .nav, .navbar, .sidebar, .ad, .advertisement');
-          scripts.forEach(el => el.remove());
+          // Create a clone of the document to avoid modifying the original
+          const docClone = document.cloneNode(true);
           
-          // Get main content
-          const main = document.querySelector('main, article, .content, .post, .entry, .article-content, [role="main"]');
-          if (main) {
-            return main.innerText || main.textContent || '';
+          // Get all elements to remove from the clone
+          const elementsToRemove = docClone.querySelectorAll('script, style, link[rel="stylesheet"], nav, footer, header, .nav, .navbar, .sidebar, .ad, .advertisement');
+          
+          // Remove all unwanted elements
+          elementsToRemove.forEach(el => {
+            try {
+              el.parentNode.removeChild(el);
+            } catch (e) {
+              // Ignore errors if element can't be removed
+            }
+          });
+          
+          // Get main content from the clone
+          let content = '';
+          try {
+            const main = docClone.querySelector('main, article, .content, .post, .entry, .article-content, [role="main"]');
+            if (main) {
+              content = main.innerText || main.textContent || '';
+            } else {
+          // Fallback to body content
+              content = document.body.innerText || document.body.textContent || '';
+            }
+          } catch (e) {
+            // Fallback to a safer method if the above fails
+            content = document.body.innerText || document.body.textContent || '';
           }
           
-          // Fallback to body content
-          return document.body.innerText || document.body.textContent || '';
+          return content;
         })();
       ''');
 
@@ -13395,6 +14453,8 @@ class _PreviousSummariesModalState extends State<_PreviousSummariesModal> {
                                     context: context,
                                     isScrollControlled: true,
                                     backgroundColor: Colors.transparent,
+                                    isDismissible: true,
+                                    enableDrag: true,
                                     builder: (context) => _SummaryDetailModal(
                                       summary: summary,
                                       onClose: () => Navigator.pop(context),

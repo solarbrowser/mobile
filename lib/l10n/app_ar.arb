@@ -205,8 +205,35 @@
   "today": "اليوم",
   "yesterday": "الأمس",
   "days_ago": "منذ {days} يوم",
+  "@days_ago": {
+    "description": "Shows how many days ago something happened",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
   "weeks_ago": "منذ {weeks} أسبوع",
+  "@weeks_ago": {
+    "description": "Shows how many weeks ago something happened",
+    "placeholders": {
+      "weeks": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
   "months_ago": "منذ {months} شهر",
+  "@months_ago": {
+    "description": "Shows how many months ago something happened",
+    "placeholders": {
+      "months": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
   "new_incognito_tab": "علامة تبويب متخفية جديدة",
   "@new_incognito_tab": {
     "description": "Label for new incognito tab button"
@@ -646,5 +673,27 @@
   "add_tabs_to_group": "إضافة علامات تبويب إلى المجموعة",
   "ungroup_tabs": "إلغاء تجميع علامات التبويب",
   "delete_group": "حذف المجموعة",
-  "copy_summary": "نسخ الملخص"
+  "copy_summary": "نسخ الملخص",
+  "image_link_copied": "تم نسخ رابط الصورة إلى الحافظة",
+  "link_copied": "تم نسخ الرابط إلى الحافظة",
+  "error_loading_page": "خطأ في تحميل الصفحة",
+  "no_page_to_install": "لا توجد صفحة لتثبيتها كتطبيق ويب",
+  "pwa_installed": "تم تثبيت تطبيق الويب",
+  "failed_to_install_pwa": "فشل في تثبيت تطبيق الويب",
+  "error_opening_file_install_app": "خطأ في فتح الملف. يرجى تثبيت تطبيق مناسب لفتح هذا النوع من الملفات.",
+  "full_storage_access_needed": "مطلوب الوصول الكامل للتخزين لتنزيل الملفات غير الوسائطية",
+  "error_removing_download": "خطأ في إزالة التنزيل",
+  "copy_image": "نسخ الصورة",
+  "text_copied": "تم نسخ النص",
+  "text_pasted": "تم لصق النص",
+  "text_cut": "تم قص النص",
+  "clipboard_empty": "الحافظة فارغة",
+  "paste_error": "خطأ في لصق النص",
+  "cut_error": "خطأ في قص النص",
+  "image_url_copied": "تم نسخ رابط الصورة",
+  "opened_in_new_tab": "تم الفتح في علامة تبويب جديدة",
+  "image_options": "خيارات الصورة",
+  "copy": "نسخ",
+  "paste": "لصق",
+  "cut": "قص"
 }

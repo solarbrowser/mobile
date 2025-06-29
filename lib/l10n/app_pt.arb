@@ -212,8 +212,35 @@
   "today": "Hoje",
   "yesterday": "Ontem",
   "days_ago": "hÃ¡ {days} dias",
+  "@days_ago": {
+    "description": "Shows how many days ago something happened",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
   "weeks_ago": "hÃ¡ {weeks} semanas",
+  "@weeks_ago": {
+    "description": "Shows how many weeks ago something happened",
+    "placeholders": {
+      "weeks": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
   "months_ago": "hÃ¡ {months} meses",
+  "@months_ago": {
+    "description": "Shows how many months ago something happened",
+    "placeholders": {
+      "months": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
   "new_incognito_tab": "Nova aba anÃ´nima",
   "@new_incognito_tab": {
     "description": "Label for new incognito tab button"
@@ -644,5 +671,27 @@
   "add_tabs_to_group": "Adicionar Abas ao Grupo",
   "ungroup_tabs": "Desagrupar abas",
   "delete_group": "Excluir grupo",
-  "copy_summary": "Copiar Resumo"
+  "copy_summary": "Copiar Resumo",
+  "image_link_copied": "Link da imagem copiado para a área de transferência",
+  "link_copied": "Link copiado para a área de transferência",
+  "error_loading_page": "Erro ao carregar a página",
+  "no_page_to_install": "Nenhuma página para instalar como PWA",
+  "pwa_installed": "PWA instalado",
+  "failed_to_install_pwa": "Falha ao instalar PWA",
+  "error_opening_file_install_app": "Erro ao abrir o arquivo. Por favor, instale um aplicativo adequado para abrir este tipo de arquivo.",
+  "full_storage_access_needed": "Acesso completo ao armazenamento é necessário para baixar arquivos não multimídia",
+  "error_removing_download": "Erro ao remover o download",
+  "copy_image": "Copiar imagem",
+  "text_copied": "Texto copiado",
+  "text_pasted": "Texto colado",
+  "text_cut": "Texto recortado",
+  "clipboard_empty": "Área de transferência vazia",
+  "paste_error": "Erro ao colar texto",
+  "cut_error": "Erro ao recortar texto",
+  "image_url_copied": "URL da imagem copiado",
+  "opened_in_new_tab": "Aberto em nova aba",
+  "image_options": "Opções de imagem",
+  "copy": "Copiar",
+  "paste": "Colar",
+  "cut": "Recortar"
 }

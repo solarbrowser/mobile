@@ -211,8 +211,35 @@
   "today": "Hoy",
   "yesterday": "Ayer",
   "days_ago": "hace {days} días",
+  "@days_ago": {
+    "description": "Shows how many days ago something happened",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
   "weeks_ago": "hace {weeks} semanas",
+  "@weeks_ago": {
+    "description": "Shows how many weeks ago something happened",
+    "placeholders": {
+      "weeks": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
   "months_ago": "hace {months} meses",
+  "@months_ago": {
+    "description": "Shows how many months ago something happened",
+    "placeholders": {
+      "months": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
   "new_incognito_tab": "Nueva pestaña de incógnito",
   "@new_incognito_tab": {
     "description": "Label for new incognito tab button"
@@ -640,5 +667,27 @@
   "add_tabs_to_group": "Agregar Pestañas al Grupo",
   "ungroup_tabs": "Desagrupar pestañas",
   "delete_group": "Eliminar grupo",
-  "copy_summary": "Copiar Resumen"
+  "copy_summary": "Copiar Resumen",
+  "image_link_copied": "Enlace de imagen copiado al portapapeles",
+  "link_copied": "Enlace copiado al portapapeles",
+  "error_loading_page": "Error al cargar la página",
+  "no_page_to_install": "No hay página para instalar como PWA",
+  "pwa_installed": "PWA instalada",
+  "failed_to_install_pwa": "Error al instalar PWA",
+  "error_opening_file_install_app": "Error al abrir el archivo. Por favor, instale una aplicación adecuada para abrir este tipo de archivo.",
+  "full_storage_access_needed": "Se necesita acceso completo al almacenamiento para descargar archivos que no sean multimedia",
+  "error_removing_download": "Error al eliminar la descarga",
+  "copy_image": "Copiar imagen",
+  "text_copied": "Texto copiado",
+  "text_pasted": "Texto pegado",
+  "text_cut": "Texto cortado",
+  "clipboard_empty": "El portapapeles está vacío",
+  "paste_error": "Error al pegar texto",
+  "cut_error": "Error al cortar texto",
+  "image_url_copied": "URL de imagen copiada",
+  "opened_in_new_tab": "Abierto en nueva pestaña",
+  "image_options": "Opciones de imagen",
+  "copy": "Copiar",
+  "paste": "Pegar",
+  "cut": "Cortar"
 }

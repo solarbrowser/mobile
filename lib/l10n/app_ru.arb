@@ -367,7 +367,7 @@
     "placeholders": {
       "days": {
         "type": "int",
-        "example": 3
+        "example": "3"
       }
     }
   },
@@ -377,7 +377,7 @@
     "placeholders": {
       "weeks": {
         "type": "int",
-        "example": 2
+        "example": "2"
       }
     }
   },
@@ -387,7 +387,7 @@
     "placeholders": {
       "months": {
         "type": "int",
-        "example": 3
+        "example": "3"
       }
     }
   },
@@ -682,5 +682,27 @@
   "add_tabs_to_group": "Добавить вкладки в группу",
   "ungroup_tabs": "Разгруппировать вкладки",
   "delete_group": "Удалить группу",
-  "copy_summary": "Копировать резюме"
+  "copy_summary": "Копировать резюме",
+  "image_link_copied": "Ссылка на изображение скопирована в буфер обмена",
+  "link_copied": "Ссылка скопирована в буфер обмена",
+  "error_loading_page": "Ошибка загрузки страницы",
+  "no_page_to_install": "Нет страницы для установки как PWA",
+  "pwa_installed": "PWA установлено",
+  "failed_to_install_pwa": "Не удалось установить PWA",
+  "error_opening_file_install_app": "Ошибка при открытии файла. Пожалуйста, установите подходящее приложение для открытия этого типа файлов.",
+  "full_storage_access_needed": "Для загрузки немультимедийных файлов необходим полный доступ к хранилищу",
+  "error_removing_download": "Ошибка при удалении загрузки",
+  "copy_image": "Копировать изображение",
+  "text_copied": "Текст скопирован",
+  "text_pasted": "Текст вставлен",
+  "text_cut": "Текст вырезан",
+  "clipboard_empty": "Буфер обмена пуст",
+  "paste_error": "Ошибка при вставке текста",
+  "cut_error": "Ошибка при вырезании текста",
+  "image_url_copied": "URL изображения скопирован",
+  "opened_in_new_tab": "Открыто в новой вкладке",
+  "image_options": "Параметры изображения",
+  "copy": "Копировать",
+  "paste": "Вставить",
+  "cut": "Вырезать"
 }

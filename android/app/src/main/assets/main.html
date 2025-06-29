@@ -1730,7 +1730,16 @@
             requestTheme();
             requestSearchEngine();
             updateLocalizedUI();
-            fetchNews(); // Load REAL news from Firebase API
+            
+            // Use Flutter NewsHandler to fetch news if available
+            if (window.NewsHandler && window.NewsHandler.postMessage) {
+                console.log('📰 Using Flutter NewsHandler to fetch news...');
+                window.NewsHandler.postMessage('fetchNews');
+            } else {
+                console.log('📰 NewsHandler not available, using direct fetch...');
+                fetchNews(); // Fallback to direct fetch
+            }
+            
             console.log('✅ Homepage initialized with REAL news from Firebase API');
         }, 100);
           console.log('✅ Solar Browser main.html fully loaded - NO MORE FAKE NEWS!');

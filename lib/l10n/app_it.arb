@@ -205,8 +205,35 @@
   "today": "Oggi",
   "yesterday": "Ieri",
   "days_ago": "{days} giorni fa",
+  "@days_ago": {
+    "description": "Shows how many days ago something happened",
+    "placeholders": {
+      "days": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
   "weeks_ago": "{weeks} settimane fa",
+  "@weeks_ago": {
+    "description": "Shows how many weeks ago something happened",
+    "placeholders": {
+      "weeks": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
   "months_ago": "{months} mesi fa",
+  "@months_ago": {
+    "description": "Shows how many months ago something happened",
+    "placeholders": {
+      "months": {
+        "type": "int",
+        "example": "3"
+      }
+    }
+  },
   "new_incognito_tab": "Nuova scheda in incognito",
   "@new_incognito_tab": {
     "description": "Label for new incognito tab button"
@@ -650,5 +677,27 @@
   "add_tabs_to_group": "Aggiungi Schede al Gruppo",
   "ungroup_tabs": "Separa schede",
   "delete_group": "Elimina gruppo",
-  "copy_summary": "Copia Riassunto"
+  "copy_summary": "Copia Riassunto",
+  "image_link_copied": "Link dell'immagine copiato negli appunti",
+  "link_copied": "Link copiato negli appunti",
+  "error_loading_page": "Errore durante il caricamento della pagina",
+  "no_page_to_install": "Nessuna pagina da installare come PWA",
+  "pwa_installed": "PWA installata",
+  "failed_to_install_pwa": "Impossibile installare la PWA",
+  "error_opening_file_install_app": "Errore durante l'apertura del file. Installa un'app adatta per aprire questo tipo di file.",
+  "full_storage_access_needed": "È necessario l'accesso completo all'archiviazione per scaricare file non multimediali",
+  "error_removing_download": "Errore durante la rimozione del download",
+  "copy_image": "Copia immagine",
+  "text_copied": "Testo copiato",
+  "text_pasted": "Testo incollato",
+  "text_cut": "Testo tagliato",
+  "clipboard_empty": "Gli appunti sono vuoti",
+  "paste_error": "Errore durante l'incollaggio del testo",
+  "cut_error": "Errore durante il taglio del testo",
+  "image_url_copied": "URL dell'immagine copiato",
+  "opened_in_new_tab": "Aperto in una nuova scheda",
+  "image_options": "Opzioni immagine",
+  "copy": "Copia",
+  "paste": "Incolla",
+  "cut": "Taglia"
 }

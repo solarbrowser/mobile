@@ -1,3 +1,5 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -10,10 +12,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get welcomeToSolar => 'Willkommen bei Solar';
 
   @override
-  String get welcomeDescription => 'Ein moderner, schneller und sicherer Browser';
+  String get welcomeDescription =>
+      'Ein moderner, schneller und sicherer Browser';
 
   @override
-  String get termsOfService => 'Durch Fortfahren stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu';
+  String get termsOfService =>
+      'Durch Fortfahren stimmen Sie unseren Nutzungsbedingungen und Datenschutzrichtlinien zu';
 
   @override
   String get whats_new => 'Was ist neu';
@@ -96,7 +100,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get data_collection => 'Datenerfassung';
 
   @override
-  String get data_collection_details => '• Wir erfassen nur die für die Browserfunktionalität notwendigen Daten\n• Ihr Browserverlauf bleibt auf Ihrem Gerät\n• Wir verfolgen Ihre Online-Aktivitäten nicht\n• Sie können alle Daten jederzeit löschen';
+  String get data_collection_details =>
+      '• Wir erfassen nur die für die Browserfunktionalität notwendigen Daten\n• Ihr Browserverlauf bleibt auf Ihrem Gerät\n• Wir verfolgen Ihre Online-Aktivitäten nicht\n• Sie können alle Daten jederzeit löschen';
 
   @override
   String get general => 'Allgemein';
@@ -288,7 +293,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get reset_browser => 'Browser zurücksetzen';
 
   @override
-  String get reset_browser_confirm => 'Dies löscht alle Ihre Daten einschließlich Verlauf, Lesezeichen und Einstellungen. Diese Aktion kann nicht rückgängig gemacht werden.';
+  String get reset_browser_confirm =>
+      'Dies löscht alle Ihre Daten einschließlich Verlauf, Lesezeichen und Einstellungen. Diese Aktion kann nicht rückgängig gemacht werden.';
 
   @override
   String get reset => 'Zurücksetzen';
@@ -300,7 +306,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get permission_denied => 'Speicherberechtigung verweigert';
 
   @override
-  String get download_location_changed => 'Download-Speicherort erfolgreich geändert';
+  String get download_location_changed =>
+      'Download-Speicherort erfolgreich geändert';
 
   @override
   String get error_changing_location => 'Fehler beim Ändern des Speicherorts';
@@ -321,10 +328,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get do_not_track => 'Nicht verfolgen';
 
   @override
-  String get download_location_description => 'Wählen Sie, wo heruntergeladene Dateien gespeichert werden sollen';
+  String get download_location_description =>
+      'Wählen Sie, wo heruntergeladene Dateien gespeichert werden sollen';
 
   @override
-  String get text_size_description => 'Passen Sie die Textgröße auf Webseiten an';
+  String get text_size_description =>
+      'Passen Sie die Textgröße auf Webseiten an';
 
   @override
   String get text_size_small => 'Klein';
@@ -339,19 +348,24 @@ class AppLocalizationsDe extends AppLocalizations {
   String get text_size_very_large => 'Sehr groß';
 
   @override
-  String get cookies_description => 'Websites erlauben, Cookie-Daten zu speichern und zu lesen';
+  String get cookies_description =>
+      'Websites erlauben, Cookie-Daten zu speichern und zu lesen';
 
   @override
-  String get javascript_description => 'JavaScript für bessere Website-Funktionalität aktivieren';
+  String get javascript_description =>
+      'JavaScript für bessere Website-Funktionalität aktivieren';
 
   @override
-  String get hardware_acceleration_description => 'GPU für bessere Leistung verwenden';
+  String get hardware_acceleration_description =>
+      'GPU für bessere Leistung verwenden';
 
   @override
-  String get form_data_description => 'In Formulare eingegebene Informationen speichern';
+  String get form_data_description =>
+      'In Formulare eingegebene Informationen speichern';
 
   @override
-  String get do_not_track_description => 'Websites auffordern, Ihre Aktivitäten nicht zu verfolgen';
+  String get do_not_track_description =>
+      'Websites auffordern, Ihre Aktivitäten nicht zu verfolgen';
 
   @override
   String get exit_app => 'App beenden';
@@ -391,19 +405,24 @@ class AppLocalizationsDe extends AppLocalizations {
   String get install_packages_permission => 'Pakete-Installationsberechtigung';
 
   @override
-  String get install_packages_permission_description => 'Erlaube die Installation von Apps aus diesem Browser';
+  String get install_packages_permission_description =>
+      'Erlaube die Installation von Apps aus diesem Browser';
 
   @override
-  String get permission_install_packages_required => 'Pakete-Installationsberechtigung erforderlich';
+  String get permission_install_packages_required =>
+      'Pakete-Installationsberechtigung erforderlich';
 
   @override
-  String get storage_permission_install_packages_required => 'Speicher- und Pakete-Installationsberechtigung';
+  String get storage_permission_install_packages_required =>
+      'Speicher- und Pakete-Installationsberechtigung';
 
   @override
-  String get storage_permission_install_packages_description => 'Solar Browser benötigt Berechtigung für Speicherzugriff für Downloads und Paketinstallation für APK-Installationen';
+  String get storage_permission_install_packages_description =>
+      'Solar Browser benötigt Berechtigung für Speicherzugriff für Downloads und Paketinstallation für APK-Installationen';
 
   @override
-  String get clear_downloads_history_confirm => 'Dies löscht nur den Download-Verlauf, nicht die heruntergeladenen Dateien.';
+  String get clear_downloads_history_confirm =>
+      'Dies löscht nur den Download-Verlauf, nicht die heruntergeladenen Dateien.';
 
   @override
   String get clear_downloads_history_title => 'Download-Verlauf löschen';
@@ -471,7 +490,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get classic_navigation => 'Klassische Navigation';
 
   @override
-  String get classic_navigation_description => 'Klassische Browser-Style-Navigationssteuerungen verwenden';
+  String get classic_navigation_description =>
+      'Klassische Browser-Style-Navigationssteuerungen verwenden';
 
   @override
   String get exit_confirmation => 'App beenden';
@@ -498,6 +518,36 @@ class AppLocalizationsDe extends AppLocalizations {
   String get open_in_new_tab => 'In neuem Tab öffnen';
 
   @override
+  String get copy_image_link => 'Copy Image Link';
+
+  @override
+  String get open_image_in_new_tab => 'Open Image in New Tab';
+
+  @override
+  String get open_link => 'Open Link';
+
+  @override
+  String get open_link_in_new_tab => 'Open Link in New Tab';
+
+  @override
+  String get copy_link_address => 'Copy Link Address';
+
+  @override
+  String get failed_to_download_image => 'Failed to download image';
+
+  @override
+  String get custom_home_page => 'Custom Home Page';
+
+  @override
+  String get set_home_page_url => 'Set Home Page URL';
+
+  @override
+  String get not_set => 'Not set';
+
+  @override
+  String get save => 'Save';
+
+  @override
   String get downloading => 'Wird heruntergeladen...';
 
   @override
@@ -516,10 +566,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get storage_permission_granted => 'Alle Berechtigungen erteilt';
 
   @override
-  String get storage_permission_description => 'Diese App benötigt die Berechtigung für den Zugriff auf Dateien für die Download-Funktionalität.';
+  String get storage_permission_description =>
+      'Diese App benötigt die Berechtigung für den Zugriff auf Dateien für die Download-Funktionalität.';
 
   @override
-  String get app_should_work_normally => 'Die App sollte jetzt mit voller Funktionalität normal funktionieren.';
+  String get app_should_work_normally =>
+      'Die App sollte jetzt mit voller Funktionalität normal funktionieren.';
 
   @override
   String get grant_permission => 'Berechtigung erteilen';
@@ -534,10 +586,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get incognito_mode => 'Inkognito-Modus';
 
   @override
-  String get incognito_description => 'Im Inkognito-Modus:\n• Browserverlauf wird nicht gespeichert\n• Cookies werden beim Schließen von Tabs gelöscht\n• Keine Daten werden lokal gespeichert';
+  String get incognito_description =>
+      'Im Inkognito-Modus:\n• Browserverlauf wird nicht gespeichert\n• Cookies werden beim Schließen von Tabs gelöscht\n• Keine Daten werden lokal gespeichert';
 
   @override
-  String get error_opening_file => 'Fehler beim Öffnen der Datei. Bitte installieren Sie eine geeignete App zum Öffnen dieses Dateityps.';
+  String get error_opening_file =>
+      'Fehler beim Öffnen der Datei. Bitte installieren Sie eine geeignete App zum Öffnen dieses Dateityps.';
 
   @override
   String get download_in_progress => 'Download läuft';
@@ -575,7 +629,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get clear_history => 'Verlauf löschen';
 
   @override
-  String get clear_history_confirmation => 'Möchten Sie den Browserverlauf wirklich löschen?';
+  String get clear_history_confirmation =>
+      'Möchten Sie den Browserverlauf wirklich löschen?';
 
   @override
   String get no_history => 'Kein Browserverlauf';
@@ -605,25 +660,29 @@ class AppLocalizationsDe extends AppLocalizations {
   String get update1 => 'Verbessertes Theme-System';
 
   @override
-  String get update1desc => 'Neues Theme-System mit mehr Farboptionen und verbesserter Unterstützung für den Dunkelmodus';
+  String get update1desc =>
+      'Neues Theme-System mit mehr Farboptionen und verbesserter Unterstützung für den Dunkelmodus';
 
   @override
   String get update2 => 'Leistungsverbesserungen';
 
   @override
-  String get update2desc => 'Schnelleres Laden von Seiten und flüssigeres Scrollen';
+  String get update2desc =>
+      'Schnelleres Laden von Seiten und flüssigeres Scrollen';
 
   @override
   String get update3 => 'Neue Datenschutzfunktionen';
 
   @override
-  String get update3desc => 'Verbesserter Tracking-Schutz und Optimierungen im Inkognito-Modus';
+  String get update3desc =>
+      'Verbesserter Tracking-Schutz und Optimierungen im Inkognito-Modus';
 
   @override
   String get update4 => 'UI-Verfeinerungen';
 
   @override
-  String get update4desc => 'Verbesserte Benutzeroberfläche mit besserer Navigation und Zugänglichkeit';
+  String get update4desc =>
+      'Verbesserte Benutzeroberfläche mit besserer Navigation und Zugänglichkeit';
 
   @override
   String get searchTheWeb => 'Im Web suchen';
@@ -689,19 +748,22 @@ class AppLocalizationsDe extends AppLocalizations {
   String get removed_from_pwa => 'Von PWA entfernt';
 
   @override
-  String get pwa_info => 'Progressive Web Apps laufen wie installierte Apps ohne Browser-Steuerelemente';
+  String get pwa_info =>
+      'Progressive Web Apps laufen wie installierte Apps ohne Browser-Steuerelemente';
 
   @override
   String get create_shortcut => 'Verknüpfung erstellen';
 
   @override
-  String get enter_shortcut_name => 'Geben Sie einen Namen für diese Verknüpfung ein:';
+  String get enter_shortcut_name =>
+      'Geben Sie einen Namen für diese Verknüpfung ein:';
 
   @override
   String get shortcut_name => 'Verknüpfungsname';
 
   @override
-  String get keep_tabs_open_description => 'Tabs zwischen Sitzungen offen halten';
+  String get keep_tabs_open_description =>
+      'Tabs zwischen Sitzungen offen halten';
 
   @override
   String get developer => 'Entwickler';
@@ -716,7 +778,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get welcome_screen_reset => 'Willkommensbildschirm zurücksetzen';
 
   @override
-  String get welcome_screen_reset_message => 'Dies wird den Willkommensbildschirm zurücksetzen, sodass er beim nächsten Start der App wieder angezeigt wird.';
+  String get welcome_screen_reset_message =>
+      'Dies wird den Willkommensbildschirm zurücksetzen, sodass er beim nächsten Start der App wieder angezeigt wird.';
 
   @override
   String get ok => 'OK';
@@ -773,19 +836,23 @@ class AppLocalizationsDe extends AppLocalizations {
   String get untitled => 'Unbenannt';
 
   @override
-  String get show_welcome_screen_next_launch => 'Willkommensbildschirm beim nächsten Start anzeigen';
+  String get show_welcome_screen_next_launch =>
+      'Willkommensbildschirm beim nächsten Start anzeigen';
 
   @override
-  String get automatically_open_downloaded_files => 'Heruntergeladene Dateien automatisch öffnen';
+  String get automatically_open_downloaded_files =>
+      'Heruntergeladene Dateien automatisch öffnen';
 
   @override
-  String get ask_where_to_save_files => 'Vor dem Herunterladen fragen, wo Dateien gespeichert werden sollen';
+  String get ask_where_to_save_files =>
+      'Vor dem Herunterladen fragen, wo Dateien gespeichert werden sollen';
 
   @override
   String get clear_all_history => 'Gesamten Verlauf Löschen';
 
   @override
-  String get clear_all_history_confirm => 'Dies wird Ihren gesamten Browserverlauf dauerhaft löschen. Diese Aktion kann nicht rückgängig gemacht werden.';
+  String get clear_all_history_confirm =>
+      'Dies wird Ihren gesamten Browserverlauf dauerhaft löschen. Diese Aktion kann nicht rückgängig gemacht werden.';
 
   @override
   String get history_cleared => 'Verlauf gelöscht';
@@ -812,7 +879,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get close_all_tabs => 'Alle Tabs Schließen';
 
   @override
-  String get close_all_tabs_confirm => 'Sind Sie sicher, dass Sie alle Tabs schließen möchten? Diese Aktion kann nicht rückgängig gemacht werden.';
+  String get close_all_tabs_confirm =>
+      'Sind Sie sicher, dass Sie alle Tabs schließen möchten? Diese Aktion kann nicht rückgängig gemacht werden.';
 
   @override
   String close_all_tabs_in_group(String groupName) {
@@ -826,13 +894,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get ai => 'KI';
 
   @override
-  String get rearrange_navigation_buttons => 'Navigationsschaltflächen neu anordnen';
+  String get rearrange_navigation_buttons =>
+      'Navigationsschaltflächen neu anordnen';
 
   @override
   String get current_navigation_bar => 'Aktuelle Navigationsleiste:';
 
   @override
-  String get tap_to_check_permission_status => 'Tippen Sie, um den Berechtigungsstatus zu überprüfen';
+  String get tap_to_check_permission_status =>
+      'Tippen Sie, um den Berechtigungsstatus zu überprüfen';
 
   @override
   String get create_tab_group => 'Tab-Gruppe Erstellen';
@@ -865,7 +935,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get page_summary => 'Seitenzusammenfassung';
 
   @override
-  String get failed_to_generate_summary => 'Zusammenfassung konnte nicht generiert werden';
+  String get failed_to_generate_summary =>
+      'Zusammenfassung konnte nicht generiert werden';
 
   @override
   String get try_again => 'Erneut Versuchen';
@@ -874,7 +945,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get no_page_to_summarize => 'Keine Seite zum Zusammenfassen';
 
   @override
-  String get no_content_found_to_summarize => 'Kein Inhalt zum Zusammenfassen gefunden';
+  String get no_content_found_to_summarize =>
+      'Kein Inhalt zum Zusammenfassen gefunden';
 
   @override
   String get theme => 'Thema';
@@ -905,4 +977,76 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get copy_summary => 'Zusammenfassung Kopieren';
+
+  @override
+  String get image_link_copied => 'Bildlink in die Zwischenablage kopiert';
+
+  @override
+  String get link_copied => 'Link in die Zwischenablage kopiert';
+
+  @override
+  String get error_loading_page => 'Fehler beim Laden der Seite';
+
+  @override
+  String get no_page_to_install => 'Keine Seite zum Installieren als PWA';
+
+  @override
+  String get pwa_installed => 'PWA installiert';
+
+  @override
+  String get failed_to_install_pwa => 'Fehler bei der Installation der PWA';
+
+  @override
+  String get error_opening_file_install_app =>
+      'Fehler beim Öffnen der Datei. Bitte installieren Sie eine geeignete App, um diesen Dateityp zu öffnen.';
+
+  @override
+  String get full_storage_access_needed =>
+      'Vollständiger Speicherzugriff wird für das Herunterladen von Nicht-Mediendateien benötigt';
+
+  @override
+  String get error_removing_download => 'Fehler beim Entfernen des Downloads';
+
+  @override
+  String get copy_image => 'Bild kopieren';
+
+  @override
+  String get text_copied => 'Text kopiert';
+
+  @override
+  String get text_pasted => 'Text eingefügt';
+
+  @override
+  String get text_cut => 'Text ausgeschnitten';
+
+  @override
+  String get clipboard_empty => 'Zwischenablage ist leer';
+
+  @override
+  String get paste_error => 'Fehler beim Einfügen des Textes';
+
+  @override
+  String get cut_error => 'Fehler beim Ausschneiden des Textes';
+
+  @override
+  String get image_url_copied => 'Bild-URL kopiert';
+
+  @override
+  String get opened_in_new_tab => 'In neuem Tab geöffnet';
+
+  @override
+  String get image_options => 'Bildoptionen';
+
+  @override
+  String get copy => 'Kopieren';
+
+  @override
+  String get paste => 'Einfügen';
+
+  @override
+  String get cut => 'Ausschneiden';
+
+  @override
+  String get asset_file_part_of_app =>
+      'This file is part of the app and cannot be downloaded';
 }

@@ -1,3 +1,5 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -13,7 +15,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get welcomeDescription => 'متصفح حديث وسريع وآمن';
 
   @override
-  String get termsOfService => 'بالمتابعة، فإنك توافق على شروط الخدمة وسياسة الخصوصية';
+  String get termsOfService =>
+      'بالمتابعة، فإنك توافق على شروط الخدمة وسياسة الخصوصية';
 
   @override
   String get whats_new => 'ما الجديد';
@@ -96,7 +99,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get data_collection => 'جمع البيانات';
 
   @override
-  String get data_collection_details => '• نجمع الحد الأدنى من البيانات اللازمة لوظائف المتصفح\n• يبقى سجل التصفح على جهازك\n• لا نتتبع نشاطك عبر الإنترنت\n• يمكنك مسح جميع البيانات في أي وقت';
+  String get data_collection_details =>
+      '• نجمع الحد الأدنى من البيانات اللازمة لوظائف المتصفح\n• يبقى سجل التصفح على جهازك\n• لا نتتبع نشاطك عبر الإنترنت\n• يمكنك مسح جميع البيانات في أي وقت';
 
   @override
   String get general => 'عام';
@@ -288,7 +292,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reset_browser => 'إعادة تعيين المتصفح';
 
   @override
-  String get reset_browser_confirm => 'سيؤدي هذا إلى مسح جميع بياناتك بما في ذلك السجل والإشارات المرجعية والإعدادات. لا يمكن التراجع عن هذا الإجراء.';
+  String get reset_browser_confirm =>
+      'سيؤدي هذا إلى مسح جميع بياناتك بما في ذلك السجل والإشارات المرجعية والإعدادات. لا يمكن التراجع عن هذا الإجراء.';
 
   @override
   String get reset => 'إعادة تعيين';
@@ -321,7 +326,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get do_not_track => 'عدم التتبع';
 
   @override
-  String get download_location_description => 'اختر مكان حفظ الملفات التي تم تنزيلها';
+  String get download_location_description =>
+      'اختر مكان حفظ الملفات التي تم تنزيلها';
 
   @override
   String get text_size_description => 'ضبط حجم النص على صفحات الويب';
@@ -339,13 +345,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get text_size_very_large => 'كبير جداً';
 
   @override
-  String get cookies_description => 'السماح للمواقع بحفظ وقراءة بيانات ملفات تعريف الارتباط';
+  String get cookies_description =>
+      'السماح للمواقع بحفظ وقراءة بيانات ملفات تعريف الارتباط';
 
   @override
   String get javascript_description => 'تمكين JavaScript لتحسين وظائف المواقع';
 
   @override
-  String get hardware_acceleration_description => 'استخدام وحدة معالجة الرسومات للحصول على أداء أفضل';
+  String get hardware_acceleration_description =>
+      'استخدام وحدة معالجة الرسومات للحصول على أداء أفضل';
 
   @override
   String get form_data_description => 'حفظ المعلومات المدخلة في النماذج';
@@ -391,19 +399,23 @@ class AppLocalizationsAr extends AppLocalizations {
   String get install_packages_permission => 'إذن تثبيت الحزم';
 
   @override
-  String get install_packages_permission_description => 'السماح بتثبيت التطبيقات من هذا المتصفح';
+  String get install_packages_permission_description =>
+      'السماح بتثبيت التطبيقات من هذا المتصفح';
 
   @override
   String get permission_install_packages_required => 'إذن تثبيت الحزم مطلوب';
 
   @override
-  String get storage_permission_install_packages_required => 'إذن التخزين وتثبيت الحزم';
+  String get storage_permission_install_packages_required =>
+      'إذن التخزين وتثبيت الحزم';
 
   @override
-  String get storage_permission_install_packages_description => 'متصفح Solar يحتاج إذن للوصول للتخزين للتنزيلات وتثبيت الحزم لتثبيت APK';
+  String get storage_permission_install_packages_description =>
+      'متصفح Solar يحتاج إذن للوصول للتخزين للتنزيلات وتثبيت الحزم لتثبيت APK';
 
   @override
-  String get clear_downloads_history_confirm => 'سيؤدي هذا إلى مسح سجل التنزيلات فقط، ولن يتم حذف الملفات التي تم تنزيلها.';
+  String get clear_downloads_history_confirm =>
+      'سيؤدي هذا إلى مسح سجل التنزيلات فقط، ولن يتم حذف الملفات التي تم تنزيلها.';
 
   @override
   String get clear_downloads_history_title => 'مسح سجل التنزيلات';
@@ -471,7 +483,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get classic_navigation => 'التنقل الكلاسيكي';
 
   @override
-  String get classic_navigation_description => 'استخدام عناصر التحكم في التنقل بنمط المتصفح الكلاسيكي';
+  String get classic_navigation_description =>
+      'استخدام عناصر التحكم في التنقل بنمط المتصفح الكلاسيكي';
 
   @override
   String get exit_confirmation => 'الخروج من التطبيق';
@@ -498,6 +511,36 @@ class AppLocalizationsAr extends AppLocalizations {
   String get open_in_new_tab => 'فتح في علامة تبويب جديدة';
 
   @override
+  String get copy_image_link => 'Copy Image Link';
+
+  @override
+  String get open_image_in_new_tab => 'Open Image in New Tab';
+
+  @override
+  String get open_link => 'Open Link';
+
+  @override
+  String get open_link_in_new_tab => 'Open Link in New Tab';
+
+  @override
+  String get copy_link_address => 'Copy Link Address';
+
+  @override
+  String get failed_to_download_image => 'Failed to download image';
+
+  @override
+  String get custom_home_page => 'Custom Home Page';
+
+  @override
+  String get set_home_page_url => 'Set Home Page URL';
+
+  @override
+  String get not_set => 'Not set';
+
+  @override
+  String get save => 'Save';
+
+  @override
   String get downloading => 'جاري التحميل...';
 
   @override
@@ -516,10 +559,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get storage_permission_granted => 'تم منح جميع الأذونات';
 
   @override
-  String get storage_permission_description => 'هذا التطبيق يحتاج إذن للوصول للملفات لوظيفة التنزيل.';
+  String get storage_permission_description =>
+      'هذا التطبيق يحتاج إذن للوصول للملفات لوظيفة التنزيل.';
 
   @override
-  String get app_should_work_normally => 'يجب أن يعمل التطبيق بشكل طبيعي مع الوظائف الكاملة.';
+  String get app_should_work_normally =>
+      'يجب أن يعمل التطبيق بشكل طبيعي مع الوظائف الكاملة.';
 
   @override
   String get grant_permission => 'منح الإذن';
@@ -534,10 +579,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get incognito_mode => 'وضع التخفي';
 
   @override
-  String get incognito_description => 'في وضع التخفي:\n• لا يتم حفظ سجل التصفح\n• يتم مسح ملفات تعريف الارتباط عند إغلاق علامات التبويب\n• لا يتم تخزين أي بيانات محلياً';
+  String get incognito_description =>
+      'في وضع التخفي:\n• لا يتم حفظ سجل التصفح\n• يتم مسح ملفات تعريف الارتباط عند إغلاق علامات التبويب\n• لا يتم تخزين أي بيانات محلياً';
 
   @override
-  String get error_opening_file => 'خطأ في فتح الملف. يرجى تثبيت تطبيق مناسب لفتح هذا النوع من الملفات.';
+  String get error_opening_file =>
+      'خطأ في فتح الملف. يرجى تثبيت تطبيق مناسب لفتح هذا النوع من الملفات.';
 
   @override
   String get download_in_progress => 'جاري التنزيل';
@@ -575,7 +622,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get clear_history => 'مسح السجل';
 
   @override
-  String get clear_history_confirmation => 'هل أنت متأكد أنك تريد مسح سجل التصفح؟';
+  String get clear_history_confirmation =>
+      'هل أنت متأكد أنك تريد مسح سجل التصفح؟';
 
   @override
   String get no_history => 'لا يوجد سجل تصفح';
@@ -605,7 +653,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get update1 => 'نظام سمات محسّن';
 
   @override
-  String get update1desc => 'نظام سمات جديد مع المزيد من خيارات الألوان ودعم محسّن للوضع المظلم';
+  String get update1desc =>
+      'نظام سمات جديد مع المزيد من خيارات الألوان ودعم محسّن للوضع المظلم';
 
   @override
   String get update2 => 'تحسينات في الأداء';
@@ -617,7 +666,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get update3 => 'ميزات خصوصية جديدة';
 
   @override
-  String get update3desc => 'حماية محسّنة من التتبع وتحسينات في وضع التصفح الخاص';
+  String get update3desc =>
+      'حماية محسّنة من التتبع وتحسينات في وضع التصفح الخاص';
 
   @override
   String get update4 => 'تحسينات في واجهة المستخدم';
@@ -689,7 +739,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get removed_from_pwa => 'تمت الإزالة من PWA';
 
   @override
-  String get pwa_info => 'تطبيقات الويب التقدمية تعمل مثل التطبيقات المثبتة بدون عناصر تحكم المتصفح';
+  String get pwa_info =>
+      'تطبيقات الويب التقدمية تعمل مثل التطبيقات المثبتة بدون عناصر تحكم المتصفح';
 
   @override
   String get create_shortcut => 'إنشاء اختصار';
@@ -701,7 +752,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get shortcut_name => 'اسم الاختصار';
 
   @override
-  String get keep_tabs_open_description => 'الاحتفاظ بعلامات التبويب مفتوحة بين الجلسات';
+  String get keep_tabs_open_description =>
+      'الاحتفاظ بعلامات التبويب مفتوحة بين الجلسات';
 
   @override
   String get developer => 'المطور';
@@ -716,7 +768,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get welcome_screen_reset => 'إعادة تعيين شاشة الترحيب';
 
   @override
-  String get welcome_screen_reset_message => 'سيؤدي هذا إلى إعادة تعيين شاشة الترحيب بحيث تظهر مرة أخرى في المرة القادمة التي تبدأ فيها التطبيق.';
+  String get welcome_screen_reset_message =>
+      'سيؤدي هذا إلى إعادة تعيين شاشة الترحيب بحيث تظهر مرة أخرى في المرة القادمة التي تبدأ فيها التطبيق.';
 
   @override
   String get ok => 'موافق';
@@ -773,19 +826,23 @@ class AppLocalizationsAr extends AppLocalizations {
   String get untitled => 'بلا عنوان';
 
   @override
-  String get show_welcome_screen_next_launch => 'إظهار شاشة الترحيب في التشغيل التالي';
+  String get show_welcome_screen_next_launch =>
+      'إظهار شاشة الترحيب في التشغيل التالي';
 
   @override
-  String get automatically_open_downloaded_files => 'فتح الملفات المنزلة تلقائياً';
+  String get automatically_open_downloaded_files =>
+      'فتح الملفات المنزلة تلقائياً';
 
   @override
-  String get ask_where_to_save_files => 'السؤال عن مكان حفظ الملفات قبل التنزيل';
+  String get ask_where_to_save_files =>
+      'السؤال عن مكان حفظ الملفات قبل التنزيل';
 
   @override
   String get clear_all_history => 'مسح كامل التاريخ';
 
   @override
-  String get clear_all_history_confirm => 'سيؤدي هذا إلى حذف تاريخ التصفح بالكامل نهائياً. لا يمكن التراجع عن هذا الإجراء.';
+  String get clear_all_history_confirm =>
+      'سيؤدي هذا إلى حذف تاريخ التصفح بالكامل نهائياً. لا يمكن التراجع عن هذا الإجراء.';
 
   @override
   String get history_cleared => 'تم مسح التاريخ';
@@ -812,7 +869,8 @@ class AppLocalizationsAr extends AppLocalizations {
   String get close_all_tabs => 'إغلاق جميع علامات التبويب';
 
   @override
-  String get close_all_tabs_confirm => 'هل أنت متأكد من أنك تريد إغلاق جميع علامات التبويب؟ لا يمكن التراجع عن هذا الإجراء.';
+  String get close_all_tabs_confirm =>
+      'هل أنت متأكد من أنك تريد إغلاق جميع علامات التبويب؟ لا يمكن التراجع عن هذا الإجراء.';
 
   @override
   String close_all_tabs_in_group(String groupName) {
@@ -905,4 +963,76 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get copy_summary => 'نسخ الملخص';
+
+  @override
+  String get image_link_copied => 'تم نسخ رابط الصورة إلى الحافظة';
+
+  @override
+  String get link_copied => 'تم نسخ الرابط إلى الحافظة';
+
+  @override
+  String get error_loading_page => 'خطأ في تحميل الصفحة';
+
+  @override
+  String get no_page_to_install => 'لا توجد صفحة لتثبيتها كتطبيق ويب';
+
+  @override
+  String get pwa_installed => 'تم تثبيت تطبيق الويب';
+
+  @override
+  String get failed_to_install_pwa => 'فشل في تثبيت تطبيق الويب';
+
+  @override
+  String get error_opening_file_install_app =>
+      'خطأ في فتح الملف. يرجى تثبيت تطبيق مناسب لفتح هذا النوع من الملفات.';
+
+  @override
+  String get full_storage_access_needed =>
+      'مطلوب الوصول الكامل للتخزين لتنزيل الملفات غير الوسائطية';
+
+  @override
+  String get error_removing_download => 'خطأ في إزالة التنزيل';
+
+  @override
+  String get copy_image => 'نسخ الصورة';
+
+  @override
+  String get text_copied => 'تم نسخ النص';
+
+  @override
+  String get text_pasted => 'تم لصق النص';
+
+  @override
+  String get text_cut => 'تم قص النص';
+
+  @override
+  String get clipboard_empty => 'الحافظة فارغة';
+
+  @override
+  String get paste_error => 'خطأ في لصق النص';
+
+  @override
+  String get cut_error => 'خطأ في قص النص';
+
+  @override
+  String get image_url_copied => 'تم نسخ رابط الصورة';
+
+  @override
+  String get opened_in_new_tab => 'تم الفتح في علامة تبويب جديدة';
+
+  @override
+  String get image_options => 'خيارات الصورة';
+
+  @override
+  String get copy => 'نسخ';
+
+  @override
+  String get paste => 'لصق';
+
+  @override
+  String get cut => 'قص';
+
+  @override
+  String get asset_file_part_of_app =>
+      'This file is part of the app and cannot be downloaded';
 }

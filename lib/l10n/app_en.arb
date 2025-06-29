@@ -238,6 +238,56 @@
     "description": "Option to open something in a new tab"
   },
   
+  "copy_image_link": "Copy Image Link",
+  "@copy_image_link": {
+    "description": "Option to copy an image link"
+  },
+  
+  "open_image_in_new_tab": "Open Image in New Tab",
+  "@open_image_in_new_tab": {
+    "description": "Text for opening an image in a new tab"
+  },
+  
+  "open_link": "Open Link",
+  "@open_link": {
+    "description": "Option to open a link"
+  },
+  
+  "open_link_in_new_tab": "Open Link in New Tab",
+  "@open_link_in_new_tab": {
+    "description": "Option to open a link in a new tab"
+  },
+  
+  "copy_link_address": "Copy Link Address",
+  "@copy_link_address": {
+    "description": "Option to copy a link address"
+  },
+  
+  "failed_to_download_image": "Failed to download image",
+  "@failed_to_download_image": {
+    "description": "Error message when image download fails"
+  },
+  
+  "custom_home_page": "Custom Home Page",
+  "@custom_home_page": {
+    "description": "Setting to enable custom home page"
+  },
+  
+  "set_home_page_url": "Set Home Page URL",
+  "@set_home_page_url": {
+    "description": "Option to set the home page URL"
+  },
+  
+  "not_set": "Not set",
+  "@not_set": {
+    "description": "Indicates that a value is not set"
+  },
+  
+  "save": "Save",
+  "@save": {
+    "description": "Save button text"
+  },
+  
   "downloading": "Downloading...",
   "@downloading": {
     "description": "Status message when a file is being downloaded"
@@ -798,5 +848,93 @@
   "copy_summary": "Copy Summary",
   "@copy_summary": {
     "description": "Button text for copying AI summary"
+  },
+  "image_link_copied": "Image link copied to clipboard",
+  "@image_link_copied": {
+    "description": "Message shown when an image link is copied to clipboard"
+  },
+  "link_copied": "Link copied to clipboard",
+  "@link_copied": {
+    "description": "Message shown when a link is copied to clipboard"
+  },
+  "error_loading_page": "Error loading page",
+  "@error_loading_page": {
+    "description": "Message shown when there is an error loading a page"
+  },
+  "no_page_to_install": "No page to install as PWA",
+  "@no_page_to_install": {
+    "description": "Message shown when there is no page to install as PWA"
+  },
+  "pwa_installed": "PWA installed",
+  "@pwa_installed": {
+    "description": "Message shown when a PWA is successfully installed"
+  },
+  "failed_to_install_pwa": "Failed to install PWA",
+  "@failed_to_install_pwa": {
+    "description": "Message shown when PWA installation fails"
+  },
+  "error_opening_file_install_app": "Error opening file. Please install a suitable app to open this type of file.",
+  "@error_opening_file_install_app": {
+    "description": "Message shown when there is an error opening a file due to missing app"
+  },
+  "full_storage_access_needed": "Full storage access is needed for downloading non-media files",
+  "@full_storage_access_needed": {
+    "description": "Message shown when full storage access is needed"
+  },
+  "error_removing_download": "Error removing download",
+  "@error_removing_download": {
+    "description": "Message shown when there is an error removing a download"
+  },
+  "copy_image": "Copy Image",
+  "@copy_image": {
+    "description": "Option to copy an image"
+  },
+  "text_copied": "Text copied",
+  "@text_copied": {
+    "description": "Message shown when text is copied"
+  },
+  "text_pasted": "Text pasted",
+  "@text_pasted": {
+    "description": "Message shown when text is pasted"
+  },
+  "text_cut": "Text cut",
+  "@text_cut": {
+    "description": "Message shown when text is cut"
+  },
+  "clipboard_empty": "Clipboard is empty",
+  "@clipboard_empty": {
+    "description": "Message shown when clipboard is empty"
+  },
+  "paste_error": "Error pasting text",
+  "@paste_error": {
+    "description": "Message shown when there is an error pasting text"
+  },
+  "cut_error": "Error cutting text",
+  "@cut_error": {
+    "description": "Message shown when there is an error cutting text"
+  },
+  "image_url_copied": "Image URL copied",
+  "@image_url_copied": {
+    "description": "Message shown when image URL is copied"
+  },
+  "opened_in_new_tab": "Opened in new tab",
+  "@opened_in_new_tab": {
+    "description": "Message shown when something is opened in a new tab"
+  },
+  "image_options": "Image Options",
+  "@image_options": {
+    "description": "Title for the image options dialog"
+  },
+  "copy": "Copy",
+  "@copy": {
+    "description": "Text for copy action"
+  },
+  "paste": "Paste",
+  "@paste": {
+    "description": "Text for paste action"
+  },
+  "cut": "Cut",
+  "@cut": {
+    "description": "Text for cut action"
   }
 }

@@ -1,3 +1,5 @@
+// ignore: unused_import
+import 'package:intl/intl.dart' as intl;
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -96,7 +98,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get data_collection => '数据收集';
 
   @override
-  String get data_collection_details => '• 我们仅收集浏览器功能所需的最小数据\n• 您的浏览历史保存在您的设备上\n• 我们不会跟踪您的在线活动\n• 您可以随时清除所有数据';
+  String get data_collection_details =>
+      '• 我们仅收集浏览器功能所需的最小数据\n• 您的浏览历史保存在您的设备上\n• 我们不会跟踪您的在线活动\n• 您可以随时清除所有数据';
 
   @override
   String get general => '通用设置';
@@ -400,7 +403,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get storage_permission_install_packages_required => '存储和安装包权限';
 
   @override
-  String get storage_permission_install_packages_description => 'Solar 浏览器需要存储访问权限用于下载和安装包权限用于APK安装';
+  String get storage_permission_install_packages_description =>
+      'Solar 浏览器需要存储访问权限用于下载和安装包权限用于APK安装';
 
   @override
   String get clear_downloads_history_confirm => '这只会清除下载历史，不会删除已下载的文件。';
@@ -498,6 +502,36 @@ class AppLocalizationsZh extends AppLocalizations {
   String get open_in_new_tab => '在新标签页中打开';
 
   @override
+  String get copy_image_link => 'Copy Image Link';
+
+  @override
+  String get open_image_in_new_tab => 'Open Image in New Tab';
+
+  @override
+  String get open_link => 'Open Link';
+
+  @override
+  String get open_link_in_new_tab => 'Open Link in New Tab';
+
+  @override
+  String get copy_link_address => 'Copy Link Address';
+
+  @override
+  String get failed_to_download_image => 'Failed to download image';
+
+  @override
+  String get custom_home_page => 'Custom Home Page';
+
+  @override
+  String get set_home_page_url => 'Set Home Page URL';
+
+  @override
+  String get not_set => 'Not set';
+
+  @override
+  String get save => 'Save';
+
+  @override
   String get downloading => '下载中...';
 
   @override
@@ -534,7 +568,8 @@ class AppLocalizationsZh extends AppLocalizations {
   String get incognito_mode => '隐身模式';
 
   @override
-  String get incognito_description => '在隐身模式下：\n• 浏览记录不会被保存\n• 关闭标签页时清除Cookie\n• 不会在本地存储任何数据';
+  String get incognito_description =>
+      '在隐身模式下：\n• 浏览记录不会被保存\n• 关闭标签页时清除Cookie\n• 不会在本地存储任何数据';
 
   @override
   String get error_opening_file => '打开文件时出错';
@@ -816,7 +851,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String close_all_tabs_in_group(String groupName) {
-    return '关闭“$groupName”中的所有标签页？此操作无法撤销。';
+    return '关闭\"$groupName\"中的所有标签页？此操作无法撤销。';
   }
 
   @override
@@ -905,4 +940,74 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get copy_summary => '复制摘要';
+
+  @override
+  String get image_link_copied => '图片链接已复制到剪贴板';
+
+  @override
+  String get link_copied => '链接已复制到剪贴板';
+
+  @override
+  String get error_loading_page => '加载页面时出错';
+
+  @override
+  String get no_page_to_install => '没有可安装为PWA的页面';
+
+  @override
+  String get pwa_installed => 'PWA已安装';
+
+  @override
+  String get failed_to_install_pwa => '安装PWA失败';
+
+  @override
+  String get error_opening_file_install_app => '打开文件时出错。请安装适合打开此类文件的应用程序。';
+
+  @override
+  String get full_storage_access_needed => '下载非媒体文件需要完全存储访问权限';
+
+  @override
+  String get error_removing_download => '删除下载时出错';
+
+  @override
+  String get copy_image => '复制图片';
+
+  @override
+  String get text_copied => '文本已复制';
+
+  @override
+  String get text_pasted => '文本已粘贴';
+
+  @override
+  String get text_cut => '文本已剪切';
+
+  @override
+  String get clipboard_empty => '剪贴板为空';
+
+  @override
+  String get paste_error => '粘贴文本时出错';
+
+  @override
+  String get cut_error => '剪切文本时出错';
+
+  @override
+  String get image_url_copied => '图片URL已复制';
+
+  @override
+  String get opened_in_new_tab => '已在新标签页中打开';
+
+  @override
+  String get image_options => '图片选项';
+
+  @override
+  String get copy => '复制';
+
+  @override
+  String get paste => '粘贴';
+
+  @override
+  String get cut => '剪切';
+
+  @override
+  String get asset_file_part_of_app =>
+      'This file is part of the app and cannot be downloaded';
 }

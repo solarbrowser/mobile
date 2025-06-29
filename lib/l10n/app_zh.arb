@@ -622,7 +622,7 @@
   "@close_all_tabs_confirm": {
     "description": "Confirmation message for closing all tabs"
   },
-  "close_all_tabs_in_group": "关闭“{groupName}”中的所有标签页？此操作无法撤销。",
+  "close_all_tabs_in_group": "关闭\"{groupName}\"中的所有标签页？此操作无法撤销。",
   "@close_all_tabs_in_group": {
     "placeholders": {
       "groupName": {
@@ -692,5 +692,27 @@
   "add_tabs_to_group": "将标签页添加到组",
   "ungroup_tabs": "取消组合标签页",
   "delete_group": "删除组",
-  "copy_summary": "复制摘要"
+  "copy_summary": "复制摘要",
+  "image_link_copied": "图片链接已复制到剪贴板",
+  "link_copied": "链接已复制到剪贴板",
+  "error_loading_page": "加载页面时出错",
+  "no_page_to_install": "没有可安装为PWA的页面",
+  "pwa_installed": "PWA已安装",
+  "failed_to_install_pwa": "安装PWA失败",
+  "error_opening_file_install_app": "打开文件时出错。请安装适合打开此类文件的应用程序。",
+  "full_storage_access_needed": "下载非媒体文件需要完全存储访问权限",
+  "error_removing_download": "删除下载时出错",
+  "copy_image": "复制图片",
+  "text_copied": "文本已复制",
+  "text_pasted": "文本已粘贴",
+  "text_cut": "文本已剪切",
+  "clipboard_empty": "剪贴板为空",
+  "paste_error": "粘贴文本时出错",
+  "cut_error": "剪切文本时出错",
+  "image_url_copied": "图片URL已复制",
+  "opened_in_new_tab": "已在新标签页中打开",
+  "image_options": "图片选项",
+  "copy": "复制",
+  "paste": "粘贴",
+  "cut": "剪切"
 }
