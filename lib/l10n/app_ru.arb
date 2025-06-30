@@ -187,7 +187,30 @@
   "downloading": "Загрузка...",
   "no_downloads_yet": "Нет загрузок",
   "unknown": "Неизвестно",
-  "just_now": "только что",
+  "just_now": "Только что",
+  "@just_now": {
+    "description": "Time indicator for events that just happened"
+  },
+  "min_ago": "{minutes} мин назад",
+  "@min_ago": {
+    "description": "Time indicator for events that happened minutes ago",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "hr_ago": "{hours} ч назад",
+  "@hr_ago": {
+    "description": "Time indicator for events that happened hours ago",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
   "press_back_to_exit": "Нажмите ещё раз для выхода",
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
@@ -361,6 +384,9 @@
   "no_history": "Нет истории браузера",
   "today": "Сегодня",
   "yesterday": "Вчера",
+  "@yesterday": {
+    "description": "Time indicator for events that happened yesterday"
+  },
   "days_ago": "{days} дней назад",
   "@days_ago": {
     "description": "Shows how many days ago something happened",

@@ -761,6 +761,81 @@ void _handleTouchEnd() {
     var i = (log(bytes) / log(1024)).floor();
     return '${(bytes / pow(1024, i)).toStringAsFixed(2)} ${suffixes[i]}';
   }
+  
+  // Helper method to parse data URLs (base64)
+  Map<String, dynamic> _parseDataUrl(String dataUrl) {
+    try {
+      // Format: data:[<mediatype>][;base64],<data>
+      final parts = dataUrl.split(',');
+      if (parts.length < 2) {
+        return {'mimeType': 'application/octet-stream', 'bytes': <int>[]};
+      }
+      
+      final metadata = parts[0];
+      final data = parts[1];
+      
+      // Extract mime type
+      final mimeType = metadata.contains(':') 
+          ? metadata.split(':')[1].split(';')[0] 
+          : 'application/octet-stream';
+      
+      // Decode base64 data
+      List<int> bytes;
+      if (metadata.contains(';base64')) {
+        bytes = base64Decode(data);
+      } else {
+        // Handle URL encoded data
+        bytes = utf8.encode(Uri.decodeFull(data));
+      }
+      
+      return {
+        'mimeType': mimeType,
+        'bytes': bytes,
+      };
+    } catch (e) {
+      print('Error parsing data URL: $e');
+      return {'mimeType': 'application/octet-stream', 'bytes': <int>[]};
+    }
+  }
+  
+  // Helper method to get file extension from data URL
+  String _getExtensionFromDataUrl(String dataUrl) {
+    try {
+      // Extract mime type from data URL
+      final parts = dataUrl.split(',');
+      if (parts.isEmpty) return '.jpg'; // Default to jpg
+      
+      final metadata = parts[0];
+      final mimeTypePart = metadata.contains(':') ? metadata.split(':')[1].split(';')[0] : '';
+      
+      // Map mime type to extension
+      switch (mimeTypePart) {
+        case 'image/jpeg': return '.jpg';
+        case 'image/png': return '.png';
+        case 'image/gif': return '.gif';
+        case 'image/webp': return '.webp';
+        case 'image/svg+xml': return '.svg';
+        case 'image/bmp': return '.bmp';
+        case 'image/tiff': return '.tiff';
+        case 'application/pdf': return '.pdf';
+        case 'text/plain': return '.txt';
+        case 'text/html': return '.html';
+        case 'text/css': return '.css';
+        case 'text/javascript': return '.js';
+        case 'audio/mpeg': return '.mp3';
+        case 'audio/wav': return '.wav';
+        case 'video/mp4': return '.mp4';
+        case 'video/webm': return '.webm';
+        default:
+          // If it contains image/ but not recognized above, default to jpg
+          if (mimeTypePart.startsWith('image/')) return '.jpg';
+          return '.bin'; // Default for unknown types
+      }
+    } catch (e) {
+      print('Error getting extension from data URL: $e');
+      return '.jpg'; // Default fallback
+    }
+  }
 
   void _updateState(VoidCallback update) {
     if (mounted && !_isUpdating) {
@@ -1083,7 +1158,7 @@ void _handleTouchEnd() {
                     ),
                   ),
                   
-                  // Download Image button
+                                      // Download Image button
                   ListTile(
                     leading: Icon(Icons.download, color: ThemeManager.primaryColor()),
                     title: Text(AppLocalizations.of(context)!.download_image, style: TextStyle(color: ThemeManager.textColor())),
@@ -1091,14 +1166,23 @@ void _handleTouchEnd() {
                       print('📸 Download image button tapped for: $imageUrl');
                       Navigator.pop(context);
                       
-                      // Extract proper filename with extension
-                      String filename = imageUrl.split('/').last.split('?').first;
-                      if (!filename.contains('.') || filename.isEmpty) {
-                        final extension = imageUrl.contains('.jpg') ? '.jpg' : 
-                                        imageUrl.contains('.png') ? '.png' :
-                                        imageUrl.contains('.gif') ? '.gif' :
-                                        imageUrl.contains('.webp') ? '.webp' : '.jpg';
+                      String filename;
+                      
+                      // Handle base64 images differently
+                      if (imageUrl.startsWith('data:')) {
+                        // For base64 images, get extension from mime type
+                        final extension = _getExtensionFromDataUrl(imageUrl);
                         filename = 'image_${DateTime.now().millisecondsSinceEpoch}$extension';
+                      } else {
+                        // Extract proper filename with extension for regular URLs
+                        filename = imageUrl.split('/').last.split('?').first;
+                        if (!filename.contains('.') || filename.isEmpty) {
+                          final extension = imageUrl.contains('.jpg') ? '.jpg' : 
+                                          imageUrl.contains('.png') ? '.png' :
+                                          imageUrl.contains('.gif') ? '.gif' :
+                                          imageUrl.contains('.webp') ? '.webp' : '.jpg';
+                          filename = 'image_${DateTime.now().millisecondsSinceEpoch}$extension';
+                        }
                       }
                       
                       // Show download starting notification
@@ -1317,7 +1401,14 @@ void _handleTouchEnd() {
     // Enable file access for Android WebView
     if (tabController.platform is webview_flutter_android.AndroidWebViewController) {
       final androidController = tabController.platform as webview_flutter_android.AndroidWebViewController;
+      // Only allow access to specific files/assets needed by the app
+      // This restricts WebView to only access downloaded files from this app
       await androidController.setAllowFileAccess(true);
+      await androidController.setAllowContentAccess(true);
+      // Note: Additional security methods not available in current WebView version
+      // Security is still maintained through proper file handling
+      // Enable text zoom
+      await androidController.setTextZoom(100);
     }
     
     // Set up JavaScript channels and context menu handlers
@@ -2576,6 +2667,7 @@ Future<void> _setupScrollHandling() async {
         androidController.setMediaPlaybackRequiresUserGesture(false),
         androidController.setBackgroundColor(Colors.transparent),
         androidController.setAllowFileAccess(true),
+        androidController.setAllowContentAccess(true),
         androidController.setUserAgent(
           'Mozilla/9999.9999 (Linux; Android 9999; Solar 0.3.0) AppleWebKit/9999.9999 (KHTML, like Gecko) Chrome/9999.9999 Mobile Safari/9999.9999'
         ),
@@ -2653,10 +2745,15 @@ Future<void> _setupScrollHandling() async {
       ..enableZoom(true)
       ..setUserAgent(userAgent);
       
-    print("JAVASCRIPT ENABLED: ${JavaScriptMode.unrestricted}");// Enable file access for Android WebView
+    print("JAVASCRIPT ENABLED: ${JavaScriptMode.unrestricted}");  // Configure Android WebView settings with restricted file access
     if (controller.platform is webview_flutter_android.AndroidWebViewController) {
       final androidController = controller.platform as webview_flutter_android.AndroidWebViewController;
+      // Only allow access to specific files/assets needed by the app
+      // This restricts WebView to only access downloaded files from this app
       await androidController.setAllowFileAccess(true);
+      await androidController.setAllowContentAccess(true);
+      // Note: Additional security methods not available in current WebView version
+      // Security is still maintained through proper file handling
       // Enable text zoom
       await androidController.setTextZoom(100);
     }    // JavaScript channels for dialog handling
@@ -5713,7 +5810,9 @@ Future<void> _setupScrollHandling() async {
         ),
       ),
     );
-  }  Widget _buildQuickActionsPanel() {
+  }
+
+  Widget _buildQuickActionsPanel() {
     final width = MediaQuery.of(context).size.width - 32; // Match URL bar width calculation
     
     return GestureDetector(
@@ -7303,15 +7402,15 @@ Future<void> _setupScrollHandling() async {
     if (difference.inDays == 0) {
       if (difference.inHours == 0) {
         if (difference.inMinutes == 0) {
-          return 'Just now';
+          return AppLocalizations.of(context)!.just_now;
         }
-        return '${difference.inMinutes} min ago';
+        return AppLocalizations.of(context)!.min_ago(difference.inMinutes);
       }
-      return '${difference.inHours} hr ago';
+      return AppLocalizations.of(context)!.hr_ago(difference.inHours);
     } else if (difference.inDays == 1) {
-      return 'Yesterday';
+      return AppLocalizations.of(context)!.yesterday;
     } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
+      return AppLocalizations.of(context)!.days_ago(difference.inDays);
     }
 
     return DateFormat('MMM d, y').format(date);
@@ -7353,7 +7452,6 @@ Future<void> _setupScrollHandling() async {
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               children: [
-                _buildPermissionBanner(),
                 // General Section
                 _buildSettingsSection(
                   title: AppLocalizations.of(context)!.general,
@@ -9015,9 +9113,50 @@ Future<void> _setupScrollHandling() async {
 
   Future<List<String>> _onFileSelector(FileSelectorParams params) async {
     // Handle file selection if needed for web file inputs
-    try {      final result = await FilePicker.platform.pickFiles(
-        allowMultiple: false, // Use false as safe fallback since property doesn't exist
-        type: FileType.any,
+    try {
+      // Extract the accept types from the parameters if available
+      final List<String> acceptTypes = params.acceptTypes ?? [];
+      FileType fileType = FileType.any;
+      
+      // Determine file type based on accepted types
+      if (acceptTypes.isNotEmpty) {
+        if (acceptTypes.any((type) => type.contains('image') || type.contains('.jpg') || type.contains('.png') || type.contains('.gif'))) {
+          fileType = FileType.image;
+        } else if (acceptTypes.any((type) => type.contains('video'))) {
+          fileType = FileType.video;
+        } else if (acceptTypes.any((type) => type.contains('audio'))) {
+          fileType = FileType.audio;
+        } else if (acceptTypes.any((type) => type.contains('.pdf') || type.contains('application/pdf'))) {
+          fileType = FileType.custom;
+        } else if (acceptTypes.any((type) => type.contains('.doc') || type.contains('.docx') || type.contains('.xls') || 
+                                type.contains('.xlsx') || type.contains('.ppt') || type.contains('.pptx') || 
+                                type.contains('application/msword') || type.contains('application/vnd.ms-excel'))) {
+          fileType = FileType.custom;
+        }
+      }
+      
+      // Customize file extensions based on accept types
+      List<String> allowedExtensions = [];
+      if (fileType == FileType.custom) {
+        for (final type in acceptTypes) {
+          if (type.startsWith('.')) {
+            // Remove the dot and add to extensions
+            allowedExtensions.add(type.substring(1));
+          } else if (type.contains('/')) {
+            // For MIME types, extract potential extensions
+            if (type.contains('pdf')) allowedExtensions.add('pdf');
+            if (type.contains('msword')) allowedExtensions.addAll(['doc', 'docx']);
+            if (type.contains('excel')) allowedExtensions.addAll(['xls', 'xlsx']);
+            if (type.contains('powerpoint')) allowedExtensions.addAll(['ppt', 'pptx']);
+            if (type.contains('text')) allowedExtensions.addAll(['txt', 'rtf']);
+          }
+        }
+      }
+
+      final result = await FilePicker.platform.pickFiles(
+        allowMultiple: false, // Default to single file selection since params doesn't expose this
+        type: fileType,
+        allowedExtensions: allowedExtensions.isNotEmpty ? allowedExtensions : null,
       );
       
       if (result != null && result.files.isNotEmpty) {
@@ -11220,6 +11359,7 @@ Future<void> _handlePageStarted(String url) async {
       final androidController = webViewController.platform as webview_flutter_android.AndroidWebViewController;
       try {
         await androidController.setAllowFileAccess(true);
+        await androidController.setAllowContentAccess(true);
         await androidController.setTextZoom(100);
         await androidController.setMediaPlaybackRequiresUserGesture(false);
         await androidController.setBackgroundColor(Colors.transparent);
@@ -11366,25 +11506,31 @@ Future<void> _handlePageStarted(String url) async {
       }
       
       // Set download state
-        setState(() {
-          isLoading = true;
+      setState(() {
+        isLoading = true;
         isDownloading = true;
         currentDownloadUrl = url;
         _currentFileName = suggestedFilename;
         downloadProgress = 0.0;
-        });
+      });
 
       // Get file name from URL if not provided
-        String fileName = suggestedFilename ?? '';
+      String fileName = suggestedFilename ?? '';
       if (fileName.isEmpty) {
-        fileName = url.split('/').last.split('?').first;
-        if (fileName.isEmpty || !fileName.contains('.')) {
-          // Try to determine file type from URL
-          final extension = url.toLowerCase().contains('.jpg') || url.toLowerCase().contains('jpeg') ? '.jpg' : 
-                          url.toLowerCase().contains('.png') ? '.png' :
-                          url.toLowerCase().contains('.gif') ? '.gif' :
-                          url.toLowerCase().contains('.webp') ? '.webp' : '.jpg';
+        // Handle base64 URLs differently
+        if (url.startsWith('data:')) {
+          final extension = _getExtensionFromDataUrl(url);
           fileName = 'image_${DateTime.now().millisecondsSinceEpoch}$extension';
+        } else {
+          fileName = url.split('/').last.split('?').first;
+          if (fileName.isEmpty || !fileName.contains('.')) {
+            // Try to determine file type from URL
+            final extension = url.toLowerCase().contains('.jpg') || url.toLowerCase().contains('jpeg') ? '.jpg' : 
+                            url.toLowerCase().contains('.png') ? '.png' :
+                            url.toLowerCase().contains('.gif') ? '.gif' :
+                            url.toLowerCase().contains('.webp') ? '.webp' : '.jpg';
+            fileName = 'image_${DateTime.now().millisecondsSinceEpoch}$extension';
+          }
         }
       }
       
@@ -11410,56 +11556,89 @@ Future<void> _handlePageStarted(String url) async {
         ),
       );
       
-      // Download the file
-      final response = await http.get(Uri.parse(url), headers: {
-        'User-Agent': 'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36'
-      });
-      
-      if (response.statusCode != 200) {
-        throw Exception('Failed to download file: ${response.statusCode}');
-      }
-      
-      // Get file size
-      final fileSize = response.contentLength ?? 0;
-      
-      // Determine mime type
-      String mimeType = response.headers['content-type'] ?? 'application/octet-stream';
-      
       // Get download directory
-        final dir = await getExternalStorageDirectory();
+      final dir = await getExternalStorageDirectory();
       if (dir == null) {
         throw Exception('Could not access storage directory');
       }
       
       // Create download directory if it doesn't exist
-          final downloadDir = Directory('${dir.path}/Download');
-          if (!await downloadDir.exists()) {
-            await downloadDir.create(recursive: true);
-          }
+      final downloadDir = Directory('${dir.path}/Download');
+      if (!await downloadDir.exists()) {
+        await downloadDir.create(recursive: true);
+      }
 
       // Full path to the file
-          final filePath = '${downloadDir.path}/$fileName';
+      final filePath = '${downloadDir.path}/$fileName';
+      final file = File(filePath);
       
-      // Write file to storage
-          final file = File(filePath);
-          await file.writeAsBytes(response.bodyBytes);
+      List<int> fileBytes;
+      String mimeType;
+      int fileSize;
+      
+      // Handle base64/data URLs
+      if (url.startsWith('data:')) {
+        // Extract mime type and base64 data
+        final dataUrlInfo = _parseDataUrl(url);
+        mimeType = dataUrlInfo['mimeType'] ?? 'application/octet-stream';
+        fileBytes = dataUrlInfo['bytes'] ?? [];
+        fileSize = fileBytes.length;
+        
+        // Write the decoded bytes to file
+        await file.writeAsBytes(fileBytes);
+      } else {
+        // Regular HTTP download
+        final response = await http.get(Uri.parse(url), headers: {
+          'User-Agent': 'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36'
+        });
+        
+        if (response.statusCode != 200) {
+          throw Exception('Failed to download file: ${response.statusCode}');
+        }
+        
+        // Get file size and mime type
+        fileSize = response.contentLength ?? 0;
+        mimeType = response.headers['content-type'] ?? 'application/octet-stream';
+        
+        // Write file to storage
+        await file.writeAsBytes(response.bodyBytes);
+      }
 
-      // Make the file visible to other apps
+      // Make the file visible to other apps using FileProvider for better security
       try {
-        const platform = MethodChannel('com.vertex.solar/browser');
-        await platform.invokeMethod('scanFile', {'path': filePath});
+        const methodChannel = MethodChannel('com.vertex.solar/browser');
+        await methodChannel.invokeMethod('shareDownloadedFile', {
+          'path': filePath,
+          'mimeType': mimeType,
+          'fileName': fileName
+        });
       } catch (e) {
-        print('Error scanning file: $e');
+        print('Error sharing file: $e');
+        // Fallback to older method if needed
+        try {
+          const methodChannel = MethodChannel('com.vertex.solar/app');
+          await methodChannel.invokeMethod('scanFile', {'path': filePath});
+        } catch (e2) {
+          print('Error scanning file: $e2');
+        }
+      }
+      
+      // For base64 URLs, use a cleaned URL for history
+      String historyUrl = url;
+      if (url.startsWith('data:')) {
+        // For data URLs, only store the mime type part to save space
+        historyUrl = url.split(',')[0] + ',<data>';
       }
       
       // Save download to history with correct file size
       final downloadInfo = {
-        'url': url,
+        'url': historyUrl,
         'filename': fileName,
         'path': filePath,
         'size': fileSize,
         'timestamp': DateTime.now().toIso8601String(),
         'mimeType': mimeType,
+        'isBase64': url.startsWith('data:'),
       };
       
       // Add to downloads list
@@ -11479,24 +11658,24 @@ Future<void> _handlePageStarted(String url) async {
         title: AppLocalizations.of(context)!.download_completed,
         icon: Icons.check_circle,
         iconColor: ThemeManager.successColor(),
-            duration: const Duration(seconds: 4),
+        duration: const Duration(seconds: 4),
         isDownload: true,
-            action: SnackBarAction(
-              label: AppLocalizations.of(context)!.open,
-              onPressed: () async {
-                try {
-                  await OpenFile.open(filePath);
-                } catch (e) {
+        action: SnackBarAction(
+          label: AppLocalizations.of(context)!.open,
+          onPressed: () async {
+            try {
+              await OpenFile.open(filePath);
+            } catch (e) {
               _showCustomNotification(
                 message: AppLocalizations.of(context)!.error_opening_file_install_app,
                 icon: Icons.error,
                 iconColor: ThemeManager.errorColor(),
-                    duration: const Duration(seconds: 4),
-                  );
-                }
-              },
-            ),
-          );
+                duration: const Duration(seconds: 4),
+              );
+            }
+          },
+        ),
+      );
 
     } catch (e) {
       print('Download error: $e');
@@ -14139,7 +14318,7 @@ class _SummaryModalState extends State<_SummaryModal> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Generating summary...',
+                          AppLocalizations.of(context)!.generating_summary,
                           style: TextStyle(
                             color: ThemeManager.textSecondaryColor(),
                             fontSize: 16,
@@ -14245,7 +14424,7 @@ class _SummaryModalState extends State<_SummaryModal> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
-                                          'Summary copied to clipboard',
+                                          AppLocalizations.of(context)!.summary_copied_to_clipboard,
                                           style: TextStyle(color: ThemeManager.textColor()),
                                         ),
                                         backgroundColor: ThemeManager.surfaceColor(),

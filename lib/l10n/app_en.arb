@@ -35,6 +35,30 @@
   "@just_now": {
     "description": "Time indicator for events that just happened"
   },
+  "min_ago": "{minutes} min ago",
+  "@min_ago": {
+    "description": "Time indicator for events that happened minutes ago",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "hr_ago": "{hours} hr ago",
+  "@hr_ago": {
+    "description": "Time indicator for events that happened hours ago",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "yesterday": "Yesterday",
+  "@yesterday": {
+    "description": "Time indicator for events that happened yesterday"
+  },
   "updated": "Solar Updated!",
   "version": "Version {version}",
   "@version": {
@@ -387,7 +411,6 @@
   "clear_history_confirmation": "Are you sure you want to clear your browsing history?",
   "no_history": "No browsing history",
   "today": "Today",
-  "yesterday": "Yesterday",
   "days_ago": "{days} days ago",
   "@days_ago": {
     "description": "Shows how many days ago something happened",
@@ -482,6 +505,8 @@
   "@summary_length": {
     "description": "Label for AI summary length preference"
   },
+  "generating_summary": "Generating summary...",
+  "summary_copied_to_clipboard": "Summary copied to clipboard.",
   "summary_language": "Summary Language",
   "@summary_language": {
     "description": "Label for AI summary language preference"

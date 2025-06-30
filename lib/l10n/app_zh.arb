@@ -187,6 +187,33 @@
   "no_downloads_yet": "暂无下载",
   "unknown": "未知",
   "just_now": "刚刚",
+  "@just_now": {
+    "description": "Time indicator for events that just happened"
+  },
+  "min_ago": "{minutes}分钟前",
+  "@min_ago": {
+    "description": "Time indicator for events that happened minutes ago",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "hr_ago": "{hours}小时前",
+  "@hr_ago": {
+    "description": "Time indicator for events that happened hours ago",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "yesterday": "昨天",
+  "@yesterday": {
+    "description": "Time indicator for events that happened yesterday"
+  },
   "press_back_to_exit": "再按一次退出",
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
@@ -359,7 +386,6 @@
   "clear_history_confirmation": "您确定要清除浏览历史记录吗？",
   "no_history": "没有浏览历史记录",
   "today": "今天",
-  "yesterday": "昨天",
   "days_ago": "{days}天前",
   "@days_ago": {
     "description": "Shows how many days ago something happened",

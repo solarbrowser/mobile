@@ -84,6 +84,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get just_now => 'たった今';
 
   @override
+  String min_ago(int minutes) {
+    return '$minutes分前';
+  }
+
+  @override
+  String hr_ago(int hours) {
+    return '$hours時間前';
+  }
+
+  @override
+  String get yesterday => '昨日';
+
+  @override
   String get updated => 'Solar がアップデートされました！';
 
   @override
@@ -624,9 +637,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get today => '今日';
 
   @override
-  String get yesterday => '昨日';
-
-  @override
   String days_ago(int days) {
     return '$days日前';
   }
@@ -688,6 +698,12 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get summary_length => '要約の長さ';
+
+  @override
+  String get generating_summary => 'Generating summary...';
+
+  @override
+  String get summary_copied_to_clipboard => 'Summary copied to clipboard.';
 
   @override
   String get summary_language => '要約の言語';
@@ -1015,8 +1031,4 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get cut => '切り取り';
-
-  @override
-  String get asset_file_part_of_app =>
-      'This file is part of the app and cannot be downloaded';
 }

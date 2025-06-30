@@ -82,7 +82,20 @@ class AppLocalizationsRu extends AppLocalizations {
   String get continueText => 'Продолжить';
 
   @override
-  String get just_now => 'только что';
+  String get just_now => 'Только что';
+
+  @override
+  String min_ago(int minutes) {
+    return '$minutes мин назад';
+  }
+
+  @override
+  String hr_ago(int hours) {
+    return '$hours ч назад';
+  }
+
+  @override
+  String get yesterday => 'Вчера';
 
   @override
   String get updated => 'Solar Browser обновлён!';
@@ -637,9 +650,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get today => 'Сегодня';
 
   @override
-  String get yesterday => 'Вчера';
-
-  @override
   String days_ago(int days) {
     return '$days дней назад';
   }
@@ -705,6 +715,12 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get summary_length => 'Длина сводки';
+
+  @override
+  String get generating_summary => 'Generating summary...';
+
+  @override
+  String get summary_copied_to_clipboard => 'Summary copied to clipboard.';
 
   @override
   String get summary_language => 'Язык сводки';
@@ -1040,8 +1056,4 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get cut => 'Вырезать';
-
-  @override
-  String get asset_file_part_of_app =>
-      'This file is part of the app and cannot be downloaded';
 }

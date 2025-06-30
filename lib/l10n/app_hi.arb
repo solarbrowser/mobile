@@ -182,7 +182,34 @@
   "open_in_new_tab": "नए टैब में खोलें",
   "downloading": "डाउनलोड हो रहा है...",
   "no_downloads_yet": "कोई डाउनलोड नहीं",
-  "just_now": "अभी-अभी",
+  "just_now": "अभी अभी",
+  "@just_now": {
+    "description": "Time indicator for events that just happened"
+  },
+  "min_ago": "{minutes} मिनट पहले",
+  "@min_ago": {
+    "description": "Time indicator for events that happened minutes ago",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "hr_ago": "{hours} घंटे पहले",
+  "@hr_ago": {
+    "description": "Time indicator for events that happened hours ago",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "yesterday": "कल",
+  "@yesterday": {
+    "description": "Time indicator for events that happened yesterday"
+  },
   "unknown": "अज्ञात",
   "press_back_to_exit": "बाहर निकलने के लिए दोबारा दबाएं",
   "@press_back_to_exit": {
@@ -205,7 +232,6 @@
   "clear_history_confirmation": "क्या आप वाकई ब्राउज़िंग इतिहास साफ़ करना चाहते हैं?",
   "no_history": "कोई ब्राउज़िंग इतिहास नहीं",
   "today": "आज",
-  "yesterday": "कल",
   "days_ago": "{days} दिन पहले",
   "@days_ago": {
     "description": "Shows how many days ago something happened",

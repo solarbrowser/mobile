@@ -183,7 +183,34 @@
   "downloading": "Wird heruntergeladen...",
   "no_downloads_yet": "Keine Downloads",
   "unknown": "Unbekannt",
-  "just_now": "gerade eben",
+  "just_now": "Gerade eben",
+  "@just_now": {
+    "description": "Time indicator for events that just happened"
+  },
+  "min_ago": "vor {minutes} Min",
+  "@min_ago": {
+    "description": "Time indicator for events that happened minutes ago",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "hr_ago": "vor {hours} Std",
+  "@hr_ago": {
+    "description": "Time indicator for events that happened hours ago",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "yesterday": "Gestern",
+  "@yesterday": {
+    "description": "Time indicator for events that happened yesterday"
+  },
   "press_back_to_exit": "Drücken Sie erneut zum Beenden",
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
@@ -208,7 +235,6 @@
   "clear_history_confirmation": "Möchten Sie den Browserverlauf wirklich löschen?",
   "no_history": "Kein Browserverlauf",
   "today": "Heute",
-  "yesterday": "Gestern",
   "days_ago": "vor {days} Tagen",
   "@days_ago": {
     "description": "Shows how many days ago something happened",

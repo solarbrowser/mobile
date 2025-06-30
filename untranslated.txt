@@ -20,7 +20,8 @@
     "set_home_page_url",
     "not_set",
     "save",
-    "asset_file_part_of_app"
+    "generating_summary",
+    "summary_copied_to_clipboard"
   ],
 
   "de": [
@@ -44,7 +45,8 @@
     "set_home_page_url",
     "not_set",
     "save",
-    "asset_file_part_of_app"
+    "generating_summary",
+    "summary_copied_to_clipboard"
   ],
 
   "es": [
@@ -68,7 +70,8 @@
     "set_home_page_url",
     "not_set",
     "save",
-    "asset_file_part_of_app"
+    "generating_summary",
+    "summary_copied_to_clipboard"
   ],
 
   "fr": [
@@ -92,7 +95,8 @@
     "set_home_page_url",
     "not_set",
     "save",
-    "asset_file_part_of_app"
+    "generating_summary",
+    "summary_copied_to_clipboard"
   ],
 
   "hi": [
@@ -116,8 +120,9 @@
     "set_home_page_url",
     "not_set",
     "save",
-    "reset_welcome_screen",
-    "asset_file_part_of_app"
+    "generating_summary",
+    "summary_copied_to_clipboard",
+    "reset_welcome_screen"
   ],
 
   "it": [
@@ -142,7 +147,8 @@
     "set_home_page_url",
     "not_set",
     "save",
-    "asset_file_part_of_app"
+    "generating_summary",
+    "summary_copied_to_clipboard"
   ],
 
   "ja": [
@@ -167,7 +173,8 @@
     "set_home_page_url",
     "not_set",
     "save",
-    "asset_file_part_of_app"
+    "generating_summary",
+    "summary_copied_to_clipboard"
   ],
 
   "ko": [
@@ -181,6 +188,8 @@
     "catppuccinTheme",
     "nordLightTheme",
     "gruvboxLightTheme",
+    "min_ago",
+    "hr_ago",
     "copy_image_link",
     "open_image_in_new_tab",
     "open_link",
@@ -191,8 +200,9 @@
     "set_home_page_url",
     "not_set",
     "save",
-    "ai_settings",
-    "asset_file_part_of_app"
+    "generating_summary",
+    "summary_copied_to_clipboard",
+    "ai_settings"
   ],
 
   "pt": [
@@ -216,7 +226,8 @@
     "set_home_page_url",
     "not_set",
     "save",
-    "asset_file_part_of_app"
+    "generating_summary",
+    "summary_copied_to_clipboard"
   ],
 
   "ru": [
@@ -240,7 +251,8 @@
     "set_home_page_url",
     "not_set",
     "save",
-    "asset_file_part_of_app"
+    "generating_summary",
+    "summary_copied_to_clipboard"
   ],
 
   "tr": [
@@ -265,7 +277,8 @@
     "set_home_page_url",
     "not_set",
     "save",
-    "asset_file_part_of_app"
+    "generating_summary",
+    "summary_copied_to_clipboard"
   ],
 
   "zh": [
@@ -290,6 +303,7 @@
     "set_home_page_url",
     "not_set",
     "save",
-    "asset_file_part_of_app"
+    "generating_summary",
+    "summary_copied_to_clipboard"
   ]
 }

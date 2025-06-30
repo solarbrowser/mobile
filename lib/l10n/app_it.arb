@@ -181,7 +181,34 @@
   "downloading": "Download in corso...",
   "no_downloads_yet": "Nessun download",
   "unknown": "Sconosciuto",
-  "just_now": "proprio ora",
+  "just_now": "Proprio ora",
+  "@just_now": {
+    "description": "Time indicator for events that just happened"
+  },
+  "min_ago": "{minutes} min fa",
+  "@min_ago": {
+    "description": "Time indicator for events that happened minutes ago",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "hr_ago": "{hours} ore fa",
+  "@hr_ago": {
+    "description": "Time indicator for events that happened hours ago",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "yesterday": "Ieri",
+  "@yesterday": {
+    "description": "Time indicator for events that happened yesterday"
+  },
   "press_back_to_exit": "Premi di nuovo per uscire",
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
@@ -203,7 +230,6 @@
   "clear_history_confirmation": "Sei sicuro di voler cancellare la cronologia di navigazione?",
   "no_history": "Nessuna cronologia di navigazione",
   "today": "Oggi",
-  "yesterday": "Ieri",
   "days_ago": "{days} giorni fa",
   "@days_ago": {
     "description": "Shows how many days ago something happened",

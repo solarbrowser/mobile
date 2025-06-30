@@ -270,6 +270,24 @@ abstract class AppLocalizations {
   /// **'Just now'**
   String get just_now;
 
+  /// Time indicator for events that happened minutes ago
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min ago'**
+  String min_ago(int minutes);
+
+  /// Time indicator for events that happened hours ago
+  ///
+  /// In en, this message translates to:
+  /// **'{hours} hr ago'**
+  String hr_ago(int hours);
+
+  /// Time indicator for events that happened yesterday
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
   /// No description provided for @updated.
   ///
   /// In en, this message translates to:
@@ -1314,12 +1332,6 @@ abstract class AppLocalizations {
   /// **'Today'**
   String get today;
 
-  /// No description provided for @yesterday.
-  ///
-  /// In en, this message translates to:
-  /// **'Yesterday'**
-  String get yesterday;
-
   /// Shows how many days ago something happened
   ///
   /// In en, this message translates to:
@@ -1433,6 +1445,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Summary Length'**
   String get summary_length;
+
+  /// No description provided for @generating_summary.
+  ///
+  /// In en, this message translates to:
+  /// **'Generating summary...'**
+  String get generating_summary;
+
+  /// No description provided for @summary_copied_to_clipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Summary copied to clipboard.'**
+  String get summary_copied_to_clipboard;
 
   /// Label for AI summary language preference
   ///
@@ -2075,12 +2099,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cut'**
   String get cut;
-
-  /// Message shown when trying to download an asset file
-  ///
-  /// In en, this message translates to:
-  /// **'This file is part of the app and cannot be downloaded'**
-  String get asset_file_part_of_app;
 }
 
 class _AppLocalizationsDelegate

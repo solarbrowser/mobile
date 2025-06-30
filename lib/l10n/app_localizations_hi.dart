@@ -82,7 +82,20 @@ class AppLocalizationsHi extends AppLocalizations {
   String get continueText => 'जारी रखें';
 
   @override
-  String get just_now => 'अभी-अभी';
+  String get just_now => 'अभी अभी';
+
+  @override
+  String min_ago(int minutes) {
+    return '$minutes मिनट पहले';
+  }
+
+  @override
+  String hr_ago(int hours) {
+    return '$hours घंटे पहले';
+  }
+
+  @override
+  String get yesterday => 'कल';
 
   @override
   String get updated => 'Solar ब्राउज़र अपडेट हो गया!';
@@ -636,9 +649,6 @@ class AppLocalizationsHi extends AppLocalizations {
   String get today => 'आज';
 
   @override
-  String get yesterday => 'कल';
-
-  @override
   String days_ago(int days) {
     return '$days दिन पहले';
   }
@@ -701,6 +711,12 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get summary_length => 'सारांश लंबाई';
+
+  @override
+  String get generating_summary => 'Generating summary...';
+
+  @override
+  String get summary_copied_to_clipboard => 'Summary copied to clipboard.';
 
   @override
   String get summary_language => 'सारांश भाषा';
@@ -1036,8 +1052,4 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get cut => 'कट करें';
-
-  @override
-  String get asset_file_part_of_app =>
-      'This file is part of the app and cannot be downloaded';
 }

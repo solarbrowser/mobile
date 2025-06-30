@@ -85,6 +85,19 @@ class AppLocalizationsAr extends AppLocalizations {
   String get just_now => 'الآن';
 
   @override
+  String min_ago(int minutes) {
+    return 'منذ $minutes دقيقة';
+  }
+
+  @override
+  String hr_ago(int hours) {
+    return 'منذ $hours ساعة';
+  }
+
+  @override
+  String get yesterday => 'الأمس';
+
+  @override
   String get updated => 'تم تحديث متصفح Solar!';
 
   @override
@@ -632,9 +645,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get today => 'اليوم';
 
   @override
-  String get yesterday => 'الأمس';
-
-  @override
   String days_ago(int days) {
     return 'منذ $days يوم';
   }
@@ -698,6 +708,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get summary_length => 'طول الملخص';
+
+  @override
+  String get generating_summary => 'Generating summary...';
+
+  @override
+  String get summary_copied_to_clipboard => 'Summary copied to clipboard.';
 
   @override
   String get summary_language => 'لغة الملخص';
@@ -1031,8 +1047,4 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get cut => 'قص';
-
-  @override
-  String get asset_file_part_of_app =>
-      'This file is part of the app and cannot be downloaded';
 }

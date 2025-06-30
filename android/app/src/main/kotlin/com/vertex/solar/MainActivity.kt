@@ -20,6 +20,8 @@ import android.graphics.BitmapFactory
 import android.graphics.drawable.Icon
 import android.util.Base64
 import androidx.annotation.NonNull
+import androidx.core.content.FileProvider
+import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -50,6 +52,40 @@ class MainActivity: FlutterActivity() {
                             null
                         ) { _, uri ->
                             result.success(uri?.toString())
+                        }
+                    } else {
+                        result.error("INVALID_PATH", "Path cannot be null", null)
+                    }
+                }
+                "shareDownloadedFile" -> {
+                    val path = call.argument<String>("path")
+                    val mimeType = call.argument<String>("mimeType") ?: "application/octet-stream"
+                    val fileName = call.argument<String>("fileName")
+                    
+                    if (path != null) {
+                        try {
+                            // Create FileProvider URI for the file
+                            val file = File(path)
+                            val fileUri = FileProvider.getUriForFile(
+                                context,
+                                "${context.packageName}.fileprovider",
+                                file
+                            )
+                            
+                            // Make the file visible to other apps via MediaScanner
+                            MediaScannerConnection.scanFile(
+                                context,
+                                arrayOf(path),
+                                arrayOf(mimeType)
+                            ) { _, uri ->
+                                Log.i(TAG, "File scanned: $uri")
+                            }
+                            
+                            // Return success with the content URI
+                            result.success(fileUri.toString())
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error sharing file: ${e.message}", e)
+                            result.error("SHARE_ERROR", e.message, null)
                         }
                     } else {
                         result.error("INVALID_PATH", "Path cannot be null", null)

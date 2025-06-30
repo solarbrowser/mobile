@@ -182,6 +182,33 @@
   "no_downloads_yet": "لا توجد تحميلات",
   "unknown": "غير معروف",
   "just_now": "الآن",
+  "@just_now": {
+    "description": "Time indicator for events that just happened"
+  },
+  "min_ago": "منذ {minutes} دقيقة",
+  "@min_ago": {
+    "description": "Time indicator for events that happened minutes ago",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "hr_ago": "منذ {hours} ساعة",
+  "@hr_ago": {
+    "description": "Time indicator for events that happened hours ago",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "yesterday": "الأمس",
+  "@yesterday": {
+    "description": "Time indicator for events that happened yesterday"
+  },
   "press_back_to_exit": "اضغط مرة أخرى للخروج",
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
@@ -203,7 +230,6 @@
   "clear_history_confirmation": "هل أنت متأكد أنك تريد مسح سجل التصفح؟",
   "no_history": "لا يوجد سجل تصفح",
   "today": "اليوم",
-  "yesterday": "الأمس",
   "days_ago": "منذ {days} يوم",
   "@days_ago": {
     "description": "Shows how many days ago something happened",

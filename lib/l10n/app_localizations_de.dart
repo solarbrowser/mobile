@@ -83,7 +83,20 @@ class AppLocalizationsDe extends AppLocalizations {
   String get continueText => 'Fortfahren';
 
   @override
-  String get just_now => 'gerade eben';
+  String get just_now => 'Gerade eben';
+
+  @override
+  String min_ago(int minutes) {
+    return 'vor $minutes Min';
+  }
+
+  @override
+  String hr_ago(int hours) {
+    return 'vor $hours Std';
+  }
+
+  @override
+  String get yesterday => 'Gestern';
 
   @override
   String get updated => 'Solar wurde aktualisiert!';
@@ -639,9 +652,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get today => 'Heute';
 
   @override
-  String get yesterday => 'Gestern';
-
-  @override
   String days_ago(int days) {
     return 'vor $days Tagen';
   }
@@ -707,6 +717,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get summary_length => 'Zusammenfassungslänge';
+
+  @override
+  String get generating_summary => 'Generating summary...';
+
+  @override
+  String get summary_copied_to_clipboard => 'Summary copied to clipboard.';
 
   @override
   String get summary_language => 'Zusammenfassungssprache';
@@ -1045,8 +1061,4 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get cut => 'Ausschneiden';
-
-  @override
-  String get asset_file_part_of_app =>
-      'This file is part of the app and cannot be downloaded';
 }

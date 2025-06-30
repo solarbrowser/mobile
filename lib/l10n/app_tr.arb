@@ -181,7 +181,34 @@
   "downloading": "İndiriliyor...",
   "no_downloads_yet": "Henüz indirme yok",
   "unknown": "Bilinmiyor",
-  "just_now": "az önce",
+  "just_now": "Az önce",
+  "@just_now": {
+    "description": "Time indicator for events that just happened"
+  },
+  "min_ago": "{minutes} dk önce",
+  "@min_ago": {
+    "description": "Time indicator for events that happened minutes ago",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "hr_ago": "{hours} sa önce",
+  "@hr_ago": {
+    "description": "Time indicator for events that happened hours ago",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+    "yesterday": "Dün",
+  "@yesterday": {
+    "description": "Time indicator for events that happened yesterday"
+  },
   "press_back_to_exit": "Çıkmak için tekrar basın",
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"

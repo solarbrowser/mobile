@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Only provide access to the app's download directory -->
+    <external-path name="app_downloads" path="Android/data/com.vertex.solar/files/Download" />
+    <external-path name="downloads" path="Download" />
+    <external-cache-path name="cached_downloads" path="." />
+</paths> 

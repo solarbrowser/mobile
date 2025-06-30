@@ -187,6 +187,33 @@
   "no_downloads_yet": "ダウンロードはありません",
   "unknown": "不明",
   "just_now": "たった今",
+  "@just_now": {
+    "description": "Time indicator for events that just happened"
+  },
+  "min_ago": "{minutes}分前",
+  "@min_ago": {
+    "description": "Time indicator for events that happened minutes ago",
+    "placeholders": {
+      "minutes": {
+        "type": "int",
+        "example": "5"
+      }
+    }
+  },
+  "hr_ago": "{hours}時間前",
+  "@hr_ago": {
+    "description": "Time indicator for events that happened hours ago",
+    "placeholders": {
+      "hours": {
+        "type": "int",
+        "example": "2"
+      }
+    }
+  },
+  "yesterday": "昨日",
+  "@yesterday": {
+    "description": "Time indicator for events that happened yesterday"
+  },
   "press_back_to_exit": "もう一度押すと終了します",
   "@press_back_to_exit": {
     "description": "Message shown when user needs to press back again to exit the app"
@@ -363,7 +390,6 @@
   "clear_history_confirmation": "ブラウジング履歴をクリアしてもよろしいですか？",
   "no_history": "ブラウジング履歴がありません",
   "today": "今日",
-  "yesterday": "昨日",
   "days_ago": "{days}日前",
   "@days_ago": {
     "description": "Shows how many days ago something happened",
