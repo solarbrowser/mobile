@@ -135,6 +135,47 @@
         .shortcuts-container {
             width: 100%;
         }
+        
+        .shortcuts-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 0 4px;
+        }
+        
+        .shortcuts-header span {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .shortcuts-edit-btn {
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            min-width: 60px;
+            padding: 6px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 2px 10px rgba(33, 150, 243, 0.3);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .shortcuts-edit-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(33, 150, 243, 0.5);
+        }
+        
+        .shortcuts-edit-btn.active {
+            background: var(--color-accent);
+        }
 
         .news-section {
             width: 100%;
@@ -251,6 +292,25 @@
             padding: 40px;
             color: var(--text-secondary);
             font-size: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--color-secondary);
+            border-top: 3px solid var(--color-primary);
+            border-radius: 50%;
+            margin-bottom: 16px;
+            animation: spin 1.5s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         .news-error {
@@ -502,7 +562,7 @@
     </style>
 </head>
 <body>    <!-- Edit mode button -->
-      <div class="container">        <img src="logo.png" alt="Solar Browser" class="logo" onerror="console.log('Logo failed to load, trying alternative path'); this.src='flutter_assets/assets/logo.png';" style="width: 120px; height: 120px; border-radius: 16px; background: none !important; filter: drop-shadow(0 0 25px rgba(33, 150, 243, 0.6)) drop-shadow(0 0 50px rgba(33, 150, 243, 0.3)); transition: filter 0.3s ease;" onmouseover="this.style.filter='drop-shadow(0 0 40px rgba(33, 150, 243, 0.8)) drop-shadow(0 0 80px rgba(33, 150, 243, 0.4))'" onmouseout="this.style.filter='drop-shadow(0 0 25px rgba(33, 150, 243, 0.6)) drop-shadow(0 0 50px rgba(33, 150, 243, 0.3))'">
+      <div class="container">        <img src="logo.png" alt="Solar Browser" class="logo" onerror="console.log('Logo failed to load, trying alternative path'); this.src='flutter_assets/assets/logo.png';" style="width: 120px; height: 120px; border-radius: 16px; background: transparent !important; filter: drop-shadow(0 0 30px rgba(33, 150, 243, 0.8)) drop-shadow(0 0 60px rgba(33, 150, 243, 0.5)); transition: filter 0.3s ease;" onmouseover="this.style.filter='drop-shadow(0 0 50px rgba(33, 150, 243, 1)) drop-shadow(0 0 90px rgba(33, 150, 243, 0.7))'" onmouseout="this.style.filter='drop-shadow(0 0 30px rgba(33, 150, 243, 0.8)) drop-shadow(0 0 60px rgba(33, 150, 243, 0.5))'">
 
         <div class="search-container">
             <div class="search-input-container">
@@ -514,6 +574,10 @@
         </div>
 
         <div class="shortcuts-container">
+            <div class="shortcuts-header">
+                <span id="quickAccessText">Quick Access</span>
+                <button id="editShortcutsBtn" class="shortcuts-edit-btn" onclick="toggleEditMode()" title="Edit"></button>
+            </div>
             <div class="shortcuts-grid" id="shortcutsGrid">
                 <!-- Dynamic shortcuts will be added here -->
             </div>
@@ -524,7 +588,10 @@
                 <span id="newsTitle">Vertex News</span>
             </div>
             <div id="newsContent">
-                <div class="news-loading" id="newsLoading">Loading news...</div>
+                <div class="news-loading" id="newsLoading">
+                    <div class="loading-spinner"></div>
+                    <div>Loading news...</div>
+                </div>
             </div>
         </div>
     </div>
@@ -532,8 +599,44 @@
         console.log('🚀 SCRIPT START - Testing if JavaScript executes');
         console.log('🚀 Solar Browser main.html loaded - CLEAN VERSION WITH REAL NEWS');
         
-        // Shortcuts data
-        let shortcuts = JSON.parse(localStorage.getItem('solarShortcuts') || '[]');
+        // Shortcuts data - retrieve from localStorage
+        let storedShortcuts = localStorage.getItem('solarShortcuts');
+        console.log('🔍 Retrieved shortcuts from localStorage:', storedShortcuts);
+        
+        // Check if this is the first run by looking for the firstRunComplete flag
+        const isFirstRun = !localStorage.getItem('firstRunComplete');
+        console.log('🔍 Is first run:', isFirstRun);
+        
+        // Default shortcuts (will be used ONLY on first run)
+        const defaultShortcuts = [
+            { title: 'Google', url: 'https://google.com' },
+            { title: 'YouTube', url: 'https://youtube.com' },
+            { title: 'GitHub', url: 'https://github.com' }
+        ];
+        
+        // Parse stored shortcuts or use empty array
+        let shortcuts = [];
+        try {
+            shortcuts = JSON.parse(storedShortcuts || '[]');
+        } catch (e) {
+            console.error('❌ Error parsing shortcuts:', e);
+            shortcuts = [];
+        }
+        
+        // Initialize with default shortcuts ONLY on first run
+        if (isFirstRun) {
+            console.log('🔍 First run detected, using default shortcuts');
+            shortcuts = [...defaultShortcuts];
+            localStorage.setItem('solarShortcuts', JSON.stringify(shortcuts));
+            
+            // Set the flag to indicate this is no longer the first run
+            localStorage.setItem('firstRunComplete', 'true');
+            console.log('✅ Default shortcuts saved for first run:', shortcuts.length, 'shortcuts');
+            console.log('✅ First run complete, future refreshes will maintain user shortcuts');
+        } else {
+            // This is not the first run, use only stored shortcuts
+            console.log('✅ Not first run, found', shortcuts.length, 'existing user shortcuts');
+        }
         
         // Search engines configuration
         const searchEngines = {
@@ -600,7 +703,10 @@
                 openImageNewTab: 'فتح الصورة في علامة تبويب جديدة',
                 copyText: 'نسخ',
                 pasteText: 'لصق',
-                cutText: 'قص'
+                cutText: 'قص',
+                quickAccess: 'الوصول السريع',
+                edit: 'تحرير',
+                done: 'تم'
             },
             'de': {
                 news: 'Vertex Nachrichten',
@@ -618,7 +724,10 @@
                 openImageNewTab: 'Bild in neuem Tab öffnen',
                 copyText: 'Kopieren',
                 pasteText: 'Einfügen',
-                cutText: 'Ausschneiden'
+                cutText: 'Ausschneiden',
+                quickAccess: 'Schnellzugriff',
+                edit: 'Bearbeiten',
+                done: 'Fertig'
             },
             'en': {
                 news: 'Vertex News',
@@ -636,7 +745,10 @@
                 openImageNewTab: 'Open Image in New Tab',
                 copyText: 'Copy',
                 pasteText: 'Paste',
-                cutText: 'Cut'
+                cutText: 'Cut',
+                quickAccess: 'Quick Access',
+                edit: 'Edit',
+                done: 'Done'
             },
             'es': {
                 news: 'Noticias Vertex',
@@ -654,7 +766,10 @@
                 openImageNewTab: 'Abrir Imagen en Nueva Pestaña',
                 copyText: 'Copiar',
                 pasteText: 'Pegar',
-                cutText: 'Cortar'
+                cutText: 'Cortar',
+                quickAccess: 'Acceso Rápido',
+                edit: 'Editar',
+                done: 'Listo'
             },
             'fr': {
                 news: 'Actualités Vertex',
@@ -672,7 +787,10 @@
                 openImageNewTab: 'Ouvrir l\'Image dans un Nouvel Onglet',
                 copyText: 'Copier',
                 pasteText: 'Coller',
-                cutText: 'Couper'
+                cutText: 'Couper',
+                quickAccess: 'Accès Rapide',
+                edit: 'Modifier',
+                done: 'Terminé'
             },
             'hi': {
                 news: 'वर्टेक्स समाचार',
@@ -690,7 +808,10 @@
                 openImageNewTab: 'नए टैब में चित्र खोलें',
                 copyText: 'कॉपी करें',
                 pasteText: 'पेस्ट करें',
-                cutText: 'कट करें'
+                cutText: 'कट करें',
+                quickAccess: 'त्वरित पहुंच',
+                edit: 'संपादित करें',
+                done: 'हो गया'
             },
             'it': {
                 news: 'Notizie Vertex',
@@ -708,7 +829,10 @@
                 openImageNewTab: 'Apri Immagine in Nuova Scheda',
                 copyText: 'Copia',
                 pasteText: 'Incolla',
-                cutText: 'Taglia'
+                cutText: 'Taglia',
+                quickAccess: 'Accesso Rapido',
+                edit: 'Modifica',
+                done: 'Fatto'
             },
             'ja': {
                 news: 'Vertexニュース',
@@ -726,7 +850,10 @@
                 openImageNewTab: '新しいタブで画像を開く',
                 copyText: 'コピー',
                 pasteText: '貼り付け',
-                cutText: '切り取り'
+                cutText: '切り取り',
+                quickAccess: 'クイックアクセス',
+                edit: '編集',
+                done: '完了'
             },
             'ko': {
                 news: 'Vertex 뉴스',
@@ -744,7 +871,10 @@
                 openImageNewTab: '새 탭에서 이미지 열기',
                 copyText: '복사',
                 pasteText: '붙여넣기',
-                cutText: '잘라내기'
+                cutText: '잘라내기',
+                quickAccess: '빠른 액세스',
+                edit: '편집',
+                done: '완료'
             },
             'pt': {
                 news: 'Notícias Vertex',
@@ -762,7 +892,10 @@
                 openImageNewTab: 'Abrir Imagem em Nova Aba',
                 copyText: 'Copiar',
                 pasteText: 'Colar',
-                cutText: 'Cortar'
+                cutText: 'Cortar',
+                quickAccess: 'Acesso Rápido',
+                edit: 'Editar',
+                done: 'Concluído'
             },
             'ru': {
                 news: 'Новости Vertex',
@@ -780,7 +913,10 @@
                 openImageNewTab: 'Открыть Изображение в Новой Вкладке',
                 copyText: 'Копировать',
                 pasteText: 'Вставить',
-                cutText: 'Вырезать'
+                cutText: 'Вырезать',
+                quickAccess: 'Быстрый доступ',
+                edit: 'Изменить',
+                done: 'Готово'
             },
             'tr': {
                 news: 'Vertex Haberleri',
@@ -792,7 +928,10 @@
                 showLess: 'Daha Az Göster',
                 enterWebsiteUrl: 'Website URL\'si girin (örn: google.com):',
                 enterShortcutTitle: 'Kısayol başlığı girin:',
-                removeShortcutConfirm: 'Kısayollardan "{title}" kaldırılsın mı?'
+                removeShortcutConfirm: 'Kısayollardan "{title}" kaldırılsın mı?',
+                quickAccess: 'Hızlı Erişim',
+                edit: 'Düzenle',
+                done: 'Tamam'
             },
             'zh': {
                 news: 'Vertex 新闻',
@@ -804,7 +943,10 @@
                 showLess: '显示较少',
                 enterWebsiteUrl: '输入网站URL (例如: google.com):',
                 enterShortcutTitle: '输入快捷方式标题:',
-                removeShortcutConfirm: '从快捷方式中删除"{title}"？'
+                removeShortcutConfirm: '从快捷方式中删除"{title}"？',
+                quickAccess: '快速访问',
+                edit: '编辑',
+                done: '完成'
             }
         };
 
@@ -858,6 +1000,25 @@
                 searchBox.placeholder = getLocalizedText('searchPlaceholder');
             }
 
+            // Update Quick Access header
+            const quickAccessHeader = document.getElementById('quickAccessText');
+            if (quickAccessHeader) {
+                quickAccessHeader.textContent = getLocalizedText('quickAccess');
+            }
+            
+            // Update Edit button
+            const editBtn = document.getElementById('editShortcutsBtn');
+            if (editBtn) {
+                if (typeof isEditMode !== 'undefined' && isEditMode) {
+                    editBtn.title = getLocalizedText('done');
+                    editBtn.textContent = getLocalizedText('done');
+                } else {
+                    editBtn.title = getLocalizedText('edit');
+                    editBtn.textContent = getLocalizedText('edit');
+                    console.log('🔄 Updated Edit button with text:', getLocalizedText('edit'));
+                }
+            }
+
             // Update "Add Site" text
             const addSiteText = document.getElementById('addSiteText');
             if (addSiteText) {
@@ -886,11 +1047,12 @@
                     return;
                 }
 
-                // Update the news title to remove "Latest News" text
+                // Always keep the news title visible when displaying news content
                 const newsTitle = document.getElementById('newsTitle');
                 if (newsTitle) {
-                    // Remove the news title completely
-                    newsTitle.style.display = 'none';
+                    // Keep the news title visible at all times
+                    newsTitle.style.display = 'block';
+                    console.log('📰 News title header kept visible');
                 }
 
                 // Handle different data formats
@@ -959,6 +1121,12 @@
             
             const newsContent = document.getElementById('newsContent');
             if (!newsContent) return;
+            
+            // Keep news title visible
+            const newsTitle = document.getElementById('newsTitle');
+            if (newsTitle) {
+                newsTitle.style.display = 'block';
+            }
 
             const errorText = message || getLocalizedText('newsError') || 'Unable to load news';
             newsContent.innerHTML = `<div class="news-error">${errorText}</div>`;
@@ -969,14 +1137,23 @@
             const newsContent = document.getElementById('newsContent');
             if (!newsContent) return;
             
-            // Clear content but don't show loading text
+            // Show loading spinner with animation
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = 'news-loading';
+            loadingDiv.innerHTML = `
+                <div class="loading-spinner"></div>
+                <div>${getLocalizedText('loading')}</div>
+            `;
             newsContent.innerHTML = '';
+            newsContent.appendChild(loadingDiv);
             
-            // Hide news title
+            // Keep news title visible at all times
             const newsTitle = document.getElementById('newsTitle');
             if (newsTitle) {
-                newsTitle.style.display = 'none';
+                newsTitle.style.display = 'block'; // Ensure it's visible
             }
+            
+            console.log('🔄 Showing news loading spinner animation while keeping news title visible');
         }
 
         // Request news from Flutter
@@ -1244,16 +1421,16 @@
         // Render shortcuts        // Edit mode for shortcuts
         let isEditMode = false;        function toggleEditMode() {
             isEditMode = !isEditMode;
-            const editBtn = document.getElementById('editBtn');
+            const editBtn = document.getElementById('editShortcutsBtn');
             if (editBtn) {
                 if (isEditMode) {
-                    editBtn.textContent = '✓';
+                    editBtn.textContent = getLocalizedText('done');
                     editBtn.classList.add('active');
-                    editBtn.title = 'Done editing';
+                    editBtn.title = getLocalizedText('done');
                 } else {
-                    editBtn.textContent = '✏️';
+                    editBtn.textContent = getLocalizedText('edit');
                     editBtn.classList.remove('active');
-                    editBtn.title = 'Edit shortcuts';
+                    editBtn.title = getLocalizedText('edit');
                 }
             }
             renderShortcuts();
@@ -1261,46 +1438,74 @@
 
         function renderShortcuts() {
             const grid = document.getElementById('shortcutsGrid');
+            const editBtn = document.getElementById('editShortcutsBtn');
             
-            // Clear existing shortcuts except add button
+            // Clear existing shortcuts
             grid.innerHTML = '';
-              // Add existing shortcuts
-            shortcuts.forEach((shortcut, index) => {
-                const shortcutElement = document.createElement('a');
-                shortcutElement.className = 'shortcut-item';
-                shortcutElement.href = shortcut.url.startsWith('http') ? shortcut.url : 'https://' + shortcut.url;
-                
-                // Only add navigation if not in edit mode
-                if (!isEditMode) {
-                    shortcutElement.onclick = function(e) {
-                        e.preventDefault();
-                        window.location.href = this.href;
-                    };
-                } else {
-                    // Prevent navigation in edit mode
-                    shortcutElement.onclick = function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        return false;
-                    };
-                    shortcutElement.style.cursor = 'default';
+            
+            // Toggle edit button visibility based on shortcuts count
+            if (shortcuts && shortcuts.length > 0) {
+                // Show edit button when there are shortcuts
+                if (editBtn) {
+                    editBtn.style.display = 'flex';
                 }
                 
-                const faviconUrl = getFaviconUrl(shortcut.url);
-                shortcutElement.innerHTML = `
-                    ${isEditMode ? `<div class="shortcut-remove" onclick="event.stopPropagation(); event.preventDefault(); removeShortcut(${index}); return false;" title="Remove shortcut">×</div>` : ''}
-                    <div class="shortcut-icon">
-                        ${faviconUrl ? `<img src="${faviconUrl}" alt="" style="width: 100%; height: 100%; border-radius: 8px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">` : ''}
-                        <span style="display: ${faviconUrl ? 'none' : 'block'};">${shortcut.title.charAt(0).toUpperCase()}</span>
-                    </div>
-                    <div class="shortcut-title">${shortcut.title}</div>
-                `;
+                // Add existing shortcuts
+                shortcuts.forEach((shortcut, index) => {
+                    const shortcutElement = document.createElement('a');
+                    shortcutElement.className = 'shortcut-item';
+                    shortcutElement.href = shortcut.url.startsWith('http') ? shortcut.url : 'https://' + shortcut.url;
+                    
+                    // Only add navigation if not in edit mode
+                    if (!isEditMode) {
+                        shortcutElement.onclick = function(e) {
+                            e.preventDefault();
+                            window.location.href = this.href;
+                        };
+                    } else {
+                        // Prevent navigation in edit mode
+                        shortcutElement.onclick = function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            return false;
+                        };
+                        shortcutElement.style.cursor = 'default';
+                    }
+                    
+                    const faviconUrl = getFaviconUrl(shortcut.url);
+                    shortcutElement.innerHTML = `
+                        ${isEditMode ? `<div class="shortcut-remove" onclick="event.stopPropagation(); event.preventDefault(); removeShortcut(${index}); return false;" title="Remove shortcut">×</div>` : ''}
+                        <div class="shortcut-icon">
+                            ${faviconUrl ? `<img src="${faviconUrl}" alt="" style="width: 100%; height: 100%; border-radius: 8px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">` : ''}
+                            <span style="display: ${faviconUrl ? 'none' : 'block'};">${shortcut.title.charAt(0).toUpperCase()}</span>
+                        </div>
+                        <div class="shortcut-title">${shortcut.title}</div>
+                    `;
+                    
+                    grid.appendChild(shortcutElement);
+                });
                 
-                grid.appendChild(shortcutElement);
-            });
-            
-            // Add "Add New" button if less than 9 shortcuts
-            if (shortcuts.length < 9) {                const addButton = document.createElement('div');
+                // Only add "Add New" button if there are existing shortcuts and less than 9 shortcuts
+                if (shortcuts.length < 9 && !isEditMode) {
+                    const addButton = document.createElement('div');
+                    addButton.className = 'shortcut-item add-new';
+                    addButton.onclick = addNewShortcut;
+                    addButton.innerHTML = `
+                        <div class="shortcut-icon">
+                            <span class="add-icon">+</span>
+                        </div>
+                        <div class="shortcut-title">${getLocalizedText('addSite')}</div>
+                    `;
+                    grid.appendChild(addButton);
+                }
+            } else {
+                // Hide edit button when no shortcuts
+                if (editBtn) {
+                    editBtn.style.display = 'none';
+                }
+                
+                // Always show "Add Site" button when there are no shortcuts
+                const addButton = document.createElement('div');
                 addButton.className = 'shortcut-item add-new';
                 addButton.onclick = addNewShortcut;
                 addButton.innerHTML = `
@@ -1315,19 +1520,35 @@
 
         // Dialog functions
         function showPromptDialog(message, defaultValue, onResult) {
-            if (window.DialogHandler && window.DialogHandler.postMessage) {
-                const dialogId = Date.now().toString();
-                window.pendingDialogs = window.pendingDialogs || {};
-                window.pendingDialogs[dialogId] = { onResult };
-                
-                window.DialogHandler.postMessage(JSON.stringify({
-                    type: 'prompt',
-                    id: dialogId,
-                    message: message,
-                    defaultValue: defaultValue || ''
-                }));            } else {
+            try {
+                // Try to use the Flutter DialogHandler first
+                if (window.DialogHandler && window.DialogHandler.postMessage) {
+                    console.log('🔍 Using Flutter DialogHandler for prompt');
+                    const dialogId = Date.now().toString();
+                    window.pendingDialogs = window.pendingDialogs || {};
+                    window.pendingDialogs[dialogId] = { onResult };
+                    
+                    window.DialogHandler.postMessage(JSON.stringify({
+                        type: 'prompt',
+                        id: dialogId,
+                        message: message,
+                        defaultValue: defaultValue || ''
+                    }));
+                } else {
+                    // Fallback to browser's native prompt
+                    console.log('🔍 Using browser native prompt');
+                    const result = prompt(message, defaultValue);
+                    if (onResult && typeof onResult === 'function') {
+                        onResult(result);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error in showPromptDialog:', error);
+                // Last resort fallback
                 const result = prompt(message, defaultValue);
-                onResult && onResult(result);
+                if (onResult && typeof onResult === 'function') {
+                    onResult(result);
+                }
             }
         }
 
@@ -1353,24 +1574,111 @@
 
         // Add new shortcut
         function addNewShortcut() {
-            showPromptDialog(getLocalizedText('enterWebsiteUrl'), '', (url) => {
-                if (url && url.trim()) {
-                    const cleanUrl = url.trim();
-                    const defaultTitle = cleanUrl.replace(/^https?:\/\//, '').replace(/^www\./, '');
-                      showPromptDialog(getLocalizedText('enterShortcutTitle'), defaultTitle, (title) => {
-                        if (title && title.trim()) {
-                            const newShortcut = {
-                                title: title.trim(),
-                                url: cleanUrl
-                            };
-                            
-                            shortcuts.push(newShortcut);
-                            localStorage.setItem('solarShortcuts', JSON.stringify(shortcuts));
-                            renderShortcuts();
+            console.log('🔍 Adding new shortcut - ENHANCED DEBUG');
+            
+            // First we'll try a direct browser prompt as a fallback
+            let promptUrl = '';
+            
+            try {
+                // First show URL prompt
+                showPromptDialog(getLocalizedText('enterWebsiteUrl'), '', function(url) {
+                    console.log('🔍 URL Dialog result received:', url);
+                    
+                    if (!url) {
+                        console.log('🔍 URL Dialog canceled or empty');
+                        return; // User canceled
+                    }
+                    
+                    // Clean up the URL
+                    let cleanUrl = url.trim();
+                    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+                        cleanUrl = 'https://' + cleanUrl;
+                    }
+                    
+                    // Extract domain for default title
+                    const defaultTitle = cleanUrl.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+                    console.log('🔍 Clean URL:', cleanUrl, 'Default title:', defaultTitle);
+                    
+                    // Now show title prompt
+                    showPromptDialog(getLocalizedText('enterShortcutTitle'), defaultTitle, function(title) {
+                        console.log('🔍 Title dialog result received:', title);
+                        
+                        if (!title) {
+                            console.log('🔍 Title Dialog canceled or empty');
+                            return; // User canceled
                         }
+                        
+                        const finalTitle = title.trim() || defaultTitle;
+                        
+                        // Create and save the new shortcut
+                        const newShortcut = {
+                            title: finalTitle,
+                            url: cleanUrl
+                        };
+                        
+                        console.log('🔍 Creating new shortcut:', newShortcut);
+                        
+                        // Add to shortcuts array
+                        shortcuts.push(newShortcut);
+                        
+                        // Save to local storage and ensure persistence
+                        try {
+                            localStorage.setItem('solarShortcuts', JSON.stringify(shortcuts));
+                            // Also set firstRunComplete flag to ensure these shortcuts persist
+                            localStorage.setItem('firstRunComplete', 'true');
+                            console.log('✅ Shortcuts saved successfully:', shortcuts.length, 'shortcuts');
+                            console.log('✅ Persistence ensured with firstRunComplete flag');
+                        } catch (storageError) {
+                            console.error('❌ Error saving shortcuts:', storageError);
+                            alert('Error saving shortcut. Please try again.');
+                        }
+                        
+                        // Turn off edit mode
+                        isEditMode = false;
+                        const editBtn = document.getElementById('editShortcutsBtn');
+                        if (editBtn) {
+                            editBtn.textContent = getLocalizedText('edit');
+                            editBtn.classList.remove('active');
+                            editBtn.title = getLocalizedText('edit');
+                            
+                            // Make edit button visible if this is the first shortcut
+                            if (shortcuts.length === 1) {
+                                editBtn.style.display = 'flex';
+                            }
+                        }
+                        
+                        // Re-render shortcuts
+                        renderShortcuts();
                     });
+                });
+            } catch (e) {
+                console.error('❌ Error in addNewShortcut:', e);
+                
+                // Fallback to simple prompt if dialog mechanism fails
+                promptUrl = prompt(getLocalizedText('enterWebsiteUrl'), '');
+                if (promptUrl) {
+                    let cleanUrl = promptUrl.trim();
+                    if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
+                        cleanUrl = 'https://' + cleanUrl;
+                    }
+                    
+                    const defaultTitle = cleanUrl.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
+                    const promptTitle = prompt(getLocalizedText('enterShortcutTitle'), defaultTitle);
+                    
+                    if (promptTitle) {
+                        shortcuts.push({
+                            title: promptTitle.trim() || defaultTitle,
+                            url: cleanUrl
+                        });
+                        
+                        localStorage.setItem('solarShortcuts', JSON.stringify(shortcuts));
+                        // Also set firstRunComplete flag to ensure these shortcuts persist
+                        localStorage.setItem('firstRunComplete', 'true');
+                        console.log('✅ Shortcuts saved via fallback method:', shortcuts.length, 'shortcuts');
+                        renderShortcuts();
+                    }
                 }
-            });
+            }
         }        // Remove shortcut
         function removeShortcut(index) {
             const shortcut = shortcuts[index];
@@ -1379,6 +1687,15 @@
                 // In edit mode, remove immediately without confirmation
                 shortcuts.splice(index, 1);
                 localStorage.setItem('solarShortcuts', JSON.stringify(shortcuts));
+                // Ensure firstRunComplete flag is set to prevent default shortcuts from appearing
+                localStorage.setItem('firstRunComplete', 'true');
+                console.log('✅ Shortcut removed, updated shortcuts saved:', shortcuts.length, 'shortcuts remain');
+                
+                // If all shortcuts are removed, turn off edit mode
+                if (shortcuts.length === 0) {
+                    isEditMode = false;
+                }
+                
                 renderShortcuts();
             } else {
                 // In normal mode, show confirmation
@@ -1386,6 +1703,12 @@
                 showConfirmDialog(confirmMessage, () => {
                     shortcuts.splice(index, 1);
                     localStorage.setItem('solarShortcuts', JSON.stringify(shortcuts));
+                    
+                    // If all shortcuts are removed, turn off edit mode
+                    if (shortcuts.length === 0) {
+                        isEditMode = false;
+                    }
+                    
                     renderShortcuts();
                 });
             }
@@ -1451,6 +1774,89 @@
             document.head.appendChild(themeStyle);
             console.log('✅ Theme applied successfully');
         }
+
+        // Request functions
+        function requestTheme() {
+            if (window.ThemeHandler && window.ThemeHandler.postMessage) {
+                try {
+                    window.ThemeHandler.postMessage('getTheme');
+                    console.log('✅ Theme request sent to Flutter');
+                } catch (e) {
+                    console.error('❌ Error requesting theme:', e);
+                }
+            } else {
+                console.log('⚠️ ThemeHandler not available');
+            }
+        }
+
+        function requestSearchEngine() {
+            if (window.SearchEngineHandler && window.SearchEngineHandler.postMessage) {
+                try {
+                    window.SearchEngineHandler.postMessage('getSearchEngine');
+                    console.log('✅ Search engine request sent to Flutter');
+                } catch (e) {
+                    console.error('❌ Error requesting search engine:', e);
+                }
+            } else {
+                console.log('⚠️ SearchEngineHandler not available');
+            }
+        }
+
+        function detectLanguage() {
+            if (window.LanguageHandler && window.LanguageHandler.postMessage) {
+                try {
+                    window.LanguageHandler.postMessage('getLanguage');
+                    console.log('✅ Language request sent to Flutter');
+                } catch (e) {
+                    console.error('❌ Error requesting language:', e);
+                    currentLanguage = 'en';
+                }
+            } else {
+                console.log('⚠️ LanguageHandler not available, defaulting to English');
+                currentLanguage = 'en';
+            }
+        }
+
+        function refreshForLanguageChange() {
+            console.log('🌐 Language changed, refreshing UI...');
+            updateLocalizedUI();            // Clear cached news to force re-fetch with new language
+            localStorage.removeItem('solarNews');
+            localStorage.removeItem('solarNewsTime');
+            requestNews();
+        }
+
+        // Handle dialog responses from Flutter
+        function handleDialogResult(responseJson) {
+            try {
+                const response = JSON.parse(responseJson);
+                console.log('🔍 Dialog response received:', response);
+                
+                const { id, result, confirmed } = response;
+                const pendingDialog = window.pendingDialogs && window.pendingDialogs[id];
+                
+                if (!pendingDialog) {
+                    console.error('❌ No pending dialog found with id:', id);
+                    return;
+                }
+                
+                if (response.type === 'prompt' && pendingDialog.onResult) {
+                    pendingDialog.onResult(result);
+                } else if (response.type === 'confirm') {
+                    if (confirmed && pendingDialog.onConfirm) {
+                        pendingDialog.onConfirm();
+                    } else if (!confirmed && pendingDialog.onCancel) {
+                        pendingDialog.onCancel();
+                    }
+                }
+                
+                delete window.pendingDialogs[id];
+            } catch (error) {
+                console.error('❌ Error handling dialog response:', error);
+            }
+        };
+        
+        // Also set window.handleDialogResponse for backwards compatibility
+        window.handleDialogResponse = handleDialogResult;
 
         // Request functions
         function requestTheme() {
@@ -1575,10 +1981,15 @@
             localStorage.removeItem('solarNewsTime');
             console.log('🗑️ CLEARED ALL CACHED NEWS - FORCING FRESH FETCH');
             
+            // Initialize everything properly
             detectLanguage();
             requestTheme();
             requestSearchEngine();
             updateLocalizedUI();
+            
+            // Make sure shortcuts are rendered correctly
+            console.log('🔄 Rendering shortcuts on startup, firstRunComplete =', localStorage.getItem('firstRunComplete'));
+            renderShortcuts(); // Ensure shortcuts are properly displayed
             
             // Use Flutter NewsHandler to fetch news if available
             if (window.NewsHandler && window.NewsHandler.postMessage) {
