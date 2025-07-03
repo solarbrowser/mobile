@@ -28,6 +28,9 @@ import 'package:solar/services/notification_service.dart';
 import 'package:solar/services/ai_manager.dart';
 import 'package:solar/services/pwa_manager.dart';
 import 'package:solar/screens/pwa_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import '../firebase_options.dart';
 
 class Debouncer {
   final int milliseconds;
@@ -198,6 +201,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   // <----CONTROLLERS---->
   late TextEditingController _urlController;
   late FocusNode _urlFocusNode;
+  
+  // <----FIREBASE CLOUD FUNCTIONS---->
+  FirebaseFunctions? _firebaseFunctions;
+  
+  // <----NEWS CACHING---->
+  static List<Map<String, dynamic>>? _cachedArticles;
+  static int? _cachedLanguage;
+  static Map<String, String> _cachedCoverImages = {};
 
   // <----UI STATE---->
   bool isDarkMode = false;  // <----ADDITIONAL STATE VARIABLES---->
@@ -899,6 +910,26 @@ void _handleTouchEnd() {
       ],
     );
   }
+  // <----FIREBASE INITIALIZATION---->
+  Future<void> _initializeFirebase() async {
+    try {
+      // Initialize Firebase if not already initialized
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
+      }
+      
+      // Initialize Firebase Functions
+      _firebaseFunctions = FirebaseFunctions.instance;
+      
+      print('✅ Firebase initialized successfully');
+    } catch (e) {
+      print('❌ Firebase initialization failed: $e');
+      // Don't throw error - app should still work without Firebase
+    }
+  }
+  
   @override
   void initState() {
     super.initState();
@@ -908,6 +939,9 @@ void _handleTouchEnd() {
     WidgetsBinding.instance.addObserver(this);
     
     _isClassicMode = widget.initialClassicMode;
+    
+    // Initialize Firebase Functions
+    _initializeFirebase();
     
     _initializeControllers();
 
@@ -2851,55 +2885,12 @@ Future<void> _setupScrollHandling() async {
       },
     );
 
-    // <----CONTEXT MENU CHANNELS---->
+    // <----DEBUG HANDLER CHANNEL---->
     // JavaScript channel for debug messages
     await controller.addJavaScriptChannel(
       'DebugHandler',
       onMessageReceived: (JavaScriptMessage message) {
         print('🐛 JS Debug: ${message.message}');
-      },
-    );
-    
-    // JavaScript channel for image long press context menu
-    await controller.addJavaScriptChannel(
-      'SolarContextMenu',
-      onMessageReceived: (JavaScriptMessage message) {
-        print('🖼️ SolarContextMenu received: ${message.message}');
-        
-        if (!mounted) return;
-        
-        try {
-          final data = json.decode(message.message) as Map<String, dynamic>;
-          final type = data['type'] as String;
-          
-          print('🖼️ Processing context menu type: $type');
-          
-          switch (type) {
-            case 'test':
-              print('🖼️ ✅ JavaScript channel test successful!');
-              break;
-            case 'image_touch_start':
-              print('🖼️ Calling _handleTouchStart for image');
-              _handleTouchStart(data);
-              break;
-            case 'text_touch_start':
-              print('📝 Calling _handleTouchStart for text');
-              _handleTouchStart(data);
-              break;
-            case 'touch_moved':
-              print('🖼️ Calling _handleTouchMoved');
-              _handleTouchMoved();
-              break;
-            case 'touch_end':
-              print('🖼️ Calling _handleTouchEnd');
-              _handleTouchEnd();
-              break;
-            default:
-              print('🖼️ Unknown context menu type: $type');
-          }
-        } catch (e) {
-          print('❌ Error processing context menu message: $e');
-        }
       },
     );
 
@@ -3246,86 +3237,240 @@ Future<void> _setupScrollHandling() async {
     }
   }
 
-  // Fetch news from Firebase Storage using proper Uri.parse()
+  // Fetch news from Firebase Storage using Cloud Functions (updated to match Unity version)
   Future<void> _fetchNewsFromFirebase() async {
     if (!mounted) return;
     
     try {
-      print('📰 Fetching news from Firebase Storage...');
+      print('📰 Fetching news using Firebase Cloud Functions...');
       
-      // Use the exact URL from your Firebase Storage with proper Uri.parse()
-      final url = Uri.parse("https://firebasestorage.googleapis.com/v0/b/vertex-ai-1618.firebasestorage.app/o/public-cache%2Fnews.json?alt=media&token=c1553d29-fa55-4520-9bec-e1d3416be62a");
-      final response = await http.get(url);
+      // Check if Firebase Functions is initialized
+      if (_firebaseFunctions == null) {
+        print('❌ Firebase Functions not initialized');
+        await _sendNewsErrorToWebView('Firebase not initialized');
+        return;
+      }
       
-      print('📰 News fetch response status: ${response.statusCode}');
+      // Get current language (align with Unity: 1 = Turkish, 0 = English)
+      final prefs = await SharedPreferences.getInstance();
+      final currentLang = prefs.getString('language') ?? 'en';
+      final languageIndex = currentLang == 'tr' ? 1 : 0;
+      
+      // Check cache first
+      if (_cachedArticles != null && _cachedLanguage == languageIndex) {
+        print('📰 Using cached news data');
+        await _sendNewsToWebView(_cachedArticles!);
+        return;
+      }
+      
+      // Step 1: Get signed URL for news.json from Cloud Function
+      final HttpsCallable callable = _firebaseFunctions!.httpsCallable('getNewsCacheUrl');
+      final HttpsCallableResult result = await callable.call();
+      
+      final Map<String, dynamic> data = Map<String, dynamic>.from(result.data);
+      final String? signedUrl = data['signedUrl'] as String?;
+      
+      if (signedUrl == null || signedUrl.isEmpty) {
+        print('❌ Failed to get signed URL for news cache');
+        await _sendNewsErrorToWebView('Could not get news data link from server');
+        return;
+      }
+      
+      print('📰 Got signed URL for news cache: $signedUrl');
+      
+      // Step 2: Fetch news from the signed URL
+      final response = await http.get(Uri.parse(signedUrl));
       
       if (response.statusCode == 200) {
         // Parse the JSON response
-        final newsData = json.decode(response.body);
-        print('📰 Successfully fetched ${newsData.length} news articles');
+        final List<dynamic> articlesJson = json.decode(response.body);
+        final List<Map<String, dynamic>> articles = articlesJson.cast<Map<String, dynamic>>();
         
-        // Send the news data to main.html
-        final newsJson = json.encode(newsData);
-        await controller.runJavaScript('''
-          try {
-            console.log('📰 Received news data from Flutter:', $newsJson);
-            
-            // Call the renderNews function with the fetched data
-            if (typeof renderNews === 'function') {
-              renderNews($newsJson);
-              console.log('✅ News rendered successfully');
-            } else {
-              console.error('❌ renderNews function not found');
-            }
-            
-            // Also trigger a custom event for any listeners
-            window.dispatchEvent(new CustomEvent('newsUpdate', { detail: $newsJson }));
-            
-          } catch (e) {
-            console.error('❌ Error processing news data:', e);
-          }
-        ''');
+        print('📰 Successfully fetched ${articles.length} news articles');
+        
+        // Cache the articles
+        _cachedArticles = articles;
+        _cachedLanguage = languageIndex;
+        
+        // Send to WebView
+        await _sendNewsToWebView(articles);
         
       } else {
-        print('❌ Failed to fetch news: ${response.statusCode} ${response.reasonPhrase}');
-        
-        // Send error message to main.html
-        await controller.runJavaScript('''
-          try {
-            console.error('❌ News fetch failed with status: ${response.statusCode}');
-            
-            // Call the error handling function
-            if (typeof renderNewsError === 'function') {
-              renderNewsError('Failed to load news from server');
-            }
-            
-          } catch (e) {
-            console.error('❌ Error handling news fetch failure:', e);
-          }
-        ''');
+        print('❌ Failed to fetch news from signed URL: ${response.statusCode}');
+        await _sendNewsErrorToWebView('Failed to load news from server');
       }
       
     } catch (e) {
-      print('❌ Error fetching news from Firebase: $e');
+      print('❌ Error fetching news: $e');
+      await _sendNewsErrorToWebView('Network error while loading news');
+    }
+  }
+  
+  // Send news data to WebView
+  Future<void> _sendNewsToWebView(List<Map<String, dynamic>> articles) async {
+    if (!mounted) return;
+    
+    try {
+      // Get current language for proper article selection
+      final prefs = await SharedPreferences.getInstance();
+      final currentLang = prefs.getString('language') ?? 'en';
+      final isCurrentlyTurkish = currentLang == 'tr';
       
-      // Send error message to main.html
-      try {
-        await controller.runJavaScript('''
+      // Process articles for WebView consumption
+      final processedArticles = <Map<String, dynamic>>[];
+      
+      // Create a directory for storing news data if it doesn't exist
+      final appDir = await getApplicationDocumentsDirectory();
+      final newsDir = Directory('${appDir.path}/news');
+      if (!await newsDir.exists()) {
+        await newsDir.create(recursive: true);
+      }
+      
+      for (final article in articles) {
+        try {
+          // Extract translations
+          final translations = article['translations'] as Map<String, dynamic>?;
+          if (translations == null) continue;
+          
+          final currentTranslation = isCurrentlyTurkish 
+              ? translations['tr'] as Map<String, dynamic>?
+              : translations['en'] as Map<String, dynamic>?;
+          
+          if (currentTranslation == null) continue;
+          
+          // Extract cover image path
+          final cover = article['cover'] as Map<String, dynamic>?;
+          final coverPath = cover != null 
+              ? (isCurrentlyTurkish ? cover['tr'] : cover['en']) as String?
+              : null;
+          
+          // Get signed URL for cover image if available
+          String? coverUrl;
+          if (coverPath != null && coverPath.isNotEmpty) {
+            // Check cache first
+            if (_cachedCoverImages.containsKey(coverPath)) {
+              coverUrl = _cachedCoverImages[coverPath];
+            } else {
+              // Get signed URL for cover image
+              coverUrl = await _getSignedUrlForCover(coverPath);
+              if (coverUrl != null) {
+                _cachedCoverImages[coverPath] = coverUrl;
+              }
+            }
+          }
+          
+          // Create processed article with full content
+          final processedArticle = {
+            'id': article['id'] ?? '',
+            'title': currentTranslation['title'] ?? '',
+            'summary': currentTranslation['summary'] ?? '',
+            'content': currentTranslation['content'] ?? currentTranslation['summary'] ?? '',
+            'image': coverUrl, // This is the field name expected in createNewsItem
+            'references': article['references'] ?? [],
+            'publishedAt': article['publishedAt'] ?? '',
+            'url': 'news://${article['id'] ?? ''}', // Add custom URL scheme
+          };
+          
+          processedArticles.add(processedArticle);
+        } catch (e) {
+          print('❌ Error processing article: $e');
+        }
+      }
+      
+      print('📰 Calling renderNews with ${processedArticles.length} news items');
+      
+      // Call the existing renderNews function in main.html with our processed articles
+      // This uses the format expected by the function in android/app/src/main/assets/main.html
+      final jsonArticles = jsonEncode(processedArticles);
+      await controller.runJavaScript('''
+        (function() {
           try {
-            console.error('❌ News fetch error:', '$e');
+            console.log('📰 Calling renderNews with articles: ${processedArticles.length}');
+            if (typeof renderNews === 'function') {
+              renderNews(${jsonArticles});
+              console.log('✅ renderNews function called successfully');
+            } else {
+              console.error('❌ renderNews function not found in page');
+            }
+          } catch (e) {
+            console.error('❌ Error calling renderNews:', e);
+          }
+        })();
+      ''');
+      
+    } catch (e) {
+      print('❌ Error sending news to WebView: $e');
+      await _sendNewsErrorToWebView('Error displaying news');
+    }
+  }
+  
+  // Get signed URL for cover image
+  Future<String?> _getSignedUrlForCover(String filePath) async {
+    try {
+      if (_firebaseFunctions == null) return null;
+      
+      final HttpsCallable callable = _firebaseFunctions!.httpsCallable('getCoverDownloadUrl');
+      final HttpsCallableResult result = await callable.call({'filePath': filePath});
+      
+      final Map<String, dynamic> data = Map<String, dynamic>.from(result.data);
+      return data['signedUrl'] as String?;
+    } catch (e) {
+      print('❌ Error getting signed URL for cover $filePath: $e');
+      return null;
+    }
+  }
+  
+  // Send error message to WebView
+  Future<void> _sendNewsErrorToWebView(String errorMessage) async {
+    if (!mounted) return;
+    
+    try {
+      await controller.runJavaScript('''
+        (function() {
+          try {
+            console.error('❌ News fetch error: $errorMessage');
             
-            // Call the error handling function
-            if (typeof renderNewsError === 'function') {
-              renderNewsError('Network error while loading news');
+            // Find the news container with fallbacks
+            let container = document.getElementById('newsContainer');
+            if (!container) {
+              console.log('📰 newsContainer not found by ID for error, looking for alternatives');
+              
+              // Try to find by class
+              const newsContainers = document.getElementsByClassName('news-container');
+              if (newsContainers.length > 0) {
+                // Create a new container inside the news-container
+                const newsSection = newsContainers[0];
+                newsSection.innerHTML = '<h2 class="news-title">Latest News</h2><div id="newsContainer"></div>';
+                container = document.getElementById('newsContainer');
+              } else {
+                // Create container from scratch
+                const main = document.querySelector('.container') || document.body;
+                const newsSection = document.createElement('div');
+                newsSection.className = 'news-container';
+                newsSection.innerHTML = '<h2 class="news-title">Latest News</h2><div id="newsContainer"></div>';
+                main.appendChild(newsSection);
+                container = document.getElementById('newsContainer');
+              }
             }
             
-          } catch (jsError) {
-            console.error('❌ Error handling news fetch error:', jsError);
+            if (container) {
+              container.innerHTML = '<div class="news-item"><div class="news-item-title">Error loading news</div><div class="news-item-summary">' + '$errorMessage' + '</div></div>';
+              console.log('✅ Error message displayed in news container');
+            } else {
+              console.error('❌ Failed to find or create news container for error message');
+              
+              // Last resort - add to body
+              document.body.insertAdjacentHTML('beforeend', 
+                '<div class="news-container"><h2 class="news-title">Latest News</h2><div id="newsContainer"><div class="news-item"><div class="news-item-title">Error loading news</div><div class="news-item-summary">' + '$errorMessage' + '</div></div></div></div>'
+              );
+            }
+          } catch (e) {
+            console.error('❌ Error handling news fetch error:', e);
           }
-        ''');
-      } catch (jsError) {
-        print('❌ Error sending error message to JavaScript: $jsError');
-      }
+        })();
+      ''');
+    } catch (e) {
+      print('❌ Error sending error message to WebView: $e');
     }
   }
 

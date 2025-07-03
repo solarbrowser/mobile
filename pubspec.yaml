@@ -33,6 +33,8 @@ dependencies:
   device_info_plus: ^11.3.0
   flutter_local_notifications: ^19.2.1
   dart_openai: ^5.1.0
+  cloud_functions: ^5.1.3
+  firebase_core: ^3.6.0
 
 dev_dependencies:
   flutter_test:

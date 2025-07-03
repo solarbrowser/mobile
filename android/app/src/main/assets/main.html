@@ -190,6 +190,7 @@
             line-height: 1.4;
             display: -webkit-box;
             -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }        .news-item-summary {
@@ -202,14 +203,17 @@
             line-clamp: 3;
             -webkit-box-orient: vertical;
             overflow: hidden;
-            transition: all 0.3s ease;
+            max-height: 63px; /* Approximately 3 lines */
+            transition: all 0.5s ease;
         }
 
         .news-item-summary.expanded {
             display: block;
             -webkit-line-clamp: unset;
             line-clamp: unset;
+            max-height: 2000px; /* Large enough to show full content */
             overflow: visible;
+            transition: all 0.8s ease;
         }        .news-item-expand {
             font-size: 13px;
             font-weight: 500;
@@ -511,9 +515,7 @@
 
         <div class="shortcuts-container">
             <div class="shortcuts-grid" id="shortcutsGrid">
-                <!-- Dynamic shortcuts will be added here -->               
-                    
-                </div>
+                <!-- Dynamic shortcuts will be added here -->
             </div>
         </div>
 
@@ -525,7 +527,8 @@
                 <div class="news-loading" id="newsLoading">Loading news...</div>
             </div>
         </div>
-    </div>    <script>
+    </div>
+    <script>
         console.log('🚀 SCRIPT START - Testing if JavaScript executes');
         console.log('🚀 Solar Browser main.html loaded - CLEAN VERSION WITH REAL NEWS');
         
@@ -868,200 +871,126 @@
             console.log('🌐 Updated localized UI for language:', currentLanguage);
         }
 
-        // News fetching and rendering - NOW USING FLUTTER HANDLER!
+        // News handling - RECEIVES DATA FROM FLUTTER!
         let isNewsFetching = false;
 
-        async function fetchNews() {
-            if (isNewsFetching) {
-                console.log('📰 News fetch already in progress, skipping...');
-                return;
-            }
+        // This function is called by Flutter with news data
+        function renderNews(newsData) {
+            console.log('📰 renderNews called by Flutter with:', newsData);
+            console.log('📰 newsContent element ID:', document.getElementById('newsContent') ? 'FOUND' : 'NOT FOUND');
             
-            isNewsFetching = true;
-            console.log('📰 Fetching REAL news via Flutter NewsHandler...');
-            console.log('📰 News config URL:', newsConfig.url);
-            console.log('📰 News config fallback URL:', newsConfig.fallbackUrl);
-            
-            const newsContent = document.getElementById('newsContent');
-            const loadingDiv = document.getElementById('newsLoading');
-            
-            if (loadingDiv) {
-                loadingDiv.textContent = getLocalizedText('loading');
-                console.log('📰 Loading text set to:', getLocalizedText('loading'));
-            }
-
             try {
-                // Use Flutter NewsHandler for proper Uri.parse() handling
-                if (window.NewsHandler && window.NewsHandler.postMessage) {
-                    console.log('📰 ✅ NewsHandler available! Using Flutter to fetch news...');
-                    window.NewsHandler.postMessage('fetchNews');
-                    console.log('📰 📤 Sent fetchNews message to Flutter NewsHandler');
-                } else {
-                    console.log('📰 ❌ NewsHandler not available, falling back to JavaScript fetch');
-                    console.log('📰 🔄 Attempting to fetch from fallback URL...');
-                    // Fallback to JavaScript fetch
-                    await fetchNewsFromUrl(newsConfig.fallbackUrl, false);
+                const newsContent = document.getElementById('newsContent');
+                if (!newsContent) {
+                    console.error('📰 News content element not found');
+                    return;
                 }
+
+                // Update the news title to remove "Latest News" text
+                const newsTitle = document.getElementById('newsTitle');
+                if (newsTitle) {
+                    // Remove the news title completely
+                    newsTitle.style.display = 'none';
+                }
+
+                // Handle different data formats
+                let articles = [];
+                if (Array.isArray(newsData)) {
+                    articles = newsData;
+                    console.log('📰 newsData is array, length:', articles.length);
+                } else if (newsData.articles) {
+                    articles = newsData.articles;
+                    console.log('📰 newsData has articles property, length:', articles.length);
+                } else {
+                    console.error('📰 Invalid news data format:', newsData);
+                    renderNewsError('Invalid news data format');
+                    return;
+                }
+
+                if (!articles || articles.length === 0) {
+                    console.log('📰 No articles to display');
+                    // Don't show error message, just hide the section
+                    newsContent.innerHTML = '';
+                    const newsSection = document.getElementById('newsSection');
+                    if (newsSection) {
+                        newsSection.style.display = 'none';
+                    }
+                    return;
+                }
+
+                // Limit to maxItems
+                articles = articles.slice(0, newsConfig.maxItems);
+                console.log('📰 Rendering', articles.length, 'articles');
+
+                const newsGrid = document.createElement('div');
+                newsGrid.className = 'news-grid';
+
+                let renderedCount = 0;
+                articles.forEach((article, index) => {
+                    try {
+                        const newsItem = createNewsItem(article);
+                        if (newsItem) {
+                            newsGrid.appendChild(newsItem);
+                            renderedCount++;
+                        }
+                    } catch (error) {
+                        console.error('📰 Error creating news item:', error, article);
+                    }
+                });
+
+                newsContent.innerHTML = '';
+                newsContent.appendChild(newsGrid);
+                
+                console.log('✅ Successfully rendered', renderedCount, 'news items');
                 
             } catch (error) {
-                console.error('❌ Error in fetchNews:', error);                // Show sample news as last resort
-                console.log('📰 🆘 Using sample news as last resort');
-                const sampleNews = [
-                    {
-                        id: 'sample-1',
-                        translations: {
-                            ar: {
-                                title: 'مرحباً بك في متصفح Solar',
-                                summary: 'متصفح الويب السريع والآمن والخاص بك. يوفر متصفح Solar ميزات خصوصية متقدمة وسرعات تصفح فائقة وواجهة نظيفة مصممة لمستخدم الويب الحديث.',
-                                content: 'متصفح الويب السريع والآمن والخاص بك. يوفر متصفح Solar ميزات خصوصية متقدمة وسرعات تصفح فائقة وواجهة نظيفة مصممة لمستخدم الويب الحديث. ابق على اطلاع بأحدث الأخبار والمقالات من جميع أنحاء العالم. يتضمن متصفحنا حظر الإعلانات المدمج وحماية التتبع وأوضاع التصفح الآمن لضمان خصوصيتك وأمانك عبر الإنترنت. اختبر الويب كما لم تفعل من قبل مع متصفح Solar - حيث تلتقي السرعة بالأمان وتأتي الخصوصية أولاً.'
-                            },
-                            de: {
-                                title: 'Willkommen bei Solar Browser',
-                                summary: 'Ihr schneller, sicherer und privater Webbrowser. Solar Browser bietet erweiterte Datenschutzfunktionen, blitzschnelle Browsing-Geschwindigkeiten und eine saubere Benutzeroberfläche für moderne Webnutzer.',
-                                content: 'Ihr schneller, sicherer und privater Webbrowser. Solar Browser bietet erweiterte Datenschutzfunktionen, blitzschnelle Browsing-Geschwindigkeiten und eine saubere Benutzeroberfläche für moderne Webnutzer. Bleiben Sie mit den neuesten Nachrichten und Artikeln aus aller Welt auf dem Laufenden. Unser Browser enthält eingebaute Werbeblockierung, Tracking-Schutz und sichere Browsing-Modi, um Ihre Online-Privatsphäre und Sicherheit zu gewährleisten.'
-                            },
-                            en: {
-                                title: 'Welcome to Solar Browser',
-                                summary: 'Your fast, secure and private web browser. Solar Browser offers advanced privacy features, lightning-fast browsing speeds, and a clean interface designed for the modern web user.',
-                                content: 'Your fast, secure and private web browser. Solar Browser offers advanced privacy features, lightning-fast browsing speeds, and a clean interface designed for the modern web user. Stay updated with the latest news and articles from around the world. Our browser includes built-in ad blocking, tracking protection, and secure browsing modes to ensure your online privacy and safety. Experience the web like never before with Solar Browser - where speed meets security and privacy comes first. With customizable themes, advanced bookmark management, and intelligent search features, Solar Browser provides everything you need for a superior browsing experience. Our commitment to user privacy means no tracking, no data collection, and complete control over your digital footprint.'
-                            },
-                            es: {
-                                title: 'Bienvenido a Solar Browser',
-                                summary: 'Tu navegador web rápido, seguro y privado. Solar Browser ofrece características avanzadas de privacidad, velocidades de navegación ultrarrápidas y una interfaz limpia diseñada para el usuario web moderno.',
-                                content: 'Tu navegador web rápido, seguro y privado. Solar Browser ofrece características avanzadas de privacidad, velocidades de navegación ultrarrápidas y una interfaz limpia diseñada para el usuario web moderno. Mantente actualizado con las últimas noticias y artículos de todo el mundo. Nuestro navegador incluye bloqueo de anuncios integrado, protección contra rastreo y modos de navegación segura para garantizar tu privacidad y seguridad en línea.'
-                            },
-                            fr: {
-                                title: 'Bienvenue sur Solar Browser',
-                                summary: 'Votre navigateur web rapide, sécurisé et privé. Solar Browser offre des fonctionnalités de confidentialité avancées, des vitesses de navigation ultra-rapides et une interface propre conçue pour l\'utilisateur web moderne.',
-                                content: 'Votre navigateur web rapide, sécurisé et privé. Solar Browser offre des fonctionnalités de confidentialité avancées, des vitesses de navigation ultra-rapides et une interface propre conçue pour l\'utilisateur web moderne. Restez informé avec les dernières actualités et articles du monde entier. Notre navigateur inclut un blocage de publicités intégré, une protection contre le pistage et des modes de navigation sécurisés pour garantir votre vie privée et sécurité en ligne.'
-                            },
-                            hi: {
-                                title: 'Solar Browser में आपका स्वागत है',
-                                summary: 'आपका तेज़, सुरक्षित और निजी वेब ब्राउज़र। Solar Browser उन्नत गोपनीयता सुविधाएं, बिजली-तेज़ ब्राउज़िंग गति, और आधुनिक वेब उपयोगकर्ता के लिए डिज़ाइन किया गया साफ इंटरफेस प्रदान करता है।',
-                                content: 'आपका तेज़, सुरक्षित और निजी वेब ब्राउज़र। Solar Browser उन्नत गोपनीयता सुविधाएं, बिजली-तेज़ ब्राउज़िंग गति, और आधुनिक वेब उपयोगकर्ता के लिए डिज़ाइन किया गया साफ इंटरफेस प्रदान करता है। दुनिया भर से नवीनतम समाचार और लेखों के साथ अपडेट रहें। हमारे ब्राउज़र में आपकी ऑनलाइन गोपनीयता और सुरक्षा सुनिश्चित करने के लिए अंतर्निहित विज्ञापन अवरोधन, ट्रैकिंग सुरक्षा, और सुरक्षित ब्राउज़िंग मोड शामिल हैं।'
-                            },
-                            it: {
-                                title: 'Benvenuto in Solar Browser',
-                                summary: 'Il tuo browser web veloce, sicuro e privato. Solar Browser offre funzionalità avanzate per la privacy, velocità di navigazione fulminee e un\'interfaccia pulita progettata per l\'utente web moderno.',
-                                content: 'Il tuo browser web veloce, sicuro e privato. Solar Browser offre funzionalità avanzate per la privacy, velocità di navigazione fulminee e un\'interfaccia pulita progettata per l\'utente web moderno. Rimani aggiornato con le ultime notizie e articoli da tutto il mondo. Il nostro browser include blocco annunci integrato, protezione dal tracciamento e modalità di navigazione sicura per garantire la tua privacy e sicurezza online.'
-                            },
-                            ja: {
-                                title: 'Solar Browserへようこそ',
-                                summary: '高速で安全なプライベートWebブラウザ。Solar Browserは、高度なプライバシー機能、超高速ブラウジング速度、モダンなWebユーザー向けに設計されたクリーンなインターフェースを提供します。',
-                                content: '高速で安全なプライベートWebブラウザ。Solar Browserは、高度なプライバシー機能、超高速ブラウジング速度、モダンなWebユーザー向けに設計されたクリーンなインターフェースを提供します。世界中の最新ニュースや記事で最新情報を入手してください。私たちのブラウザには、オンラインプライバシーと安全性を確保するための組み込み広告ブロック、トラッキング保護、セキュアブラウジングモードが含まれています。'
-                            },
-                            ko: {
-                                title: 'Solar Browser에 오신 것을 환영합니다',
-                                summary: '빠르고 안전하며 프라이빗한 웹 브라우저입니다. Solar Browser는 고급 개인정보 보호 기능, 초고속 브라우징 속도, 현대적인 웹 사용자를 위해 설계된 깔끔한 인터페이스를 제공합니다.',
-                                content: '빠르고 안전하며 프라이빗한 웹 브라우저입니다. Solar Browser는 고급 개인정보 보호 기능, 초고속 브라우징 속도, 현대적인 웹 사용자를 위해 설계된 깔끔한 인터페이스를 제공합니다. 전 세계의 최신 뉴스와 기사로 최신 정보를 받아보세요. 저희 브라우저에는 온라인 개인정보 보호와 안전을 보장하기 위한 내장 광고 차단, 추적 보호, 보안 브라우징 모드가 포함되어 있습니다.'
-                            },
-                            pt: {
-                                title: 'Bem-vindo ao Solar Browser',
-                                summary: 'Seu navegador web rápido, seguro e privado. O Solar Browser oferece recursos avançados de privacidade, velocidades de navegação ultrarrápidas e uma interface limpa projetada para o usuário web moderno.',
-                                content: 'Seu navegador web rápido, seguro e privado. O Solar Browser oferece recursos avançados de privacidade, velocidades de navegação ultrarrápidas e uma interface limpa projetada para o usuário web moderno. Mantenha-se atualizado com as últimas notícias e artigos de todo o mundo. Nosso navegador inclui bloqueio de anúncios integrado, proteção contra rastreamento e modos de navegação segura para garantir sua privacidade e segurança online.'
-                            },
-                            ru: {
-                                title: 'Добро пожаловать в Solar Browser',
-                                summary: 'Ваш быстрый, безопасный и приватный веб-браузер. Solar Browser предлагает продвинутые функции конфиденциальности, молниеносную скорость просмотра и чистый интерфейс, разработанный для современного пользователя.',
-                                content: 'Ваш быстрый, безопасный и приватный веб-браузер. Solar Browser предлагает продвинутые функции конфиденциальности, молниеносную скорость просмотра и чистый интерфейс, разработанный для современного пользователя. Оставайтесь в курсе последних новостей и статей со всего мира. Наш браузер включает встроенную блокировку рекламы, защиту от отслеживания и безопасные режимы просмотра для обеспечения вашей конфиденциальности и безопасности в Интернете.'
-                            },
-                            tr: {
-                                title: 'Solar Browser\'a Hoş Geldiniz',
-                                summary: 'Hızlı, güvenli ve gizli web tarayıcınız. Solar Browser gelişmiş gizlilik özellikleri, yıldırım hızında gezinme ve modern web kullanıcısı için tasarlanmış temiz bir arayüz sunar.',
-                                content: 'Hızlı, güvenli ve gizli web tarayıcınız. Solar Browser gelişmiş gizlilik özellikleri, yıldırım hızında gezinme ve modern web kullanıcısı için tasarlanmış temiz bir arayüz sunar. Dünyanın dört bir yanından en son haberler ve makalelerle güncel kalın. Tarayıcımız çevrimiçi gizliliğinizi ve güvenliğinizi sağlamak için yerleşik reklam engelleme, izleme koruması ve güvenli gezinme modları içerir. Özelleştirilebilir temalar, gelişmiş yer imi yönetimi ve akıllı arama özellikleri ile Solar Browser üstün bir gezinme deneyimi için ihtiyacınız olan her şeyi sağlar.'
-                            },
-                            zh: {
-                                title: '欢迎使用 Solar Browser',
-                                summary: '您快速、安全且私密的网络浏览器。Solar Browser 提供先进的隐私功能、闪电般快速的浏览速度，以及为现代网络用户设计的简洁界面。',
-                                content: '您快速、安全且私密的网络浏览器。Solar Browser 提供先进的隐私功能、闪电般快速的浏览速度，以及为现代网络用户设计的简洁界面。通过来自世界各地的最新新闻和文章保持更新。我们的浏览器包含内置广告拦截、跟踪保护和安全浏览模式，以确保您的在线隐私和安全。'
-                            }
-                        },
-                        cover: {
-                            en: 'https://picsum.photos/300/200?random=1'
-                        },
-                        references: ['https://browser.solar'],
-                        publishedAt: new Date().toISOString()
-                    },
-                    {
-                        id: 'sample-2',
-                        translations: {
-                            ar: {
-                                title: 'ميزات الخصوصية المتقدمة',
-                                summary: 'اكتشف كيف يحمي متصفح Solar بصمتك الرقمية بتقنية الخصوصية المتطورة. يطبق متصفحنا حماية متقدمة من التتبع وDNS آمن واتصالات مشفرة.',
-                                content: 'اكتشف كيف يحمي متصفح Solar بصمتك الرقمية بتقنية الخصوصية المتطورة. يطبق متصفحنا حماية متقدمة من التتبع وDNS آمن واتصالات مشفرة للحفاظ على بيانات التصفح الخاصة بك آمنة من أعين المتطفلين. مع ميزات مثل إدارة ملفات تعريف الارتباط التلقائية وحظر بصمات الأصابع وتكامل VPN، يمكنك تصفح الويب بثقة مع العلم أن خصوصيتك هي أولويتنا القصوى.'
-                            },
-                            de: {
-                                title: 'Erweiterte Datenschutzfunktionen',
-                                summary: 'Entdecken Sie, wie Solar Browser Ihren digitalen Fußabdruck mit modernster Datenschutztechnologie schützt. Unser Browser implementiert erweiterten Tracking-Schutz, sicheres DNS und verschlüsselte Verbindungen.',
-                                content: 'Entdecken Sie, wie Solar Browser Ihren digitalen Fußabdruck mit modernster Datenschutztechnologie schützt. Unser Browser implementiert erweiterten Tracking-Schutz, sicheres DNS und verschlüsselte Verbindungen, um Ihre Browsing-Daten vor neugierigen Blicken zu schützen. Mit Funktionen wie automatischem Cookie-Management, Fingerprint-Blockierung und VPN-Integration können Sie das Web mit dem Vertrauen durchsuchen, dass Ihre Privatsphäre unsere oberste Priorität ist.'
-                            },
-                            en: {
-                                title: 'Advanced Privacy Features',
-                                summary: 'Discover how Solar Browser protects your digital footprint with cutting-edge privacy technology. Our browser implements advanced tracking protection, secure DNS, and encrypted connections.',
-                                content: 'Discover how Solar Browser protects your digital footprint with cutting-edge privacy technology. Our browser implements advanced tracking protection, secure DNS, and encrypted connections to keep your browsing data safe from prying eyes. With features like automatic cookie management, fingerprint blocking, and VPN integration, you can browse the web with confidence knowing your privacy is our top priority. Solar Browser uses state-of-the-art encryption protocols to secure your data transmission, prevents websites from tracking your activities across different sites, and provides comprehensive protection against malicious scripts and advertisements. Our privacy-first approach ensures that your personal information remains private and secure at all times.'
-                            },
-                            es: {
-                                title: 'Características Avanzadas de Privacidad',
-                                summary: 'Descubre cómo Solar Browser protege tu huella digital con tecnología de privacidad de vanguardia. Nuestro navegador implementa protección avanzada contra el rastreo, DNS seguro y conexiones encriptadas.',
-                                content: 'Descubre cómo Solar Browser protege tu huella digital con tecnología de privacidad de vanguardia. Nuestro navegador implementa protección avanzada contra el rastreo, DNS seguro y conexiones encriptadas para mantener tus datos de navegación seguros de miradas indiscretas. Con características como gestión automática de cookies, bloqueo de huellas digitales e integración VPN, puedes navegar por la web con confianza sabiendo que tu privacidad es nuestra máxima prioridad.'
-                            },
-                            fr: {
-                                title: 'Fonctionnalités Avancées de Confidentialité',
-                                summary: 'Découvrez comment Solar Browser protège votre empreinte numérique avec une technologie de confidentialité de pointe. Notre navigateur implémente une protection avancée contre le pistage, un DNS sécurisé et des connexions chiffrées.',
-                                content: 'Découvrez comment Solar Browser protège votre empreinte numérique avec une technologie de confidentialité de pointe. Notre navigateur implémente une protection avancée contre le pistage, un DNS sécurisé et des connexions chiffrées pour garder vos données de navigation à l\'abri des regards indiscrets. Avec des fonctionnalités comme la gestion automatique des cookies, le blocage d\'empreintes digitales et l\'intégration VPN, vous pouvez naviguer sur le web en toute confiance en sachant que votre vie privée est notre priorité absolue.'
-                            },
-                            hi: {
-                                title: 'उन्नत गोपनीयता सुविधाएं',
-                                summary: 'जानें कि कैसे Solar Browser अत्याधुनिक गोपनीयता तकनीक के साथ आपके डिजिटल फुटप्रिंट की सुरक्षा करता है। हमारा ब्राउज़र उन्नत ट्रैकिंग सुरक्षा, सुरक्षित DNS, और एन्क्रिप्टेड कनेक्शन लागू करता है।',
-                                content: 'जानें कि कैसे Solar Browser अत्याधुनिक गोपनीयता तकनीक के साथ आपके डिजिटल फुटप्रिंट की सुरक्षा करता है। हमारा ब्राउज़र उन्नत ट्रैकिंग सुरक्षा, सुरक्षित DNS, और एन्क्रिप्टेड कनेक्शन लागू करता है ताकि आपका ब्राउज़िंग डेटा चुभती नज़रों से सुरक्षित रहे। स्वचालित कुकी प्रबंधन, फिंगरप्रिंट ब्लॉकिंग, और VPN एकीकरण जैसी सुविधाओं के साथ, आप यह जानते हुए विश्वास के साथ वेब ब्राउज़ कर सकते हैं कि आपकी गोपनीयता हमारी सर्वोच्च प्राथमिकता है।'
-                            },
-                            it: {
-                                title: 'Funzionalità Avanzate per la Privacy',
-                                summary: 'Scopri come Solar Browser protegge la tua impronta digitale con tecnologia di privacy all\'avanguardia. Il nostro browser implementa protezione avanzata dal tracciamento, DNS sicuro e connessioni crittografate.',
-                                content: 'Scopri come Solar Browser protegge la tua impronta digitale con tecnologia di privacy all\'avanguardia. Il nostro browser implementa protezione avanzata dal tracciamento, DNS sicuro e connessioni crittografate per mantenere i tuoi dati di navigazione al sicuro da occhi indiscreti. Con funzionalità come gestione automatica dei cookie, blocco delle impronte digitali e integrazione VPN, puoi navigare sul web con fiducia sapendo che la tua privacy è la nostra massima priorità.'
-                            },
-                            ja: {
-                                title: '高度なプライバシー機能',
-                                summary: 'Solar Browserが最先端のプライバシー技術でデジタルフットプリントをどのように保護するかをご覧ください。私たちのブラウザは、高度なトラッキング保護、セキュアDNS、暗号化接続を実装しています。',
-                                content: 'Solar Browserが最先端のプライバシー技術でデジタルフットプリントをどのように保護するかをご覧ください。私たちのブラウザは、高度なトラッキング保護、セキュアDNS、暗号化接続を実装して、ブラウジングデータを詮索好きな目から安全に保ちます。自動クッキー管理、フィンガープリントブロッキング、VPN統合などの機能により、プライバシーが最優先であることを知って安心してWebを閲覧できます。'
-                            },
-                            ko: {
-                                title: '고급 개인정보 보호 기능',
-                                summary: 'Solar Browser가 최첨단 개인정보 보호 기술로 디지털 발자국을 어떻게 보호하는지 알아보세요. 저희 브라우저는 고급 추적 보호, 보안 DNS, 암호화된 연결을 구현합니다.',
-                                content: 'Solar Browser가 최첨단 개인정보 보호 기술로 디지털 발자국을 어떻게 보호하는지 알아보세요. 저희 브라우저는 고급 추적 보호, 보안 DNS, 암호화된 연결을 구현하여 브라우징 데이터를 엿보는 눈으로부터 안전하게 보호합니다. 자동 쿠키 관리, 지문 차단, VPN 통합과 같은 기능을 통해 개인정보 보호가 최우선임을 알고 안심하고 웹을 탐색할 수 있습니다.'
-                            },
-                            pt: {
-                                title: 'Recursos Avançados de Privacidade',
-                                summary: 'Descubra como o Solar Browser protege sua pegada digital com tecnologia de privacidade de ponta. Nosso navegador implementa proteção avançada contra rastreamento, DNS seguro e conexões criptografadas.',
-                                content: 'Descubra como o Solar Browser protege sua pegada digital com tecnologia de privacidade de ponta. Nosso navegador implementa proteção avançada contra rastreamento, DNS seguro e conexões criptografadas para manter seus dados de navegação seguros de olhos curiosos. Com recursos como gerenciamento automático de cookies, bloqueio de impressão digital e integração VPN, você pode navegar na web com confiança sabendo que sua privacidade é nossa principal prioridade.'
-                            },
-                            ru: {
-                                title: 'Продвинутые Функции Конфиденциальности',
-                                summary: 'Узнайте, как Solar Browser защищает ваш цифровой след с помощью передовых технологий конфиденциальности. Наш браузер реализует расширенную защиту от отслеживания, безопасный DNS и зашифрованные соединения.',
-                                content: 'Узнайте, как Solar Browser защищает ваш цифровой след с помощью передовых технологий конфиденциальности. Наш браузер реализует расширенную защиту от отслеживания, безопасный DNS и зашифрованные соединения, чтобы защитить ваши данные просмотра от посторонних глаз. С такими функциями, как автоматическое управление файлами cookie, блокировка отпечатков пальцев и интеграция VPN, вы можете просматривать веб-страницы с уверенностью, зная, что ваша конфиденциальность является нашим главным приоритетом.'
-                            },
-                            tr: {
-                                title: 'Gelişmiş Gizlilik Özellikleri',
-                                summary: 'Solar Browser\'ın en son gizlilik teknolojisiyle dijital ayak izinizi nasıl koruduğunu keşfedin. Tarayıcımız gelişmiş izleme koruması, güvenli DNS ve şifreli bağlantılar uygular.',
-                                content: 'Solar Browser\'ın en son gizlilik teknolojisiyle dijital ayak izinizi nasıl koruduğunu keşfedin. Tarayıcımız, gezinme verilerinizi meraklı gözlerden güvende tutmak için gelişmiş izleme koruması, güvenli DNS ve şifreli bağlantılar uygular. Otomatik çerez yönetimi, parmak izi engelleme ve VPN entegrasyonu gibi özelliklerle, gizliliğinizin önceliğimiz olduğunu bilerek güvenle web\'de gezinebilirsiniz.'
-                            },
-                            zh: {
-                                title: '高级隐私功能',
-                                summary: '了解 Solar Browser 如何使用尖端隐私技术保护您的数字足迹。我们的浏览器实现了高级跟踪保护、安全 DNS 和加密连接。',
-                                content: '了解 Solar Browser 如何使用尖端隐私技术保护您的数字足迹。我们的浏览器实现了高级跟踪保护、安全 DNS 和加密连接，以保护您的浏览数据免受窥探。通过自动 cookie 管理、指纹阻止和 VPN 集成等功能，您可以放心地浏览网络，因为您知道您的隐私是我们的首要任务。'
-                            }
-                        },
-                        cover: {
-                            en: 'https://picsum.photos/300/200?random=2'
-                        },
-                        references: ['https://browser.solar/privacy'],
-                        publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-                    }
-                ];
-                
-                renderNews(sampleNews);            } finally {
-                isNewsFetching = false;
-                console.log('📰 News fetch completed, isNewsFetching set to false');
+                console.error('📰 Error in renderNews:', error);
+                // Don't show error message
+                const newsContent = document.getElementById('newsContent');
+                if (newsContent) {
+                    newsContent.innerHTML = '';
+                }
+            }
+        }
+
+        // This function is called by Flutter when there's an error
+        function renderNewsError(message = null) {
+            console.log('📰 renderNewsError called with message:', message);
+            
+            const newsContent = document.getElementById('newsContent');
+            if (!newsContent) return;
+
+            const errorText = message || getLocalizedText('newsError') || 'Unable to load news';
+            newsContent.innerHTML = `<div class="news-error">${errorText}</div>`;
+        }
+
+        // Show loading state (called internally)
+        function showNewsLoading() {
+            const newsContent = document.getElementById('newsContent');
+            if (!newsContent) return;
+            
+            // Clear content but don't show loading text
+            newsContent.innerHTML = '';
+            
+            // Hide news title
+            const newsTitle = document.getElementById('newsTitle');
+            if (newsTitle) {
+                newsTitle.style.display = 'none';
+            }
+        }
+
+        // Request news from Flutter
+        function requestNews() {
+            console.log('📰 Requesting news from Flutter...');
+            showNewsLoading();
+            
+            if (window.NewsHandler && window.NewsHandler.postMessage) {
+                console.log('📰 ✅ NewsHandler available! Requesting news from Flutter...');
+                window.NewsHandler.postMessage('fetchNews');
+                console.log('📰 📤 Sent fetchNews message to Flutter NewsHandler');
+            } else {
+                console.log('📰 ❌ NewsHandler not available');
+                renderNewsError('News service not available');
             }
         }
 
@@ -1150,107 +1079,29 @@
             renderNews(articles);
         }
 
-        function renderNews(newsData) {
-            console.log('📰 renderNews called with:', newsData);
-            const newsContent = document.getElementById('newsContent');
-            if (!newsContent) {
-                console.error('❌ newsContent element not found!');
-                return;
-            }
-
-            // Handle different JSON structures
-            let articles = [];
-            if (Array.isArray(newsData)) {
-                articles = newsData;
-                console.log('📰 newsData is array, length:', articles.length);
-            } else if (newsData.articles) {
-                articles = newsData.articles;
-                console.log('📰 newsData has articles property, length:', articles.length);
-            } else {
-                console.log('📰 newsData format not recognized:', typeof newsData, newsData);
-            }
-
-            if (!articles || articles.length === 0) {
-                console.log('📰 No articles to render, showing error');
-                renderNewsError('No news available');
-                return;
-            }
-
-            // Limit to maxItems
-            articles = articles.slice(0, newsConfig.maxItems);
-            console.log('📰 Rendering', articles.length, 'articles');
-
-            const newsGrid = document.createElement('div');
-            newsGrid.className = 'news-grid';
-
-            let renderedCount = 0;
-            articles.forEach((article, index) => {
-                console.log('📰 Processing article', index, ':', article);
-                const newsItem = createNewsItem(article);
-                if (newsItem) {
-                    newsGrid.appendChild(newsItem);
-                    renderedCount++;
-                    console.log('📰 Successfully rendered article', index);
-                } else {
-                    console.log('📰 Failed to create news item for article', index);
-                }
-            });
-
-            newsContent.innerHTML = '';
-            newsContent.appendChild(newsGrid);
-              console.log('✅ Rendered', renderedCount, 'REAL news items out of', articles.length, 'articles');
-        }
+        // ...existing code...
 
         function createNewsItem(article) {
-            // Handle the Firebase news format with translations
-            let title, summary, fullContent, imageUrl, url, publishedAt;
+            console.log('📰 createNewsItem called with article:', article);
             
-            if (article.translations) {
-                // Get content based on current language
-                const lang = currentLanguage === 'tr' ? 'tr' : 'en';
-                const translation = article.translations[lang] || article.translations.en;
-                title = translation?.title || 'Untitled';
-                
-                // Get BOTH summary and content - use content for full expansion, summary for preview
-                summary = translation?.summary || '';
-                fullContent = translation?.content || translation?.summary || '';
-                
-                // If we have both summary and content, use summary for truncated view
-                if (translation?.content && translation?.summary) {
-                    // Use summary for initial display, content for expansion
-                    console.log('📰 Found both summary and content for:', title);
-                } else {
-                    // Use whatever we have for both
-                    summary = fullContent;
-                }
-                
-                // Get image URL based on language
-                if (article.cover) {
-                    imageUrl = article.cover[lang] || article.cover.en || '';
-                }
-                
-                publishedAt = article.publishedAt || '';
-            } else {
-                // Simple format fallback
-                title = article.title || 'Untitled';
-                summary = article.summary || article.body || '';
-                fullContent = article.content || article.summary || article.body || '';
-                imageUrl = article.image || '';
-                publishedAt = article.publishedAt || '';
-            }            if (!title) return null;
+            // Extract article data - simpler format from Flutter
+            let title = article.title || 'Untitled';
+            let summary = article.summary || '';
+            let fullContent = article.content || summary || '';
+            let imageUrl = article.image || ''; // Use image field from Flutter
+            let publishedAt = article.publishedAt || '';
+            
+            // Don't process articles without a title
+            if (!title) return null;
 
-            // Create truncated version for initial display using summary
-            const truncateLimit = 200;
-            const displayText = summary || fullContent; // Use summary first, then fallback to content
-            const shouldTruncate = displayText.length > truncateLimit;
-            const truncatedSummary = shouldTruncate 
-                ? displayText.substring(0, truncateLimit) + '...' 
-                : displayText;
-
+            // Don't truncate - show full content as per requirements
+            // We'll make it expandable/collapsible by default
+            
             console.log('📰 News item:', title);
-            console.log('📰 Summary length:', summary?.length || 0);
-            console.log('📰 Full content length:', fullContent?.length || 0);
-            console.log('📰 Will show truncated?', shouldTruncate);// Create non-clickable container - NO NAVIGATION!
+            console.log('📰 Content length:', fullContent?.length || 0);
+            console.log('📰 Image URL:', imageUrl || 'None');
+
+            // Create the news item container
             const newsItem = document.createElement('div');
             newsItem.className = 'news-item';
             newsItem.style.cursor = 'default'; // Explicitly no pointer cursor
@@ -1268,29 +1119,33 @@
             const itemId = 'news-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
             newsItem.id = itemId;
 
+            // Always show image if available
+            // Always show image if available with better error handling
             const imageHtml = imageUrl 
-                ? `<img src="${imageUrl}" alt="${title}" class="news-item-image" onerror="this.style.display='none';">`
-                : `<div class="news-item-image" style="background: var(--color-secondary); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 24px;">📰</div>`;
+                ? `<img src="${imageUrl}" alt="${title}" class="news-item-image" onerror="this.onerror=null; this.src=''; this.style.display='none'; console.log('Failed to load image: ${imageUrl}');">`
+                : `<div class="news-item-image" style="display: none;"></div>`; // Hide image container if no image
 
-            const timeAgo = publishedAt ? formatTimeAgo(new Date(publishedAt)) : '';            // Clean and escape content for data attributes - NO SOURCE ADDED!
+            const timeAgo = publishedAt ? formatTimeAgo(new Date(publishedAt)) : '';
+            
+            // Clean and escape content for data attributes
             const cleanFullContent = (fullContent || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-            const cleanTruncatedContent = (truncatedSummary || '').replace(/"/g, '&quot;').replace(/'/g, '&#39;');            // Create the expand button - only if we have more content to show
-            const hasMoreContent = fullContent && fullContent.length > truncateLimit;
-            const expandButtonHtml = hasMoreContent
+            
+            // Make news items collapsible by default - initially collapsed
+            const hasContent = fullContent && fullContent.length > 0;
+            const expandButtonHtml = hasContent
                 ? `<div class="news-item-expand" onclick="toggleNewsExpansion('${itemId}')">${getLocalizedText('readMore')}</div>` 
                 : '';
 
-            console.log('📰 Has more content?', hasMoreContent);
+            console.log('📰 Has content?', hasContent);
             console.log('📰 Show expand button?', !!expandButtonHtml);
 
             newsItem.innerHTML = `
                 ${imageHtml}
                 <div class="news-item-title">${title}</div>
-                <div class="news-item-summary" data-full="${cleanFullContent}" data-truncated="${cleanTruncatedContent}">${truncatedSummary}</div>
+                <div class="news-item-summary" data-full="${cleanFullContent}">${summary}</div>
                 ${expandButtonHtml}
                 <div class="news-item-source">
-                    <span>Vertex News</span>
-                    ${timeAgo ? `<span>• ${timeAgo}</span>` : ''}
+                    ${timeAgo ? `<span>${timeAgo}</span>` : ''}
                 </div>
             `;
 
@@ -1307,24 +1162,24 @@
             
             if (!summaryElement || !expandButton) return;
             
-            const fullContent = summaryElement.getAttribute('data-full').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
-            const truncatedContent = summaryElement.getAttribute('data-truncated').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+            // Get the full content
+            const fullContent = summaryElement.getAttribute('data-full')?.replace(/&quot;/g, '"')?.replace(/&#39;/g, "'") || '';
             const isExpanded = summaryElement.classList.contains('expanded');
             
             if (isExpanded) {
                 // Collapse
                 summaryElement.classList.remove('expanded');
-                // Convert back to truncated content without extra formatting
-                const originalTruncated = truncatedContent.split('\n\nSource:')[0];
-                summaryElement.innerHTML = originalTruncated.replace(/\n/g, '<br>');
-                expandButton.innerHTML = getLocalizedText('readMore');
+                // Keep the summary as is but collapse it
+                expandButton.innerHTML = getLocalizedText('readMore') || 'Read More';
                 console.log('📰 News collapsed');
             } else {
                 // Expand
                 summaryElement.classList.add('expanded');
                 // Show full content with proper line breaks
-                summaryElement.innerHTML = fullContent.replace(/\n/g, '<br>');
-                expandButton.innerHTML = getLocalizedText('showLess');
+                if (fullContent) {
+                    summaryElement.innerHTML = fullContent.replace(/\n/g, '<br>');
+                }
+                expandButton.innerHTML = getLocalizedText('showLess') || 'Show Less';
                 console.log('📰 News expanded, full content length:', fullContent.length);
                 
                 // Smooth scroll to ensure the expanded content is visible
@@ -1347,13 +1202,7 @@
             return `${Math.floor(diffInSeconds / 86400)}d ago`;
         }
 
-        function renderNewsError(message = null) {
-            const newsContent = document.getElementById('newsContent');
-            if (!newsContent) return;
-
-            const errorText = message || getLocalizedText('error');
-            newsContent.innerHTML = `<div class="news-error">${errorText}</div>`;
-        }
+        // ...existing code...
 
         // Search functionality
         document.querySelector('.search-box').addEventListener('keypress', function(e) {
@@ -1650,7 +1499,7 @@
             updateLocalizedUI();            // Clear cached news to force re-fetch with new language
             localStorage.removeItem('solarNews');
             localStorage.removeItem('solarNewsTime');
-            fetchNews();
+            requestNews();
         }
 
         // Listen for Flutter messages - SINGLE LISTENER ONLY!
@@ -1736,8 +1585,8 @@
                 console.log('📰 Using Flutter NewsHandler to fetch news...');
                 window.NewsHandler.postMessage('fetchNews');
             } else {
-                console.log('📰 NewsHandler not available, using direct fetch...');
-                fetchNews(); // Fallback to direct fetch
+                console.log('📰 NewsHandler not available, requesting news...');
+                requestNews(); // Request news from Flutter
             }
             
             console.log('✅ Homepage initialized with REAL news from Firebase API');

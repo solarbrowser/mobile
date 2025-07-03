@@ -14,8 +14,29 @@
             transition: all 0.3s ease;
         }
 
-        .container {
-            max-width: 600px;
+        .co        function displayNews(newsData) {
+            console.log('📰 displayNews called with data:', typeof newsData, Array.isArray(newsData) ? newsData.length + ' items' : 'not an array');
+            
+            // Find the news container
+            const container = document.getElementById('newsContainer');
+            console.log('📰 newsContainer found?', container ? 'Yes' : 'No');
+            
+            // Ensure we have a valid container
+            if (!container) {
+                console.error('❌ Cannot find newsContainer element');
+                return;
+            }
+            
+            // Check for valid news data
+            if (!newsData || !Array.isArray(newsData) || newsData.length === 0) {
+                console.log('📰 No news data or empty array');
+                container.innerHTML = '<div class="news-item"><div class="news-item-title">No news available</div></div>';
+                return;
+            }
+            
+            try {
+                // Clear the container
+                container.innerHTML = '';        max-width: 600px;
             margin: 0 auto;
             text-align: center;
         }
@@ -239,6 +260,15 @@
             color: #666;
             line-height: 1.4;
             margin-bottom: 8px;
+            white-space: pre-wrap;
+        }
+        
+        .news-item-image {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-bottom: 12px;
+            display: block;
         }
 
         .news-item-date {
@@ -341,10 +371,11 @@
 
         <div class="news-container">
             <h2 class="news-title">Latest News</h2>
-            <div id="newsContainer">
+            <div id="newsContainer" class="news-content">
+                <!-- News items will be loaded here -->
                 <div class="news-item">
                     <div class="news-item-title">Loading news...</div>
-                    <div class="news-item-summary">Please wait while we fetch the latest news.</div>
+                    <div class="news-item-summary">Please wait while we fetch the latest articles...</div>
                 </div>
             </div>
         </div>
@@ -442,6 +473,11 @@
         }
 
         function openUrl(url) {
+            if (!url || url === '#') {
+                console.log('🔍 No URL provided, ignoring click');
+                return;
+            }
+            console.log('🔍 Opening URL:', url);
             window.location.href = url;
         }
 
@@ -471,31 +507,72 @@
             }
         }
 
+        // News handling is now in external news.js file
         function requestNews() {
             try {
-                if (window.NewsRequester) {
+                // Forward to the external news handler
+                if (window.requestNewsFromFlutter) {
+                    window.requestNewsFromFlutter();
+                } else if (window.NewsRequester) {
                     window.NewsRequester.postMessage('fetchNews');
                 }
             } catch (e) {
                 console.log('News requester not available');
             }
         }
-
-        function displayNews(newsData) {
-            const container = document.getElementById('newsContainer');
             
-            if (!newsData || newsData.length === 0) {
-                container.innerHTML = '<div class="news-item"><div class="news-item-title">No news available</div></div>';
-                return;
-            }
-
-            container.innerHTML = newsData.map(item => `
-                <div class="news-item" onclick="openUrl('${item.url}')">
-                    <div class="news-item-title">${item.title}</div>
-                    <div class="news-item-summary">${item.summary || item.description || ''}</div>
-                    <div class="news-item-date">${new Date(item.publishedAt || item.date).toLocaleDateString()}</div>
-                </div>
-            `).join('');
+            // Create HTML for each news item
+            newsData.forEach(item => {
+                console.log('📰 Creating news item:', item.title);
+                
+                const newsItem = document.createElement('div');
+                newsItem.className = 'news-item';
+                
+                if (item.url) {
+                    newsItem.onclick = function() {
+                        console.log('📰 News item clicked, navigating to:', item.url);
+                        window.location.href = item.url;
+                    };
+                }
+                
+                // Add cover image if available
+                if (item.coverUrl) {
+                    console.log('📰 Adding cover image:', item.coverUrl);
+                    const image = document.createElement('img');
+                    image.className = 'news-item-image';
+                    image.src = item.coverUrl;
+                    image.alt = item.title || 'News image';
+                    image.onerror = function() {
+                        console.log('📰 Error loading image, removing element');
+                        this.style.display = 'none';
+                    };
+                    newsItem.appendChild(image);
+                }
+                
+                const title = document.createElement('div');
+                title.className = 'news-item-title';
+                title.textContent = item.title || 'Untitled';
+                
+                const summary = document.createElement('div');
+                summary.className = 'news-item-summary';
+                
+                // Show full content instead of just summary
+                const content = item.content || item.summary || '';
+                summary.textContent = content;
+                
+                const date = document.createElement('div');
+                date.className = 'news-item-date';
+                date.textContent = new Date(item.publishedAt || Date.now()).toLocaleDateString();
+                
+                newsItem.appendChild(title);
+                newsItem.appendChild(summary);
+                newsItem.appendChild(date);
+                
+                container.appendChild(newsItem);
+                console.log('📰 News item created successfully:', item.title);
+            });
+            
+            console.log('✅ News rendered successfully:', newsData.length, 'items');
         }
 
         // Initialize when page loads
@@ -504,15 +581,22 @@
         // Listen for messages from Flutter
         window.addEventListener('message', function(event) {
             try {
+                console.log('🔍 Received message event:', event.data);
                 const data = JSON.parse(event.data);
+                console.log('🔍 Parsed data:', data);
                 
                 if (data.type === 'fullTheme') {
+                    console.log('🔍 Applying theme');
                     applyTheme(data);
                 } else if (data.type === 'news') {
+                    console.log('🔍 Displaying news from event');
+                    displayNews(data.articles);
+                } else if (data.type === 'directNews') {
+                    console.log('🔍 Displaying direct news from event');
                     displayNews(data.articles);
                 }
             } catch (e) {
-                console.log('Error parsing message:', e);
+                console.log('Error parsing message:', e, event.data);
             }
         });
     </script>

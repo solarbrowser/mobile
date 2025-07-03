@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'l10n/app_localizations.dart';
 import 'screens/browser_screen.dart';
 import 'screens/welcome_screen.dart';
@@ -11,10 +12,22 @@ import 'utils/theme_manager.dart';
 import 'utils/performance_optimizer.dart';
 import 'services/ai_manager.dart';
 import 'services/pwa_manager.dart';
+import 'firebase_options.dart';
 
 void main() async {
   // Ensure Flutter is initialized with performance optimizations
   final binding = WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print('✅ Firebase initialized in main.dart');
+  } catch (e) {
+    print('❌ Firebase initialization failed in main.dart: $e');
+    // Don't throw error - app should still work without Firebase
+  }
   
   // Optimize image caching for better performance
   binding.deferFirstFrame();
