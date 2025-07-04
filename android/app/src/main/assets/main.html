@@ -585,12 +585,12 @@
 
         <div class="news-section" id="newsSection">
             <div class="news-header">
-                <span id="newsTitle">Vertex News</span>
+                <span id="newsTitle">Latest News</span>
             </div>
-            <div id="newsContent">
+            <div id="newsContainer">
                 <div class="news-loading" id="newsLoading">
                     <div class="loading-spinner"></div>
-                    <div>Loading news...</div>
+                    <div>Loading...</div>
                 </div>
             </div>
         </div>
@@ -1036,12 +1036,12 @@
         // This function is called by Flutter with news data
         function renderNews(newsData) {
             console.log('📰 renderNews called by Flutter with:', newsData);
-            console.log('📰 newsContent element ID:', document.getElementById('newsContent') ? 'FOUND' : 'NOT FOUND');
+            console.log('📰 newsContainer element ID:', document.getElementById('newsContainer') ? 'FOUND' : 'NOT FOUND');
             
             try {
-                const newsContent = document.getElementById('newsContent');
-                if (!newsContent) {
-                    console.error('📰 News content element not found');
+                const newsContainer = document.getElementById('newsContainer');
+                if (!newsContainer) {
+                    console.error('📰 News container element not found');
                     return;
                 }
 
@@ -1070,7 +1070,7 @@
                 if (!articles || articles.length === 0) {
                     console.log('📰 No articles to display');
                     // Don't show error message, just hide the section
-                    newsContent.innerHTML = '';
+                    newsContainer.innerHTML = '';
                     const newsSection = document.getElementById('newsSection');
                     if (newsSection) {
                         newsSection.style.display = 'none';
@@ -1098,17 +1098,17 @@
                     }
                 });
 
-                newsContent.innerHTML = '';
-                newsContent.appendChild(newsGrid);
+                newsContainer.innerHTML = '';
+                newsContainer.appendChild(newsGrid);
                 
                 console.log('✅ Successfully rendered', renderedCount, 'news items');
                 
             } catch (error) {
                 console.error('📰 Error in renderNews:', error);
                 // Don't show error message
-                const newsContent = document.getElementById('newsContent');
-                if (newsContent) {
-                    newsContent.innerHTML = '';
+                const newsContainer = document.getElementById('newsContainer');
+                if (newsContainer) {
+                    newsContainer.innerHTML = '';
                 }
             }
         }
@@ -1117,8 +1117,8 @@
         function renderNewsError(message = null) {
             console.log('📰 renderNewsError called with message:', message);
             
-            const newsContent = document.getElementById('newsContent');
-            if (!newsContent) return;
+            const newsContainer = document.getElementById('newsContainer');
+            if (!newsContainer) return;
             
             // Keep news title visible
             const newsTitle = document.getElementById('newsTitle');
@@ -1127,13 +1127,13 @@
             }
 
             const errorText = message || getLocalizedText('newsError') || 'Unable to load news';
-            newsContent.innerHTML = `<div class="news-error">${errorText}</div>`;
+            newsContainer.innerHTML = `<div class="news-error">${errorText}</div>`;
         }
 
         // Show loading state (called internally)
         function showNewsLoading() {
-            const newsContent = document.getElementById('newsContent');
-            if (!newsContent) return;
+            const newsContainer = document.getElementById('newsContainer');
+            if (!newsContainer) return;
             
             // Show loading spinner with animation
             const loadingDiv = document.createElement('div');
@@ -1142,8 +1142,8 @@
                 <div class="loading-spinner"></div>
                 <div>${getLocalizedText('loading')}</div>
             `;
-            newsContent.innerHTML = '';
-            newsContent.appendChild(loadingDiv);
+            newsContainer.innerHTML = '';
+            newsContainer.appendChild(loadingDiv);
             
             // Keep news title visible at all times
             const newsTitle = document.getElementById('newsTitle');

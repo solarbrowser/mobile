@@ -1068,7 +1068,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get cut => 'قص';
 
   @override
-  String get solarKeyToCosmos => 'SOLAR - مفتاح الكون';
+  String get solarKeyToCosmos => 'SOLAR - KEY TO THE COSMOS';
 
   @override
   String get legalInformation => 'المعلومات القانونية';
@@ -1114,4 +1114,61 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get catppuccinThemeDesc => 'سمة داكنة باستيل';
+
+  @override
+  String get latestNews => 'آخر الأخبار';
+
+  @override
+  String get errorLoadingNews => 'خطأ في تحميل الأخبار';
+
+  @override
+  String get defaultLocation => 'الموقع الافتراضي';
+
+  @override
+  String get webApp => 'تطبيق ويب';
+
+  @override
+  String get exampleUrl => 'https://مثال.com';
+
+  @override
+  String get enterText => 'أدخل النص...';
+
+  @override
+  String get failed_to_get_news_data =>
+      'تعذر الحصول على رابط بيانات الأخبار من الخادم';
+
+  @override
+  String get failed_to_load_news_server => 'فشل في تحميل الأخبار من الخادم';
+
+  @override
+  String get network_error_loading_news => 'خطأ في الشبكة أثناء تحميل الأخبار';
+
+  @override
+  String get failed_to_download_file => 'فشل في تنزيل الملف';
+
+  @override
+  String get failed_to_summarize_page => 'فشل في تلخيص الصفحة';
+
+  @override
+  String get firebase_not_initialized =>
+      'لم يتم تهيئة Firebase. يرجى التحقق من التكوين الخاص بك.';
+
+  @override
+  String get close_all => 'إغلاق الكل';
+
+  @override
+  String get delete_file => 'حذف الملف';
+
+  @override
+  String get delete_file_confirm =>
+      'هل أنت متأكد من أنك تريد حذف هذا الملف نهائياً من جهازك؟';
+
+  @override
+  String get remove_from_history => 'إزالة من التاريخ';
+
+  @override
+  String get delete_from_device => 'حذف من الجهاز';
+
+  @override
+  String get notice => 'إشعار';
 }

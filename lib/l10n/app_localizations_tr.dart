@@ -44,7 +44,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get darkTheme => 'Koyu';
 
   @override
-  String get systemTheme => 'System';
+  String get systemTheme => 'Sistem';
 
   @override
   String get tokyoNightTheme => 'Tokyo Night';
@@ -567,10 +567,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get failed_to_download_image => 'Failed to download image';
 
   @override
-  String get custom_home_page => 'Custom Home Page';
+  String get custom_home_page => 'Özel Ana Sayfa';
 
   @override
-  String get set_home_page_url => 'Set Home Page URL';
+  String get set_home_page_url => 'Ana Sayfa URL\'sini Ayarla';
 
   @override
   String get not_set => 'Not set';
@@ -1079,7 +1079,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get cut => 'Kes';
 
   @override
-  String get solarKeyToCosmos => 'SOLAR - EVRENE ANAHTAR';
+  String get solarKeyToCosmos => 'SOLAR - KEY TO THE COSMOS';
 
   @override
   String get legalInformation => 'Yasal Bilgiler';
@@ -1121,8 +1121,65 @@ class AppLocalizationsTr extends AppLocalizations {
   String get gruvboxThemeDesc => 'Retro koyu tema';
 
   @override
-  String get oneDarkThemeDesc => 'Editör esinlenmesi tema';
+  String get oneDarkThemeDesc => 'Editörden ilhamlı tema';
 
   @override
   String get catppuccinThemeDesc => 'Pastel koyu tema';
+
+  @override
+  String get latestNews => 'Son Haberler';
+
+  @override
+  String get errorLoadingNews => 'Haberler yüklenirken hata';
+
+  @override
+  String get defaultLocation => 'Varsayılan konum';
+
+  @override
+  String get webApp => 'Web Uygulaması';
+
+  @override
+  String get exampleUrl => 'https://ornek.com';
+
+  @override
+  String get enterText => 'Metin girin...';
+
+  @override
+  String get failed_to_get_news_data =>
+      'Sunucudan haber verisi bağlantısı alınamadı';
+
+  @override
+  String get failed_to_load_news_server => 'Sunucudan haberler yüklenemedi';
+
+  @override
+  String get network_error_loading_news => 'Haberler yüklenirken ağ hatası';
+
+  @override
+  String get failed_to_download_file => 'Dosya indirilemedi';
+
+  @override
+  String get failed_to_summarize_page => 'Sayfa özetlenemedi';
+
+  @override
+  String get firebase_not_initialized =>
+      'Firebase başlatılmamış. Lütfen yapılandırmanızı kontrol edin.';
+
+  @override
+  String get close_all => 'Hepsini Kapat';
+
+  @override
+  String get delete_file => 'Dosyayı Sil';
+
+  @override
+  String get delete_file_confirm =>
+      'Bu dosyayı cihazınızdan kalıcı olarak silmek istediğinizden emin misiniz?';
+
+  @override
+  String get remove_from_history => 'Geçmişten Kaldır';
+
+  @override
+  String get delete_from_device => 'Cihazdan Sil';
+
+  @override
+  String get notice => 'Bildirim';
 }

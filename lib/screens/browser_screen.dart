@@ -209,6 +209,10 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   static List<Map<String, dynamic>>? _cachedArticles;
   static int? _cachedLanguage;
   static Map<String, String> _cachedCoverImages = {};
+  
+  // <----NEWS FAILURE TRACKING---->
+  int _newsFailureCount = 0;
+  static const int _maxNewsFailures = 3; // Stop trying after 3 failures
 
   // <----UI STATE---->
   bool isDarkMode = false;  // <----ADDITIONAL STATE VARIABLES---->
@@ -2880,6 +2884,14 @@ Future<void> _setupScrollHandling() async {
       onMessageReceived: (JavaScriptMessage message) async {
         if (mounted && message.message == 'fetchNews') {
           print('📰 Received fetchNews request from main.html');
+          
+          // Check if we've exceeded failure limit
+          if (_newsFailureCount >= _maxNewsFailures) {
+            print('📰 ❌ News failure limit reached ($_newsFailureCount/$_maxNewsFailures), skipping fetch');
+            await _sendNewsErrorToWebView(AppLocalizations.of(context)!.network_error_loading_news);
+            return;
+          }
+          
           await _fetchNewsFromFirebase();
         }
       },
@@ -3237,7 +3249,7 @@ Future<void> _setupScrollHandling() async {
     }
   }
 
-  // Fetch news from Firebase Storage using Cloud Functions (updated to match Unity version)
+  // Fetch news from Firebase Storage using Cloud Functions
   Future<void> _fetchNewsFromFirebase() async {
     if (!mounted) return;
     
@@ -3247,7 +3259,8 @@ Future<void> _setupScrollHandling() async {
       // Check if Firebase Functions is initialized
       if (_firebaseFunctions == null) {
         print('❌ Firebase Functions not initialized');
-        await _sendNewsErrorToWebView('Firebase not initialized');
+        _newsFailureCount++; // Increment failure counter
+        await _sendNewsErrorToWebView(AppLocalizations.of(context)!.firebase_not_initialized);
         return;
       }
       
@@ -3272,7 +3285,8 @@ Future<void> _setupScrollHandling() async {
       
       if (signedUrl == null || signedUrl.isEmpty) {
         print('❌ Failed to get signed URL for news cache');
-        await _sendNewsErrorToWebView('Could not get news data link from server');
+        _newsFailureCount++; // Increment failure counter
+        await _sendNewsErrorToWebView(AppLocalizations.of(context)!.failed_to_get_news_data);
         return;
       }
       
@@ -3288,6 +3302,9 @@ Future<void> _setupScrollHandling() async {
         
         print('📰 Successfully fetched ${articles.length} news articles');
         
+        // Reset failure counter on success
+        _newsFailureCount = 0;
+        
         // Cache the articles
         _cachedArticles = articles;
         _cachedLanguage = languageIndex;
@@ -3297,12 +3314,14 @@ Future<void> _setupScrollHandling() async {
         
       } else {
         print('❌ Failed to fetch news from signed URL: ${response.statusCode}');
-        await _sendNewsErrorToWebView('Failed to load news from server');
+        _newsFailureCount++; // Increment failure counter
+        await _sendNewsErrorToWebView(AppLocalizations.of(context)!.failed_to_load_news_server);
       }
       
     } catch (e) {
       print('❌ Error fetching news: $e');
-      await _sendNewsErrorToWebView('Network error while loading news');
+      _newsFailureCount++; // Increment failure counter
+      await _sendNewsErrorToWebView(AppLocalizations.of(context)!.network_error_loading_news);
     }
   }
   
@@ -3311,6 +3330,9 @@ Future<void> _setupScrollHandling() async {
     if (!mounted) return;
     
     try {
+      // Get localized strings
+      final latestNewsText = AppLocalizations.of(context)!.latestNews;
+      
       // Get current language for proper article selection
       final prefs = await SharedPreferences.getInstance();
       final currentLang = prefs.getString('language') ?? 'en';
@@ -3425,6 +3447,10 @@ Future<void> _setupScrollHandling() async {
     if (!mounted) return;
     
     try {
+      // Get localized strings
+      final latestNewsText = AppLocalizations.of(context)!.latestNews;
+      final errorLoadingNewsText = AppLocalizations.of(context)!.errorLoadingNews;
+      
       await controller.runJavaScript('''
         (function() {
           try {
@@ -3440,28 +3466,28 @@ Future<void> _setupScrollHandling() async {
               if (newsContainers.length > 0) {
                 // Create a new container inside the news-container
                 const newsSection = newsContainers[0];
-                newsSection.innerHTML = '<h2 class="news-title">Latest News</h2><div id="newsContainer"></div>';
+                newsSection.innerHTML = '<h2 class="news-title">$latestNewsText</h2><div id="newsContainer"></div>';
                 container = document.getElementById('newsContainer');
               } else {
                 // Create container from scratch
                 const main = document.querySelector('.container') || document.body;
                 const newsSection = document.createElement('div');
                 newsSection.className = 'news-container';
-                newsSection.innerHTML = '<h2 class="news-title">Latest News</h2><div id="newsContainer"></div>';
+                newsSection.innerHTML = '<h2 class="news-title">$latestNewsText</h2><div id="newsContainer"></div>';
                 main.appendChild(newsSection);
                 container = document.getElementById('newsContainer');
               }
             }
             
             if (container) {
-              container.innerHTML = '<div class="news-item"><div class="news-item-title">Error loading news</div><div class="news-item-summary">' + '$errorMessage' + '</div></div>';
+              container.innerHTML = '<div class="news-item"><div class="news-item-title">$errorLoadingNewsText</div><div class="news-item-summary">' + '$errorMessage' + '</div></div>';
               console.log('✅ Error message displayed in news container');
             } else {
               console.error('❌ Failed to find or create news container for error message');
               
               // Last resort - add to body
               document.body.insertAdjacentHTML('beforeend', 
-                '<div class="news-container"><h2 class="news-title">Latest News</h2><div id="newsContainer"><div class="news-item"><div class="news-item-title">Error loading news</div><div class="news-item-summary">' + '$errorMessage' + '</div></div></div></div>'
+                '<div class="news-container"><h2 class="news-title">$latestNewsText</h2><div id="newsContainer"><div class="news-item"><div class="news-item-title">$errorLoadingNewsText</div><div class="news-item-summary">' + '$errorMessage' + '</div></div></div></div>'
               );
             }
           } catch (e) {
@@ -5252,7 +5278,7 @@ Future<void> _setupScrollHandling() async {
                   ),                  FutureBuilder<String>(
                     future: _getDownloadLocation(),
                     builder: (context, snapshot) {
-                      final downloadLocation = snapshot.data ?? "Default location";
+                      final downloadLocation = snapshot.data ?? AppLocalizations.of(context)!.defaultLocation;
                       return _buildSettingsItem(
                         title: AppLocalizations.of(context)!.download_location,
                         subtitle: downloadLocation,
@@ -6488,7 +6514,7 @@ Future<void> _setupScrollHandling() async {
                                       ),
                                       const SizedBox(width: 12),
                                       Text(
-                                        'Remove from History',
+                                        AppLocalizations.of(context)!.remove_from_history,
                                         style: TextStyle(
                                           color: ThemeManager.textColor(),
                                         ),
@@ -6507,7 +6533,7 @@ Future<void> _setupScrollHandling() async {
                                       ),
                                       const SizedBox(width: 12),
                                       Text(
-                                        'Delete from Device',
+                                        AppLocalizations.of(context)!.delete_from_device,
                                         style: TextStyle(
                                           color: ThemeManager.errorColor(),
                                         ),
@@ -6524,7 +6550,7 @@ Future<void> _setupScrollHandling() async {
                                         builder: (context) => AlertDialog(
                                           backgroundColor: ThemeManager.backgroundColor(),
                                           title: Text(
-                                            'Delete File',
+                                            AppLocalizations.of(context)!.delete_file,
                                             style: TextStyle(
                                               color: ThemeManager.textColor(),
                                               fontSize: 18,
@@ -6532,7 +6558,7 @@ Future<void> _setupScrollHandling() async {
                                             ),
                                           ),
                                           content: Text(
-                                            'Are you sure you want to permanently delete this file from your device?',
+                                            AppLocalizations.of(context)!.delete_file_confirm,
                                             style: TextStyle(
                                               color: ThemeManager.textColor(),
                                             ),
@@ -8882,7 +8908,7 @@ Future<void> _setupScrollHandling() async {
       }
       
       // Get page title for PWA name
-      String pageTitle = await controller.getTitle() ?? "Web App";
+      String pageTitle = await controller.getTitle() ?? AppLocalizations.of(context)!.webApp;
       
       // Get favicon for better PWA experience
       String? faviconUrl = await _getFaviconUrl(currentUrl);
@@ -11274,7 +11300,7 @@ Future<void> _handlePageStarted(String url) async {
             _sendDialogResult(dialogId, false);
           },
           child: Text(
-            'Cancel',
+            AppLocalizations.of(context)!.cancel,
             style: TextStyle(color: ThemeManager.textSecondaryColor()),
           ),
         ),
@@ -11284,7 +11310,7 @@ Future<void> _handlePageStarted(String url) async {
             _sendDialogResult(dialogId, true);
           },
           child: Text(
-            'OK',
+            AppLocalizations.of(context)!.ok,
             style: TextStyle(color: ThemeManager.primaryColor()),
           ),
         ),
@@ -11326,7 +11352,7 @@ Future<void> _handlePageStarted(String url) async {
               decoration: InputDecoration(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 border: InputBorder.none,
-                hintText: 'Enter text...',
+                hintText: AppLocalizations.of(context)!.enterText,
                 hintStyle: TextStyle(
                   color: ThemeManager.textColor().withOpacity(0.5),
                 ),
@@ -11342,7 +11368,7 @@ Future<void> _handlePageStarted(String url) async {
             _sendDialogResult(dialogId, null);
           },
           child: Text(
-            'Cancel',
+            AppLocalizations.of(context)!.cancel,
             style: TextStyle(color: ThemeManager.textSecondaryColor()),
           ),
         ),
@@ -11352,7 +11378,7 @@ Future<void> _handlePageStarted(String url) async {
             _sendDialogResult(dialogId, textController.text);
           },
           child: Text(
-            'OK',
+            AppLocalizations.of(context)!.ok,
             style: TextStyle(color: ThemeManager.primaryColor()),
           ),
         ),
@@ -11371,7 +11397,7 @@ Future<void> _handlePageStarted(String url) async {
             _sendDialogResult(dialogId, true);
           },
           child: Text(
-            'OK',
+            AppLocalizations.of(context)!.ok,
             style: TextStyle(color: ThemeManager.primaryColor()),
           ),
         ),
@@ -11738,7 +11764,7 @@ Future<void> _handlePageStarted(String url) async {
         });
         
         if (response.statusCode != 200) {
-          throw Exception('Failed to download file: ${response.statusCode}');
+          throw Exception('${AppLocalizations.of(context)!.failed_to_download_file}: ${response.statusCode}');
         }
         
         // Get file size and mime type
@@ -12403,7 +12429,7 @@ Future<void> _handlePageStarted(String url) async {
               if (!mounted) return;
               _showNotification(
                 Text(
-                  'Failed to summarize page: ${e.toString()}',
+                  '${AppLocalizations.of(context)!.failed_to_summarize_page}: ${e.toString()}',
                   style: TextStyle(
                     color: ThemeManager.errorColor(),
                   ),
@@ -13436,14 +13462,14 @@ Future<void> _handlePageStarted(String url) async {
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(false),
                   child: Text(
-                    'Cancel',
+                    AppLocalizations.of(context)!.cancel,
                     style: TextStyle(color: ThemeManager.textSecondaryColor()),
                   ),
                 ),
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(true),
                   child: Text(
-                    'Close All',
+                    AppLocalizations.of(context)!.close_all,
                     style: TextStyle(color: Colors.red),
                   ),
                 ),
@@ -13660,7 +13686,7 @@ Future<void> _handlePageStarted(String url) async {
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
-            'Cancel',
+            AppLocalizations.of(context)!.cancel,
             style: TextStyle(color: ThemeManager.textSecondaryColor()),
           ),
         ),
@@ -14083,7 +14109,7 @@ Future<void> _handlePageStarted(String url) async {
           backgroundColor: ThemeManager.surfaceColor(),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: Text(
-            'Input Required',
+            AppLocalizations.of(context)!.input_required,
             style: TextStyle(
               color: ThemeManager.textColor(),
               fontSize: 18,
@@ -14125,14 +14151,14 @@ Future<void> _handlePageStarted(String url) async {
             TextButton(
               onPressed: () => Navigator.of(context).pop(null),
               child: Text(
-                'Cancel',
+                AppLocalizations.of(context)!.cancel,
                 style: TextStyle(color: ThemeManager.textColor().withOpacity(0.7)),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(textController.text),
               child: Text(
-                'OK',
+                AppLocalizations.of(context)!.ok,
                 style: TextStyle(color: ThemeManager.accentColor()),
               ),
             ),
@@ -14150,7 +14176,7 @@ Future<void> _handlePageStarted(String url) async {
           backgroundColor: ThemeManager.surfaceColor(),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           title: Text(
-            'Notice',
+            AppLocalizations.of(context)!.notice,
             style: TextStyle(
               color: ThemeManager.textColor(),
               fontSize: 18,
@@ -14167,7 +14193,7 @@ Future<void> _handlePageStarted(String url) async {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),              child: Text(
-                'OK',
+                AppLocalizations.of(context)!.ok,
                 style: TextStyle(color: ThemeManager.accentColor()),
               ),
             ),

@@ -44,7 +44,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get darkTheme => 'Scuro';
 
   @override
-  String get systemTheme => 'System';
+  String get systemTheme => 'Sistema';
 
   @override
   String get tokyoNightTheme => 'Tokyo Night';
@@ -567,10 +567,10 @@ class AppLocalizationsIt extends AppLocalizations {
   String get failed_to_download_image => 'Failed to download image';
 
   @override
-  String get custom_home_page => 'Custom Home Page';
+  String get custom_home_page => 'Pagina iniziale personalizzata';
 
   @override
-  String get set_home_page_url => 'Set Home Page URL';
+  String get set_home_page_url => 'Imposta URL pagina iniziale';
 
   @override
   String get not_set => 'Not set';
@@ -1034,7 +1034,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get error_opening_file_install_app =>
-      'Errore durante l\'apertura del file. Installa un\'app adatta per aprire questo tipo di file.';
+      'Errore durante l\'apertura del file. Installa un\'applicazione adatta per aprire questo tipo di file.';
 
   @override
   String get full_storage_access_needed =>
@@ -1084,7 +1084,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get cut => 'Taglia';
 
   @override
-  String get solarKeyToCosmos => 'SOLAR - CHIAVE DEL COSMO';
+  String get solarKeyToCosmos => 'SOLAR - KEY TO THE COSMOS';
 
   @override
   String get legalInformation => 'Informazioni Legali';
@@ -1102,7 +1102,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get lightThemeDesc => 'Luminoso e pulito';
 
   @override
-  String get darkThemeDesc => 'Delicato sugli occhi';
+  String get darkThemeDesc => 'Rilassante per gli occhi';
 
   @override
   String get solarizedLightThemeDesc => 'Tema chiaro caldo';
@@ -1111,7 +1111,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get nordLightThemeDesc => 'Tema chiaro freddo';
 
   @override
-  String get gruvboxLightThemeDesc => 'Tema chiaro retro';
+  String get gruvboxLightThemeDesc => 'Tema chiaro retrò';
 
   @override
   String get tokyoNightThemeDesc => 'Tema notturno vibrante';
@@ -1123,11 +1123,70 @@ class AppLocalizationsIt extends AppLocalizations {
   String get nordThemeDesc => 'Tema scuro freddo';
 
   @override
-  String get gruvboxThemeDesc => 'Tema scuro retro';
+  String get gruvboxThemeDesc => 'Tema scuro retrò';
 
   @override
   String get oneDarkThemeDesc => 'Tema ispirato all\'editor';
 
   @override
   String get catppuccinThemeDesc => 'Tema scuro pastello';
+
+  @override
+  String get latestNews => 'Ultime Notizie';
+
+  @override
+  String get errorLoadingNews => 'Errore nel caricamento delle notizie';
+
+  @override
+  String get defaultLocation => 'Posizione predefinita';
+
+  @override
+  String get webApp => 'App Web';
+
+  @override
+  String get exampleUrl => 'https://esempio.com';
+
+  @override
+  String get enterText => 'Inserisci testo...';
+
+  @override
+  String get failed_to_get_news_data =>
+      'Impossibile ottenere il collegamento dati notizie dal server';
+
+  @override
+  String get failed_to_load_news_server =>
+      'Impossibile caricare le notizie dal server';
+
+  @override
+  String get network_error_loading_news =>
+      'Errore di rete durante il caricamento delle notizie';
+
+  @override
+  String get failed_to_download_file => 'Impossibile scaricare il file';
+
+  @override
+  String get failed_to_summarize_page => 'Impossibile riassumere la pagina';
+
+  @override
+  String get firebase_not_initialized =>
+      'Firebase non è inizializzato. Si prega di controllare la configurazione.';
+
+  @override
+  String get close_all => 'Chiudi Tutto';
+
+  @override
+  String get delete_file => 'Elimina File';
+
+  @override
+  String get delete_file_confirm =>
+      'Sei sicuro di voler eliminare definitivamente questo file dal tuo dispositivo?';
+
+  @override
+  String get remove_from_history => 'Rimuovi dalla Cronologia';
+
+  @override
+  String get delete_from_device => 'Elimina dal Dispositivo';
+
+  @override
+  String get notice => 'Avviso';
 }

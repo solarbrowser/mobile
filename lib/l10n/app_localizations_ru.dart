@@ -907,7 +907,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get disable_incognito_mode => 'Отключить режим инкогнито';
 
   @override
-  String get close_all_tabs => 'Закрыть все вкладки';
+  String get close_all_tabs => 'Закрыть Все';
 
   @override
   String get close_all_tabs_confirm =>
@@ -1077,7 +1077,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get cut => 'Вырезать';
 
   @override
-  String get solarKeyToCosmos => 'SOLAR - КЛЮЧ К КОСМОСУ';
+  String get solarKeyToCosmos => 'SOLAR - KEY TO THE COSMOS';
 
   @override
   String get legalInformation => 'Правовая Информация';
@@ -1123,4 +1123,63 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get catppuccinThemeDesc => 'Пастельная темная тема';
+
+  @override
+  String get latestNews => 'Последние Новости';
+
+  @override
+  String get errorLoadingNews => 'Ошибка загрузки новостей';
+
+  @override
+  String get defaultLocation => 'Местоположение по умолчанию';
+
+  @override
+  String get webApp => 'Веб-приложение';
+
+  @override
+  String get exampleUrl => 'https://пример.com';
+
+  @override
+  String get enterText => 'Введите текст...';
+
+  @override
+  String get failed_to_get_news_data =>
+      'Не удалось получить ссылку на данные новостей с сервера';
+
+  @override
+  String get failed_to_load_news_server =>
+      'Не удалось загрузить новости с сервера';
+
+  @override
+  String get network_error_loading_news => 'Ошибка сети при загрузке новостей';
+
+  @override
+  String get failed_to_download_file => 'Не удалось скачать файл';
+
+  @override
+  String get failed_to_summarize_page =>
+      'Не удалось создать краткое изложение страницы';
+
+  @override
+  String get firebase_not_initialized =>
+      'Firebase не инициализирован. Пожалуйста, проверьте вашу конфигурацию.';
+
+  @override
+  String get close_all => 'Закрыть Все';
+
+  @override
+  String get delete_file => 'Удалить Файл';
+
+  @override
+  String get delete_file_confirm =>
+      'Вы уверены, что хотите навсегда удалить этот файл с вашего устройства?';
+
+  @override
+  String get remove_from_history => 'Удалить из Истории';
+
+  @override
+  String get delete_from_device => 'Удалить с Устройства';
+
+  @override
+  String get notice => 'Уведомление';
 }

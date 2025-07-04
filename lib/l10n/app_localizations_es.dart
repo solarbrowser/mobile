@@ -43,7 +43,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get darkTheme => 'Oscuro';
 
   @override
-  String get systemTheme => 'System';
+  String get systemTheme => 'Sistema';
 
   @override
   String get tokyoNightTheme => 'Tokyo Night';
@@ -92,7 +92,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get notificationDescription =>
-      'Recibe notificaciones cuando se descarguen archivos en tu dispositivo';
+      'Recibe notificaciones cuando se detectan nuevas actualizaciones';
 
   @override
   String get allowNotifications => 'Permitir Notificaciones';
@@ -568,10 +568,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get failed_to_download_image => 'Failed to download image';
 
   @override
-  String get custom_home_page => 'Custom Home Page';
+  String get custom_home_page => 'Página de inicio personalizada';
 
   @override
-  String get set_home_page_url => 'Set Home Page URL';
+  String get set_home_page_url => 'Establecer URL de página de inicio';
 
   @override
   String get not_set => 'Not set';
@@ -979,8 +979,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get no_page_to_summarize => 'No hay página para resumir';
 
   @override
-  String get no_content_found_to_summarize =>
-      'No se encontró contenido para resumir';
+  String get no_content_found_to_summarize => 'No content found to summarize';
 
   @override
   String get theme => 'Tema';
@@ -1081,7 +1080,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get cut => 'Cortar';
 
   @override
-  String get solarKeyToCosmos => 'SOLAR - LLAVE AL COSMOS';
+  String get solarKeyToCosmos => 'SOLAR - KEY TO THE COSMOS';
 
   @override
   String get legalInformation => 'Información Legal';
@@ -1099,7 +1098,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get lightThemeDesc => 'Brillante y limpio';
 
   @override
-  String get darkThemeDesc => 'Suave para los ojos';
+  String get darkThemeDesc => 'Fácil para los ojos';
 
   @override
   String get solarizedLightThemeDesc => 'Tema claro cálido';
@@ -1114,7 +1113,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get tokyoNightThemeDesc => 'Tema nocturno vibrante';
 
   @override
-  String get draculaThemeDesc => 'Tema morado oscuro';
+  String get draculaThemeDesc => 'Tema púrpura oscuro';
 
   @override
   String get nordThemeDesc => 'Tema oscuro frío';
@@ -1127,4 +1126,62 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get catppuccinThemeDesc => 'Tema oscuro pastel';
+
+  @override
+  String get latestNews => 'Últimas Noticias';
+
+  @override
+  String get errorLoadingNews => 'Error al cargar noticias';
+
+  @override
+  String get defaultLocation => 'Ubicación predeterminada';
+
+  @override
+  String get webApp => 'Aplicación Web';
+
+  @override
+  String get exampleUrl => 'https://ejemplo.com';
+
+  @override
+  String get enterText => 'Introducir texto...';
+
+  @override
+  String get failed_to_get_news_data =>
+      'No se pudo obtener el enlace de datos de noticias del servidor';
+
+  @override
+  String get failed_to_load_news_server =>
+      'Error al cargar noticias del servidor';
+
+  @override
+  String get network_error_loading_news => 'Error de red al cargar noticias';
+
+  @override
+  String get failed_to_download_file => 'Error al descargar archivo';
+
+  @override
+  String get failed_to_summarize_page => 'Error al resumir página';
+
+  @override
+  String get firebase_not_initialized =>
+      'Firebase no está inicializado. Por favor, verifica tu configuración.';
+
+  @override
+  String get close_all => 'Cerrar Todo';
+
+  @override
+  String get delete_file => 'Eliminar Archivo';
+
+  @override
+  String get delete_file_confirm =>
+      '¿Estás seguro de que quieres eliminar permanentemente este archivo de tu dispositivo?';
+
+  @override
+  String get remove_from_history => 'Eliminar del Historial';
+
+  @override
+  String get delete_from_device => 'Eliminar del Dispositivo';
+
+  @override
+  String get notice => 'Aviso';
 }

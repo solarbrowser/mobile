@@ -1051,7 +1051,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get cut => '切り取り';
 
   @override
-  String get solarKeyToCosmos => 'SOLAR - 宇宙への鍵';
+  String get solarKeyToCosmos => 'SOLAR - KEY TO THE COSMOS';
 
   @override
   String get legalInformation => '法的情報';
@@ -1097,4 +1097,58 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get catppuccinThemeDesc => 'パステルダークテーマ';
+
+  @override
+  String get latestNews => '最新ニュース';
+
+  @override
+  String get errorLoadingNews => 'ニュース読み込みエラー';
+
+  @override
+  String get defaultLocation => 'デフォルトの場所';
+
+  @override
+  String get webApp => 'ウェブアプリ';
+
+  @override
+  String get exampleUrl => 'https://例.com';
+
+  @override
+  String get enterText => 'テキストを入力...';
+
+  @override
+  String get failed_to_get_news_data => 'サーバーからニュースデータリンクを取得できませんでした';
+
+  @override
+  String get failed_to_load_news_server => 'サーバーからニュースの読み込みに失敗しました';
+
+  @override
+  String get network_error_loading_news => 'ニュース読み込み中にネットワークエラー';
+
+  @override
+  String get failed_to_download_file => 'ファイルのダウンロードに失敗しました';
+
+  @override
+  String get failed_to_summarize_page => 'ページの要約に失敗しました';
+
+  @override
+  String get firebase_not_initialized => 'Firebaseが初期化されていません。設定を確認してください。';
+
+  @override
+  String get close_all => 'すべて閉じる';
+
+  @override
+  String get delete_file => 'ファイルを削除';
+
+  @override
+  String get delete_file_confirm => 'このファイルをデバイスから完全に削除してもよろしいですか？';
+
+  @override
+  String get remove_from_history => '履歴から削除';
+
+  @override
+  String get delete_from_device => 'デバイスから削除';
+
+  @override
+  String get notice => '通知';
 }

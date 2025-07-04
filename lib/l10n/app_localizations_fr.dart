@@ -44,7 +44,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get darkTheme => 'Sombre';
 
   @override
-  String get systemTheme => 'System';
+  String get systemTheme => 'Système';
 
   @override
   String get tokyoNightTheme => 'Tokyo Night';
@@ -574,10 +574,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get failed_to_download_image => 'Failed to download image';
 
   @override
-  String get custom_home_page => 'Custom Home Page';
+  String get custom_home_page => 'Page d\'accueil personnalisée';
 
   @override
-  String get set_home_page_url => 'Set Home Page URL';
+  String get set_home_page_url => 'Définir l\'URL de la page d\'accueil';
 
   @override
   String get not_set => 'Not set';
@@ -1088,7 +1088,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get cut => 'Couper';
 
   @override
-  String get solarKeyToCosmos => 'SOLAR - CLÉ DU COSMOS';
+  String get solarKeyToCosmos => 'SOLAR - KEY TO THE COSMOS';
 
   @override
   String get legalInformation => 'Informations Légales';
@@ -1103,16 +1103,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get systemThemeDesc => 'Suit le système';
 
   @override
-  String get lightThemeDesc => 'Lumineux et net';
+  String get lightThemeDesc => 'Lumineux et propre';
 
   @override
-  String get darkThemeDesc => 'Doux pour les yeux';
+  String get darkThemeDesc => 'Repose les yeux';
 
   @override
   String get solarizedLightThemeDesc => 'Thème clair chaleureux';
 
   @override
-  String get nordLightThemeDesc => 'Thème clair frais';
+  String get nordLightThemeDesc => 'Thème clair froid';
 
   @override
   String get gruvboxLightThemeDesc => 'Thème clair rétro';
@@ -1124,14 +1124,73 @@ class AppLocalizationsFr extends AppLocalizations {
   String get draculaThemeDesc => 'Thème violet foncé';
 
   @override
-  String get nordThemeDesc => 'Thème sombre frais';
+  String get nordThemeDesc => 'Thème sombre froid';
 
   @override
   String get gruvboxThemeDesc => 'Thème sombre rétro';
 
   @override
-  String get oneDarkThemeDesc => 'Thème inspiré éditeur';
+  String get oneDarkThemeDesc => 'Thème inspiré d\'éditeur';
 
   @override
   String get catppuccinThemeDesc => 'Thème sombre pastel';
+
+  @override
+  String get latestNews => 'Dernières Nouvelles';
+
+  @override
+  String get errorLoadingNews => 'Erreur lors du chargement des nouvelles';
+
+  @override
+  String get defaultLocation => 'Emplacement par défaut';
+
+  @override
+  String get webApp => 'Application Web';
+
+  @override
+  String get exampleUrl => 'https://exemple.com';
+
+  @override
+  String get enterText => 'Entrer du texte...';
+
+  @override
+  String get failed_to_get_news_data =>
+      'Impossible d\'obtenir le lien de données d\'actualités du serveur';
+
+  @override
+  String get failed_to_load_news_server =>
+      'Échec du chargement des actualités depuis le serveur';
+
+  @override
+  String get network_error_loading_news =>
+      'Erreur réseau lors du chargement des actualités';
+
+  @override
+  String get failed_to_download_file => 'Échec du téléchargement du fichier';
+
+  @override
+  String get failed_to_summarize_page => 'Échec du résumé de la page';
+
+  @override
+  String get firebase_not_initialized =>
+      'Firebase n\'est pas initialisé. Veuillez vérifier votre configuration.';
+
+  @override
+  String get close_all => 'Fermer Tout';
+
+  @override
+  String get delete_file => 'Supprimer le Fichier';
+
+  @override
+  String get delete_file_confirm =>
+      'Êtes-vous sûr de vouloir supprimer définitivement ce fichier de votre appareil ?';
+
+  @override
+  String get remove_from_history => 'Retirer de l\'Historique';
+
+  @override
+  String get delete_from_device => 'Supprimer de l\'Appareil';
+
+  @override
+  String get notice => 'Avis';
 }

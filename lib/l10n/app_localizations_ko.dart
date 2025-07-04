@@ -1049,7 +1049,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get cut => '잘라내기';
 
   @override
-  String get solarKeyToCosmos => 'SOLAR - 우주의 열쇠';
+  String get solarKeyToCosmos => 'SOLAR - KEY TO THE COSMOS';
 
   @override
   String get legalInformation => '법적 정보';
@@ -1095,4 +1095,58 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get catppuccinThemeDesc => '파스텔 다크 테마';
+
+  @override
+  String get latestNews => '최신 뉴스';
+
+  @override
+  String get errorLoadingNews => '뉴스 로딩 오류';
+
+  @override
+  String get defaultLocation => '기본 위치';
+
+  @override
+  String get webApp => '웹 앱';
+
+  @override
+  String get exampleUrl => 'https://예시.com';
+
+  @override
+  String get enterText => '텍스트 입력...';
+
+  @override
+  String get failed_to_get_news_data => '서버에서 뉴스 데이터 링크를 가져올 수 없습니다';
+
+  @override
+  String get failed_to_load_news_server => '서버에서 뉴스를 로드하지 못했습니다';
+
+  @override
+  String get network_error_loading_news => '뉴스 로딩 중 네트워크 오류';
+
+  @override
+  String get failed_to_download_file => '파일 다운로드 실패';
+
+  @override
+  String get failed_to_summarize_page => '페이지 요약 실패';
+
+  @override
+  String get firebase_not_initialized => 'Firebase가 초기화되지 않았습니다. 구성을 확인하세요.';
+
+  @override
+  String get close_all => '모두 닫기';
+
+  @override
+  String get delete_file => '파일 삭제';
+
+  @override
+  String get delete_file_confirm => '이 파일을 기기에서 영구적으로 삭제하시겠습니까?';
+
+  @override
+  String get remove_from_history => '기록에서 제거';
+
+  @override
+  String get delete_from_device => '기기에서 삭제';
+
+  @override
+  String get notice => '알림';
 }

@@ -1042,7 +1042,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get cut => '剪切';
 
   @override
-  String get solarKeyToCosmos => 'SOLAR - 宇宙之钥';
+  String get solarKeyToCosmos => 'SOLAR - KEY TO THE COSMOS';
 
   @override
   String get legalInformation => '法律信息';
@@ -1088,4 +1088,58 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get catppuccinThemeDesc => '柔和深色主题';
+
+  @override
+  String get latestNews => '最新新闻';
+
+  @override
+  String get errorLoadingNews => '新闻加载错误';
+
+  @override
+  String get defaultLocation => '默认位置';
+
+  @override
+  String get webApp => '网页应用';
+
+  @override
+  String get exampleUrl => 'https://示例.com';
+
+  @override
+  String get enterText => '输入文本...';
+
+  @override
+  String get failed_to_get_news_data => '无法从服务器获取新闻数据链接';
+
+  @override
+  String get failed_to_load_news_server => '从服务器加载新闻失败';
+
+  @override
+  String get network_error_loading_news => '加载新闻时网络错误';
+
+  @override
+  String get failed_to_download_file => '文件下载失败';
+
+  @override
+  String get failed_to_summarize_page => '页面摘要失败';
+
+  @override
+  String get firebase_not_initialized => 'Firebase未初始化。请检查您的配置。';
+
+  @override
+  String get close_all => '全部关闭';
+
+  @override
+  String get delete_file => '删除文件';
+
+  @override
+  String get delete_file_confirm => '您确定要从设备中永久删除此文件吗？';
+
+  @override
+  String get remove_from_history => '从历史记录中删除';
+
+  @override
+  String get delete_from_device => '从设备删除';
+
+  @override
+  String get notice => '通知';
 }

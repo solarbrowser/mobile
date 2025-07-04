@@ -635,7 +635,7 @@
   "@disable_incognito_mode": {
     "description": "Button to disable incognito mode"
   },
-  "close_all_tabs": "Закрыть все вкладки",
+  "close_all_tabs": "Закрыть Все",
   "@close_all_tabs": {
     "description": "Button to close all tabs"
   },
@@ -737,7 +737,7 @@
   "copy": "Копировать",
   "paste": "Вставить",
   "cut": "Вырезать",
-  "solarKeyToCosmos": "SOLAR - КЛЮЧ К КОСМОСУ",
+  "solarKeyToCosmos": "SOLAR - KEY TO THE COSMOS",
   "legalInformation": "Правовая Информация",
   "acceptContinue": "Принять и Продолжить",
   "welcome": "Добро пожаловать",
@@ -752,5 +752,24 @@
   "nordThemeDesc": "Прохладная темная тема",
   "gruvboxThemeDesc": "Ретро темная тема",
   "oneDarkThemeDesc": "Тема в стиле редактора",
-  "catppuccinThemeDesc": "Пастельная темная тема"
+  "catppuccinThemeDesc": "Пастельная темная тема",
+  "latestNews": "Последние Новости",
+  "errorLoadingNews": "Ошибка загрузки новостей",
+  "defaultLocation": "Местоположение по умолчанию",
+  "webApp": "Веб-приложение",
+  "exampleUrl": "https://пример.com",
+  "enterText": "Введите текст...",
+  
+  "failed_to_get_news_data": "Не удалось получить ссылку на данные новостей с сервера",
+  "failed_to_load_news_server": "Не удалось загрузить новости с сервера",
+  "network_error_loading_news": "Ошибка сети при загрузке новостей",
+  "failed_to_download_file": "Не удалось скачать файл",
+  "failed_to_summarize_page": "Не удалось создать краткое изложение страницы",
+  "firebase_not_initialized": "Firebase не инициализирован. Пожалуйста, проверьте вашу конфигурацию.",
+  "close_all": "Закрыть Все",
+  "delete_file": "Удалить Файл",
+  "delete_file_confirm": "Вы уверены, что хотите навсегда удалить этот файл с вашего устройства?",
+  "remove_from_history": "Удалить из Истории", 
+  "delete_from_device": "Удалить с Устройства",
+  "notice": "Уведомление"
 }

@@ -1073,7 +1073,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get cut => 'कट करें';
 
   @override
-  String get solarKeyToCosmos => 'SOLAR - ब्रह्मांड की चाबी';
+  String get solarKeyToCosmos => 'SOLAR - KEY TO THE COSMOS';
 
   @override
   String get legalInformation => 'कानूनी जानकारी';
@@ -1119,4 +1119,61 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get catppuccinThemeDesc => 'पेस्टल गहरी थीम';
+
+  @override
+  String get latestNews => 'नवीनतम समाचार';
+
+  @override
+  String get errorLoadingNews => 'समाचार लोड करने में त्रुटि';
+
+  @override
+  String get defaultLocation => 'डिफ़ॉल्ट स्थान';
+
+  @override
+  String get webApp => 'वेब ऐप';
+
+  @override
+  String get exampleUrl => 'https://उदाहरण.com';
+
+  @override
+  String get enterText => 'टेक्स्ट दर्ज करें...';
+
+  @override
+  String get failed_to_get_news_data =>
+      'सर्वर से समाचार डेटा लिंक प्राप्त नहीं कर सका';
+
+  @override
+  String get failed_to_load_news_server => 'सर्वर से समाचार लोड करने में विफल';
+
+  @override
+  String get network_error_loading_news => 'समाचार लोड करते समय नेटवर्क त्रुटि';
+
+  @override
+  String get failed_to_download_file => 'फ़ाइल डाउनलोड करने में विफल';
+
+  @override
+  String get failed_to_summarize_page => 'पृष्ठ का सारांश बनाने में विफल';
+
+  @override
+  String get firebase_not_initialized =>
+      'Firebase प्रारंभीकृत नहीं है। कृपया अपना कॉन्फ़िगरेशन जांचें।';
+
+  @override
+  String get close_all => 'सभी बंद करें';
+
+  @override
+  String get delete_file => 'फ़ाइल हटाएं';
+
+  @override
+  String get delete_file_confirm =>
+      'क्या आप वाकई इस फ़ाइल को अपने डिवाइस से स्थायी रूप से हटाना चाहते हैं?';
+
+  @override
+  String get remove_from_history => 'इतिहास से हटाएं';
+
+  @override
+  String get delete_from_device => 'डिवाइस से हटाएं';
+
+  @override
+  String get notice => 'सूचना';
 }

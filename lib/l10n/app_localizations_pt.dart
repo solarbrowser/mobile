@@ -43,7 +43,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get darkTheme => 'Escuro';
 
   @override
-  String get systemTheme => 'System';
+  String get systemTheme => 'Sistema';
 
   @override
   String get tokyoNightTheme => 'Tokyo Night';
@@ -1082,7 +1082,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get cut => 'Recortar';
 
   @override
-  String get solarKeyToCosmos => 'SOLAR - CHAVE DO COSMOS';
+  String get solarKeyToCosmos => 'SOLAR - KEY TO THE COSMOS';
 
   @override
   String get legalInformation => 'Informações Legais';
@@ -1128,4 +1128,62 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get catppuccinThemeDesc => 'Tema escuro pastel';
+
+  @override
+  String get latestNews => 'Últimas Notícias';
+
+  @override
+  String get errorLoadingNews => 'Erro ao carregar notícias';
+
+  @override
+  String get defaultLocation => 'Local padrão';
+
+  @override
+  String get webApp => 'Aplicativo Web';
+
+  @override
+  String get exampleUrl => 'https://exemplo.com';
+
+  @override
+  String get enterText => 'Digite o texto...';
+
+  @override
+  String get failed_to_get_news_data =>
+      'Não foi possível obter o link de dados de notícias do servidor';
+
+  @override
+  String get failed_to_load_news_server =>
+      'Falha ao carregar notícias do servidor';
+
+  @override
+  String get network_error_loading_news => 'Erro de rede ao carregar notícias';
+
+  @override
+  String get failed_to_download_file => 'Falha ao baixar arquivo';
+
+  @override
+  String get failed_to_summarize_page => 'Falha ao resumir página';
+
+  @override
+  String get firebase_not_initialized =>
+      'O Firebase não está inicializado. Por favor, verifique sua configuração.';
+
+  @override
+  String get close_all => 'Fechar Tudo';
+
+  @override
+  String get delete_file => 'Excluir Arquivo';
+
+  @override
+  String get delete_file_confirm =>
+      'Tem certeza de que deseja excluir permanentemente este arquivo do seu dispositivo?';
+
+  @override
+  String get remove_from_history => 'Remover do Histórico';
+
+  @override
+  String get delete_from_device => 'Excluir do Dispositivo';
+
+  @override
+  String get notice => 'Aviso';
 }

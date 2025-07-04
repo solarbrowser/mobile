@@ -1043,5 +1043,62 @@
   "catppuccinThemeDesc": "Pastel dark theme",
   "@catppuccinThemeDesc": {
     "description": "Description for catppuccin theme option"
-  }
+  },
+  "latestNews": "Latest News",
+  "@latestNews": {
+    "description": "Title for latest news section"
+  },
+  "errorLoadingNews": "Error loading news",
+  "@errorLoadingNews": {
+    "description": "Error message when news fails to load"
+  },
+  "defaultLocation": "Default location",
+  "@defaultLocation": {
+    "description": "Default download location text"
+  },
+  "webApp": "Web App",
+  "@webApp": {
+    "description": "Default title for web applications"
+  },
+  "exampleUrl": "https://example.com",
+  "@exampleUrl": {
+    "description": "Example URL placeholder"
+  },
+  "enterText": "Enter text...",
+  "@enterText": {
+    "description": "Placeholder text for text input fields"
+  },
+  
+  "failed_to_get_news_data": "Could not get news data link from server",
+  "@failed_to_get_news_data": {
+    "description": "Error message when unable to get news data link"
+  },
+  
+  "failed_to_load_news_server": "Failed to load news from server",
+  "@failed_to_load_news_server": {
+    "description": "Error message when news fails to load from server"
+  },
+  
+  "network_error_loading_news": "Network error while loading news",
+  "@network_error_loading_news": {
+    "description": "Error message when there's a network error loading news"
+  },
+  
+  "failed_to_download_file": "Failed to download file",
+  "@failed_to_download_file": {
+    "description": "Error message when file download fails"
+  },
+  
+  "failed_to_summarize_page": "Failed to summarize page",
+  "@failed_to_summarize_page": {
+    "description": "Error message when page summarization fails"
+  },
+  
+  "firebase_not_initialized": "Firebase is not initialized. Please check your configuration.",
+  "close_all": "Close All",
+  "delete_file": "Delete File",
+  "delete_file_confirm": "Are you sure you want to permanently delete this file from your device?",
+  "remove_from_history": "Remove from History", 
+  "delete_from_device": "Delete from Device",
+  "notice": "Notice"
 }

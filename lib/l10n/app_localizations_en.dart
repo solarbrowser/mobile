@@ -1119,4 +1119,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get catppuccinThemeDesc => 'Pastel dark theme';
+
+  @override
+  String get latestNews => 'Latest News';
+
+  @override
+  String get errorLoadingNews => 'Error loading news';
+
+  @override
+  String get defaultLocation => 'Default location';
+
+  @override
+  String get webApp => 'Web App';
+
+  @override
+  String get exampleUrl => 'https://example.com';
+
+  @override
+  String get enterText => 'Enter text...';
+
+  @override
+  String get failed_to_get_news_data =>
+      'Could not get news data link from server';
+
+  @override
+  String get failed_to_load_news_server => 'Failed to load news from server';
+
+  @override
+  String get network_error_loading_news => 'Network error while loading news';
+
+  @override
+  String get failed_to_download_file => 'Failed to download file';
+
+  @override
+  String get failed_to_summarize_page => 'Failed to summarize page';
+
+  @override
+  String get firebase_not_initialized =>
+      'Firebase is not initialized. Please check your configuration.';
+
+  @override
+  String get close_all => 'Close All';
+
+  @override
+  String get delete_file => 'Delete File';
+
+  @override
+  String get delete_file_confirm =>
+      'Are you sure you want to permanently delete this file from your device?';
+
+  @override
+  String get remove_from_history => 'Remove from History';
+
+  @override
+  String get delete_from_device => 'Delete from Device';
+
+  @override
+  String get notice => 'Notice';
 }

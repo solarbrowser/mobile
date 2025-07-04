@@ -2231,6 +2231,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pastel dark theme'**
   String get catppuccinThemeDesc;
+
+  /// Title for latest news section
+  ///
+  /// In en, this message translates to:
+  /// **'Latest News'**
+  String get latestNews;
+
+  /// Error message when news fails to load
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading news'**
+  String get errorLoadingNews;
+
+  /// Default download location text
+  ///
+  /// In en, this message translates to:
+  /// **'Default location'**
+  String get defaultLocation;
+
+  /// Default title for web applications
+  ///
+  /// In en, this message translates to:
+  /// **'Web App'**
+  String get webApp;
+
+  /// Example URL placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'https://example.com'**
+  String get exampleUrl;
+
+  /// Placeholder text for text input fields
+  ///
+  /// In en, this message translates to:
+  /// **'Enter text...'**
+  String get enterText;
+
+  /// Error message when unable to get news data link
+  ///
+  /// In en, this message translates to:
+  /// **'Could not get news data link from server'**
+  String get failed_to_get_news_data;
+
+  /// Error message when news fails to load from server
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load news from server'**
+  String get failed_to_load_news_server;
+
+  /// Error message when there's a network error loading news
+  ///
+  /// In en, this message translates to:
+  /// **'Network error while loading news'**
+  String get network_error_loading_news;
+
+  /// Error message when file download fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to download file'**
+  String get failed_to_download_file;
+
+  /// Error message when page summarization fails
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to summarize page'**
+  String get failed_to_summarize_page;
+
+  /// No description provided for @firebase_not_initialized.
+  ///
+  /// In en, this message translates to:
+  /// **'Firebase is not initialized. Please check your configuration.'**
+  String get firebase_not_initialized;
+
+  /// No description provided for @close_all.
+  ///
+  /// In en, this message translates to:
+  /// **'Close All'**
+  String get close_all;
+
+  /// No description provided for @delete_file.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete File'**
+  String get delete_file;
+
+  /// No description provided for @delete_file_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to permanently delete this file from your device?'**
+  String get delete_file_confirm;
+
+  /// No description provided for @remove_from_history.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from History'**
+  String get remove_from_history;
+
+  /// No description provided for @delete_from_device.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete from Device'**
+  String get delete_from_device;
+
+  /// No description provided for @notice.
+  ///
+  /// In en, this message translates to:
+  /// **'Notice'**
+  String get notice;
 }
 
 class _AppLocalizationsDelegate
