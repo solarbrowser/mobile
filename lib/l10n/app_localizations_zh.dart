@@ -30,6 +30,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get chooseSearchEngine => '选择搜索引擎';
 
   @override
+  String get selectAppearance => '选择应用程序的外观';
+
+  @override
+  String get selectSearchEngine => '选择您偏好的搜索引擎';
+
+  @override
   String get lightTheme => '浅色';
 
   @override
@@ -79,6 +85,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get continueText => '继续';
+
+  @override
+  String get notifications => '通知';
+
+  @override
+  String get notificationDescription => '文件下载到设备时接收通知';
+
+  @override
+  String get allowNotifications => '允许通知';
+
+  @override
+  String get skipForNow => '暂时跳过';
 
   @override
   String get just_now => '刚刚';
@@ -1022,4 +1040,52 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cut => '剪切';
+
+  @override
+  String get solarKeyToCosmos => 'SOLAR - 宇宙之钥';
+
+  @override
+  String get legalInformation => '法律信息';
+
+  @override
+  String get acceptContinue => '接受并继续';
+
+  @override
+  String get welcome => '欢迎';
+
+  @override
+  String get systemThemeDesc => '跟随系统';
+
+  @override
+  String get lightThemeDesc => '明亮清新';
+
+  @override
+  String get darkThemeDesc => '护眼舒适';
+
+  @override
+  String get solarizedLightThemeDesc => '温暖浅色主题';
+
+  @override
+  String get nordLightThemeDesc => '清冷浅色主题';
+
+  @override
+  String get gruvboxLightThemeDesc => '复古浅色主题';
+
+  @override
+  String get tokyoNightThemeDesc => '活力夜间主题';
+
+  @override
+  String get draculaThemeDesc => '深紫色主题';
+
+  @override
+  String get nordThemeDesc => '清冷深色主题';
+
+  @override
+  String get gruvboxThemeDesc => '复古深色主题';
+
+  @override
+  String get oneDarkThemeDesc => '编辑器风格主题';
+
+  @override
+  String get catppuccinThemeDesc => '柔和深色主题';
 }

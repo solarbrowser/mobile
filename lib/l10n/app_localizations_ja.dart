@@ -30,6 +30,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chooseSearchEngine => '検索エンジンを選択';
 
   @override
+  String get selectAppearance => 'アプリの外観を選択してください';
+
+  @override
+  String get selectSearchEngine => 'お好みの検索エンジンを選択してください';
+
+  @override
   String get lightTheme => 'ライト';
 
   @override
@@ -79,6 +85,18 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get continueText => '続行';
+
+  @override
+  String get notifications => '通知';
+
+  @override
+  String get notificationDescription => 'デバイスにファイルがダウンロードされたときに通知を受け取る';
+
+  @override
+  String get allowNotifications => '通知を許可';
+
+  @override
+  String get skipForNow => '今はスキップ';
 
   @override
   String get just_now => 'たった今';
@@ -1031,4 +1049,52 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get cut => '切り取り';
+
+  @override
+  String get solarKeyToCosmos => 'SOLAR - 宇宙への鍵';
+
+  @override
+  String get legalInformation => '法的情報';
+
+  @override
+  String get acceptContinue => '同意して続行';
+
+  @override
+  String get welcome => 'ようこそ';
+
+  @override
+  String get systemThemeDesc => 'システムに従う';
+
+  @override
+  String get lightThemeDesc => '明るくきれい';
+
+  @override
+  String get darkThemeDesc => '目に優しい';
+
+  @override
+  String get solarizedLightThemeDesc => '暖かいライトテーマ';
+
+  @override
+  String get nordLightThemeDesc => '涼しいライトテーマ';
+
+  @override
+  String get gruvboxLightThemeDesc => 'レトロライトテーマ';
+
+  @override
+  String get tokyoNightThemeDesc => '活気あるナイトテーマ';
+
+  @override
+  String get draculaThemeDesc => 'ダークパープルテーマ';
+
+  @override
+  String get nordThemeDesc => '涼しいダークテーマ';
+
+  @override
+  String get gruvboxThemeDesc => 'レトロダークテーマ';
+
+  @override
+  String get oneDarkThemeDesc => 'エディター風テーマ';
+
+  @override
+  String get catppuccinThemeDesc => 'パステルダークテーマ';
 }

@@ -31,6 +31,12 @@ class AppLocalizationsHi extends AppLocalizations {
   String get chooseSearchEngine => 'अपना सर्च इंजन चुनें';
 
   @override
+  String get selectAppearance => 'ऐप कैसा दिखना चाहिए इसे चुनें';
+
+  @override
+  String get selectSearchEngine => 'अपना पसंदीदा सर्च इंजन चुनें';
+
+  @override
   String get lightTheme => 'लाइट';
 
   @override
@@ -80,6 +86,19 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get continueText => 'जारी रखें';
+
+  @override
+  String get notifications => 'सूचनाएं';
+
+  @override
+  String get notificationDescription =>
+      'जब फाइलें आपके डिवाइस पर डाउनलोड हों तो सूचनाएं प्राप्त करें';
+
+  @override
+  String get allowNotifications => 'सूचनाओं की अनुमति दें';
+
+  @override
+  String get skipForNow => 'अभी के लिए छोड़ें';
 
   @override
   String get just_now => 'अभी अभी';
@@ -1052,4 +1071,52 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get cut => 'कट करें';
+
+  @override
+  String get solarKeyToCosmos => 'SOLAR - ब्रह्मांड की चाबी';
+
+  @override
+  String get legalInformation => 'कानूनी जानकारी';
+
+  @override
+  String get acceptContinue => 'स्वीकार करें और जारी रखें';
+
+  @override
+  String get welcome => 'स्वागत है';
+
+  @override
+  String get systemThemeDesc => 'सिस्टम का पालन करता है';
+
+  @override
+  String get lightThemeDesc => 'उज्ज्वल और साफ';
+
+  @override
+  String get darkThemeDesc => 'आंखों के लिए आसान';
+
+  @override
+  String get solarizedLightThemeDesc => 'गर्म हल्की थीम';
+
+  @override
+  String get nordLightThemeDesc => 'ठंडी हल्की थीम';
+
+  @override
+  String get gruvboxLightThemeDesc => 'रेट्रो हल्की थीम';
+
+  @override
+  String get tokyoNightThemeDesc => 'जीवंत रात्रि थीम';
+
+  @override
+  String get draculaThemeDesc => 'गहरी बैंगनी थीम';
+
+  @override
+  String get nordThemeDesc => 'ठंडी गहरी थीम';
+
+  @override
+  String get gruvboxThemeDesc => 'रेट्रो गहरी थीम';
+
+  @override
+  String get oneDarkThemeDesc => 'संपादक-प्रेरित थीम';
+
+  @override
+  String get catppuccinThemeDesc => 'पेस्टल गहरी थीम';
 }

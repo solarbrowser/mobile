@@ -31,6 +31,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get chooseSearchEngine => 'Arama Motorunuzu Seçin';
 
   @override
+  String get selectAppearance =>
+      'Uygulamanın nasıl görünmesi gerektiğini seçin';
+
+  @override
+  String get selectSearchEngine => 'Tercih ettiğiniz arama motorunu seçin';
+
+  @override
   String get lightTheme => 'Açık';
 
   @override
@@ -80,6 +87,19 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get continueText => 'Devam';
+
+  @override
+  String get notifications => 'Bildirimler';
+
+  @override
+  String get notificationDescription =>
+      'Cihazınıza dosyalar indirildiğinde bildirim alın';
+
+  @override
+  String get allowNotifications => 'Bildirimlere İzin Ver';
+
+  @override
+  String get skipForNow => 'Şimdilik Atla';
 
   @override
   String get just_now => 'Az önce';
@@ -1057,4 +1077,52 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get cut => 'Kes';
+
+  @override
+  String get solarKeyToCosmos => 'SOLAR - EVRENE ANAHTAR';
+
+  @override
+  String get legalInformation => 'Yasal Bilgiler';
+
+  @override
+  String get acceptContinue => 'Kabul Et ve Devam Et';
+
+  @override
+  String get welcome => 'Hoş Geldiniz';
+
+  @override
+  String get systemThemeDesc => 'Sistemi takip eder';
+
+  @override
+  String get lightThemeDesc => 'Parlak ve temiz';
+
+  @override
+  String get darkThemeDesc => 'Göze rahat';
+
+  @override
+  String get solarizedLightThemeDesc => 'Sıcak açık tema';
+
+  @override
+  String get nordLightThemeDesc => 'Soğuk açık tema';
+
+  @override
+  String get gruvboxLightThemeDesc => 'Retro açık tema';
+
+  @override
+  String get tokyoNightThemeDesc => 'Canlı gece teması';
+
+  @override
+  String get draculaThemeDesc => 'Koyu mor tema';
+
+  @override
+  String get nordThemeDesc => 'Soğuk koyu tema';
+
+  @override
+  String get gruvboxThemeDesc => 'Retro koyu tema';
+
+  @override
+  String get oneDarkThemeDesc => 'Editör esinlenmesi tema';
+
+  @override
+  String get catppuccinThemeDesc => 'Pastel koyu tema';
 }

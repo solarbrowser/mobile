@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'l10n/app_localizations.dart';
 import 'screens/browser_screen.dart';
-import 'screens/welcome_screen.dart';
+import 'screens/onboarding_screen.dart';
 import 'screens/update_screen.dart';
 import 'screens/pwa_screen.dart';
 import 'utils/theme_manager.dart';
@@ -62,6 +62,7 @@ void main() async {
   // Allow frame to be drawn after initial setup
   binding.allowFirstFrame();
   final isFirstStart = prefs.getBool('first_start') ?? true;
+  final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
   final lastVersion = prefs.getString('last_version') ?? '0.0.0';
   final packageInfo = await PackageInfo.fromPlatform();
   final currentVersion = packageInfo.version;
@@ -80,7 +81,7 @@ void main() async {
     await prefs.setString('language', systemLocale);
     await prefs.setBool('darkMode', systemDarkMode);
     await prefs.setString('searchEngine', 'google');
-    await prefs.setBool('first_start', false);
+    // Don't set first_start to false here - let onboarding handle it
   }
 
   // Save current version after showing update screen
@@ -93,6 +94,7 @@ void main() async {
   
   runApp(MyApp(
     isFirstStart: isFirstStart,
+    onboardingCompleted: onboardingCompleted,
     lastVersion: lastVersion,
     currentVersion: currentVersion,
     initialLocale: prefs.getString('language') ?? systemLocale,
@@ -103,6 +105,7 @@ void main() async {
 
 class MyApp extends StatefulWidget {
   final bool isFirstStart;
+  final bool onboardingCompleted;
   final String lastVersion;
   final String currentVersion;
   final String initialLocale;
@@ -112,6 +115,7 @@ class MyApp extends StatefulWidget {
   const MyApp({
     Key? key,
     required this.isFirstStart,
+    required this.onboardingCompleted,
     required this.lastVersion,
     required this.currentVersion,
     required this.initialLocale,
@@ -179,14 +183,34 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  void _handleLocaleChange(String localeStr) {
+  void _handleLocaleChange(Locale locale) {
+    setState(() {
+      _locale = locale;
+    });
+  }
+
+  void _handleLocaleChangeString(String localeStr) {
     final parts = localeStr.split('_');
     setState(() {
       _locale = Locale(parts[0], parts.length > 1 ? parts[1] : null);
     });
   }
 
-  void _handleThemeChange(bool isDarkMode) {
+  void _handleThemeChange(ThemeMode themeMode) {
+    setState(() {
+      _isDarkMode = themeMode == ThemeMode.dark;
+      
+      // Force complete rebuild of the app with the new theme
+      ThemeManager.setIsDarkMode(_isDarkMode);
+    });
+    
+    // Save the theme preference
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setBool('darkMode', _isDarkMode);
+    });
+  }
+
+  void _handleThemeChangeBool(bool isDarkMode) {
     setState(() {
       _isDarkMode = isDarkMode;
       
@@ -287,8 +311,8 @@ class _MyAppState extends State<MyApp> {
           }
           
           // Normal app startup flow
-          if (widget.isFirstStart) {
-            return WelcomeScreen(
+          if (widget.isFirstStart || !widget.onboardingCompleted) {
+            return OnboardingScreen(
               onLocaleChange: _handleLocaleChange,
               onThemeChange: _handleThemeChange,
               onSearchEngineChange: _handleSearchEngineChange,
@@ -297,12 +321,12 @@ class _MyAppState extends State<MyApp> {
             return UpdateScreen(
               currentVersion: widget.currentVersion,
               oldVersion: widget.lastVersion,
-              onLocaleChange: _handleLocaleChange,
+              onLocaleChange: _handleLocaleChangeString,
             );
           } else {
             return BrowserScreen(
-              onLocaleChange: _handleLocaleChange,
-              onThemeChange: _handleThemeChange,
+              onLocaleChange: _handleLocaleChangeString,
+              onThemeChange: _handleThemeChangeBool,
               onSearchEngineChange: _handleSearchEngineChange,
             );
           }

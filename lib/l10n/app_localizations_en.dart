@@ -31,6 +31,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chooseSearchEngine => 'Choose Your Search Engine';
 
   @override
+  String get selectAppearance => 'Select how the app should look';
+
+  @override
+  String get selectSearchEngine => 'Select your preferred search engine';
+
+  @override
   String get lightTheme => 'Light';
 
   @override
@@ -80,6 +86,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get continueText => 'Continue';
+
+  @override
+  String get notifications => 'Notifications';
+
+  @override
+  String get notificationDescription =>
+      'Get notified when files are downloaded to your device';
+
+  @override
+  String get allowNotifications => 'Allow Notifications';
+
+  @override
+  String get skipForNow => 'Skip for Now';
 
   @override
   String get just_now => 'Just now';
@@ -1052,4 +1071,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cut => 'Cut';
+
+  @override
+  String get solarKeyToCosmos => 'SOLAR - KEY TO THE COSMOS';
+
+  @override
+  String get legalInformation => 'Legal Information';
+
+  @override
+  String get acceptContinue => 'Accept & Continue';
+
+  @override
+  String get welcome => 'Welcome';
+
+  @override
+  String get systemThemeDesc => 'Follows system';
+
+  @override
+  String get lightThemeDesc => 'Bright and clean';
+
+  @override
+  String get darkThemeDesc => 'Easy on the eyes';
+
+  @override
+  String get solarizedLightThemeDesc => 'Warm light theme';
+
+  @override
+  String get nordLightThemeDesc => 'Cool light theme';
+
+  @override
+  String get gruvboxLightThemeDesc => 'Retro light theme';
+
+  @override
+  String get tokyoNightThemeDesc => 'Vibrant night theme';
+
+  @override
+  String get draculaThemeDesc => 'Dark purple theme';
+
+  @override
+  String get nordThemeDesc => 'Cool dark theme';
+
+  @override
+  String get gruvboxThemeDesc => 'Retro dark theme';
+
+  @override
+  String get oneDarkThemeDesc => 'Editor-inspired theme';
+
+  @override
+  String get catppuccinThemeDesc => 'Pastel dark theme';
 }

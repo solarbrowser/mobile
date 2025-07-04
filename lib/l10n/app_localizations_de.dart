@@ -32,6 +32,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get chooseSearchEngine => 'Wählen Sie Ihre Suchmaschine';
 
   @override
+  String get selectAppearance => 'Wählen Sie das Erscheinungsbild der App';
+
+  @override
+  String get selectSearchEngine => 'Wählen Sie Ihre bevorzugte Suchmaschine';
+
+  @override
   String get lightTheme => 'Hell';
 
   @override
@@ -81,6 +87,19 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get continueText => 'Fortfahren';
+
+  @override
+  String get notifications => 'Benachrichtigungen';
+
+  @override
+  String get notificationDescription =>
+      'Erhalten Sie Benachrichtigungen, wenn Dateien auf Ihr Gerät heruntergeladen werden';
+
+  @override
+  String get allowNotifications => 'Benachrichtigungen Erlauben';
+
+  @override
+  String get skipForNow => 'Vorerst Überspringen';
 
   @override
   String get just_now => 'Gerade eben';
@@ -1061,4 +1080,52 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get cut => 'Ausschneiden';
+
+  @override
+  String get solarKeyToCosmos => 'SOLAR - SCHLÜSSEL ZUM KOSMOS';
+
+  @override
+  String get legalInformation => 'Rechtliche Informationen';
+
+  @override
+  String get acceptContinue => 'Akzeptieren & Fortfahren';
+
+  @override
+  String get welcome => 'Willkommen';
+
+  @override
+  String get systemThemeDesc => 'Folgt dem System';
+
+  @override
+  String get lightThemeDesc => 'Hell und sauber';
+
+  @override
+  String get darkThemeDesc => 'Augenschonend';
+
+  @override
+  String get solarizedLightThemeDesc => 'Warmes helles Design';
+
+  @override
+  String get nordLightThemeDesc => 'Kühles helles Design';
+
+  @override
+  String get gruvboxLightThemeDesc => 'Retro helles Design';
+
+  @override
+  String get tokyoNightThemeDesc => 'Lebendiges Nachtdesign';
+
+  @override
+  String get draculaThemeDesc => 'Dunkles lila Design';
+
+  @override
+  String get nordThemeDesc => 'Kühles dunkles Design';
+
+  @override
+  String get gruvboxThemeDesc => 'Retro dunkles Design';
+
+  @override
+  String get oneDarkThemeDesc => 'Editor-inspiriertes Design';
+
+  @override
+  String get catppuccinThemeDesc => 'Pastelldunkles Design';
 }

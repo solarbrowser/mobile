@@ -8,6 +8,8 @@
   "chooseLanguage": "Choose Your Language",
   "chooseTheme": "Choose Your Theme",
   "chooseSearchEngine": "Choose Your Search Engine",
+  "selectAppearance": "Select how the app should look",
+  "selectSearchEngine": "Select your preferred search engine",
   "lightTheme": "Light",
   "darkTheme": "Dark",
   "systemTheme": "System",
@@ -30,6 +32,22 @@
   "continueText": "Continue",
   "@continueText": {
     "description": "Continue button text"
+  },
+  "notifications": "Notifications",
+  "@notifications": {
+    "description": "Notifications section title in onboarding"
+  },
+  "notificationDescription": "Get notified when files are downloaded to your device",
+  "@notificationDescription": {
+    "description": "Description for notification permission in onboarding"
+  },
+  "allowNotifications": "Allow Notifications",
+  "@allowNotifications": {
+    "description": "Button text to allow notifications"
+  },
+  "skipForNow": "Skip for Now",
+  "@skipForNow": {
+    "description": "Button text to skip notifications"
   },
   "just_now": "Just now",
   "@just_now": {
@@ -961,5 +979,69 @@
   "cut": "Cut",
   "@cut": {
     "description": "Text for cut action"
+  },
+  "solarKeyToCosmos": "SOLAR - KEY TO THE COSMOS",
+  "@solarKeyToCosmos": {
+    "description": "App tagline shown in onboarding welcome screen"
+  },
+  "legalInformation": "Legal Information",
+  "@legalInformation": {
+    "description": "Title for privacy policy and terms dialog"
+  },
+  "acceptContinue": "Accept & Continue",
+  "@acceptContinue": {
+    "description": "Button to accept legal terms and continue"
+  },
+  "welcome": "Welcome",
+  "@welcome": {
+    "description": "Welcome text shown in onboarding"
+  },
+  "systemThemeDesc": "Follows system",
+  "@systemThemeDesc": {
+    "description": "Description for system theme option"
+  },
+  "lightThemeDesc": "Bright and clean",
+  "@lightThemeDesc": {
+    "description": "Description for light theme option"
+  },
+  "darkThemeDesc": "Easy on the eyes",
+  "@darkThemeDesc": {
+    "description": "Description for dark theme option"
+  },
+  "solarizedLightThemeDesc": "Warm light theme",
+  "@solarizedLightThemeDesc": {
+    "description": "Description for solarized light theme option"
+  },
+  "nordLightThemeDesc": "Cool light theme",
+  "@nordLightThemeDesc": {
+    "description": "Description for nord light theme option"
+  },
+  "gruvboxLightThemeDesc": "Retro light theme",
+  "@gruvboxLightThemeDesc": {
+    "description": "Description for gruvbox light theme option"
+  },
+  "tokyoNightThemeDesc": "Vibrant night theme",
+  "@tokyoNightThemeDesc": {
+    "description": "Description for tokyo night theme option"
+  },
+  "draculaThemeDesc": "Dark purple theme",
+  "@draculaThemeDesc": {
+    "description": "Description for dracula theme option"
+  },
+  "nordThemeDesc": "Cool dark theme",
+  "@nordThemeDesc": {
+    "description": "Description for nord theme option"
+  },
+  "gruvboxThemeDesc": "Retro dark theme",
+  "@gruvboxThemeDesc": {
+    "description": "Description for gruvbox theme option"
+  },
+  "oneDarkThemeDesc": "Editor-inspired theme",
+  "@oneDarkThemeDesc": {
+    "description": "Description for one dark theme option"
+  },
+  "catppuccinThemeDesc": "Pastel dark theme",
+  "@catppuccinThemeDesc": {
+    "description": "Description for catppuccin theme option"
   }
 }

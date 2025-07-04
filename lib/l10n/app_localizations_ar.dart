@@ -31,6 +31,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get chooseSearchEngine => 'اختر محرك البحث';
 
   @override
+  String get selectAppearance => 'اختر كيف يجب أن يبدو التطبيق';
+
+  @override
+  String get selectSearchEngine => 'اختر محرك البحث المفضل لديك';
+
+  @override
   String get lightTheme => 'فاتح';
 
   @override
@@ -80,6 +86,19 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get continueText => 'متابعة';
+
+  @override
+  String get notifications => 'الإشعارات';
+
+  @override
+  String get notificationDescription =>
+      'احصل على إشعارات عند تنزيل الملفات على جهازك';
+
+  @override
+  String get allowNotifications => 'السماح بالإشعارات';
+
+  @override
+  String get skipForNow => 'تخطي الآن';
 
   @override
   String get just_now => 'الآن';
@@ -1047,4 +1066,52 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get cut => 'قص';
+
+  @override
+  String get solarKeyToCosmos => 'SOLAR - مفتاح الكون';
+
+  @override
+  String get legalInformation => 'المعلومات القانونية';
+
+  @override
+  String get acceptContinue => 'موافق ومتابعة';
+
+  @override
+  String get welcome => 'أهلاً وسهلاً';
+
+  @override
+  String get systemThemeDesc => 'يتبع النظام';
+
+  @override
+  String get lightThemeDesc => 'مشرق ونظيف';
+
+  @override
+  String get darkThemeDesc => 'مريح للعينين';
+
+  @override
+  String get solarizedLightThemeDesc => 'سمة فاتحة دافئة';
+
+  @override
+  String get nordLightThemeDesc => 'سمة فاتحة باردة';
+
+  @override
+  String get gruvboxLightThemeDesc => 'سمة فاتحة كلاسيكية';
+
+  @override
+  String get tokyoNightThemeDesc => 'سمة ليلية نابضة';
+
+  @override
+  String get draculaThemeDesc => 'سمة بنفسجية داكنة';
+
+  @override
+  String get nordThemeDesc => 'سمة داكنة باردة';
+
+  @override
+  String get gruvboxThemeDesc => 'سمة داكنة كلاسيكية';
+
+  @override
+  String get oneDarkThemeDesc => 'سمة مستوحاة من المحرر';
+
+  @override
+  String get catppuccinThemeDesc => 'سمة داكنة باستيل';
 }

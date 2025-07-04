@@ -31,6 +31,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get chooseSearchEngine => 'Escolha seu mecanismo de busca';
 
   @override
+  String get selectAppearance => 'Selecione como o aplicativo deve aparecer';
+
+  @override
+  String get selectSearchEngine => 'Selecione seu mecanismo de busca preferido';
+
+  @override
   String get lightTheme => 'Claro';
 
   @override
@@ -80,6 +86,19 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get continueText => 'Continuar';
+
+  @override
+  String get notifications => 'Notificações';
+
+  @override
+  String get notificationDescription =>
+      'Receba notificações quando arquivos forem baixados para seu dispositivo';
+
+  @override
+  String get allowNotifications => 'Permitir Notificações';
+
+  @override
+  String get skipForNow => 'Pular por Agora';
 
   @override
   String get just_now => 'Agora mesmo';
@@ -1061,4 +1080,52 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get cut => 'Recortar';
+
+  @override
+  String get solarKeyToCosmos => 'SOLAR - CHAVE DO COSMOS';
+
+  @override
+  String get legalInformation => 'Informações Legais';
+
+  @override
+  String get acceptContinue => 'Aceitar e Continuar';
+
+  @override
+  String get welcome => 'Bem-vindo';
+
+  @override
+  String get systemThemeDesc => 'Segue o sistema';
+
+  @override
+  String get lightThemeDesc => 'Brilhante e limpo';
+
+  @override
+  String get darkThemeDesc => 'Suave para os olhos';
+
+  @override
+  String get solarizedLightThemeDesc => 'Tema claro quente';
+
+  @override
+  String get nordLightThemeDesc => 'Tema claro frio';
+
+  @override
+  String get gruvboxLightThemeDesc => 'Tema claro retrô';
+
+  @override
+  String get tokyoNightThemeDesc => 'Tema noturno vibrante';
+
+  @override
+  String get draculaThemeDesc => 'Tema roxo escuro';
+
+  @override
+  String get nordThemeDesc => 'Tema escuro frio';
+
+  @override
+  String get gruvboxThemeDesc => 'Tema escuro retrô';
+
+  @override
+  String get oneDarkThemeDesc => 'Tema inspirado em editor';
+
+  @override
+  String get catppuccinThemeDesc => 'Tema escuro pastel';
 }

@@ -162,6 +162,18 @@ abstract class AppLocalizations {
   /// **'Choose Your Search Engine'**
   String get chooseSearchEngine;
 
+  /// No description provided for @selectAppearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Select how the app should look'**
+  String get selectAppearance;
+
+  /// No description provided for @selectSearchEngine.
+  ///
+  /// In en, this message translates to:
+  /// **'Select your preferred search engine'**
+  String get selectSearchEngine;
+
   /// No description provided for @lightTheme.
   ///
   /// In en, this message translates to:
@@ -263,6 +275,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Continue'**
   String get continueText;
+
+  /// Notifications section title in onboarding
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// Description for notification permission in onboarding
+  ///
+  /// In en, this message translates to:
+  /// **'Get notified when files are downloaded to your device'**
+  String get notificationDescription;
+
+  /// Button text to allow notifications
+  ///
+  /// In en, this message translates to:
+  /// **'Allow Notifications'**
+  String get allowNotifications;
+
+  /// Button text to skip notifications
+  ///
+  /// In en, this message translates to:
+  /// **'Skip for Now'**
+  String get skipForNow;
 
   /// Time indicator for events that just happened
   ///
@@ -2099,6 +2135,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cut'**
   String get cut;
+
+  /// App tagline shown in onboarding welcome screen
+  ///
+  /// In en, this message translates to:
+  /// **'SOLAR - KEY TO THE COSMOS'**
+  String get solarKeyToCosmos;
+
+  /// Title for privacy policy and terms dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Legal Information'**
+  String get legalInformation;
+
+  /// Button to accept legal terms and continue
+  ///
+  /// In en, this message translates to:
+  /// **'Accept & Continue'**
+  String get acceptContinue;
+
+  /// Welcome text shown in onboarding
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome'**
+  String get welcome;
+
+  /// Description for system theme option
+  ///
+  /// In en, this message translates to:
+  /// **'Follows system'**
+  String get systemThemeDesc;
+
+  /// Description for light theme option
+  ///
+  /// In en, this message translates to:
+  /// **'Bright and clean'**
+  String get lightThemeDesc;
+
+  /// Description for dark theme option
+  ///
+  /// In en, this message translates to:
+  /// **'Easy on the eyes'**
+  String get darkThemeDesc;
+
+  /// Description for solarized light theme option
+  ///
+  /// In en, this message translates to:
+  /// **'Warm light theme'**
+  String get solarizedLightThemeDesc;
+
+  /// Description for nord light theme option
+  ///
+  /// In en, this message translates to:
+  /// **'Cool light theme'**
+  String get nordLightThemeDesc;
+
+  /// Description for gruvbox light theme option
+  ///
+  /// In en, this message translates to:
+  /// **'Retro light theme'**
+  String get gruvboxLightThemeDesc;
+
+  /// Description for tokyo night theme option
+  ///
+  /// In en, this message translates to:
+  /// **'Vibrant night theme'**
+  String get tokyoNightThemeDesc;
+
+  /// Description for dracula theme option
+  ///
+  /// In en, this message translates to:
+  /// **'Dark purple theme'**
+  String get draculaThemeDesc;
+
+  /// Description for nord theme option
+  ///
+  /// In en, this message translates to:
+  /// **'Cool dark theme'**
+  String get nordThemeDesc;
+
+  /// Description for gruvbox theme option
+  ///
+  /// In en, this message translates to:
+  /// **'Retro dark theme'**
+  String get gruvboxThemeDesc;
+
+  /// Description for one dark theme option
+  ///
+  /// In en, this message translates to:
+  /// **'Editor-inspired theme'**
+  String get oneDarkThemeDesc;
+
+  /// Description for catppuccin theme option
+  ///
+  /// In en, this message translates to:
+  /// **'Pastel dark theme'**
+  String get catppuccinThemeDesc;
 }
 
 class _AppLocalizationsDelegate

@@ -30,6 +30,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get chooseSearchEngine => '검색 엔진 선택';
 
   @override
+  String get selectAppearance => '앱의 외관을 선택하세요';
+
+  @override
+  String get selectSearchEngine => '선호하는 검색 엔진을 선택하세요';
+
+  @override
   String get lightTheme => '라이트';
 
   @override
@@ -79,6 +85,18 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get continueText => '계속';
+
+  @override
+  String get notifications => '알림';
+
+  @override
+  String get notificationDescription => '기기에 파일이 다운로드될 때 알림 받기';
+
+  @override
+  String get allowNotifications => '알림 허용';
+
+  @override
+  String get skipForNow => '나중에 하기';
 
   @override
   String get just_now => '방금 전';
@@ -1029,4 +1047,52 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get cut => '잘라내기';
+
+  @override
+  String get solarKeyToCosmos => 'SOLAR - 우주의 열쇠';
+
+  @override
+  String get legalInformation => '법적 정보';
+
+  @override
+  String get acceptContinue => '동의하고 계속';
+
+  @override
+  String get welcome => '환영합니다';
+
+  @override
+  String get systemThemeDesc => '시스템 따름';
+
+  @override
+  String get lightThemeDesc => '밝고 깨끗함';
+
+  @override
+  String get darkThemeDesc => '눈에 편안함';
+
+  @override
+  String get solarizedLightThemeDesc => '따뜻한 라이트 테마';
+
+  @override
+  String get nordLightThemeDesc => '시원한 라이트 테마';
+
+  @override
+  String get gruvboxLightThemeDesc => '레트로 라이트 테마';
+
+  @override
+  String get tokyoNightThemeDesc => '생동감 있는 나이트 테마';
+
+  @override
+  String get draculaThemeDesc => '어두운 보라 테마';
+
+  @override
+  String get nordThemeDesc => '시원한 다크 테마';
+
+  @override
+  String get gruvboxThemeDesc => '레트로 다크 테마';
+
+  @override
+  String get oneDarkThemeDesc => '에디터 영감 테마';
+
+  @override
+  String get catppuccinThemeDesc => '파스텔 다크 테마';
 }

@@ -31,6 +31,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get chooseSearchEngine => 'Выберите поисковую систему';
 
   @override
+  String get selectAppearance => 'Выберите, как должно выглядеть приложение';
+
+  @override
+  String get selectSearchEngine => 'Выберите предпочитаемую поисковую систему';
+
+  @override
   String get lightTheme => 'Светлая';
 
   @override
@@ -80,6 +86,19 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get continueText => 'Продолжить';
+
+  @override
+  String get notifications => 'Уведомления';
+
+  @override
+  String get notificationDescription =>
+      'Получайте уведомления о загруженных файлах на ваше устройство';
+
+  @override
+  String get allowNotifications => 'Разрешить Уведомления';
+
+  @override
+  String get skipForNow => 'Пропустить Пока';
 
   @override
   String get just_now => 'Только что';
@@ -1056,4 +1075,52 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get cut => 'Вырезать';
+
+  @override
+  String get solarKeyToCosmos => 'SOLAR - КЛЮЧ К КОСМОСУ';
+
+  @override
+  String get legalInformation => 'Правовая Информация';
+
+  @override
+  String get acceptContinue => 'Принять и Продолжить';
+
+  @override
+  String get welcome => 'Добро пожаловать';
+
+  @override
+  String get systemThemeDesc => 'Следует системе';
+
+  @override
+  String get lightThemeDesc => 'Яркая и чистая';
+
+  @override
+  String get darkThemeDesc => 'Легкая для глаз';
+
+  @override
+  String get solarizedLightThemeDesc => 'Теплая светлая тема';
+
+  @override
+  String get nordLightThemeDesc => 'Прохладная светлая тема';
+
+  @override
+  String get gruvboxLightThemeDesc => 'Ретро светлая тема';
+
+  @override
+  String get tokyoNightThemeDesc => 'Яркая ночная тема';
+
+  @override
+  String get draculaThemeDesc => 'Темно-фиолетовая тема';
+
+  @override
+  String get nordThemeDesc => 'Прохладная темная тема';
+
+  @override
+  String get gruvboxThemeDesc => 'Ретро темная тема';
+
+  @override
+  String get oneDarkThemeDesc => 'Тема в стиле редактора';
+
+  @override
+  String get catppuccinThemeDesc => 'Пастельная темная тема';
 }
