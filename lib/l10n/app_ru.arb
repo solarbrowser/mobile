@@ -824,5 +824,19 @@
   "network_error_description": "Произошла ошибка сети. Проверьте ваше интернет-соединение и попробуйте снова.",
   "server_error_description": "Сервер столкнулся с ошибкой и не смог выполнить ваш запрос.",
   "try_again": "Попробовать Снова",
-  "go_home": "На Главную"
+  "go_home": "На Главную",
+  "skip": "Пропустить",
+  "continueText": "Продолжить",
+  "package_downloaded": "Пакет загружен!",
+  "installation_steps": "Шаги установки:",
+  "installation_instructions": "1. Нажмите \"Установить\" ниже, чтобы открыть пакет\n2. Включите \"Установка неизвестных приложений\", если будет предложено\n3. Следуйте мастеру установки Android",
+  "view": "Просмотр",
+  "install": "Установить",
+  "file_deleted_from_device": "Файл удален с устройства",
+  "delete": "Удалить",
+  "incognito": "Инкогнито",
+  "cannot_open_file_path_not_found": "Невозможно открыть файл: путь не найден",
+  "error_opening_file_message": "Ошибка открытия файла: {message}",
+  "error_opening_file_exception": "Ошибка открытия файла: {error}",
+  "summary_copied_to_clipboard": "Резюме скопировано в буфер обмена"
 }

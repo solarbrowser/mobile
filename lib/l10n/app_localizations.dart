@@ -258,7 +258,7 @@ abstract class AppLocalizations {
   /// **'Back'**
   String get back;
 
-  /// Skip button text
+  /// Skip button text in permission dialogs
   ///
   /// In en, this message translates to:
   /// **'Skip'**
@@ -606,7 +606,7 @@ abstract class AppLocalizations {
   /// **'Open'**
   String get open;
 
-  /// No description provided for @delete.
+  /// Delete button text
   ///
   /// In en, this message translates to:
   /// **'Delete'**
@@ -1428,7 +1428,7 @@ abstract class AppLocalizations {
   /// **'No tabs open'**
   String get no_tabs_open;
 
-  /// No description provided for @incognito.
+  /// Incognito mode label
   ///
   /// In en, this message translates to:
   /// **'Incognito'**
@@ -1584,10 +1584,10 @@ abstract class AppLocalizations {
   /// **'Generating summary...'**
   String get generating_summary;
 
-  /// No description provided for @summary_copied_to_clipboard.
+  /// Notification message when summary is copied to clipboard
   ///
   /// In en, this message translates to:
-  /// **'Summary copied to clipboard.'**
+  /// **'Summary copied to clipboard'**
   String get summary_copied_to_clipboard;
 
   /// Label for AI summary language preference
@@ -2723,6 +2723,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Go Home'**
   String get go_home;
+
+  /// Title for package download completion dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Package Downloaded!'**
+  String get package_downloaded;
+
+  /// Header for installation instructions
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Steps:'**
+  String get installation_steps;
+
+  /// Step-by-step installation instructions for APK packages
+  ///
+  /// In en, this message translates to:
+  /// **'1. Tap \"Install\" below to open the package\n2. Enable \"Install Unknown Apps\" if prompted\n3. Follow Android\'s installation wizard'**
+  String get installation_instructions;
+
+  /// View button text
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get view;
+
+  /// Install button text
+  ///
+  /// In en, this message translates to:
+  /// **'Install'**
+  String get install;
+
+  /// Notification message when file is deleted from device
+  ///
+  /// In en, this message translates to:
+  /// **'File deleted from device'**
+  String get file_deleted_from_device;
+
+  /// Error message when file path is not found
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot open file: path not found'**
+  String get cannot_open_file_path_not_found;
+
+  /// Error message when file cannot be opened
+  ///
+  /// In en, this message translates to:
+  /// **'Error opening file: {message}'**
+  String error_opening_file_message(String message);
+
+  /// Error message when file opening throws exception
+  ///
+  /// In en, this message translates to:
+  /// **'Error opening file: {error}'**
+  String error_opening_file_exception(String error);
 }
 
 class _AppLocalizationsDelegate

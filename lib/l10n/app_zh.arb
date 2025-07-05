@@ -834,5 +834,19 @@
   "network_error_description": "发生网络错误。请检查您的互联网连接并重试。",
   "server_error_description": "服务器遇到错误，无法完成您的请求。",
   "try_again": "重试",
-  "go_home": "返回首页"
+  "go_home": "返回首页",
+  "skip": "跳过",
+  "continueText": "继续",
+  "package_downloaded": "软件包已下载！",
+  "installation_steps": "安装步骤：",
+  "installation_instructions": "1. 点击下方\"安装\"按钮打开软件包\n2. 如果系统提示，请启用\"安装未知应用\"\n3. 按照Android安装向导操作",
+  "view": "查看",
+  "install": "安装",
+  "file_deleted_from_device": "文件已从设备删除",
+  "delete": "删除",
+  "incognito": "隐身",
+  "cannot_open_file_path_not_found": "无法打开文件：找不到路径",
+  "error_opening_file_message": "打开文件错误：{message}",
+  "error_opening_file_exception": "打开文件错误：{error}",
+  "summary_copied_to_clipboard": "摘要已复制到剪贴板"
 }

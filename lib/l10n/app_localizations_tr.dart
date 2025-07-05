@@ -86,7 +86,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get getStarted => 'Başlayın';
 
   @override
-  String get continueText => 'Devam';
+  String get continueText => 'Devam Et';
 
   @override
   String get notifications => 'Bildirimler';
@@ -703,7 +703,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get no_tabs_open => 'Açık sekme yok';
 
   @override
-  String get incognito => 'Gizli mod';
+  String get incognito => 'Gizli';
 
   @override
   String get clear_all => 'Tümünü temizle';
@@ -792,7 +792,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get generating_summary => 'Generating summary...';
 
   @override
-  String get summary_copied_to_clipboard => 'Summary copied to clipboard.';
+  String get summary_copied_to_clipboard => 'Özet panoya kopyalandı';
 
   @override
   String get summary_language => 'Özet Dili';
@@ -1404,4 +1404,37 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get go_home => 'Ana Sayfaya Git';
+
+  @override
+  String get package_downloaded => 'Paket İndirildi!';
+
+  @override
+  String get installation_steps => 'Kurulum Adımları:';
+
+  @override
+  String get installation_instructions =>
+      '1. Paketi açmak için aşağıdaki \"Kur\" butonuna dokunun\n2. İstenirse \"Bilinmeyen Uygulamaları Yükle\" seçeneğini etkinleştirin\n3. Android kurulum sihirbazını takip edin';
+
+  @override
+  String get view => 'Görüntüle';
+
+  @override
+  String get install => 'Kur';
+
+  @override
+  String get file_deleted_from_device => 'Dosya cihazdan silindi';
+
+  @override
+  String get cannot_open_file_path_not_found =>
+      'Dosya açılamıyor: yol bulunamadı';
+
+  @override
+  String error_opening_file_message(String message) {
+    return 'Dosya açma hatası: $message';
+  }
+
+  @override
+  String error_opening_file_exception(String error) {
+    return 'Dosya açma hatası: $error';
+  }
 }

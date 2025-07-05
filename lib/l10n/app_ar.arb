@@ -815,5 +815,19 @@
   "network_error_description": "حدث خطأ في الشبكة. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى.",
   "server_error_description": "واجه الخادم خطأ ولم يتمكن من إكمال طلبك.",
   "try_again": "حاول مرة أخرى",
-  "go_home": "الذهاب للرئيسية"
+  "go_home": "الذهاب للرئيسية",
+  "skip": "تخطي",
+  "continueText": "متابعة", 
+  "package_downloaded": "تم تنزيل الحزمة!",
+  "installation_steps": "خطوات التثبيت:",
+  "installation_instructions": "1. اضغط \"تثبيت\" أدناه لفتح الحزمة\n2. فعل \"تثبيت التطبيقات المجهولة\" إذا طُلب منك\n3. اتبع معالج التثبيت في Android",
+  "view": "عرض",
+  "install": "تثبيت",
+  "file_deleted_from_device": "تم حذف الملف من الجهاز",
+  "delete": "حذف",
+  "incognito": "خفي",
+  "cannot_open_file_path_not_found": "لا يمكن فتح الملف: المسار غير موجود",
+  "error_opening_file_message": "خطأ في فتح الملف: {message}",
+  "error_opening_file_exception": "خطأ في فتح الملف: {error}",
+  "summary_copied_to_clipboard": "تم نسخ الملخص إلى الحافظة"
 }

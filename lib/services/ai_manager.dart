@@ -111,7 +111,7 @@ class AIManager {
     } catch (e) {
       if (_currentProvider == AIProvider.openai && 
           e.toString().toLowerCase().contains('quota')) {
-        debugPrint('OpenAI quota exceeded, falling back to Gemini');
+        // debugPrint('OpenAI quota exceeded, falling back to Gemini');
         return await GeminiService.summarizeText(text, isFullPage: isFullPage);
       }
       rethrow;

@@ -794,7 +794,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get generating_summary => 'Generating summary...';
 
   @override
-  String get summary_copied_to_clipboard => 'Summary copied to clipboard.';
+  String get summary_copied_to_clipboard => 'Riassunto copiato negli appunti';
 
   @override
   String get summary_language => 'Lingua del riassunto';
@@ -1411,4 +1411,37 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get go_home => 'Vai alla Home';
+
+  @override
+  String get package_downloaded => 'Pacchetto scaricato!';
+
+  @override
+  String get installation_steps => 'Passaggi di installazione:';
+
+  @override
+  String get installation_instructions =>
+      '1. Tocca \"Installa\" qui sotto per aprire il pacchetto\n2. Abilita \"Installa app sconosciute\" se richiesto\n3. Segui la procedura guidata di installazione di Android';
+
+  @override
+  String get view => 'Visualizza';
+
+  @override
+  String get install => 'Installa';
+
+  @override
+  String get file_deleted_from_device => 'File eliminato dal dispositivo';
+
+  @override
+  String get cannot_open_file_path_not_found =>
+      'Impossibile aprire il file: percorso non trovato';
+
+  @override
+  String error_opening_file_message(String message) {
+    return 'Errore nell\'apertura del file: $message';
+  }
+
+  @override
+  String error_opening_file_exception(String error) {
+    return 'Errore nell\'apertura del file: $error';
+  }
 }

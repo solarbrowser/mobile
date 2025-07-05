@@ -63,7 +63,7 @@ class AIService {
       if (error.contains('quota') || error.contains('exceeded') || error.contains('429')) {
         throw Exception('API quota exceeded. Please check your OpenAI account billing and limits at https://platform.openai.com/account/billing');
       }
-      debugPrint('Error summarizing text: $e');
+      // debugPrint('Error summarizing text: $e');
       throw Exception('Failed to summarize text: ${e.toString()}');
     }
   }

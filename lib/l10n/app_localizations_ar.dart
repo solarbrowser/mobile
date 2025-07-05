@@ -696,7 +696,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get no_tabs_open => 'لا توجد علامات تبويب مفتوحة';
 
   @override
-  String get incognito => 'التصفح المتخفي';
+  String get incognito => 'خفي';
 
   @override
   String get clear_all => 'مسح الكل';
@@ -783,7 +783,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get generating_summary => 'Generating summary...';
 
   @override
-  String get summary_copied_to_clipboard => 'Summary copied to clipboard.';
+  String get summary_copied_to_clipboard => 'تم نسخ الملخص إلى الحافظة';
 
   @override
   String get summary_language => 'لغة الملخص';
@@ -1392,4 +1392,37 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get go_home => 'الذهاب للرئيسية';
+
+  @override
+  String get package_downloaded => 'تم تنزيل الحزمة!';
+
+  @override
+  String get installation_steps => 'خطوات التثبيت:';
+
+  @override
+  String get installation_instructions =>
+      '1. اضغط \"تثبيت\" أدناه لفتح الحزمة\n2. فعل \"تثبيت التطبيقات المجهولة\" إذا طُلب منك\n3. اتبع معالج التثبيت في Android';
+
+  @override
+  String get view => 'عرض';
+
+  @override
+  String get install => 'تثبيت';
+
+  @override
+  String get file_deleted_from_device => 'تم حذف الملف من الجهاز';
+
+  @override
+  String get cannot_open_file_path_not_found =>
+      'لا يمكن فتح الملف: المسار غير موجود';
+
+  @override
+  String error_opening_file_message(String message) {
+    return 'خطأ في فتح الملف: $message';
+  }
+
+  @override
+  String error_opening_file_exception(String error) {
+    return 'خطأ في فتح الملف: $error';
+  }
 }

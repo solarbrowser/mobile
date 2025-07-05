@@ -837,5 +837,19 @@
   "network_error_description": "Une erreur réseau s'est produite. Veuillez vérifier votre connexion internet et réessayer.",
   "server_error_description": "Le serveur a rencontré une erreur et n'a pas pu compléter votre demande.",
   "try_again": "Réessayer",
-  "go_home": "Aller à l'Accueil"
+  "go_home": "Aller à l'Accueil",
+  "skip": "Ignorer",
+  "continueText": "Continuer",
+  "package_downloaded": "Paquet téléchargé !",
+  "installation_steps": "Étapes d'installation :",
+  "installation_instructions": "1. Appuyez sur \"Installer\" ci-dessous pour ouvrir le paquet\n2. Activez \"Installer des apps inconnues\" si demandé\n3. Suivez l'assistant d'installation Android",
+  "view": "Voir",
+  "install": "Installer",
+  "file_deleted_from_device": "Fichier supprimé de l'appareil",
+  "delete": "Supprimer",
+  "incognito": "Incognito",
+  "cannot_open_file_path_not_found": "Impossible d'ouvrir le fichier : chemin introuvable",
+  "error_opening_file_message": "Erreur lors de l'ouverture du fichier : {message}",
+  "error_opening_file_exception": "Erreur lors de l'ouverture du fichier : {error}",
+  "summary_copied_to_clipboard": "Résumé copié dans le presse-papiers"
 }

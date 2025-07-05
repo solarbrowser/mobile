@@ -431,7 +431,7 @@ class _PWAScreenState extends State<PWAScreen> {
           );
         }
       } catch (e) {
-        debugPrint('Error renaming PWA: $e');
+        //debugPrint('Error renaming PWA: $e');
       }
     }
   }
@@ -509,7 +509,7 @@ class _PWAScreenState extends State<PWAScreen> {
           }
         }
       } catch (e) {
-        debugPrint('Error removing PWA: $e');
+        //debugPrint('Error removing PWA: $e');
       }
     }
   }

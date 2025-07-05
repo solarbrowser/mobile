@@ -767,7 +767,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get generating_summary => 'Generating summary...';
 
   @override
-  String get summary_copied_to_clipboard => 'Summary copied to clipboard.';
+  String get summary_copied_to_clipboard => '摘要已复制到剪贴板';
 
   @override
   String get summary_language => '摘要语言';
@@ -1347,4 +1347,36 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get go_home => '返回首页';
+
+  @override
+  String get package_downloaded => '软件包已下载！';
+
+  @override
+  String get installation_steps => '安装步骤：';
+
+  @override
+  String get installation_instructions =>
+      '1. 点击下方\"安装\"按钮打开软件包\n2. 如果系统提示，请启用\"安装未知应用\"\n3. 按照Android安装向导操作';
+
+  @override
+  String get view => '查看';
+
+  @override
+  String get install => '安装';
+
+  @override
+  String get file_deleted_from_device => '文件已从设备删除';
+
+  @override
+  String get cannot_open_file_path_not_found => '无法打开文件：找不到路径';
+
+  @override
+  String error_opening_file_message(String message) {
+    return '打开文件错误：$message';
+  }
+
+  @override
+  String error_opening_file_exception(String error) {
+    return '打开文件错误：$error';
+  }
 }

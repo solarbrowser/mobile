@@ -918,5 +918,19 @@
   "network_error_description": "Ein Netzwerkfehler ist aufgetreten. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
   "server_error_description": "Der Server hat einen Fehler festgestellt und konnte Ihre Anfrage nicht verarbeiten.",
   "try_again": "Erneut versuchen",
-  "go_home": "Zur Startseite"
+  "go_home": "Zur Startseite",
+  "skip": "Überspringen",
+  "continueText": "Fortfahren",
+  "package_downloaded": "Paket heruntergeladen!",
+  "installation_steps": "Installationsschritte:",
+  "installation_instructions": "1. Tippen Sie unten auf \"Installieren\", um das Paket zu öffnen\n2. Aktivieren Sie \"Unbekannte Apps installieren\", falls aufgefordert\n3. Folgen Sie dem Android-Installationsassistenten",
+  "view": "Anzeigen",
+  "install": "Installieren",
+  "file_deleted_from_device": "Datei vom Gerät gelöscht",
+  "delete": "Löschen",
+  "incognito": "Inkognito",
+  "cannot_open_file_path_not_found": "Datei kann nicht geöffnet werden: Pfad nicht gefunden",
+  "error_opening_file_message": "Fehler beim Öffnen der Datei: {message}",
+  "error_opening_file_exception": "Fehler beim Öffnen der Datei: {error}",
+  "summary_copied_to_clipboard": "Zusammenfassung in die Zwischenablage kopiert"
 }

@@ -782,5 +782,19 @@
   "network_error_description": "Bir ağ hatası oluştu. Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.",
   "server_error_description": "Sunucu bir hatayla karşılaştı ve isteğiniz tamamlanamadı.",
   "try_again": "Tekrar Dene",
-  "go_home": "Ana Sayfaya Git"
+  "go_home": "Ana Sayfaya Git",
+  "skip": "Atla",
+  "continueText": "Devam Et",
+  "package_downloaded": "Paket İndirildi!",
+  "installation_steps": "Kurulum Adımları:",
+  "installation_instructions": "1. Paketi açmak için aşağıdaki \"Kur\" butonuna dokunun\n2. İstenirse \"Bilinmeyen Uygulamaları Yükle\" seçeneğini etkinleştirin\n3. Android kurulum sihirbazını takip edin",
+  "view": "Görüntüle",
+  "install": "Kur",
+  "file_deleted_from_device": "Dosya cihazdan silindi",
+  "delete": "Sil",
+  "incognito": "Gizli",
+  "cannot_open_file_path_not_found": "Dosya açılamıyor: yol bulunamadı",
+  "error_opening_file_message": "Dosya açma hatası: {message}",
+  "error_opening_file_exception": "Dosya açma hatası: {error}",
+  "summary_copied_to_clipboard": "Özet panoya kopyalandı"
 }

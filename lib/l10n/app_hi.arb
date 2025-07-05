@@ -756,5 +756,19 @@
   "network_error_description": "नेटवर्क त्रुटि हुई। कृपया अपना इंटरनेट कनेक्शन जाँचें और पुनः प्रयास करें।",
   "server_error_description": "सर्वर में त्रुटि हुई और आपका अनुरोध पूरा नहीं हो सका।",
   "try_again": "पुनः प्रयास करें",
-  "go_home": "होम पर जाएं"
+  "go_home": "होम पर जाएं",
+  "skip": "छोड़ें",
+  "continueText": "जारी रखें",
+  "package_downloaded": "पैकेज डाउनलोड हो गया!",
+  "installation_steps": "इंस्टॉलेशन के चरण:",
+  "installation_instructions": "1. पैकेज खोलने के लिए नीचे \"इंस्टॉल\" पर टैप करें\n2. यदि पूछा जाए तो \"अज्ञात ऐप्स इंस्टॉल करें\" सक्षम करें\n3. Android के इंस्टॉलेशन विज़ार्ड का पालन करें",
+  "view": "देखें",
+  "install": "इंस्टॉल करें",
+  "file_deleted_from_device": "फ़ाइल डिवाइस से हटा दी गई",
+  "delete": "हटाएं",
+  "incognito": "गुप्त",
+  "cannot_open_file_path_not_found": "फ़ाइल नहीं खोली जा सकी: पथ नहीं मिला",
+  "error_opening_file_message": "फ़ाइल खोलने में त्रुटि: {message}",
+  "error_opening_file_exception": "फ़ाइल खोलने में त्रुटि: {error}",
+  "summary_copied_to_clipboard": "सारांश क्लिपबोर्ड में कॉपी किया गया"
 }

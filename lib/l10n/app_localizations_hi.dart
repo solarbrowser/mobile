@@ -700,7 +700,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get no_tabs_open => 'कोई टैब नहीं खुला है';
 
   @override
-  String get incognito => 'गुप्त मोड';
+  String get incognito => 'गुप्त';
 
   @override
   String get clear_all => 'सभी साफ़ करें';
@@ -786,7 +786,8 @@ class AppLocalizationsHi extends AppLocalizations {
   String get generating_summary => 'Generating summary...';
 
   @override
-  String get summary_copied_to_clipboard => 'Summary copied to clipboard.';
+  String get summary_copied_to_clipboard =>
+      'सारांश क्लिपबोर्ड में कॉपी किया गया';
 
   @override
   String get summary_language => 'सारांश भाषा';
@@ -1398,4 +1399,37 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get go_home => 'होम पर जाएं';
+
+  @override
+  String get package_downloaded => 'पैकेज डाउनलोड हो गया!';
+
+  @override
+  String get installation_steps => 'इंस्टॉलेशन के चरण:';
+
+  @override
+  String get installation_instructions =>
+      '1. पैकेज खोलने के लिए नीचे \"इंस्टॉल\" पर टैप करें\n2. यदि पूछा जाए तो \"अज्ञात ऐप्स इंस्टॉल करें\" सक्षम करें\n3. Android के इंस्टॉलेशन विज़ार्ड का पालन करें';
+
+  @override
+  String get view => 'देखें';
+
+  @override
+  String get install => 'इंस्टॉल करें';
+
+  @override
+  String get file_deleted_from_device => 'फ़ाइल डिवाइस से हटा दी गई';
+
+  @override
+  String get cannot_open_file_path_not_found =>
+      'फ़ाइल नहीं खोली जा सकी: पथ नहीं मिला';
+
+  @override
+  String error_opening_file_message(String message) {
+    return 'फ़ाइल खोलने में त्रुटि: $message';
+  }
+
+  @override
+  String error_opening_file_exception(String error) {
+    return 'फ़ाइल खोलने में त्रुटि: $error';
+  }
 }

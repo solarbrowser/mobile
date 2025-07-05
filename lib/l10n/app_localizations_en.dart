@@ -789,7 +789,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get generating_summary => 'Generating summary...';
 
   @override
-  String get summary_copied_to_clipboard => 'Summary copied to clipboard.';
+  String get summary_copied_to_clipboard => 'Summary copied to clipboard';
 
   @override
   String get summary_language => 'Summary Language';
@@ -1398,4 +1398,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get go_home => 'Go Home';
+
+  @override
+  String get package_downloaded => 'Package Downloaded!';
+
+  @override
+  String get installation_steps => 'Installation Steps:';
+
+  @override
+  String get installation_instructions =>
+      '1. Tap \"Install\" below to open the package\n2. Enable \"Install Unknown Apps\" if prompted\n3. Follow Android\'s installation wizard';
+
+  @override
+  String get view => 'View';
+
+  @override
+  String get install => 'Install';
+
+  @override
+  String get file_deleted_from_device => 'File deleted from device';
+
+  @override
+  String get cannot_open_file_path_not_found =>
+      'Cannot open file: path not found';
+
+  @override
+  String error_opening_file_message(String message) {
+    return 'Error opening file: $message';
+  }
+
+  @override
+  String error_opening_file_exception(String error) {
+    return 'Error opening file: $error';
+  }
 }

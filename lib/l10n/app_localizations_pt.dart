@@ -705,7 +705,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get no_tabs_open => 'Nenhuma aba aberta';
 
   @override
-  String get incognito => 'NavegaÃ§Ã£o anÃ´nima';
+  String get incognito => 'Incógnito';
 
   @override
   String get clear_all => 'Limpar tudo';
@@ -794,7 +794,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get generating_summary => 'Generating summary...';
 
   @override
-  String get summary_copied_to_clipboard => 'Summary copied to clipboard.';
+  String get summary_copied_to_clipboard =>
+      'Resumo copiado para a área de transferência';
 
   @override
   String get summary_language => 'Idioma do resumo';
@@ -1409,4 +1410,37 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get go_home => 'Ir para Início';
+
+  @override
+  String get package_downloaded => 'Pacote baixado!';
+
+  @override
+  String get installation_steps => 'Passos de instalação:';
+
+  @override
+  String get installation_instructions =>
+      '1. Toque em \"Instalar\" abaixo para abrir o pacote\n2. Habilite \"Instalar aplicativos desconhecidos\" se solicitado\n3. Siga o assistente de instalação do Android';
+
+  @override
+  String get view => 'Ver';
+
+  @override
+  String get install => 'Instalar';
+
+  @override
+  String get file_deleted_from_device => 'Arquivo excluído do dispositivo';
+
+  @override
+  String get cannot_open_file_path_not_found =>
+      'Não é possível abrir o arquivo: caminho não encontrado';
+
+  @override
+  String error_opening_file_message(String message) {
+    return 'Erro ao abrir arquivo: $message';
+  }
+
+  @override
+  String error_opening_file_exception(String error) {
+    return 'Erro ao abrir arquivo: $error';
+  }
 }

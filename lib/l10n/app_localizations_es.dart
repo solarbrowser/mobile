@@ -793,7 +793,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get generating_summary => 'Generating summary...';
 
   @override
-  String get summary_copied_to_clipboard => 'Summary copied to clipboard.';
+  String get summary_copied_to_clipboard => 'Resumen copiado al portapapeles';
 
   @override
   String get summary_language => 'Idioma del Resumen';
@@ -1408,4 +1408,37 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get go_home => 'Ir al Inicio';
+
+  @override
+  String get package_downloaded => '¡Paquete descargado!';
+
+  @override
+  String get installation_steps => 'Pasos de instalación:';
+
+  @override
+  String get installation_instructions =>
+      '1. Toca \"Instalar\" abajo para abrir el paquete\n2. Habilita \"Instalar apps desconocidas\" si se solicita\n3. Sigue el asistente de instalación de Android';
+
+  @override
+  String get view => 'Ver';
+
+  @override
+  String get install => 'Instalar';
+
+  @override
+  String get file_deleted_from_device => 'Archivo eliminado del dispositivo';
+
+  @override
+  String get cannot_open_file_path_not_found =>
+      'No se puede abrir el archivo: ruta no encontrada';
+
+  @override
+  String error_opening_file_message(String message) {
+    return 'Error al abrir archivo: $message';
+  }
+
+  @override
+  String error_opening_file_exception(String error) {
+    return 'Error al abrir archivo: $error';
+  }
 }

@@ -772,7 +772,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get generating_summary => 'Generating summary...';
 
   @override
-  String get summary_copied_to_clipboard => 'Summary copied to clipboard.';
+  String get summary_copied_to_clipboard => '要約がクリップボードにコピーされました';
 
   @override
   String get summary_language => '要約の言語';
@@ -1367,4 +1367,36 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get go_home => 'ホームに戻る';
+
+  @override
+  String get package_downloaded => 'パッケージがダウンロードされました！';
+
+  @override
+  String get installation_steps => 'インストール手順：';
+
+  @override
+  String get installation_instructions =>
+      '1. 下の「インストール」をタップしてパッケージを開いてください\n2. 促された場合は「不明なアプリのインストール」を有効にしてください\n3. Androidのインストールウィザードに従ってください';
+
+  @override
+  String get view => '表示';
+
+  @override
+  String get install => 'インストール';
+
+  @override
+  String get file_deleted_from_device => 'ファイルがデバイスから削除されました';
+
+  @override
+  String get cannot_open_file_path_not_found => 'ファイルを開けません：パスが見つかりません';
+
+  @override
+  String error_opening_file_message(String message) {
+    return 'ファイルを開くエラー：$message';
+  }
+
+  @override
+  String error_opening_file_exception(String error) {
+    return 'ファイルを開くエラー：$error';
+  }
 }

@@ -794,7 +794,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get generating_summary => 'Generating summary...';
 
   @override
-  String get summary_copied_to_clipboard => 'Summary copied to clipboard.';
+  String get summary_copied_to_clipboard =>
+      'Zusammenfassung in die Zwischenablage kopiert';
 
   @override
   String get summary_language => 'Zusammenfassungssprache';
@@ -1411,4 +1412,37 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get go_home => 'Zur Startseite';
+
+  @override
+  String get package_downloaded => 'Paket heruntergeladen!';
+
+  @override
+  String get installation_steps => 'Installationsschritte:';
+
+  @override
+  String get installation_instructions =>
+      '1. Tippen Sie unten auf \"Installieren\", um das Paket zu öffnen\n2. Aktivieren Sie \"Unbekannte Apps installieren\", falls aufgefordert\n3. Folgen Sie dem Android-Installationsassistenten';
+
+  @override
+  String get view => 'Anzeigen';
+
+  @override
+  String get install => 'Installieren';
+
+  @override
+  String get file_deleted_from_device => 'Datei vom Gerät gelöscht';
+
+  @override
+  String get cannot_open_file_path_not_found =>
+      'Datei kann nicht geöffnet werden: Pfad nicht gefunden';
+
+  @override
+  String error_opening_file_message(String message) {
+    return 'Fehler beim Öffnen der Datei: $message';
+  }
+
+  @override
+  String error_opening_file_exception(String error) {
+    return 'Fehler beim Öffnen der Datei: $error';
+  }
 }

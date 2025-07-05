@@ -702,7 +702,7 @@ class OptimizationEngine {
             // Hint to browser to release memory
             if (window.gc) window.gc();
             
-            console.log('Tab suspended and optimized: ' + document.title);
+            //console.log('Tab suspended and optimized: ' + document.title);
           })();
         ''');
       }
@@ -1296,11 +1296,11 @@ class OptimizationEngine {
           
           // Default handlers
           window.swipeLeftHandler = target => {
-            console.log('Swipe left detected');
+            //console.log('Swipe left detected');
           };
           
           window.swipeRightHandler = target => {
-            console.log('Swipe right detected');
+            //console.log('Swipe right detected');
             
             // If this is a page with pagination, go back
             const backLink = document.querySelector('a[rel="prev"], .prev, .previous');
@@ -1311,7 +1311,7 @@ class OptimizationEngine {
             }
           };
           
-          console.log('Advanced web actions optimization complete');
+          //console.log('Advanced web actions optimization complete');
         })();
       ''');
     }

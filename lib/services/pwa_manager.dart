@@ -144,7 +144,7 @@ class PWAManager {
             // finalUrl = 'https://www.google.com';
           }
         } catch (e) {
-          debugPrint('Error parsing Google search URL: $e');
+          //debugPrint('Error parsing Google search URL: $e');
         }
       }
       
@@ -155,7 +155,7 @@ class PWAManager {
         return false;
       }
       
-      debugPrint('Saving PWA: $finalUrl, $customTitle, favicon: ${favicon?.substring(0, favicon != null && favicon.length > 30 ? 30 : favicon?.length ?? 0)}...');
+      //debugPrint('Saving PWA: $finalUrl, $customTitle, favicon: ${favicon?.substring(0, favicon != null && favicon.length > 30 ? 30 : favicon?.length ?? 0)}...');
       
       final prefs = await SharedPreferences.getInstance();
       
@@ -170,7 +170,7 @@ class PWAManager {
       
       // For Google search, always use Google domain favicon
       if (url.contains('google.com/search')) {
-        debugPrint('Google search detected, using Google domain for favicon');
+        //debugPrint('Google search detected, using Google domain for favicon');
         // Replace with direct Google favicon URL instead of just the domain
         try {
           final googleFaviconUrl = 'https://www.google.com/s2/favicons?domain=www.google.com&sz=128';
@@ -178,17 +178,17 @@ class PWAManager {
           if (response.statusCode == 200) {
             final base64Image = base64Encode(response.bodyBytes);
             finalFavicon = 'data:image/png;base64,$base64Image';
-            debugPrint('Successfully fetched Google favicon as data URL');
+            //debugPrint('Successfully fetched Google favicon as data URL');
           }
         } catch (e) {
-          debugPrint('Error fetching Google favicon, falling back: $e');
+          //debugPrint('Error fetching Google favicon, falling back: $e');
           finalFavicon = await _fetchFavicon(finalUrl);
         }
       } 
       // Handle ICO files and HTTPS URLs specially
       else if (finalFavicon != null) {
         if (finalFavicon.endsWith('.ico') || finalFavicon.contains('favicon.ico')) {
-          debugPrint('ICO favicon detected, getting better version');
+          //debugPrint('ICO favicon detected, getting better version');
           try {
             // Always use Google's favicon service for ICO files
             final uri = Uri.parse(url);
@@ -198,12 +198,12 @@ class PWAManager {
             if (response.statusCode == 200) {
               final base64Image = base64Encode(response.bodyBytes);
               finalFavicon = 'data:image/png;base64,$base64Image';
-              debugPrint('Successfully converted ICO to Google favicon data URL');
+              //debugPrint('Successfully converted ICO to Google favicon data URL');
             } else {
               finalFavicon = await _fetchFavicon(finalUrl);
             }
           } catch (e) {
-            debugPrint('Error processing ICO favicon: $e');
+            //debugPrint('Error processing ICO favicon: $e');
             finalFavicon = await _fetchFavicon(finalUrl);
           }
         } else if (finalFavicon.startsWith('https://')) {
@@ -214,30 +214,30 @@ class PWAManager {
               // Convert to data URL
               final contentType = response.headers['content-type'] ?? 'image/png';
               finalFavicon = 'data:$contentType;base64,${base64Encode(response.bodyBytes)}';
-              debugPrint('Successfully converted HTTPS favicon to data URL');
+              //debugPrint('Successfully converted HTTPS favicon to data URL');
             } else {
               finalFavicon = await _fetchFavicon(finalUrl);
             }
           } catch (e) {
-            debugPrint('Error downloading HTTPS favicon: $e');
+            //debugPrint('Error downloading HTTPS favicon: $e');
             finalFavicon = await _fetchFavicon(finalUrl);
           }
         } else if (!finalFavicon.startsWith('data:')) {
           // If the favicon is just a domain name or not a data URL, fetch a proper icon
           if (Uri.tryParse(finalFavicon) == null) {
-            debugPrint('Favicon is domain or text, fetching proper icon');
+            //debugPrint('Favicon is domain or text, fetching proper icon');
             try {
               final googleFaviconUrl = 'https://www.google.com/s2/favicons?domain=$finalFavicon&sz=128';
               final response = await http.get(Uri.parse(googleFaviconUrl));
               if (response.statusCode == 200) {
                 final base64Image = base64Encode(response.bodyBytes);
                 finalFavicon = 'data:image/png;base64,$base64Image';
-                debugPrint('Successfully converted domain to Google favicon data URL');
+                //debugPrint('Successfully converted domain to Google favicon data URL');
               } else {
                 finalFavicon = await _fetchFavicon(finalUrl);
               }
             } catch (e) {
-              debugPrint('Error converting domain to favicon: $e');
+              //debugPrint('Error converting domain to favicon: $e');
               finalFavicon = await _fetchFavicon(finalUrl);
             }
           }
@@ -246,7 +246,7 @@ class PWAManager {
         try {
           finalFavicon = await _fetchFavicon(finalUrl);
         } catch (e) {
-          debugPrint('Failed to fetch favicon: $e');
+          //debugPrint('Failed to fetch favicon: $e');
         }
       }
       
@@ -260,10 +260,10 @@ class PWAManager {
           if (response.statusCode == 200) {
             final base64Image = base64Encode(response.bodyBytes);
             finalFavicon = 'data:image/png;base64,$base64Image';
-            debugPrint('Final fallback: successfully fetched Google favicon');
+            //debugPrint('Final fallback: successfully fetched Google favicon');
           }
         } catch (e) {
-          debugPrint('Final fallback favicon fetch failed: $e');
+          //debugPrint('Final fallback favicon fetch failed: $e');
         }
       }
       
@@ -296,7 +296,7 @@ class PWAManager {
       
       return true;
     } catch (e) {
-      debugPrint('Failed to save PWA: $e');
+      //debugPrint('Failed to save PWA: $e');
       return false;
     }
   }
@@ -307,7 +307,7 @@ class PWAManager {
       // Try using browser utils first - now improved with better HTTPS support
       final faviconUrl = await BrowserUtils.getFaviconUrl(url);
       if (faviconUrl != null && faviconUrl.isNotEmpty) {
-        debugPrint('Found favicon via BrowserUtils: $faviconUrl');
+        //debugPrint('Found favicon via BrowserUtils: $faviconUrl');
         
         // Check if the result is already a data URL
         if (faviconUrl.startsWith('data:')) {
@@ -323,7 +323,7 @@ class PWAManager {
               return 'data:image/png;base64,$base64Image';
             }
           } catch (e) {
-            debugPrint('Error fetching Google favicon: $e');
+            //debugPrint('Error fetching Google favicon: $e');
           }
         }
         
@@ -336,7 +336,7 @@ class PWAManager {
             return 'data:$contentType;base64,$base64Image';
           }
         } catch (e) {
-          debugPrint('Error converting favicon to data URL: $e');
+          //debugPrint('Error converting favicon to data URL: $e');
         }
       }
       
@@ -349,12 +349,12 @@ class PWAManager {
         final googleFaviconUrl = 'https://www.google.com/s2/favicons?domain=${uri.host}&sz=128';
         final response = await http.get(Uri.parse(googleFaviconUrl));
         if (response.statusCode == 200) {
-          debugPrint('Using Google favicon service: $googleFaviconUrl');
+          //debugPrint('Using Google favicon service: $googleFaviconUrl');
           final base64Image = base64Encode(response.bodyBytes);
           return 'data:image/png;base64,$base64Image';
         }
       } catch (e) {
-        debugPrint('Error fetching Google favicon: $e');
+        //debugPrint('Error fetching Google favicon: $e');
       }
       
       // Try standard favicon locations (in order of preference)
@@ -403,7 +403,7 @@ class PWAManager {
         try {
           final response = await http.head(Uri.parse(possibleFaviconUrls[i]));
           if (response.statusCode == 200) {
-            debugPrint('Found favicon at: ${possibleFaviconUrls[i]}');
+            //debugPrint('Found favicon at: ${possibleFaviconUrls[i]}');
             // Convert to data URL
             final imageBytes = await http.get(Uri.parse(possibleFaviconUrls[i])).then((res) => res.bodyBytes);
             final base64Image = base64Encode(imageBytes);
@@ -456,7 +456,7 @@ class PWAManager {
             }
             
             try {
-              debugPrint('Found favicon in HTML: $fullUrl');
+              //debugPrint('Found favicon in HTML: $fullUrl');
               final iconResponse = await http.get(Uri.parse(fullUrl));
               if (iconResponse.statusCode == 200) {
                 final imageBytes = iconResponse.bodyBytes;
@@ -465,19 +465,19 @@ class PWAManager {
                 return 'data:$contentType;base64,$base64Image';
               }
             } catch (e) {
-              debugPrint('Error fetching favicon from HTML link: $e');
+              //debugPrint('Error fetching favicon from HTML link: $e');
               continue;
             }
           }
         }
       } catch (e) {
-        debugPrint('Error parsing HTML for favicon: $e');
+        //debugPrint('Error parsing HTML for favicon: $e');
       }
       
       // As a final fallback, if everything else failed, use the domain name itself
       return uri.host;
     } catch (e) {
-      debugPrint('Error fetching favicon: $e');
+      //debugPrint('Error fetching favicon: $e');
       try {
         final uri = Uri.parse(url);
         // Return domain as last resort fallback
@@ -497,19 +497,19 @@ class PWAManager {
       // For ICO files, prioritize Google's favicon service which gives good quality icons as PNG
       try {
         final googleFaviconUrl = 'https://www.google.com/s2/favicons?domain=$domain&sz=128';
-        debugPrint('Trying Google favicon service: $googleFaviconUrl');
+        //debugPrint('Trying Google favicon service: $googleFaviconUrl');
         
         final response = await http.get(Uri.parse(googleFaviconUrl));
         if (response.statusCode == 200) {
           final contentType = response.headers['content-type'] ?? 'image/png';
-          debugPrint('Got icon from Google favicon service: $contentType, size: ${response.bodyBytes.length} bytes');
+          //debugPrint('Got icon from Google favicon service: $contentType, size: ${response.bodyBytes.length} bytes');
           
           // Explicitly set as PNG regardless of what Google returns (usually is PNG but making sure)
           final base64Image = base64Encode(response.bodyBytes);
           return 'data:image/png;base64,$base64Image';
         }
       } catch (e) {
-        debugPrint('Error from Google favicon service: $e');
+        //debugPrint('Error from Google favicon service: $e');
       }
       
       // Try to get other favicon formats with explicit requests to specific paths
@@ -578,7 +578,7 @@ class PWAManager {
         try {
           final response = await http.head(Uri.parse(favicon['url'] as String));
           if (response.statusCode == 200) {
-            debugPrint('Found alternative favicon at: ${favicon['url']}');
+            //debugPrint('Found alternative favicon at: ${favicon['url']}');
             final imageBytes = await http.get(Uri.parse(favicon['url'] as String))
                 .then((res) => res.bodyBytes);
             final base64Image = base64Encode(imageBytes);
@@ -593,26 +593,26 @@ class PWAManager {
       // If we have a direct ICO file URL that we couldn't convert or find alternatives for,
       // return the domain as a fallback - the Kotlin side will use this to fetch from Google
       if (url.endsWith('.ico') || url.contains('favicon.ico')) {
-        debugPrint('No PNG alternatives found, returning domain as fallback: $domain');
+        //debugPrint('No PNG alternatives found, returning domain as fallback: $domain');
         return domain;
       }
       
       // Try one more time to convert the original ICO directly - might work for some ICO files
       try {
-        debugPrint('Trying to convert original ICO directly as last resort');
+        //debugPrint('Trying to convert original ICO directly as last resort');
         final response = await http.get(Uri.parse(url));
         if (response.statusCode == 200) {
           // Force content type to image/png
           return 'data:image/png;base64,${base64Encode(response.bodyBytes)}';
         }
       } catch (e) {
-        debugPrint('Failed to convert original ICO directly: $e');
+        //debugPrint('Failed to convert original ICO directly: $e');
       }
       
       // If all else fails, return domain as fallback
       return domain;
     } catch (e) {
-      debugPrint('Error getting better favicon: $e');
+      //debugPrint('Error getting better favicon: $e');
       return null;
     }
   }
@@ -636,7 +636,7 @@ class PWAManager {
       
       return pwaList;
     } catch (e) {
-      debugPrint('Failed to get PWAs: $e');
+      //debugPrint('Failed to get PWAs: $e');
       return [];
     }
   }
@@ -664,15 +664,15 @@ class PWAManager {
         await platform.invokeMethod('deleteShortcut', {
           'url': url,
         });
-        debugPrint('Shortcut removed from home screen for URL: $url');
+        //debugPrint('Shortcut removed from home screen for URL: $url');
       } catch (e) {
-        debugPrint('Error removing shortcut from home screen: $e');
+        //debugPrint('Error removing shortcut from home screen: $e');
         // Continue even if removing from home screen fails
       }
       
       return true;
     } catch (e) {
-      debugPrint('Failed to delete PWA: $e');
+      //debugPrint('Failed to delete PWA: $e');
       return false;
     }
   }
@@ -683,7 +683,7 @@ class PWAManager {
       final pwaList = await getAllPWAs();
       return pwaList.any((pwa) => pwa['url'] == url);
     } catch (e) {
-      debugPrint('Failed to check if URL is PWA: $e');
+      //debugPrint('Failed to check if URL is PWA: $e');
       return false;
     }
   }
@@ -715,7 +715,7 @@ class PWAManager {
               }
             }
           } catch (e) {
-            debugPrint('Error converting URL to data URL: $e');
+            //debugPrint('Error converting URL to data URL: $e');
             // Fallback to Google favicon service
             try {
               final uri = Uri.parse(url);
@@ -725,7 +725,7 @@ class PWAManager {
                 finalFavicon = 'data:image/png;base64,${base64Encode(googleResponse.bodyBytes)}';
               }
             } catch (e) {
-              debugPrint('Error in favicon fallback: $e');
+              //debugPrint('Error in favicon fallback: $e');
             }
           }
         } else {
@@ -737,7 +737,7 @@ class PWAManager {
               finalFavicon = 'data:image/png;base64,${base64Encode(googleResponse.bodyBytes)}';
             }
           } catch (e) {
-            debugPrint('Error fetching Google favicon from domain: $e');
+            //debugPrint('Error fetching Google favicon from domain: $e');
             // Try one more time with the page URL
             try {
               final uri = Uri.parse(url);
@@ -747,7 +747,7 @@ class PWAManager {
                 finalFavicon = 'data:image/png;base64,${base64Encode(googleResponse.bodyBytes)}';
               }
             } catch (e) {
-              debugPrint('Final error in favicon fallback: $e');
+              //debugPrint('Final error in favicon fallback: $e');
             }
           }
         }
@@ -761,11 +761,11 @@ class PWAManager {
             finalFavicon = 'data:image/png;base64,${base64Encode(googleResponse.bodyBytes)}';
           }
         } catch (e) {
-          debugPrint('Error fetching Google favicon: $e');
+          //debugPrint('Error fetching Google favicon: $e');
         }
       }
       
-      debugPrint('Creating shortcut with favicon type: ${finalFavicon.startsWith('data:') ? 'data URL' : (finalFavicon.isEmpty ? 'empty' : 'other')}');
+      //debugPrint('Creating shortcut with favicon type: ${finalFavicon.startsWith('data:') ? 'data URL' : (finalFavicon.isEmpty ? 'empty' : 'other')}');
       
       await platform.invokeMethod('createShortcut', {
         'url': url,
@@ -773,7 +773,7 @@ class PWAManager {
         'favicon': finalFavicon,
       });
     } catch (e) {
-      debugPrint('Error creating shortcut: $e');
+      //debugPrint('Error creating shortcut: $e');
     }
   }
   
@@ -811,7 +811,7 @@ class PWAManager {
                 finalFavicon = 'data:image/png;base64,${base64Encode(googleResponse.bodyBytes)}';
               }
             } catch (e) {
-              debugPrint('Error fetching favicon during rename: $e');
+              //debugPrint('Error fetching favicon during rename: $e');
               // Use original if fetch fails
               finalFavicon = originalFavicon;
             }
@@ -829,7 +829,7 @@ class PWAManager {
             'title': newTitle,
             'favicon': finalFavicon.isEmpty ? (originalFavicon ?? '') : finalFavicon,
           });
-          debugPrint('Created new shortcut with modified URL: $modifiedUrl');
+          //debugPrint('Created new shortcut with modified URL: $modifiedUrl');
           
           // Wait for the shortcut creation to complete
           await Future.delayed(const Duration(milliseconds: 500));
@@ -839,9 +839,9 @@ class PWAManager {
             await platform.invokeMethod('deleteShortcut', {
               'url': url,
             });
-            debugPrint('Removed old shortcut during rename process');
+            //debugPrint('Removed old shortcut during rename process');
           } catch (e) {
-            debugPrint('Error removing old shortcut: $e');
+            //debugPrint('Error removing old shortcut: $e');
             // Continue even if deletion fails
           }
           
@@ -860,7 +860,7 @@ class PWAManager {
           
           return true;
         } catch (e) {
-          debugPrint('Error creating new shortcut: $e');
+          //debugPrint('Error creating new shortcut: $e');
           
           // Try one more time without URL modification as a fallback
           try {
@@ -882,7 +882,7 @@ class PWAManager {
             
             return true;
           } catch (e) {
-            debugPrint('Final error in rename process: $e');
+            //debugPrint('Final error in rename process: $e');
             return false;
           }
         }
@@ -890,7 +890,7 @@ class PWAManager {
       
       return false;
     } catch (e) {
-      debugPrint('Failed to rename PWA: $e');
+      //debugPrint('Failed to rename PWA: $e');
       return false;
     }
   }

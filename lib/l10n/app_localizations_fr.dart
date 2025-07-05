@@ -709,7 +709,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get no_tabs_open => 'Aucun onglet ouvert';
 
   @override
-  String get incognito => 'Navigation privée';
+  String get incognito => 'Incognito';
 
   @override
   String get clear_all => 'Tout effacer';
@@ -798,7 +798,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get generating_summary => 'Generating summary...';
 
   @override
-  String get summary_copied_to_clipboard => 'Summary copied to clipboard.';
+  String get summary_copied_to_clipboard =>
+      'Résumé copié dans le presse-papiers';
 
   @override
   String get summary_language => 'Langue du Résumé';
@@ -1417,4 +1418,37 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get go_home => 'Aller à l\'Accueil';
+
+  @override
+  String get package_downloaded => 'Paquet téléchargé !';
+
+  @override
+  String get installation_steps => 'Étapes d\'installation :';
+
+  @override
+  String get installation_instructions =>
+      '1. Appuyez sur \"Installer\" ci-dessous pour ouvrir le paquet\n2. Activez \"Installer des apps inconnues\" si demandé\n3. Suivez l\'assistant d\'installation Android';
+
+  @override
+  String get view => 'Voir';
+
+  @override
+  String get install => 'Installer';
+
+  @override
+  String get file_deleted_from_device => 'Fichier supprimé de l\'appareil';
+
+  @override
+  String get cannot_open_file_path_not_found =>
+      'Impossible d\'ouvrir le fichier : chemin introuvable';
+
+  @override
+  String error_opening_file_message(String message) {
+    return 'Erreur lors de l\'ouverture du fichier : $message';
+  }
+
+  @override
+  String error_opening_file_exception(String error) {
+    return 'Erreur lors de l\'ouverture du fichier : $error';
+  }
 }

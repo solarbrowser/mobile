@@ -795,5 +795,19 @@
   "network_error_description": "ネットワークエラーが発生しました。インターネット接続を確認して再試行してください。",
   "server_error_description": "サーバーでエラーが発生し、リクエストを完了できませんでした。",
   "try_again": "再試行",
-  "go_home": "ホームに戻る"
+  "go_home": "ホームに戻る",
+  "skip": "スキップ",
+  "continueText": "続行",
+  "package_downloaded": "パッケージがダウンロードされました！",
+  "installation_steps": "インストール手順：",
+  "installation_instructions": "1. 下の「インストール」をタップしてパッケージを開いてください\n2. 促された場合は「不明なアプリのインストール」を有効にしてください\n3. Androidのインストールウィザードに従ってください",
+  "view": "表示",
+  "install": "インストール",
+  "file_deleted_from_device": "ファイルがデバイスから削除されました",
+  "delete": "削除",
+  "incognito": "シークレット",
+  "cannot_open_file_path_not_found": "ファイルを開けません：パスが見つかりません",
+  "error_opening_file_message": "ファイルを開くエラー：{message}",
+  "error_opening_file_exception": "ファイルを開くエラー：{error}",
+  "summary_copied_to_clipboard": "要約がクリップボードにコピーされました"
 }

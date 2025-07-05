@@ -37,8 +37,7 @@
     "restricted",
     "limited",
     "permanently_denied",
-    "generating_summary",
-    "summary_copied_to_clipboard"
+    "generating_summary"
   ],
 
   "de": [
@@ -50,8 +49,7 @@
     "failed_to_download_image",
     "not_set",
     "save",
-    "generating_summary",
-    "summary_copied_to_clipboard"
+    "generating_summary"
   ],
 
   "es": [
@@ -64,7 +62,6 @@
     "not_set",
     "save",
     "generating_summary",
-    "summary_copied_to_clipboard",
     "no_content_found_to_summarize"
   ],
 
@@ -94,8 +91,7 @@
     "restricted",
     "limited",
     "permanently_denied",
-    "generating_summary",
-    "summary_copied_to_clipboard"
+    "generating_summary"
   ],
 
   "hi": [
@@ -137,7 +133,6 @@
     "limited",
     "permanently_denied",
     "generating_summary",
-    "summary_copied_to_clipboard",
     "reset_welcome_screen"
   ],
 
@@ -168,8 +163,7 @@
     "restricted",
     "limited",
     "permanently_denied",
-    "generating_summary",
-    "summary_copied_to_clipboard"
+    "generating_summary"
   ],
 
   "ja": [
@@ -211,8 +205,7 @@
     "restricted",
     "limited",
     "permanently_denied",
-    "generating_summary",
-    "summary_copied_to_clipboard"
+    "generating_summary"
   ],
 
   "ko": [
@@ -256,7 +249,6 @@
     "limited",
     "permanently_denied",
     "generating_summary",
-    "summary_copied_to_clipboard",
     "ai_settings"
   ],
 
@@ -288,8 +280,7 @@
     "restricted",
     "limited",
     "permanently_denied",
-    "generating_summary",
-    "summary_copied_to_clipboard"
+    "generating_summary"
   ],
 
   "ru": [
@@ -330,8 +321,7 @@
     "restricted",
     "limited",
     "permanently_denied",
-    "generating_summary",
-    "summary_copied_to_clipboard"
+    "generating_summary"
   ],
 
   "tr": [
@@ -361,8 +351,7 @@
     "restricted",
     "limited",
     "permanently_denied",
-    "generating_summary",
-    "summary_copied_to_clipboard"
+    "generating_summary"
   ],
 
   "zh": [
@@ -404,7 +393,6 @@
     "restricted",
     "limited",
     "permanently_denied",
-    "generating_summary",
-    "summary_copied_to_clipboard"
+    "generating_summary"
   ]
 }

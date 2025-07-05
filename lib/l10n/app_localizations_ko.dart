@@ -770,7 +770,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get generating_summary => 'Generating summary...';
 
   @override
-  String get summary_copied_to_clipboard => 'Summary copied to clipboard.';
+  String get summary_copied_to_clipboard => '요약이 클립보드에 복사되었습니다';
 
   @override
   String get summary_language => '요약 언어';
@@ -1365,4 +1365,36 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get go_home => '홈으로 가기';
+
+  @override
+  String get package_downloaded => '패키지가 다운로드되었습니다!';
+
+  @override
+  String get installation_steps => '설치 단계:';
+
+  @override
+  String get installation_instructions =>
+      '1. 아래 \"설치\"를 눌러 패키지를 여세요\n2. 요청되면 \"알 수 없는 앱 설치\"를 활성화하세요\n3. Android 설치 마법사를 따르세요';
+
+  @override
+  String get view => '보기';
+
+  @override
+  String get install => '설치';
+
+  @override
+  String get file_deleted_from_device => '기기에서 파일이 삭제되었습니다';
+
+  @override
+  String get cannot_open_file_path_not_found => '파일을 열 수 없습니다: 경로를 찾을 수 없음';
+
+  @override
+  String error_opening_file_message(String message) {
+    return '파일 열기 오류: $message';
+  }
+
+  @override
+  String error_opening_file_exception(String error) {
+    return '파일 열기 오류: $error';
+  }
 }

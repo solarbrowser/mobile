@@ -1394,5 +1394,87 @@
   "go_home": "Go Home",
   "@go_home": {
     "description": "Button text to go to home page"
+  },
+  
+  "skip": "Skip",
+  "@skip": {
+    "description": "Skip button text in permission dialogs"
+  },
+  
+  "continueText": "Continue",
+  "@continue": {
+    "description": "Continue button text in permission dialogs"
+  },
+  
+  "package_downloaded": "Package Downloaded!",
+  "@package_downloaded": {
+    "description": "Title for package download completion dialog"
+  },
+  
+  "installation_steps": "Installation Steps:",
+  "@installation_steps": {
+    "description": "Header for installation instructions"
+  },
+  
+  "installation_instructions": "1. Tap \"Install\" below to open the package\n2. Enable \"Install Unknown Apps\" if prompted\n3. Follow Android's installation wizard",
+  "@installation_instructions": {
+    "description": "Step-by-step installation instructions for APK packages"
+  },
+  
+  "view": "View",
+  "@view": {
+    "description": "View button text"
+  },
+  
+  "install": "Install",
+  "@install": {
+    "description": "Install button text"
+  },
+  
+  "file_deleted_from_device": "File deleted from device",
+  "@file_deleted_from_device": {
+    "description": "Notification message when file is deleted from device"
+  },
+  
+  "delete": "Delete",
+  "@delete": {
+    "description": "Delete button text"
+  },
+  
+  "incognito": "Incognito",
+  "@incognito": {
+    "description": "Incognito mode label"
+  },
+  
+  "cannot_open_file_path_not_found": "Cannot open file: path not found",
+  "@cannot_open_file_path_not_found": {
+    "description": "Error message when file path is not found"
+  },
+  
+  "error_opening_file_message": "Error opening file: {message}",
+  "@error_opening_file_message": {
+    "description": "Error message when file cannot be opened",
+    "placeholders": {
+      "message": {
+        "type": "String",
+        "example": "File not found"
+      }
+    }
+  },
+  
+  "error_opening_file_exception": "Error opening file: {error}",
+  "@error_opening_file_exception": {
+    "description": "Error message when file opening throws exception",
+    "placeholders": {
+      "error": {
+        "type": "String",
+        "example": "Permission denied"
+      }
+    }
+  },
+  
+  "summary_copied_to_clipboard": "Summary copied to clipboard",
+  "@summary_copied_to_clipboard": {
+    "description": "Notification message when summary is copied to clipboard"
   }
 }

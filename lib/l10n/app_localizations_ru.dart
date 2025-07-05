@@ -790,7 +790,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get generating_summary => 'Generating summary...';
 
   @override
-  String get summary_copied_to_clipboard => 'Summary copied to clipboard.';
+  String get summary_copied_to_clipboard => 'Резюме скопировано в буфер обмена';
 
   @override
   String get summary_language => 'Язык сводки';
@@ -1404,4 +1404,37 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get go_home => 'На Главную';
+
+  @override
+  String get package_downloaded => 'Пакет загружен!';
+
+  @override
+  String get installation_steps => 'Шаги установки:';
+
+  @override
+  String get installation_instructions =>
+      '1. Нажмите \"Установить\" ниже, чтобы открыть пакет\n2. Включите \"Установка неизвестных приложений\", если будет предложено\n3. Следуйте мастеру установки Android';
+
+  @override
+  String get view => 'Просмотр';
+
+  @override
+  String get install => 'Установить';
+
+  @override
+  String get file_deleted_from_device => 'Файл удален с устройства';
+
+  @override
+  String get cannot_open_file_path_not_found =>
+      'Невозможно открыть файл: путь не найден';
+
+  @override
+  String error_opening_file_message(String message) {
+    return 'Ошибка открытия файла: $message';
+  }
+
+  @override
+  String error_opening_file_exception(String error) {
+    return 'Ошибка открытия файла: $error';
+  }
 }

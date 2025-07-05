@@ -89,7 +89,7 @@ class GeminiService {
       
       return cleanContent;
     } catch (e) {
-      debugPrint('Error summarizing text with Gemini: $e');
+      // debugPrint('Error summarizing text with Gemini: $e');
       throw Exception('Failed to summarize text: ${e.toString()}');
     }
   }

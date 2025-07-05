@@ -66,7 +66,7 @@ class BrowserScreen extends StatefulWidget {
   _BrowserScreenState createState() => _BrowserScreenState();
 }
 
-// <----LOADING ANIMATION---->
+// <-----------LOADING ANIMATION----------->
 class LoadingBorderPainter extends CustomPainter {
   final double progress;
   final Color color;
@@ -161,7 +161,7 @@ enum PermissionDialogType {
 }
 
 class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProviderStateMixin, WidgetsBindingObserver {
-  // <----WEBVIEW AND NAVIGATION---->
+  // <-----------WEBVIEW AND NAVIGATION----------->
   final List<WebViewController> _controllers = [];
   late WebViewController controller;
   int currentTabIndex = 0;
@@ -175,14 +175,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   bool isLoading = false;
   String? _currentFaviconUrl;
   
-  // <----PLATFORM COMMUNICATION---->
+  // <-----------PLATFORM COMMUNICATION----------->
   final MethodChannel _platform = const MethodChannel('com.solar.browser/shortcuts');
   
-  // <----INTENT HANDLING---->
+  // <-----------INTENT HANDLING----------->
   String? _lastProcessedIntentUrl;
   bool _isLoadingIntentUrl = false;
 
-  // <----URL BAR ANIMATION---->
+  // <-----------URL BAR ANIMATION----------->
   late AnimationController _hideUrlBarController;
   late Animation<Offset> _hideUrlBarAnimation;
   bool _hideUrlBar = false;
@@ -190,7 +190,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   bool _isScrollingUp = false;
   bool _isUpdatingState = false;
   
-  // <----DOWNLOAD STATE---->
+  // <-----------DOWNLOAD STATE----------->
   bool isDownloading = false;
   String currentDownloadUrl = '';
   double downloadProgress = 0.0;
@@ -198,16 +198,16 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   int? _currentDownloadSize;
   List<Map<String, dynamic>> downloads = [];
 
-  // <----PERMISSION CACHING---->
+  // <-----------PERMISSION CACHING----------->
   bool? _cachedPermissionState;
   DateTime? _lastPermissionCheck;
   static const Duration _permissionCacheTimeout = Duration(seconds: 30);
 
-  // <----GETTERS---->
+  // <-----------GETTERS----------->
   String? get currentFileName => _currentFileName;
   int? get currentDownloadSize => _currentDownloadSize;
   
-  // <----PERMISSION DIALOG SYSTEM---->
+  // <-----------PERMISSION DIALOG SYSTEM----------->
   /// Shows a beautiful animated permission dialog explaining why permissions are needed
   Future<bool> _showPermissionDialog(PermissionDialogType type, {String? fileName, String? packageName}) async {
     String title;
@@ -559,24 +559,26 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
     );
   }
   
-  // <----CONTROLLERS---->
+  // <-----------CONTROLLERS----------->
   late TextEditingController _urlController;
   late FocusNode _urlFocusNode;
   
-  // <----FIREBASE CLOUD FUNCTIONS---->
+  // <-----------FIREBASE CLOUD FUNCTIONS----------->
   FirebaseFunctions? _firebaseFunctions;
   
-  // <----NEWS CACHING---->
+  // <-----------NEWS CACHING----------->
   static List<Map<String, dynamic>>? _cachedArticles;
   static int? _cachedLanguage;
   static Map<String, String> _cachedCoverImages = {};
   
-  // <----NEWS FAILURE TRACKING---->
+  // <-----------NEWS FAILURE TRACKING----------->
   int _newsFailureCount = 0;
   static const int _maxNewsFailures = 3; // Stop trying after 3 failures
 
-  // <----UI STATE---->
-  bool isDarkMode = false;  // <----ADDITIONAL STATE VARIABLES---->
+  // <-----------UI STATE----------->
+  bool isDarkMode = false;
+
+  // <-----------ADDITIONAL STATE VARIABLES----------->
   bool isSearchMode = false;
   String _displayUrl = '';
   bool _isUrlBarExpanded = false;
@@ -592,7 +594,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   bool _isUrlBarHidden = false;
   int selectedSettingsTab = 0;
 
-  // <----PANEL VISIBILITY---->
+  // <-----------PANEL VISIBILITY----------->
   bool isTabsVisible = false;
   bool isSettingsVisible = false;
   bool isBookmarksVisible = false;
@@ -600,16 +602,16 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   bool isPanelExpanded = false;
   bool isPanelVisible = true;
   bool _isLoading = false;
-    // <----INCOGNITO MODE---->
+    // <-----------INCOGNITO MODE----------->
   bool _isIncognitoModeActive = false;
   
-  // <----HISTORY ENCRYPTION---->
+  // <-----------HISTORY ENCRYPTION----------->
   bool _isHistoryLocked = false;
   bool _isHistoryEncrypted = false;
   String? _historyPassword;
   bool _showHistoryPasswordSetup = true;
   
-  // <----URL BAR STATE---->
+  // <-----------URL BAR STATE----------->
   bool _isUrlBarCollapsed = false;
   bool _isDragging = false;
   Offset _urlBarPosition = Offset.zero;
@@ -617,28 +619,28 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   double dragStartX = 0;
   Timer? _loadingTimer;
   
-  // <----DEVELOPER OPTIONS---->
+  // <-----------DEVELOPER OPTIONS----------->
   bool _isDeveloperMode = false;
   int _developerModeClickCount = 0;
   bool _showDeveloperOptions = false;
   String _debugLog = '';
   Timer? _developerModeTimer;
   
-  // <----HOME PAGE SETTINGS---->
+  // <-----------HOME PAGE SETTINGS----------->
   String _homeUrl = 'file:///android_asset/main.html';
   String _searchEngine = 'Google';
   bool _syncHomePageSearchEngine = true;
   String _homePageSearchEngine = 'Google';
   List<Map<String, String>> _homePageShortcuts = [];
   
-  // <----HISTORY LOADING---->
+  // <-----------HISTORY LOADING----------->
   final ScrollController _historyScrollController = ScrollController();
   bool _isLoadingMore = false;
   int _currentHistoryPage = 0;
   final int _historyPageSize = 20;
   List<Map<String, dynamic>> _loadedHistory = [];
 
-  // <----ANIMATION CONTROLLERS---->
+  // <-----------ANIMATION CONTROLLERS----------->
   late final AnimationController _slideAnimationController;
   late final Animation<Offset> _slideAnimation;
   late AnimationController _animationController;
@@ -649,7 +651,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   late Animation<Offset> _panelSlideOutAnimation;
   bool _isPanelClosing = false;
 
-  // <----DATA---->
+  // <-----------DATA----------->
   List<Map<String, dynamic>> bookmarks = [];
   double textScale = 1.0;
   bool showImages = true;
@@ -658,13 +660,13 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   String customHomeUrl = ''; // Custom home page URL
   bool useCustomHomePage = false; // Whether to use custom home page
   
-  // <----TAB GROUPING---->
+  // <-----------TAB GROUPING----------->
   List<TabGroup> _tabGroups = [];
-  // <----NAVIGATION BAR CUSTOMIZATION---->
+  // <-----------NAVIGATION BAR CUSTOMIZATION----------->
   List<String> _customNavButtons = ['back', 'forward', 'bookmark', 'share', 'menu'];
   bool _navBarAnimationEnabled = true;
   
-  // <----AI ACTION BAR---->
+  // <-----------AI ACTION BAR----------->
   bool _isAiActionBarVisible = false;
   late AnimationController _aiActionBarController;
   late Animation<double> _aiActionBarAnimation;
@@ -676,14 +678,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   // Summary panel permanently disabled
   bool _isSummaryPanelVisible = false;
   
-  // <----MEMORY MANAGEMENT---->
+  // <-----------MEMORY MANAGEMENT----------->
   final _debouncer = Debouncer(milliseconds: 100);
   final _scrollThrottle = Debouncer(milliseconds: 16);
   bool _isLowMemory = false;
   int _lastMemoryCheck = 0;
   static const int MEMORY_CHECK_INTERVAL = 30000;
 
-  // <----CONTEXT MENU TIMER---->
+  // <-----------CONTEXT MENU TIMER----------->
   Timer? _contextMenuTimer;
   Map<String, dynamic>? _pendingContextData;
   bool _touchMoved = false;
@@ -730,16 +732,16 @@ void _handleTouchStart(Map<String, dynamic> data) {
       final result = await controller.runJavaScriptReturningResult('''
         (function() {
           try {
-            console.log('🔍 Checking for elements at position ($x, $y)');
+            //console.log('🔍 Checking for elements at position ($x, $y)');
             
             // Try to find any element at this position
             let element = document.elementFromPoint($x, $y);
             if (!element) {
-              console.log('🔍 No element found at position');
+              //console.log('🔍 No element found at position');
               return JSON.stringify({"found": false});
             }
             
-            console.log('🔍 Found element: ' + element.tagName);
+            //console.log('🔍 Found element: ' + element.tagName);
             
             // Determine if this is text or an image
             // First check if we're dealing with an image
@@ -820,7 +822,7 @@ void _handleTouchStart(Map<String, dynamic> data) {
             
             // If we found an image, return its data
             if (img) {
-              console.log('🖼️ Found image: ' + img.src);
+              //console.log('🖼️ Found image: ' + img.src);
               return JSON.stringify({
                 "found": true,
                 "type": "image",
@@ -834,7 +836,7 @@ void _handleTouchStart(Map<String, dynamic> data) {
             
             // If we identified this as a text element, handle text selection
             if (isTextElement) {
-              console.log('📝 Found text element, selecting text');
+              //console.log('📝 Found text element, selecting text');
             
             // Try to enable text selection mode
             const range = document.createRange();
@@ -847,7 +849,7 @@ void _handleTouchStart(Map<String, dynamic> data) {
               selection.addRange(range);
               
               const selectedText = selection.toString();
-              console.log('📝 Selected text: ' + selectedText);
+              //console.log('📝 Selected text: ' + selectedText);
               
               if (selectedText && selectedText.trim().length > 0) {
                 return JSON.stringify({
@@ -932,7 +934,7 @@ void _handleTouchEnd() {
       await controller.runJavaScript('''
         if (typeof showImageContextMenu === 'function') {
           showImageContextMenu('https://example.com/test-image.jpg');
-          console.log('🧪 Test image context menu triggered');
+          //console.log('🧪 Test image context menu triggered');
         } else {
           console.error('🧪 showImageContextMenu function not found');
         }
@@ -946,7 +948,7 @@ void _handleTouchEnd() {
 
   bool isInitialized = false;
 
-  // <----DOWNLOAD SETTINGS---->
+  // <-----------DOWNLOAD SETTINGS----------->
   bool _askDownloadLocation = false;
   bool _autoOpenDownloads = false;
   late OptimizationEngine _optimizationEngine;
@@ -988,11 +990,11 @@ void _handleTouchEnd() {
   
   bool mounted = true;
 
-  // <----URL BAR DRAGGING---->
+  // <-----------URL BAR DRAGGING----------->
   Offset _urlBarOffset = const Offset(0.0, 0.0);
   bool _isDraggingUrlBar = false;
   
-  // <----THEME COLORS---->
+  // <-----------THEME COLORS----------->
   ThemeColors? _cachedDarkColors;
   ThemeColors? _cachedLightColors;
   
@@ -1014,7 +1016,7 @@ void _handleTouchEnd() {
         border: ThemeManager.textColor().withValues(alpha: 0.12),
       );
     }
-  }  // <----SEARCH ENGINES---->
+  }  // <-----------SEARCH ENGINES----------->
   final Map<String, String> searchEngines = {
     'Google': 'https://www.google.com/search?q={query}',
     'Bing': 'https://www.bing.com/search?q={query}',
@@ -1024,7 +1026,7 @@ void _handleTouchEnd() {
     'Yandex': 'https://yandex.com/search/?text={query}',
     'Solar Search': 'https://search.browser.solar/search?q={query}',
   };
-  // <----TAB PERSISTENCE METHODS---->
+  // <-----------TAB PERSISTENCE METHODS----------->
   Future<void> _saveTabs() async {
     try {
       final keepTabsOpen = await _getKeepTabsOpenSetting();
@@ -1088,7 +1090,7 @@ void _handleTouchEnd() {
           'canGoForward': false,
           'lastActiveTime': DateTime.now(),        };
           _initializeTab(restoredTab).then((_) {
-          // <----URL RESTORATION---->
+          // <-----------URL RESTORATION----------->
           // Load the saved URL into the WebViewController AFTER initialization
           final savedUrl = restoredTab['url'] as String;
           if (savedUrl.isNotEmpty && savedUrl != 'about:blank') {
@@ -1128,7 +1130,7 @@ void _handleTouchEnd() {
       }
     }
   }
-  // <----LOADING TIMER MANAGEMENT---->
+  // <-----------LOADING TIMER MANAGEMENT----------->
   Timer? _loadingTimeoutTimer;
 
   String _formatFileSize(int bytes) {
@@ -1225,7 +1227,7 @@ void _handleTouchEnd() {
     }
   }
   
-  bool _isUpdating = false;  // <----LOADING STATE MANAGEMENT---->
+  bool _isUpdating = false;  // <-----------LOADING STATE MANAGEMENT----------->
   void _setLoadingState(bool loading) {
     if (!mounted) return;
     
@@ -1255,7 +1257,7 @@ void _handleTouchEnd() {
       _loadingAnimationController.stop();
       _loadingAnimationController.reset();
     }
-  }// <----GLASSMORPHIC DECORATION---->
+  }// <-----------GLASSMORPHIC DECORATION----------->
   BoxDecoration? _cachedGlassDecoration;
   
   BoxDecoration _getGlassmorphicDecoration() {
@@ -1275,7 +1277,7 @@ void _handleTouchEnd() {
       ],
     );
   }
-  // <----FIREBASE INITIALIZATION---->
+  // <-----------FIREBASE INITIALIZATION----------->
   Future<void> _initializeFirebase() async {
     try {
       // Initialize Firebase if not already initialized
@@ -1869,7 +1871,7 @@ void _handleTouchEnd() {
       // Inject the same JavaScript code as in _setupScrollHandling
       await controller.runJavaScript('''
         (function() {
-          console.log('🔧 Setting up DIRECT context menu handling...');
+          //console.log('🔧 Setting up DIRECT context menu handling...');
           
           // Clean up any existing handlers
           if (window.solarContextMenuCleanup) {
@@ -1904,7 +1906,7 @@ void _handleTouchEnd() {
             const target = e.target;
             
             if (target.tagName === 'IMG') {
-              console.log('🖼️ Context menu on image: ' + target.src);
+              //console.log('🖼️ Context menu on image: ' + target.src);
               e.preventDefault();
               e.stopPropagation();
               
@@ -1914,7 +1916,7 @@ void _handleTouchEnd() {
                   src: target.src,
                   alt: target.alt || ''
                 };
-                console.log('🖼️ Sending image data to Flutter: ', data);
+                //console.log('🖼️ Sending image data to Flutter: ', data);
                 window.SolarContextMenu.postMessage(JSON.stringify(data));
               } else {
                 console.error('SolarContextMenu channel not available');
@@ -1931,7 +1933,7 @@ void _handleTouchEnd() {
           
           // Function to handle image long press
           function handleImageLongPress(img) {
-            console.log('🖼️ Long press detected on image: ' + img.src);
+            //console.log('🖼️ Long press detected on image: ' + img.src);
             
             if (window.SolarContextMenu) {
               const data = {
@@ -1939,7 +1941,7 @@ void _handleTouchEnd() {
                 src: img.src,
                 alt: img.alt || ''
               };
-              console.log('🖼️ Sending image data to Flutter: ', data);
+              //console.log('🖼️ Sending image data to Flutter: ', data);
               window.SolarContextMenu.postMessage(JSON.stringify(data));
             } else {
               console.error('SolarContextMenu channel not available');
@@ -1952,7 +1954,7 @@ void _handleTouchEnd() {
             
             const target = e.target;
             if (target.tagName === 'IMG') {
-              console.log('🖼️ Touch start on image: ' + target.src);
+              //console.log('🖼️ Touch start on image: ' + target.src);
               
               // Cancel any existing timer
               if (longPressTimer) {
@@ -2006,7 +2008,7 @@ void _handleTouchEnd() {
                 src: imgSrc || 'https://example.com/test.jpg',
                 alt: 'Test image'
               };
-              console.log('🖼️ Manually triggering image context menu: ', data);
+              //console.log('🖼️ Manually triggering image context menu: ', data);
               window.SolarContextMenu.postMessage(JSON.stringify(data));
               return true;
             } else {
@@ -2047,14 +2049,14 @@ void _handleTouchEnd() {
           
           // Create cleanup function
           window.solarContextMenuCleanup = function() {
-            console.log('🧹 Cleaning up context menu handlers');
+            //console.log('🧹 Cleaning up context menu handlers');
             if (longPressTimer) {
               clearTimeout(longPressTimer);
               longPressTimer = null;
             }
           };
           
-          console.log('✅ Context menu setup complete');
+          //console.log('✅ Context menu setup complete');
         })();
       ''');
     } catch (e) {
@@ -2265,7 +2267,7 @@ void _handleTouchEnd() {
       
       controller.runJavaScript('''
         try {
-          console.log('Received theme from Flutter:', '$themeJson');
+          //console.log('Received theme from Flutter:', '$themeJson');
           window.postMessage($themeJson, "*");
         } catch (e) {
           console.error('Theme application error:', e);
@@ -2755,7 +2757,7 @@ Future<void> _setupScrollHandling() async {
     // Inject JavaScript code for scroll handling and context menu
     await controller.runJavaScript('''
       (function() {
-        console.log('🔧 Setting up DIRECT context menu handling...');
+        //console.log('🔧 Setting up DIRECT context menu handling...');
         
         // Clean up any existing handlers
         if (window.solarContextMenuCleanup) {
@@ -2797,7 +2799,7 @@ Future<void> _setupScrollHandling() async {
           const target = e.target;
           
           if (target.tagName === 'IMG') {
-            console.log('🖼️ Context menu on image: ' + target.src);
+            //console.log('🖼️ Context menu on image: ' + target.src);
             e.preventDefault();
             e.stopPropagation();
             
@@ -2807,7 +2809,7 @@ Future<void> _setupScrollHandling() async {
                 src: target.src,
                 alt: target.alt || ''
               };
-              console.log('🖼️ Sending image data to Flutter: ', data);
+              //console.log('🖼️ Sending image data to Flutter: ', data);
               window.SolarContextMenu.postMessage(JSON.stringify(data));
             } else {
               console.error('SolarContextMenu channel not available');
@@ -2826,7 +2828,7 @@ Future<void> _setupScrollHandling() async {
         
         // Function to handle image long press
         function handleImageLongPress(img) {
-          console.log('🖼️ Long press detected on image: ' + img.src);
+          //console.log('🖼️ Long press detected on image: ' + img.src);
           
           if (window.SolarContextMenu) {
             const data = {
@@ -2834,7 +2836,7 @@ Future<void> _setupScrollHandling() async {
               src: img.src,
               alt: img.alt || ''
             };
-            console.log('🖼️ Sending image data to Flutter: ', data);
+            //console.log('🖼️ Sending image data to Flutter: ', data);
             window.SolarContextMenu.postMessage(JSON.stringify(data));
           } else {
             console.error('SolarContextMenu channel not available');
@@ -2847,7 +2849,7 @@ Future<void> _setupScrollHandling() async {
           
           const target = e.target;
         if (target.tagName === 'IMG') {
-            console.log('🖼️ Touch start on image: ' + target.src);
+            //console.log('🖼️ Touch start on image: ' + target.src);
             
             // Cancel any existing timer
             if (longPressTimer) {
@@ -2909,7 +2911,7 @@ Future<void> _setupScrollHandling() async {
               src: imgSrc || 'https://example.com/test.jpg',
               alt: 'Test image'
             };
-            console.log('🖼️ Manually triggering image context menu: ', data);
+            //console.log('🖼️ Manually triggering image context menu: ', data);
             window.SolarContextMenu.postMessage(JSON.stringify(data));
             return true;
           } else {
@@ -2950,7 +2952,7 @@ Future<void> _setupScrollHandling() async {
         
         // Create cleanup function
         window.solarContextMenuCleanup = function() {
-          console.log('🧹 Cleaning up context menu handlers');
+          //console.log('🧹 Cleaning up context menu handlers');
           if (longPressTimer) {
             clearTimeout(longPressTimer);
             longPressTimer = null;
@@ -2965,7 +2967,7 @@ Future<void> _setupScrollHandling() async {
         
         // Function to reinitialize context menu after use
         window.reinitializeContextMenu = function() {
-          console.log('🔄 Reinitializing context menu');
+          //console.log('🔄 Reinitializing context menu');
           if (window.solarContextMenuCleanup) {
             window.solarContextMenuCleanup();
           }
@@ -2978,7 +2980,7 @@ Future<void> _setupScrollHandling() async {
           addTrackedEventListener(document, 'touchmove', touchMoveHandler, false);
         };
         
-        console.log('✅ Context menu setup complete');
+        //console.log('✅ Context menu setup complete');
       })();
     ''');
     
@@ -3184,7 +3186,7 @@ Future<void> _setupScrollHandling() async {
       },
     );
 
-    // <----THEME HANDLER CHANNEL---->    // <----THEME HANDLER CHANNEL---->
+    // <-----------THEME HANDLER CHANNEL----------->    // <-----------THEME HANDLER CHANNEL----------->
     // JavaScript channel for theme communication with main.html
     await controller.addJavaScriptChannel(
       'ThemeHandler',
@@ -3196,7 +3198,7 @@ Future<void> _setupScrollHandling() async {
       },
     );
 
-    // <----LANGUAGE HANDLER CHANNEL---->
+    // <-----------LANGUAGE HANDLER CHANNEL----------->
     // JavaScript channel for language communication with main.html
     await controller.addJavaScriptChannel(
       'LanguageHandler',
@@ -3208,7 +3210,7 @@ Future<void> _setupScrollHandling() async {
       },
     );
 
-    // <----SEARCH HANDLER CHANNEL---->
+    // <-----------SEARCH HANDLER CHANNEL----------->
     // JavaScript channel for search functionality from main.html
     await controller.addJavaScriptChannel(
       'SearchHandler',
@@ -3228,7 +3230,7 @@ Future<void> _setupScrollHandling() async {
       },
     );
 
-    // <----SEARCH ENGINE HANDLER CHANNEL---->
+    // <-----------SEARCH ENGINE HANDLER CHANNEL----------->
     // JavaScript channel for search engine communication with main.html
     await controller.addJavaScriptChannel(
       'SearchEngineHandler',
@@ -3238,7 +3240,7 @@ Future<void> _setupScrollHandling() async {
           await _sendSearchEngineToMainHtml();
         }
       },
-    );    // <----NEWS HANDLER CHANNEL---->
+    );    // <-----------NEWS HANDLER CHANNEL----------->
     // JavaScript channel for news fetching communication with main.html
     await controller.addJavaScriptChannel(
       'NewsHandler',
@@ -3258,7 +3260,7 @@ Future<void> _setupScrollHandling() async {
       },
     );
 
-    // <----DEBUG HANDLER CHANNEL---->
+    // <-----------DEBUG HANDLER CHANNEL----------->
     // JavaScript channel for debug messages
     await controller.addJavaScriptChannel(
       'DebugHandler',
@@ -3360,8 +3362,8 @@ Future<void> _setupScrollHandling() async {
           
           // Only notify on actual changes
           if (currentUrl !== lastUrl || currentTitle !== lastTitle) {
-            console.log('🔄 URL changed from', lastUrl, 'to', currentUrl);
-            console.log('🔄 Title changed from', lastTitle, 'to', currentTitle);
+            //console.log('🔄 URL changed from', lastUrl, 'to', currentUrl);
+            //console.log('🔄 Title changed from', lastTitle, 'to', currentTitle);
             
             if (window.UrlChanged && window.UrlChanged.postMessage) {
               try {
@@ -3425,7 +3427,7 @@ Future<void> _setupScrollHandling() async {
           });
           headObserver.observe(document.head, { childList: true, subtree: true });
         } catch(e) {
-          console.log('MutationObserver setup failed:', e);
+          //console.log('MutationObserver setup failed:', e);
         }
         
         // Monitor clicks on links with enhanced targeting
@@ -3482,10 +3484,10 @@ Future<void> _setupScrollHandling() async {
           if (checkInterval) clearInterval(checkInterval);
           if (titleObserver) titleObserver.disconnect();
           if (headObserver) headObserver.disconnect();
-          console.log('🧹 URL monitoring cleaned up');
+          //console.log('🧹 URL monitoring cleaned up');
         };
         
-        console.log('🚀 Enhanced URL monitoring initialized for:', window.location.href);      })();
+        //console.log('🚀 Enhanced URL monitoring initialized for:', window.location.href);      })();
     ''');
 
     await controller.addJavaScriptChannel(
@@ -3574,7 +3576,7 @@ Future<void> _setupScrollHandling() async {
       //print('Sending theme to main.html: $themeJson'); // Debug log        // Send theme via multiple methods for compatibility
       await controller.runJavaScript('''
         try {
-          console.log('🎨 Sending theme data to main.html...');
+          //console.log('🎨 Sending theme data to main.html...');
           
           // Parse the theme data (it's already a JSON string)
           const themeData = JSON.parse('$themeJson');
@@ -3582,18 +3584,18 @@ Future<void> _setupScrollHandling() async {
           // Method 1: window.postMessage
           if (window.postMessage) {
             window.postMessage(themeData, '*');
-            console.log('✅ Theme sent via postMessage');
+            //console.log('✅ Theme sent via postMessage');
           }
           
           // Method 2: Direct function call if available
           if (typeof applyTheme === 'function') {
             applyTheme(themeData);
-            console.log('✅ Theme applied via applyTheme function');
+            //console.log('✅ Theme applied via applyTheme function');
           }
           
           // Method 3: Custom event
           window.dispatchEvent(new CustomEvent('themeUpdate', { detail: themeData }));
-          console.log('✅ Theme update event dispatched');
+          //console.log('✅ Theme update event dispatched');
           
         } catch (e) {
           console.error('❌ Error sending theme:', e);
@@ -3768,10 +3770,10 @@ Future<void> _setupScrollHandling() async {
       await controller.runJavaScript('''
         (function() {
           try {
-            console.log('📰 Calling renderNews with articles: ${processedArticles.length}');
+            //console.log('📰 Calling renderNews with articles: ${processedArticles.length}');
             if (typeof renderNews === 'function') {
               renderNews(${jsonArticles});
-              console.log('✅ renderNews function called successfully');
+              //console.log('✅ renderNews function called successfully');
             } else {
               console.error('❌ renderNews function not found in page');
             }
@@ -3820,7 +3822,7 @@ Future<void> _setupScrollHandling() async {
             // Find the news container with fallbacks
             let container = document.getElementById('newsContainer');
             if (!container) {
-              console.log('📰 newsContainer not found by ID for error, looking for alternatives');
+              //console.log('📰 newsContainer not found by ID for error, looking for alternatives');
               
               // Try to find by class
               const newsContainers = document.getElementsByClassName('news-container');
@@ -3842,7 +3844,7 @@ Future<void> _setupScrollHandling() async {
             
             if (container) {
               container.innerHTML = '<div class="news-item"><div class="news-item-title">$errorLoadingNewsText</div><div class="news-item-summary">' + '$errorMessage' + '</div></div>';
-              console.log('✅ Error message displayed in news container');
+              //console.log('✅ Error message displayed in news container');
             } else {
               console.error('❌ Failed to find or create news container for error message');
               
@@ -3874,21 +3876,21 @@ Future<void> _setupScrollHandling() async {
       final searchEngineJson = json.encode(searchEngineData);
         await controller.runJavaScript('''
         try {
-          console.log('🔍 Sending search engine data to main.html...');
+          //console.log('🔍 Sending search engine data to main.html...');
           
           // Parse the search engine data
           const searchEngineData = JSON.parse('$searchEngineJson');
           
           if (window.postMessage) {
             window.postMessage(searchEngineData, '*');
-            console.log('✅ Search engine sent via postMessage');
+            //console.log('✅ Search engine sent via postMessage');
           }
           
           // Update current search engine and logo directly
           if (typeof updateSearchEngineLogo === 'function') {
             currentSearchEngine = '${currentSearchEngine}';
             updateSearchEngineLogo();
-            console.log('✅ Search engine updated directly to: ${currentSearchEngine}');
+            //console.log('✅ Search engine updated directly to: ${currentSearchEngine}');
           }
           
           // Also dispatch a custom event
@@ -3922,17 +3924,17 @@ Future<void> _setupScrollHandling() async {
       
       await controller.runJavaScript('''
         try {
-          console.log('Sending language data to main.html...');
+          //console.log('Sending language data to main.html...');
           
           if (window.postMessage) {
             window.postMessage($languageJson, '*');
-            console.log('Language sent via postMessage');
+            //console.log('Language sent via postMessage');
           }
           
           if (typeof updateLocalizedUI === 'function') {
             currentLanguage = '${currentLang}';
             updateLocalizedUI();
-            console.log('Language updated directly');
+            //console.log('Language updated directly');
           }
           
         } catch (e) {
@@ -3980,7 +3982,7 @@ Future<void> _setupScrollHandling() async {
       // Send theme via multiple methods for restored tabs
       await controller.runJavaScript('''
         try {
-          console.log('Sending theme to restored tab...');
+          //console.log('Sending theme to restored tab...');
           
           // Check if this is main.html
           const isMainHtml = window.location.href.includes('main.html') || 
@@ -3999,7 +4001,7 @@ Future<void> _setupScrollHandling() async {
           
           // For all pages, dispatch theme event
           window.dispatchEvent(new CustomEvent('themeUpdate', { detail: $themeJson }));
-          console.log('Theme sent to restored tab');
+          //console.log('Theme sent to restored tab');
         } catch (e) {
           console.error('Restored tab theme update error:', e);
         }
@@ -4053,20 +4055,20 @@ Future<void> _setupScrollHandling() async {
         let isLongPress = false;
         let startX, startY;
           document.addEventListener('touchstart', function(e) {
-          console.log('👆 Touch start detected at:', e.touches[0].clientX, e.touches[0].clientY);
+          //console.log('👆 Touch start detected at:', e.touches[0].clientX, e.touches[0].clientY);
           startX = e.touches[0].clientX;
           startY = e.touches[0].clientY;
           isLongPress = false;
             longPressTimer = setTimeout(() => {
-            console.log('🔥 Long press timer triggered!');
+            //console.log('🔥 Long press timer triggered!');
             isLongPress = true;
             
             // Get the element under touch
             const element = document.elementFromPoint(startX, startY);
-            console.log('🔍 Element at point:', element, element ? element.tagName : 'null');
+            //console.log('🔍 Element at point:', element, element ? element.tagName : 'null');
               // Check if the target is an image
             if (element && element.tagName === 'IMG') {
-              console.log('📸 Image detected:', element.src);
+              //console.log('📸 Image detected:', element.src);
               const rect = element.getBoundingClientRect();
               const imageUrl = element.src;
               ImageLongPress.postMessage(JSON.stringify({
@@ -4103,7 +4105,7 @@ Future<void> _setupScrollHandling() async {
             );
               // If there's selected text or we're touching text content, show text context menu
             if (hasSelectedText || hasTextContent) {
-              console.log('Text detected, showing text context menu');
+              //console.log('Text detected, showing text context menu');
               TextLongPress.postMessage(JSON.stringify({
                 text: hasSelectedText ? selection.toString().trim() : '',
                 x: startX,
@@ -4569,7 +4571,7 @@ Future<void> _setupScrollHandling() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('keepTabsOpen', value);  }
 
-  // <----NAVIGATION BAR CUSTOMIZATION METHODS---->
+  // <-----------NAVIGATION BAR CUSTOMIZATION METHODS----------->
   Future<List<String>> _getCustomNavButtons() async {
     final prefs = await SharedPreferences.getInstance();
     final buttonsJson = prefs.getString('customNavButtons');
@@ -5655,7 +5657,7 @@ Future<void> _setupScrollHandling() async {
     );
   }
 
-  // <----NAVIGATION BAR CUSTOMIZATION DIALOG---->
+  // <-----------NAVIGATION BAR CUSTOMIZATION DIALOG----------->
   void _showNavigationCustomization() {    showCustomDialog(
       context: context,
       title: AppLocalizations.of(context)!.customize_navigation,
@@ -8923,7 +8925,7 @@ Future<void> _setupScrollHandling() async {
     });
 
     _initializeTab(newTab).then((_) async {
-      // <----ACTUALLY LOAD THE URL INTO THE WEBVIEW---->
+      // <-----------ACTUALLY LOAD THE URL INTO THE WEBVIEW----------->
       // CRITICAL: Load the URL into the WebViewController AFTER initialization
       try {
         await controller.loadRequest(Uri.parse(targetUrl));
@@ -9279,7 +9281,7 @@ Future<void> _setupScrollHandling() async {
       },
     );
   }
-  // <----AI ACTION BAR METHODS---->
+  // <-----------AI ACTION BAR METHODS----------->
   void _toggleAiActionBar() {
     setState(() {
       _isAiActionBarVisible = !_isAiActionBarVisible;
@@ -12814,10 +12816,10 @@ Future<void> _handlePageStarted(String url) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('history', jsonEncode(_loadedHistory));  }
   
-  // <----TAB INITIALIZATION---->
+  // <-----------TAB INITIALIZATION----------->
   // Simplified tab initialization for M12 performance
   Future<void> _initializeTab(Map<String, dynamic> tab) async {
-    // <----WEBVIEW CONTROLLER INITIALIZATION---->
+    // <-----------WEBVIEW CONTROLLER INITIALIZATION----------->
     // CRITICAL: Properly initialize WebViewController with all required settings
     final webViewController = tab['controller'] as WebViewController;
     
@@ -12848,7 +12850,7 @@ Future<void> _handlePageStarted(String url) async {
       }
     }
     
-    // <----JAVASCRIPT CHANNELS SETUP---->
+    // <-----------JAVASCRIPT CHANNELS SETUP----------->
     // CRITICAL: Set up JavaScript channels BEFORE loading any URL
     try {      // DialogHandler channel
       await webViewController.addJavaScriptChannel(
@@ -13811,7 +13813,7 @@ Future<void> _handlePageStarted(String url) async {
     try {
       //print('Injecting context menu JavaScript...');
       await controller.runJavaScript('''
-        console.log('Context menu JavaScript loaded!');
+        //console.log('Context menu JavaScript loaded!');
         
         window.findImageAtPoint = function(x, y) {
           try {
@@ -13851,7 +13853,7 @@ Future<void> _handlePageStarted(String url) async {
         const MOVEMENT_THRESHOLD = 15; // Allow some movement before canceling
         const SCROLL_THRESHOLD = 25; // Cancel only on significant scroll movement
           document.addEventListener('touchstart', function(e) {
-          console.log('🤚 TouchStart detected:', e.touches[0].clientX, e.touches[0].clientY);
+          //console.log('🤚 TouchStart detected:', e.touches[0].clientX, e.touches[0].clientY);
           
           // Only track images and text elements
           const target = e.target;
@@ -13862,10 +13864,10 @@ Future<void> _handlePageStarted(String url) async {
                            target.isContentEditable || target.tagName === 'INPUT' || 
                            target.tagName === 'TEXTAREA';
           
-          console.log('🎯 Target element:', target.tagName, 'isImage:', isImage, 'isTextNode:', isTextNode);
+          //console.log('🎯 Target element:', target.tagName, 'isImage:', isImage, 'isTextNode:', isTextNode);
           
           if (isImage || isTextNode) {
-            console.log('✅ Starting context menu tracking...');
+            //console.log('✅ Starting context menu tracking...');
             contextMenuState.isTracking = true;
             contextMenuState.startTime = Date.now();
             contextMenuState.startX = e.touches[0].clientX;
@@ -13874,10 +13876,10 @@ Future<void> _handlePageStarted(String url) async {
             contextMenuState.target = target;            // Set timer for long press
             contextMenuState.timer = setTimeout(() => {
               if (contextMenuState.isTracking && !contextMenuState.moved) {
-                console.log('⏰ Long press timer triggered!', { isImage, isTextNode, target });
+                //console.log('⏰ Long press timer triggered!', { isImage, isTextNode, target });
                   if (isImage) {
                   const imageUrl = target.tagName === 'IMG' ? target.src : target.closest('img').src;
-                  console.log('Image long press:', imageUrl);
+                  //console.log('Image long press:', imageUrl);
                   // Use the correct JavaScript channel call
                   if (window.ImageLongPress && window.ImageLongPress.postMessage) {
                     window.ImageLongPress.postMessage(JSON.stringify({
@@ -13886,15 +13888,15 @@ Future<void> _handlePageStarted(String url) async {
                       x: contextMenuState.startX,
                       y: contextMenuState.startY + window.scrollY
                     }));
-                    console.log('✅ Image context menu message sent');
+                    //console.log('✅ Image context menu message sent');
                   } else {
-                    console.log('❌ ImageLongPress channel not available');
+                    //console.log('❌ ImageLongPress channel not available');
                   }
                 } else if (isTextNode) {
                   // Handle text selection context menu
                   const selection = window.getSelection();
                   const selectedText = selection.toString().trim();
-                  console.log('Text long press:', selectedText);
+                  //console.log('Text long press:', selectedText);
                   // Use the correct JavaScript channel call
                   if (window.TextLongPress && window.TextLongPress.postMessage) {
                     window.TextLongPress.postMessage(JSON.stringify({
@@ -13903,9 +13905,9 @@ Future<void> _handlePageStarted(String url) async {
                       y: contextMenuState.startY + window.scrollY,
                       isInput: target.isContentEditable || target.tagName === 'INPUT' || target.tagName === 'TEXTAREA'
                     }));
-                    console.log('✅ Text context menu message sent');
+                    //console.log('✅ Text context menu message sent');
                   } else {
-                    console.log('❌ TextLongPress channel not available');
+                    //console.log('❌ TextLongPress channel not available');
                   }
                 }
                 }
@@ -14561,7 +14563,7 @@ Future<void> _handlePageStarted(String url) async {
   Future<void> _handleIntentData() async {
     // If we're already processing an intent or the user is actively typing, don't interrupt
     if (_isLoadingIntentUrl || _urlFocusNode.hasFocus) {
-      debugPrint('Ignoring intent while loading or URL bar has focus');
+      //debugPrint('Ignoring intent while loading or URL bar has focus');
       return;
     }
 
@@ -14575,7 +14577,7 @@ Future<void> _handlePageStarted(String url) async {
       
       // Compare with the last processed URL - using exact comparison
       if (initialUrl == _lastProcessedIntentUrl) {
-        debugPrint('Ignoring duplicate intent URL: $initialUrl');
+        //debugPrint('Ignoring duplicate intent URL: $initialUrl');
         return;
       }
       
@@ -14637,15 +14639,15 @@ Future<void> _handlePageStarted(String url) async {
             // Load the URL in WebView
             try {
               await controller.loadRequest(Uri.parse(initialUrl));
-              debugPrint('Successfully loaded URL from intent: $initialUrl');
+              //debugPrint('Successfully loaded URL from intent: $initialUrl');
             } catch (e) {
-              debugPrint('Error loading URL in WebView: $e');
+              //debugPrint('Error loading URL in WebView: $e');
             }
           } else {
-            debugPrint('Not updating URL bar while it has focus');
+            //debugPrint('Not updating URL bar while it has focus');
           }
         } else {
-          debugPrint('URL from intent matches current URL, ignoring: $initialUrl');
+          //debugPrint('URL from intent matches current URL, ignoring: $initialUrl');
         }
       } finally {
         // Always reset the loading flag
@@ -14653,7 +14655,7 @@ Future<void> _handlePageStarted(String url) async {
       }
     } catch (e) {
       _isLoadingIntentUrl = false;
-      debugPrint('Error handling intent data: $e');
+      //debugPrint('Error handling intent data: $e');
     }
   }
   
@@ -14662,7 +14664,7 @@ Future<void> _handlePageStarted(String url) async {
     try {
       // NEVER update if URL bar has focus - this is critical to fix the problem
       if (_urlFocusNode.hasFocus) {
-        debugPrint('URL bar has focus, refusing to update text');
+        //debugPrint('URL bar has focus, refusing to update text');
         return; // Exit immediately, preserve user input
       }
       
@@ -14679,7 +14681,7 @@ Future<void> _handlePageStarted(String url) async {
       // Reset selection to end
       _urlController.selection = TextSelection.collapsed(offset: _urlController.text.length);
     } catch (e) {
-      debugPrint('Error updating URL bar safely: $e');
+      //debugPrint('Error updating URL bar safely: $e');
     }
   }
 

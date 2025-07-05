@@ -847,5 +847,19 @@
   "network_error_description": "Si è verificato un errore di rete. Controlla la tua connessione internet e riprova.",
   "server_error_description": "Il server ha riscontrato un errore e non è riuscito a completare la richiesta.",
   "try_again": "Riprova",
-  "go_home": "Vai alla Home"
+  "go_home": "Vai alla Home",
+  "skip": "Salta",
+  "continueText": "Continua",
+  "package_downloaded": "Pacchetto scaricato!",
+  "installation_steps": "Passaggi di installazione:",
+  "installation_instructions": "1. Tocca \"Installa\" qui sotto per aprire il pacchetto\n2. Abilita \"Installa app sconosciute\" se richiesto\n3. Segui la procedura guidata di installazione di Android",
+  "view": "Visualizza",
+  "install": "Installa",
+  "file_deleted_from_device": "File eliminato dal dispositivo",
+  "delete": "Elimina",
+  "incognito": "Incognito",
+  "cannot_open_file_path_not_found": "Impossibile aprire il file: percorso non trovato",
+  "error_opening_file_message": "Errore nell'apertura del file: {message}",
+  "error_opening_file_exception": "Errore nell'apertura del file: {error}",
+  "summary_copied_to_clipboard": "Riassunto copiato negli appunti"
 }

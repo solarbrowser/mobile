@@ -937,5 +937,19 @@
   "network_error_description": "Ocurrió un error de red. Por favor verifica tu conexión a internet e intenta de nuevo.",
   "server_error_description": "El servidor encontró un error y no pudo completar tu solicitud.",
   "try_again": "Intentar de Nuevo",
-  "go_home": "Ir al Inicio"
+  "go_home": "Ir al Inicio",
+  "skip": "Omitir",
+  "continueText": "Continuar", 
+  "package_downloaded": "¡Paquete descargado!",
+  "installation_steps": "Pasos de instalación:",
+  "installation_instructions": "1. Toca \"Instalar\" abajo para abrir el paquete\n2. Habilita \"Instalar apps desconocidas\" si se solicita\n3. Sigue el asistente de instalación de Android",
+  "view": "Ver",
+  "install": "Instalar",
+  "file_deleted_from_device": "Archivo eliminado del dispositivo",
+  "delete": "Eliminar",
+  "incognito": "Incógnito",
+  "cannot_open_file_path_not_found": "No se puede abrir el archivo: ruta no encontrada",
+  "error_opening_file_message": "Error al abrir archivo: {message}",
+  "error_opening_file_exception": "Error al abrir archivo: {error}",
+  "summary_copied_to_clipboard": "Resumen copiado al portapapeles"
 }
