@@ -117,9 +117,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get yesterday => 'Yesterday';
 
   @override
-  String get updated => 'Solar Updated!';
-
-  @override
   String version(String version) {
     return 'Version $version';
   }
@@ -604,6 +601,60 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get grant_permission => 'Give Permission';
+
+  @override
+  String get download_permissions => 'Download Permissions';
+
+  @override
+  String get manage_download_permissions => 'Manage permissions for downloads';
+
+  @override
+  String get storage_permission => 'Storage Access';
+
+  @override
+  String get notification_permission => 'Notifications';
+
+  @override
+  String get notification_permission_description =>
+      'For download progress and completion alerts';
+
+  @override
+  String get permission_explanation =>
+      'These permissions help improve your download experience. You can change them anytime in Android Settings.';
+
+  @override
+  String get clear_downloads_history_description =>
+      'Remove download history (files remain)';
+
+  @override
+  String get change_download_location => 'Change where files are saved';
+
+  @override
+  String get request => 'Request';
+
+  @override
+  String get storage => 'Storage';
+
+  @override
+  String get manage_external_storage => 'Manage External Storage';
+
+  @override
+  String get notification => 'Notification';
+
+  @override
+  String get granted => 'Granted';
+
+  @override
+  String get denied => 'Denied';
+
+  @override
+  String get restricted => 'Restricted';
+
+  @override
+  String get limited => 'Limited';
+
+  @override
+  String get permanently_denied => 'Permanently Denied';
 
   @override
   String get storage_permission_denied =>
@@ -1176,4 +1227,175 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notice => 'Notice';
+
+  @override
+  String get cannot_write_selected_folder =>
+      'Cannot write to selected folder. Using default Downloads folder.';
+
+  @override
+  String get cannot_write_selected_folder_choose_different =>
+      'Cannot write to selected folder. Please choose a different location.';
+
+  @override
+  String get cannot_write_configured_folder =>
+      'Cannot write to configured folder. Using default Downloads folder.';
+
+  @override
+  String get error_selecting_folder_default =>
+      'Error selecting folder. Using default Downloads folder.';
+
+  @override
+  String get file_saved_to_app_storage =>
+      'File saved to app storage instead of selected folder';
+
+  @override
+  String get failed_write_any_location =>
+      'Failed to write file to any location';
+
+  @override
+  String get settings_action => 'Settings';
+
+  @override
+  String save_to_downloads_folder(String fileName) {
+    return 'To save \"$fileName\" to your Downloads folder where you can find it in Gallery or File Manager, Solar needs storage permission.';
+  }
+
+  @override
+  String get without_permission_private_folder =>
+      'Without permission, the file will be saved to Solar\'s private folder (accessible from Downloads panel).';
+
+  @override
+  String get enable_unknown_apps_android =>
+      'You may need to enable \"Install Unknown Apps\" in Android settings after download.';
+
+  @override
+  String get private_folder_instead =>
+      'Files will be saved to Solar\'s private folder instead.';
+
+  @override
+  String get save_to_downloads_title => 'Save to Downloads?';
+
+  @override
+  String get save_to_gallery_title => 'Save to Gallery?';
+
+  @override
+  String get storage_access_required => 'Storage Access Required';
+
+  @override
+  String install_package_title(String packageName) {
+    return 'Install $packageName?';
+  }
+
+  @override
+  String install_package_message(String packageName) {
+    return 'This will download and prepare \"$packageName\" for installation on your device.';
+  }
+
+  @override
+  String get save_to_gallery_message =>
+      'To save images and videos to your Gallery app where they\'ll be visible system-wide, Solar needs media access.';
+
+  @override
+  String get storage_access_message =>
+      'To save files to your device storage, Solar needs storage access permissions.';
+
+  @override
+  String get photos_videos_audio_permission => 'Photos, Videos & Audio';
+
+  @override
+  String get storage_media_access_permission => 'Storage & Media Access';
+
+  @override
+  String get package_installation_permission => 'Package Installation';
+
+  @override
+  String get storage_access_permission => 'Storage Access';
+
+  @override
+  String get without_gallery_permission =>
+      'Without permission, media files will only be visible in Solar\'s Downloads section.';
+
+  @override
+  String get flutter_version_string => 'Flutter 3.32.5';
+
+  @override
+  String get photoncore_version_string => 'Photoncore 0.1.0';
+
+  @override
+  String get engine_version_string => '4.7.0';
+
+  @override
+  String get http_warning_title => 'Unsecure Connection Warning';
+
+  @override
+  String get http_warning_message =>
+      'You are about to visit a website that uses an unsecure connection (HTTP). Your data may be visible to others. Are you sure you want to continue?';
+
+  @override
+  String get continue_anyway => 'Continue Anyway';
+
+  @override
+  String get go_back => 'Go Back';
+
+  @override
+  String get web_page_error_title => 'Page Load Error';
+
+  @override
+  String get connection_error => 'Connection Error';
+
+  @override
+  String get page_not_found => 'Page Not Found';
+
+  @override
+  String get connection_reset => 'Connection Reset';
+
+  @override
+  String get connection_timed_out => 'Connection Timed Out';
+
+  @override
+  String get dns_error => 'DNS Error';
+
+  @override
+  String get ssl_error => 'SSL Certificate Error';
+
+  @override
+  String get network_error => 'Network Error';
+
+  @override
+  String get server_error => 'Server Error';
+
+  @override
+  String get unable_to_connect =>
+      'Unable to connect to the website. Please check your internet connection and try again.';
+
+  @override
+  String get page_not_found_description =>
+      'The requested page could not be found on the server. The page may have been moved or deleted.';
+
+  @override
+  String get connection_reset_description =>
+      'The connection to the server was reset. This may be a temporary issue.';
+
+  @override
+  String get connection_timeout_description =>
+      'The connection to the server timed out. The server may be busy or your connection may be slow.';
+
+  @override
+  String get dns_error_description =>
+      'Unable to find the website. Please check the web address and try again.';
+
+  @override
+  String get ssl_error_description =>
+      'There is a problem with the website\'s security certificate. The connection may not be secure.';
+
+  @override
+  String get network_error_description =>
+      'A network error occurred. Please check your internet connection and try again.';
+
+  @override
+  String get server_error_description =>
+      'The server encountered an error and could not complete your request.';
+
+  @override
+  String get go_home => 'Go Home';
 }

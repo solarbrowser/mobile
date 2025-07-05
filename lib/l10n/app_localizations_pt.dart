@@ -117,9 +117,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get yesterday => 'Ontem';
 
   @override
-  String get updated => 'Solar Browser atualizado!';
-
-  @override
   String version(String version) {
     return 'VersÃ£o $version';
   }
@@ -608,6 +605,60 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get grant_permission => 'Conceder PermissÃ£o';
+
+  @override
+  String get download_permissions => 'Download Permissions';
+
+  @override
+  String get manage_download_permissions => 'Manage permissions for downloads';
+
+  @override
+  String get storage_permission => 'Storage Access';
+
+  @override
+  String get notification_permission => 'Notifications';
+
+  @override
+  String get notification_permission_description =>
+      'For download progress and completion alerts';
+
+  @override
+  String get permission_explanation =>
+      'These permissions help improve your download experience. You can change them anytime in Android Settings.';
+
+  @override
+  String get clear_downloads_history_description =>
+      'Remove download history (files remain)';
+
+  @override
+  String get change_download_location => 'Change where files are saved';
+
+  @override
+  String get request => 'Request';
+
+  @override
+  String get storage => 'Storage';
+
+  @override
+  String get manage_external_storage => 'Manage External Storage';
+
+  @override
+  String get notification => 'Notification';
+
+  @override
+  String get granted => 'Granted';
+
+  @override
+  String get denied => 'Denied';
+
+  @override
+  String get restricted => 'Restricted';
+
+  @override
+  String get limited => 'Limited';
+
+  @override
+  String get permanently_denied => 'Permanently Denied';
 
   @override
   String get storage_permission_denied =>
@@ -1186,4 +1237,176 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get notice => 'Aviso';
+
+  @override
+  String get cannot_write_selected_folder =>
+      'Não é possível escrever na pasta selecionada. Usando pasta de downloads padrão.';
+
+  @override
+  String get cannot_write_selected_folder_choose_different =>
+      'Não é possível escrever na pasta selecionada. Por favor, escolha um local diferente.';
+
+  @override
+  String get cannot_write_configured_folder =>
+      'Não é possível escrever na pasta configurada. Usando pasta de downloads padrão.';
+
+  @override
+  String get error_selecting_folder_default =>
+      'Erro ao selecionar pasta. Usando pasta de downloads padrão.';
+
+  @override
+  String get file_saved_to_app_storage =>
+      'Arquivo salvo no armazenamento do app em vez da pasta selecionada';
+
+  @override
+  String get failed_write_any_location =>
+      'Falha ao escrever arquivo em qualquer local';
+
+  @override
+  String get settings_action => 'Configurações';
+
+  @override
+  String save_to_downloads_folder(String fileName) {
+    return 'Para salvar \"$fileName\" na sua pasta de Downloads onde você pode encontrá-lo na Galeria ou Gerenciador de Arquivos, Solar precisa de permissão de armazenamento.';
+  }
+
+  @override
+  String get without_permission_private_folder =>
+      'Sem permissão, o arquivo será salvo na pasta privada do Solar (acessível do painel de Downloads).';
+
+  @override
+  String get enable_unknown_apps_android =>
+      'Você pode precisar habilitar \"Instalar aplicativos desconhecidos\" nas configurações do Android após o download.';
+
+  @override
+  String get private_folder_instead =>
+      'Os arquivos serão salvos na pasta privada do Solar em vez disso.';
+
+  @override
+  String get save_to_downloads_title => 'Salvar em Downloads?';
+
+  @override
+  String get save_to_gallery_title => 'Salvar na Galeria?';
+
+  @override
+  String get storage_access_required => 'Acesso ao armazenamento necessário';
+
+  @override
+  String install_package_title(String packageName) {
+    return 'Instalar $packageName?';
+  }
+
+  @override
+  String install_package_message(String packageName) {
+    return 'Isso baixará e preparará \"$packageName\" para instalação no seu dispositivo.';
+  }
+
+  @override
+  String get save_to_gallery_message =>
+      'Para salvar imagens e vídeos no seu app de Galeria onde eles ficarão visíveis em todo o sistema, Solar precisa de acesso à mídia.';
+
+  @override
+  String get storage_access_message =>
+      'Para salvar arquivos no armazenamento do seu dispositivo, Solar precisa de permissões de acesso ao armazenamento.';
+
+  @override
+  String get photos_videos_audio_permission => 'Fotos, Vídeos e Áudio';
+
+  @override
+  String get storage_media_access_permission =>
+      'Acesso ao Armazenamento e Mídia';
+
+  @override
+  String get package_installation_permission => 'Instalação de Pacotes';
+
+  @override
+  String get storage_access_permission => 'Acesso ao Armazenamento';
+
+  @override
+  String get without_gallery_permission =>
+      'Sem permissão, arquivos de mídia só serão visíveis na seção de Downloads do Solar.';
+
+  @override
+  String get flutter_version_string => 'Flutter 3.32.5';
+
+  @override
+  String get photoncore_version_string => 'Photoncore 0.1.0';
+
+  @override
+  String get engine_version_string => '4.7.0';
+
+  @override
+  String get http_warning_title => 'Aviso de Conexão Insegura';
+
+  @override
+  String get http_warning_message =>
+      'Você está prestes a visitar um site que usa uma conexão insegura (HTTP). Seus dados podem ser visíveis para outros. Tem certeza de que deseja continuar?';
+
+  @override
+  String get continue_anyway => 'Continuar Mesmo Assim';
+
+  @override
+  String get go_back => 'Voltar';
+
+  @override
+  String get web_page_error_title => 'Erro de Carregamento da Página';
+
+  @override
+  String get connection_error => 'Erro de Conexão';
+
+  @override
+  String get page_not_found => 'Página Não Encontrada';
+
+  @override
+  String get connection_reset => 'Conexão Reiniciada';
+
+  @override
+  String get connection_timed_out => 'Tempo Limite de Conexão Esgotado';
+
+  @override
+  String get dns_error => 'Erro de DNS';
+
+  @override
+  String get ssl_error => 'Erro de Certificado SSL';
+
+  @override
+  String get network_error => 'Erro de Rede';
+
+  @override
+  String get server_error => 'Erro do Servidor';
+
+  @override
+  String get unable_to_connect =>
+      'Não foi possível conectar ao site. Verifique sua conexão com a internet e tente novamente.';
+
+  @override
+  String get page_not_found_description =>
+      'A página solicitada não foi encontrada no servidor. A página pode ter sido movida ou excluída.';
+
+  @override
+  String get connection_reset_description =>
+      'A conexão com o servidor foi reiniciada. Isso pode ser um problema temporário.';
+
+  @override
+  String get connection_timeout_description =>
+      'A conexão com o servidor expirou. O servidor pode estar ocupado ou sua conexão pode estar lenta.';
+
+  @override
+  String get dns_error_description =>
+      'Não foi possível encontrar o site. Verifique o endereço da web e tente novamente.';
+
+  @override
+  String get ssl_error_description =>
+      'Há um problema com o certificado de segurança do site. A conexão pode não ser segura.';
+
+  @override
+  String get network_error_description =>
+      'Ocorreu um erro de rede. Verifique sua conexão com a internet e tente novamente.';
+
+  @override
+  String get server_error_description =>
+      'O servidor encontrou um erro e não foi possível completar sua solicitação.';
+
+  @override
+  String get go_home => 'Ir para Início';
 }

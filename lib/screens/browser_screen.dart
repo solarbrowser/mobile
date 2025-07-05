@@ -31,6 +31,7 @@ import 'package:solar/screens/pwa_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import '../firebase_options.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class Debouncer {
   final int milliseconds;
@@ -151,6 +152,14 @@ class LoadingBorderPainter extends CustomPainter {
   }
 }
 
+// Permission dialog types for different scenarios
+enum PermissionDialogType {
+  downloads,
+  packageInstall,
+  media,
+  storage
+}
+
 class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   // <----WEBVIEW AND NAVIGATION---->
   final List<WebViewController> _controllers = [];
@@ -197,6 +206,358 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   // <----GETTERS---->
   String? get currentFileName => _currentFileName;
   int? get currentDownloadSize => _currentDownloadSize;
+  
+  // <----PERMISSION DIALOG SYSTEM---->
+  /// Shows a beautiful animated permission dialog explaining why permissions are needed
+  Future<bool> _showPermissionDialog(PermissionDialogType type, {String? fileName, String? packageName}) async {
+    String title;
+    String message;
+    String permissionName;
+    IconData icon;
+    String alternativeText;
+    
+    switch (type) {
+      case PermissionDialogType.downloads:
+        title = AppLocalizations.of(context)!.save_to_downloads_title;
+        message = AppLocalizations.of(context)!.save_to_downloads_folder(fileName ?? 'this file');
+        permissionName = AppLocalizations.of(context)!.storage_media_access_permission;
+        icon = Icons.download_rounded;
+        alternativeText = AppLocalizations.of(context)!.without_permission_private_folder;
+        break;
+        
+      case PermissionDialogType.packageInstall:
+        title = AppLocalizations.of(context)!.install_package_title(packageName ?? fileName ?? 'Package');
+        message = AppLocalizations.of(context)!.install_package_message(packageName ?? fileName ?? 'the package');
+        permissionName = AppLocalizations.of(context)!.package_installation_permission;
+        icon = Icons.install_mobile;
+        alternativeText = AppLocalizations.of(context)!.enable_unknown_apps_android;
+        break;
+        
+      case PermissionDialogType.media:
+        title = AppLocalizations.of(context)!.save_to_gallery_title;
+        message = AppLocalizations.of(context)!.save_to_gallery_message;
+        permissionName = AppLocalizations.of(context)!.photos_videos_audio_permission;
+        icon = Icons.photo_library_rounded;
+        alternativeText = AppLocalizations.of(context)!.without_gallery_permission;
+        break;
+        
+      case PermissionDialogType.storage:
+        title = AppLocalizations.of(context)!.storage_access_required;
+        message = AppLocalizations.of(context)!.storage_access_message;
+        permissionName = AppLocalizations.of(context)!.storage_access_permission;
+        icon = Icons.storage_rounded;
+        alternativeText = AppLocalizations.of(context)!.private_folder_instead;
+        break;
+    }
+
+    // Use a Completer to handle the result from the animated dialog
+    final Completer<bool> completer = Completer<bool>();
+    
+    // Show animated custom dialog
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierColor: ThemeManager.textColor().withOpacity(0.5),
+      pageBuilder: (context, animation, secondaryAnimation) => Container(),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        );
+
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.7, end: 1.0).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: animation,
+            child: _buildAnimatedPermissionDialog(
+              title: title,
+              message: message,
+              permissionName: permissionName,
+              icon: icon,
+              alternativeText: alternativeText,
+              onResult: (result) {
+                Navigator.of(context).pop();
+                completer.complete(result);
+              },
+            ),
+          ),
+        );
+      },
+      transitionDuration: const Duration(milliseconds: 300),
+    );
+
+    return completer.future;
+  }
+
+  // Build the animated permission dialog content
+  Widget _buildAnimatedPermissionDialog({
+    required String title,
+    required String message,
+    required String permissionName,
+    required IconData icon,
+    required String alternativeText,
+    required Function(bool) onResult,
+  }) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: Container(
+        padding: const EdgeInsets.all(28),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          color: ThemeManager.backgroundColor(),
+          boxShadow: [
+            BoxShadow(
+              color: ThemeManager.textColor().withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Animated icon with pulse effect
+            TweenAnimationBuilder<double>(
+              duration: const Duration(milliseconds: 600),
+              tween: Tween(begin: 0.0, end: 1.0),
+              builder: (context, value, child) {
+                return Transform.scale(
+                  scale: 0.8 + (0.2 * value),
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(70),
+                      color: ThemeManager.primaryColor().withOpacity(0.1),
+                      border: Border.all(
+                        color: ThemeManager.primaryColor().withOpacity(0.3),
+                        width: 2,
+                      ),
+                    ),
+                    child: Icon(
+                      icon,
+                      size: 56,
+                      color: ThemeManager.primaryColor(),
+                    ),
+                  ),
+                );
+              },
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // Title with slide animation
+            TweenAnimationBuilder<Offset>(
+              duration: const Duration(milliseconds: 500),
+              tween: Tween(begin: const Offset(0, 0.3), end: Offset.zero),
+              builder: (context, offset, child) {
+                return Transform.translate(
+                  offset: offset * 50,
+                  child: Opacity(
+                    opacity: 1.0 - offset.dy,
+                    child: Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: ThemeManager.textColor(),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              },
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Description with slide animation (delayed)
+            TweenAnimationBuilder<Offset>(
+              duration: const Duration(milliseconds: 600),
+              tween: Tween(begin: const Offset(0, 0.3), end: Offset.zero),
+              builder: (context, offset, child) {
+                return Transform.translate(
+                  offset: offset * 50,
+                  child: Opacity(
+                    opacity: 1.0 - offset.dy,
+                    child: Text(
+                      message,
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: ThemeManager.textSecondaryColor(),
+                        height: 1.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                );
+              },
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // Permission badge with slide animation (more delayed)
+            TweenAnimationBuilder<Offset>(
+              duration: const Duration(milliseconds: 700),
+              tween: Tween(begin: const Offset(0, 0.3), end: Offset.zero),
+              builder: (context, offset, child) {
+                return Transform.translate(
+                  offset: offset * 50,
+                  child: Opacity(
+                    opacity: 1.0 - offset.dy,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        color: ThemeManager.primaryColor().withOpacity(0.1),
+                        border: Border.all(
+                          color: ThemeManager.primaryColor().withOpacity(0.3),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.security_rounded,
+                            size: 24,
+                            color: ThemeManager.primaryColor(),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            permissionName,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                              color: ThemeManager.primaryColor(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            
+            const SizedBox(height: 20),
+            
+            // Alternative info box with slide animation (most delayed)
+            TweenAnimationBuilder<Offset>(
+              duration: const Duration(milliseconds: 800),
+              tween: Tween(begin: const Offset(0, 0.3), end: Offset.zero),
+              builder: (context, offset, child) {
+                return Transform.translate(
+                  offset: offset * 50,
+                  child: Opacity(
+                    opacity: 1.0 - offset.dy,
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(16),
+                        color: ThemeManager.surfaceColor().withOpacity(0.8),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            size: 20,
+                            color: ThemeManager.textSecondaryColor(),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              alternativeText,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: ThemeManager.textSecondaryColor(),
+                                fontStyle: FontStyle.italic,
+                                height: 1.4,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            
+            const SizedBox(height: 32),
+            
+            // Action buttons with slide animation (final)
+            TweenAnimationBuilder<Offset>(
+              duration: const Duration(milliseconds: 900),
+              tween: Tween(begin: const Offset(0, 0.3), end: Offset.zero),
+              builder: (context, offset, child) {
+                return Transform.translate(
+                  offset: offset * 50,
+                  child: Opacity(
+                    opacity: 1.0 - offset.dy,
+                    child: Row(
+                      children: [
+                        // Skip button
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () => onResult(false),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                side: BorderSide(
+                                  color: ThemeManager.textSecondaryColor().withOpacity(0.3),
+                                  width: 1.5,
+                                ),
+                              ),
+                            ),
+                            child: Text(
+                              'Skip',
+                              style: TextStyle(
+                                color: ThemeManager.textSecondaryColor(),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                        
+                        const SizedBox(width: 16),
+                        
+                        // Grant/Continue button
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () => onResult(true),
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              backgroundColor: ThemeManager.primaryColor(),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 0,
+                            ),
+                            icon: const Icon(Icons.check_circle_outline_rounded, size: 20),
+                            label: const Text(
+                              'Continue',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
   
   // <----CONTROLLERS---->
   late TextEditingController _urlController;
@@ -334,11 +695,11 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
 void _handleTouchStart(Map<String, dynamic> data) {
   if (!mounted) return;
   
-  print('🔍 _handleTouchStart called with data type: ${data['type']}');
+  //print('🔍 _handleTouchStart called with data type: ${data['type']}');
   
   final type = data['type'] as String;
     if (type == 'image_touch_start') {
-    print('📸 Showing image context menu immediately');
+    //print('📸 Showing image context menu immediately');
     // Show image context menu without any delay or conditions
     _showImageContextMenu(data);
   }
@@ -360,7 +721,7 @@ void _handleTouchStart(Map<String, dynamic> data) {
       final x = position.dx;
       final y = position.dy;
       
-      print('🔍 Checking for content at position ($x, $y)');
+      //print('🔍 Checking for content at position ($x, $y)');
       
       // Add haptic feedback for better user experience
       HapticFeedback.mediumImpact();
@@ -512,11 +873,11 @@ void _handleTouchStart(Map<String, dynamic> data) {
       // Parse the result
       try {
         final String resultString = result.toString();
-        print('🔍 Raw result from JavaScript: $resultString');
+        //print('🔍 Raw result from JavaScript: $resultString');
         
         // Handle potential string results that aren't valid JSON
         if (resultString == "null" || resultString.isEmpty) {
-          print('❌ Empty or null result from JavaScript');
+          //print('❌ Empty or null result from JavaScript');
           return;
         }
         
@@ -532,41 +893,41 @@ void _handleTouchStart(Map<String, dynamic> data) {
         
         if (data['found'] == true) {
           if (data['type'] == 'image') {
-            print('🖼️ Found image: ${data['src']}');
+            //print('🖼️ Found image: ${data['src']}');
             _showImageContextMenu(data);
           } else if (data['type'] == 'text') {
-            print('📝 Selected text: ${data['text']}');
+            //print('📝 Selected text: ${data['text']}');
             // Text is already selected in the WebView, no need to do anything else
             
             // If the text is inside a link, we could show a special context menu here
             if (data['linkUrl'] != null) {
-              print('🔗 Text is inside a link: ${data['linkUrl']}');
+              //print('🔗 Text is inside a link: ${data['linkUrl']}');
               // For now we'll let the default text selection handle this
             }
           }
         } else {
-          print('❌ No content found at position');
+          //print('❌ No content found at position');
         }
       } catch (e) {
-        print('❌ Error parsing JavaScript result: $e');
+        //print('❌ Error parsing JavaScript result: $e');
       }
     } catch (e) {
-      print('❌ Error checking for content at position: $e');
+      //print('❌ Error checking for content at position: $e');
     }
   }
 
   // These methods are kept for compatibility 
 void _handleTouchMoved() {
-    print('📱 Touch moved event received');
+    //print('📱 Touch moved event received');
 }
 
 void _handleTouchEnd() {
-    print('📱 Touch end event received');
+    //print('📱 Touch end event received');
   }
   
   // Test method to manually trigger the image context menu
   Future<void> _testImageContextMenu() async {
-    print('🧪 Testing image context menu manually');
+    //print('🧪 Testing image context menu manually');
     try {
       await controller.runJavaScript('''
         if (typeof showImageContextMenu === 'function') {
@@ -577,7 +938,7 @@ void _handleTouchEnd() {
         }
       ''');
     } catch (e) {
-      print('🧪 Error testing image context menu: $e');
+      //print('🧪 Error testing image context menu: $e');
     }
   }
   // Text selection is handled by the native system
@@ -688,9 +1049,9 @@ void _handleTouchEnd() {
         'savedAt': DateTime.now().toIso8601String(),
       }));
       
-      print('Saved ${tabsData.length} tabs to preferences');
+      //print('Saved ${tabsData.length} tabs to preferences');
     } catch (e) {
-      print('Error saving tabs: $e');
+      //print('Error saving tabs: $e');
     }
   }
   Future<void> _loadSavedTabs() async {
@@ -733,7 +1094,7 @@ void _handleTouchEnd() {
           if (savedUrl.isNotEmpty && savedUrl != 'about:blank') {
             final webController = restoredTab['controller'] as WebViewController;
             webController.loadRequest(Uri.parse(savedUrl));
-            print('Restored tab with URL: $savedUrl');
+            //print('Restored tab with URL: $savedUrl');
             
             // Send theme to main.html if it's the home page
             if (savedUrl == _homeUrl || savedUrl.contains('main.html')) {
@@ -757,11 +1118,11 @@ void _handleTouchEnd() {
         }
       });
 
-      print('Restored ${tabs.length} tabs from preferences');
+      //print('Restored ${tabs.length} tabs from preferences');
       
       await prefs.remove('saved_tabs');
     } catch (e) {
-      print('Error loading saved tabs: $e');
+      //print('Error loading saved tabs: $e');
       if (tabs.isEmpty) {
         _addNewTab();
       }
@@ -808,7 +1169,7 @@ void _handleTouchEnd() {
         'bytes': bytes,
       };
     } catch (e) {
-      print('Error parsing data URL: $e');
+      //print('Error parsing data URL: $e');
       return {'mimeType': 'application/octet-stream', 'bytes': <int>[]};
     }
   }
@@ -847,7 +1208,7 @@ void _handleTouchEnd() {
           return '.bin'; // Default for unknown types
       }
     } catch (e) {
-      print('Error getting extension from data URL: $e');
+      //print('Error getting extension from data URL: $e');
       return '.jpg'; // Default fallback
     }
   }
@@ -882,7 +1243,7 @@ void _handleTouchEnd() {
       // Set a more aggressive timeout for stuck loading states
       _loadingTimeoutTimer = Timer(const Duration(seconds: 15), () {
         if (mounted && isLoading) {
-          print('⚠️ Loading timeout - forcing loading state to false');
+          //print('⚠️ Loading timeout - forcing loading state to false');
           setState(() {
             isLoading = false;
           });
@@ -927,9 +1288,9 @@ void _handleTouchEnd() {
       // Initialize Firebase Functions
       _firebaseFunctions = FirebaseFunctions.instance;
       
-      print('✅ Firebase initialized successfully');
+      //print('✅ Firebase initialized successfully');
     } catch (e) {
-      print('❌ Firebase initialization failed: $e');
+      //print('❌ Firebase initialization failed: $e');
       // Don't throw error - app should still work without Firebase
     }
   }
@@ -938,7 +1299,7 @@ void _handleTouchEnd() {
   void initState() {
     super.initState();
     
-    print("BrowserScreen initState called");
+    //print("BrowserScreen initState called");
 
     WidgetsBinding.instance.addObserver(this);
     
@@ -968,10 +1329,10 @@ void _handleTouchEnd() {
     
     const platform = MethodChannel('app.channel.shared.data');
     platform.setMethodCallHandler((call) async {
-      print("Received method call: ${call.method}");
+      //print("Received method call: ${call.method}");
       
       if (!mounted) {
-        print("Widget not mounted, ignoring method call");
+        //print("Widget not mounted, ignoring method call");
         return;
       }
       
@@ -979,7 +1340,7 @@ void _handleTouchEnd() {
         case 'loadUrl':
           try {
             final url = call.arguments as String;
-            print("Received URL to load: $url");
+            //print("Received URL to load: $url");
             
             Future.delayed(Duration(milliseconds: 500), () {
               if (mounted) {
@@ -987,21 +1348,21 @@ void _handleTouchEnd() {
               }
             });
           } catch (e) {
-            print("Error processing loadUrl call: $e");
+            //print("Error processing loadUrl call: $e");
           }
           break;
         case 'openNewTabWithSearch':
           try {
             final query = call.arguments as String;
-            print("Received search query: $query");
+            //print("Received search query: $query");
             if (query != null && query.isNotEmpty) {
               final engine = searchEngines[currentSearchEngine] ?? searchEngines['Google']!;
               final searchUrl = engine.replaceAll('{query}', Uri.encodeComponent(query));
-              print("Opening new tab with search URL: $searchUrl");
+              //print("Opening new tab with search URL: $searchUrl");
               _addNewTab(url: searchUrl);
             }
           } catch (e) {
-            print("Error processing search query: $e");
+            //print("Error processing search query: $e");
           }
           break;
       }
@@ -1029,7 +1390,7 @@ void _handleTouchEnd() {
         if (mounted) {
           setState(() {
             isInitialized = true;
-            print("BrowserScreen initialization completed");
+            //print("BrowserScreen initialization completed");
           });
         }
         
@@ -1100,7 +1461,7 @@ void _handleTouchEnd() {
     void _showImageContextMenu(Map<String, dynamic> imageData) {
     if (!mounted) return;
     
-    print('📸 _showImageContextMenu called with data: $imageData');
+    //print('📸 _showImageContextMenu called with data: $imageData');
     
     final imageUrl = imageData['src'] as String? ?? '';
     final imageAlt = imageData['alt'] as String? ?? '';
@@ -1108,10 +1469,10 @@ void _handleTouchEnd() {
     final height = imageData['height'] as int? ?? 0;
     final linkUrl = imageData['linkUrl'] as String?;
     
-    print('📸 Image URL: $imageUrl, Alt: $imageAlt, Size: ${width}x${height}, Link: $linkUrl');
+    //print('📸 Image URL: $imageUrl, Alt: $imageAlt, Size: ${width}x${height}, Link: $linkUrl');
     
     if (imageUrl.isEmpty) {
-      print('📸 Empty image URL, skipping context menu');
+      //print('📸 Empty image URL, skipping context menu');
       return;
     }
     
@@ -1183,7 +1544,7 @@ void _handleTouchEnd() {
                           );
                         },
                         errorBuilder: (context, error, stackTrace) {
-                          print('📸 Error loading image preview: $error');
+                          //print('📸 Error loading image preview: $error');
                           return Center(
                             child: Icon(
                               Icons.image_not_supported,
@@ -1201,7 +1562,7 @@ void _handleTouchEnd() {
                     leading: Icon(Icons.download, color: ThemeManager.primaryColor()),
                     title: Text(AppLocalizations.of(context)!.download_image, style: TextStyle(color: ThemeManager.textColor())),
                     onTap: () {
-                      print('📸 Download image button tapped for: $imageUrl');
+                      //print('📸 Download image button tapped for: $imageUrl');
                       Navigator.pop(context);
                       
                       String filename;
@@ -1250,7 +1611,7 @@ void _handleTouchEnd() {
                     leading: Icon(Icons.link, color: ThemeManager.primaryColor()),
                     title: Text(AppLocalizations.of(context)!.copy_image_link, style: TextStyle(color: ThemeManager.textColor())),
                     onTap: () {
-                      print('📸 Copy image link button tapped');
+                      //print('📸 Copy image link button tapped');
                       Clipboard.setData(ClipboardData(text: imageUrl));
                       Navigator.pop(context);
                       _showCustomNotification(
@@ -1267,7 +1628,7 @@ void _handleTouchEnd() {
                     leading: Icon(Icons.open_in_new, color: ThemeManager.primaryColor()),
                     title: Text(AppLocalizations.of(context)!.open_image_in_new_tab, style: TextStyle(color: ThemeManager.textColor())),
                     onTap: () {
-                      print('📸 Open in new tab button tapped');
+                      //print('📸 Open in new tab button tapped');
                       Navigator.pop(context);
                       
                       // Create a new tab with the image URL
@@ -1289,7 +1650,7 @@ void _handleTouchEnd() {
                       leading: Icon(Icons.link_rounded, color: ThemeManager.primaryColor()),
                       title: Text(AppLocalizations.of(context)!.open_link, style: TextStyle(color: ThemeManager.textColor())),
                       onTap: () {
-                        print('📸 Open link button tapped: $linkUrl');
+                        //print('📸 Open link button tapped: $linkUrl');
                         Navigator.pop(context);
                         
                         // Load the link in the current tab
@@ -1303,7 +1664,7 @@ void _handleTouchEnd() {
                       leading: Icon(Icons.tab, color: ThemeManager.primaryColor()),
                       title: Text(AppLocalizations.of(context)!.open_link_in_new_tab, style: TextStyle(color: ThemeManager.textColor())),
                       onTap: () {
-                        print('📸 Open link in new tab button tapped: $linkUrl');
+                        //print('📸 Open link in new tab button tapped: $linkUrl');
                         Navigator.pop(context);
                         
                         // Create a new tab with the link URL
@@ -1325,7 +1686,7 @@ void _handleTouchEnd() {
                       leading: Icon(Icons.content_copy, color: ThemeManager.primaryColor()),
                       title: Text(AppLocalizations.of(context)!.copy_link_address, style: TextStyle(color: ThemeManager.textColor())),
                       onTap: () {
-                        print('📸 Copy link address button tapped');
+                        //print('📸 Copy link address button tapped');
                         Clipboard.setData(ClipboardData(text: linkUrl));
                         Navigator.pop(context);
                         _showCustomNotification(
@@ -1467,33 +1828,33 @@ void _handleTouchEnd() {
       onMessageReceived: (JavaScriptMessage message) {
         if (!mounted) return;
         try {
-          print('📱 SolarContextMenu message received: ${message.message}');
+          //print('📱 SolarContextMenu message received: ${message.message}');
           final data = json.decode(message.message) as Map<String, dynamic>;
           final type = data['type'] as String;
           
-          print('📱 Parsed message type: $type');
+          //print('📱 Parsed message type: $type');
           
           switch (type) {
             case 'image_touch_start':
-              print('📱 Handling image touch start');
+              //print('📱 Handling image touch start');
               _handleTouchStart(data);
               break;
             case 'text_touch_start':
-              print('📱 Handling text touch start');
+              //print('📱 Handling text touch start');
               _handleTouchStart(data);
               break;
             case 'touch_moved':
-              print('📱 Handling touch moved');
+              //print('📱 Handling touch moved');
               _handleTouchMoved();
               break;
             case 'touch_end':
-              print('📱 Handling touch end');
+              //print('📱 Handling touch end');
               _handleTouchEnd();
               break;
           }
     } catch (e) {
-          print('❌ Error processing context menu message: $e');
-          print('❌ Error details: ${e.toString()}');
+          //print('❌ Error processing context menu message: $e');
+          //print('❌ Error details: ${e.toString()}');
         }
       },
     );
@@ -1697,7 +2058,7 @@ void _handleTouchEnd() {
         })();
       ''');
     } catch (e) {
-      print('Error setting up scroll handling for tab: $e');
+      //print('Error setting up scroll handling for tab: $e');
     }
   }
   
@@ -1723,7 +2084,7 @@ void _handleTouchEnd() {
       await _downloadFile(imageUrl, filename);
       
     } catch (e) {
-      print('Error downloading image: $e');
+      //print('Error downloading image: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1747,7 +2108,7 @@ void _handleTouchEnd() {
   
   // New helper method to check for shared URL with retries
   void _checkForSharedUrl() {
-    print("Checking for pending URLs after initialization"); // Debug print
+    //print("Checking for pending URLs after initialization"); // Debug print
     
     const platform = MethodChannel('app.channel.shared.data');
     
@@ -1758,24 +2119,24 @@ void _handleTouchEnd() {
       try {
         platform.invokeMethod<String>('getSharedUrl')
           .then((url) {
-            print("Got shared URL from platform: $url"); // Debug print
+            //print("Got shared URL from platform: $url"); // Debug print
             if (url != null && url.isNotEmpty && mounted) {
-              print("Loading shared URL: $url"); // Debug print
+              //print("Loading shared URL: $url"); // Debug print
               _loadUrl(url);
             }
           })
           .catchError((error) {
-            print("Error getting shared URL: $error"); // Debug print
+            //print("Error getting shared URL: $error"); // Debug print
             
             // Retry if needed
             retryCount++;
             if (retryCount < 3) {
-              print("Retrying getSharedUrl (attempt $retryCount)"); // Debug print
+              //print("Retrying getSharedUrl (attempt $retryCount)"); // Debug print
               Future.delayed(Duration(seconds: 1), tryGetUrl);
             }
           });
       } catch (e) {
-        print("Exception when getting shared URL: $e"); // Debug print
+        //print("Exception when getting shared URL: $e"); // Debug print
       }
     }
     
@@ -1805,7 +2166,7 @@ void _handleTouchEnd() {
         );
       }
     } catch (e) {
-      print('Error opening PWA directly: $e');
+      //print('Error opening PWA directly: $e');
     }
   }
 
@@ -1867,7 +2228,7 @@ void _handleTouchEnd() {
     await prefs.setBool('darkMode', darkMode);
     await prefs.setString('selectedTheme', theme.name);
     
-    print('Theme toggled to: ${theme.name}, isDark: $darkMode');
+    //print('Theme toggled to: ${theme.name}, isDark: $darkMode');
     
     if (widget.onThemeChange != null) {
       widget.onThemeChange!(darkMode);
@@ -1900,7 +2261,7 @@ void _handleTouchEnd() {
         }
       });
       
-      print('Sending theme to WebView: $themeJson'); // Debug log
+      //print('Sending theme to WebView: $themeJson'); // Debug log
       
       controller.runJavaScript('''
         try {
@@ -1910,7 +2271,7 @@ void _handleTouchEnd() {
           console.error('Theme application error:', e);
         }
       ''');    } catch (e) {
-      print('Error sending theme to WebView: $e');
+      //print('Error sending theme to WebView: $e');
     }
   }
   
@@ -2136,21 +2497,21 @@ void _handleTouchEnd() {
     if (savedThemeName != null) {
       try {
         theme = ThemeType.values.firstWhere((t) => t.name == savedThemeName);
-        print('Loaded saved theme: ${theme.name}');
+        //print('Loaded saved theme: ${theme.name}');
       } catch (_) {
         theme = ThemeType.light;
-        print('Failed to load saved theme, using light theme');
+        //print('Failed to load saved theme, using light theme');
       }
     } else {
       // Fallback to darkMode preference if no theme is saved
       final isDark = prefs.getBool('darkMode') ?? false;
       theme = isDark ? ThemeType.dark : ThemeType.light;
-      print('No saved theme, using fallback: ${theme.name}');
+      //print('No saved theme, using fallback: ${theme.name}');
     }
     
     // Apply theme
     await ThemeManager.setTheme(theme);
-    print('Applied theme: ${theme.name}, isDark: ${theme.isDark}');
+    //print('Applied theme: ${theme.name}, isDark: ${theme.isDark}');
     
     setState(() {
       isDarkMode = theme.isDark;
@@ -2182,7 +2543,7 @@ void _handleTouchEnd() {
       }
     });
     
-    print('Set isDarkMode to: $isDarkMode for theme: ${theme.name}');
+    //print('Set isDarkMode to: $isDarkMode for theme: ${theme.name}');
     
     // Save updated classic mode preference
     await prefs.setBool('isClassicMode', _isClassicMode);
@@ -2285,10 +2646,10 @@ void _handleTouchEnd() {
                 
                 // Load the custom home page
                 try {
-                  print('Loading custom homepage: $customHomeUrl');
+                  //print('Loading custom homepage: $customHomeUrl');
                   await controller.loadRequest(Uri.parse(customHomeUrl));
                 } catch (e) {
-                  print('Error loading custom homepage: $e');
+                  //print('Error loading custom homepage: $e');
                   _showCustomNotification(
                               message: '${AppLocalizations.of(context)!.error_loading_page}: $e',
           icon: Icons.error,
@@ -2314,7 +2675,7 @@ void _handleTouchEnd() {
       try {
         await _optimizationEngine.initialize();
       } catch (e) {
-        print('Optimization engine init error: $e');
+        //print('Optimization engine init error: $e');
       }
     });
   }
@@ -2362,7 +2723,7 @@ void _handleTouchEnd() {
           });
         }
       } catch (e) {
-        print('Downloads loading error: $e');
+        //print('Downloads loading error: $e');
       }
     });
   }
@@ -2677,14 +3038,14 @@ Future<void> _setupScrollHandling() async {
               break;
           }
         } catch (e) {
-          print('❌ [V7] Error processing context menu message: $e');
+          //print('❌ [V7] Error processing context menu message: $e');
         }
       },
     );
 
-    print('✅ [V7] _setupScrollHandling completed successfully');
+    //print('✅ [V7] _setupScrollHandling completed successfully');
   } catch (e) {
-    print('❌ [V7] Error in _setupScrollHandling: $e');
+    //print('❌ [V7] Error in _setupScrollHandling: $e');
   }
 }
   
@@ -2772,7 +3133,7 @@ Future<void> _setupScrollHandling() async {
   }
   
   Future<void> _initializeWebView() async {
-    print("Initializing WebView for optimal stability..."); // Debug print
+    //print("Initializing WebView for optimal stability..."); // Debug print
     
     // Initialize optimization engine
     _optimizationEngine = OptimizationEngine();
@@ -2783,7 +3144,7 @@ Future<void> _setupScrollHandling() async {
       ..enableZoom(true)
       ..setUserAgent(userAgent);
       
-    print("JAVASCRIPT ENABLED: ${JavaScriptMode.unrestricted}");  // Configure Android WebView settings with restricted file access
+    //print("JAVASCRIPT ENABLED: ${JavaScriptMode.unrestricted}");  // Configure Android WebView settings with restricted file access
     if (controller.platform is webview_flutter_android.AndroidWebViewController) {
       final androidController = controller.platform as webview_flutter_android.AndroidWebViewController;
       // Only allow access to specific files/assets needed by the app
@@ -2817,7 +3178,7 @@ Future<void> _setupScrollHandling() async {
               _showConfirmDialog(messageText, id);
             }
           } catch (e) {
-            print('DialogHandler error: $e');
+            //print('DialogHandler error: $e');
           }
         }
       },
@@ -2883,11 +3244,11 @@ Future<void> _setupScrollHandling() async {
       'NewsHandler',
       onMessageReceived: (JavaScriptMessage message) async {
         if (mounted && message.message == 'fetchNews') {
-          print('📰 Received fetchNews request from main.html');
+          //print('📰 Received fetchNews request from main.html');
           
           // Check if we've exceeded failure limit
           if (_newsFailureCount >= _maxNewsFailures) {
-            print('📰 ❌ News failure limit reached ($_newsFailureCount/$_maxNewsFailures), skipping fetch');
+            //print('📰 ❌ News failure limit reached ($_newsFailureCount/$_maxNewsFailures), skipping fetch');
             await _sendNewsErrorToWebView(AppLocalizations.of(context)!.network_error_loading_news);
             return;
           }
@@ -2902,7 +3263,7 @@ Future<void> _setupScrollHandling() async {
     await controller.addJavaScriptChannel(
       'DebugHandler',
       onMessageReceived: (JavaScriptMessage message) {
-        print('🐛 JS Debug: ${message.message}');
+        //print('🐛 JS Debug: ${message.message}');
       },
     );
 
@@ -2920,7 +3281,7 @@ Future<void> _setupScrollHandling() async {
       // If this is the home page and custom homepage is enabled, use it instead
       if ((initialUrl == _homeUrl || initialUrl == 'file:///android_asset/main.html') && 
           useCustomHomePage && customHomeUrl.isNotEmpty) {
-        print('Using custom homepage on startup: $customHomeUrl');
+        //print('Using custom homepage on startup: $customHomeUrl');
         initialUrl = customHomeUrl;
         tabs[currentTabIndex]['url'] = initialUrl;
         _displayUrl = initialUrl;
@@ -2933,10 +3294,10 @@ Future<void> _setupScrollHandling() async {
         _setLoadingState(true);
         
         try {
-          print('Loading initial URL: $initialUrl');
+          //print('Loading initial URL: $initialUrl');
         controller.loadRequest(Uri.parse(initialUrl));
         } catch (e) {
-          print('Error loading initial URL: $e');
+          //print('Error loading initial URL: $e');
         }
         
         // Initialize theme for home page if needed
@@ -3210,7 +3571,7 @@ Future<void> _setupScrollHandling() async {
       // Convert to proper JSON string
       final themeJson = json.encode(themeData);
       
-      print('Sending theme to main.html: $themeJson'); // Debug log        // Send theme via multiple methods for compatibility
+      //print('Sending theme to main.html: $themeJson'); // Debug log        // Send theme via multiple methods for compatibility
       await controller.runJavaScript('''
         try {
           console.log('🎨 Sending theme data to main.html...');
@@ -3245,7 +3606,7 @@ Future<void> _setupScrollHandling() async {
       // And send language information
       await _sendLanguageToMainHtml();
         } catch (e) {
-      print('Error sending theme to main.html: $e');
+      //print('Error sending theme to main.html: $e');
     }
   }
 
@@ -3254,11 +3615,11 @@ Future<void> _setupScrollHandling() async {
     if (!mounted) return;
     
     try {
-      print('📰 Fetching news using Firebase Cloud Functions...');
+      //print('📰 Fetching news using Firebase Cloud Functions...');
       
       // Check if Firebase Functions is initialized
       if (_firebaseFunctions == null) {
-        print('❌ Firebase Functions not initialized');
+        //print('❌ Firebase Functions not initialized');
         _newsFailureCount++; // Increment failure counter
         await _sendNewsErrorToWebView(AppLocalizations.of(context)!.firebase_not_initialized);
         return;
@@ -3271,7 +3632,7 @@ Future<void> _setupScrollHandling() async {
       
       // Check cache first
       if (_cachedArticles != null && _cachedLanguage == languageIndex) {
-        print('📰 Using cached news data');
+        //print('📰 Using cached news data');
         await _sendNewsToWebView(_cachedArticles!);
         return;
       }
@@ -3284,13 +3645,13 @@ Future<void> _setupScrollHandling() async {
       final String? signedUrl = data['signedUrl'] as String?;
       
       if (signedUrl == null || signedUrl.isEmpty) {
-        print('❌ Failed to get signed URL for news cache');
+        //print('❌ Failed to get signed URL for news cache');
         _newsFailureCount++; // Increment failure counter
         await _sendNewsErrorToWebView(AppLocalizations.of(context)!.failed_to_get_news_data);
         return;
       }
       
-      print('📰 Got signed URL for news cache: $signedUrl');
+      //print('📰 Got signed URL for news cache: $signedUrl');
       
       // Step 2: Fetch news from the signed URL
       final response = await http.get(Uri.parse(signedUrl));
@@ -3300,7 +3661,7 @@ Future<void> _setupScrollHandling() async {
         final List<dynamic> articlesJson = json.decode(response.body);
         final List<Map<String, dynamic>> articles = articlesJson.cast<Map<String, dynamic>>();
         
-        print('📰 Successfully fetched ${articles.length} news articles');
+        //print('📰 Successfully fetched ${articles.length} news articles');
         
         // Reset failure counter on success
         _newsFailureCount = 0;
@@ -3313,13 +3674,13 @@ Future<void> _setupScrollHandling() async {
         await _sendNewsToWebView(articles);
         
       } else {
-        print('❌ Failed to fetch news from signed URL: ${response.statusCode}');
+        //print('❌ Failed to fetch news from signed URL: ${response.statusCode}');
         _newsFailureCount++; // Increment failure counter
         await _sendNewsErrorToWebView(AppLocalizations.of(context)!.failed_to_load_news_server);
       }
       
     } catch (e) {
-      print('❌ Error fetching news: $e');
+      //print('❌ Error fetching news: $e');
       _newsFailureCount++; // Increment failure counter
       await _sendNewsErrorToWebView(AppLocalizations.of(context)!.network_error_loading_news);
     }
@@ -3395,11 +3756,11 @@ Future<void> _setupScrollHandling() async {
           
           processedArticles.add(processedArticle);
         } catch (e) {
-          print('❌ Error processing article: $e');
+          //print('❌ Error processing article: $e');
         }
       }
       
-      print('📰 Calling renderNews with ${processedArticles.length} news items');
+      //print('📰 Calling renderNews with ${processedArticles.length} news items');
       
       // Call the existing renderNews function in main.html with our processed articles
       // This uses the format expected by the function in android/app/src/main/assets/main.html
@@ -3421,7 +3782,7 @@ Future<void> _setupScrollHandling() async {
       ''');
       
     } catch (e) {
-      print('❌ Error sending news to WebView: $e');
+      //print('❌ Error sending news to WebView: $e');
       await _sendNewsErrorToWebView('Error displaying news');
     }
   }
@@ -3437,7 +3798,7 @@ Future<void> _setupScrollHandling() async {
       final Map<String, dynamic> data = Map<String, dynamic>.from(result.data);
       return data['signedUrl'] as String?;
     } catch (e) {
-      print('❌ Error getting signed URL for cover $filePath: $e');
+      //print('❌ Error getting signed URL for cover $filePath: $e');
       return null;
     }
   }
@@ -3496,7 +3857,7 @@ Future<void> _setupScrollHandling() async {
         })();
       ''');
     } catch (e) {
-      print('❌ Error sending error message to WebView: $e');
+      //print('❌ Error sending error message to WebView: $e');
     }
   }
 
@@ -3541,7 +3902,7 @@ Future<void> _setupScrollHandling() async {
       ''');
       
     } catch (e) {
-      print('Error sending search engine to main.html: $e');
+      //print('Error sending search engine to main.html: $e');
     }  }
 
   // Send language data to main.html
@@ -3579,7 +3940,7 @@ Future<void> _setupScrollHandling() async {
         }
       ''');      
     } catch (e) {
-      print('Error sending language to main.html: $e');
+      //print('Error sending language to main.html: $e');
     }
   }
 
@@ -3644,7 +4005,7 @@ Future<void> _setupScrollHandling() async {
         }
       ''');
     } catch (e) {
-      print('Error sending theme to restored tab: $e');
+      //print('Error sending theme to restored tab: $e');
     }
   }
 
@@ -3785,7 +4146,7 @@ Future<void> _setupScrollHandling() async {
     await controller.addJavaScriptChannel(      'ImageLongPress',
       onMessageReceived: (JavaScriptMessage message) {
         if (!mounted) return;
-        print('ImageLongPress received: ${message.message}');
+        //print('ImageLongPress received: ${message.message}');
         
         try {
           final data = json.decode(message.message) as Map<String, dynamic>;
@@ -3796,7 +4157,7 @@ Future<void> _setupScrollHandling() async {
             final x = (data['x'] as num).toDouble();
             final y = (data['y'] as num).toDouble();
             
-            print('Showing image context menu for: $imageUrl at ($x, $y)');
+            //print('Showing image context menu for: $imageUrl at ($x, $y)');
             
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
@@ -3810,7 +4171,7 @@ Future<void> _setupScrollHandling() async {
             });
           }
         } catch (e) {
-          print('Error handling image long press: $e');
+          //print('Error handling image long press: $e');
         }
       },
     );
@@ -3836,7 +4197,7 @@ Future<void> _setupScrollHandling() async {
               _showGeneralContextMenu(_tapPosition);
             });
           }        } catch (e) {
-          print('Error handling general long press: $e');
+          //print('Error handling general long press: $e');
         }
       },
     );
@@ -3844,7 +4205,7 @@ Future<void> _setupScrollHandling() async {
     await controller.addJavaScriptChannel(      'TextLongPress',
       onMessageReceived: (JavaScriptMessage message) {
         if (!mounted) return;
-        print('TextLongPress received: ${message.message}');
+        //print('TextLongPress received: ${message.message}');
         
         try {
           final data = json.decode(message.message) as Map<String, dynamic>;
@@ -3853,10 +4214,10 @@ Future<void> _setupScrollHandling() async {
           final y = (data['y'] as num).toDouble();
           final isInput = data['isInput'] as bool? ?? false;
           
-          print('Text context menu received but ignored - using native Android selection instead');
+          //print('Text context menu received but ignored - using native Android selection instead');
           // Note: Custom text context menu disabled - using native Android text selection
         } catch (e) {
-          print('Error handling text long press: $e');
+          //print('Error handling text long press: $e');
         }
       },
     );
@@ -3864,6 +4225,19 @@ Future<void> _setupScrollHandling() async {
     await controller.setNavigationDelegate(NavigationDelegate(
       onNavigationRequest: (NavigationRequest request) async {
         final url = request.url.toLowerCase();
+        
+        // Check for HTTP warning (but allow localhost and local IPs)
+        if (request.url.startsWith('http://') && 
+            !request.url.startsWith('http://localhost') && 
+            !request.url.contains('127.0.0.1') &&
+            !request.url.contains('192.168.') &&
+            !request.url.contains('10.0.') &&
+            !request.url.startsWith('http://file:///')) {
+          final shouldContinue = await _showHttpWarningDialog();
+          if (!shouldContinue) {
+            return NavigationDecision.prevent;
+          }
+        }
         
         // Handle search:// protocol
         if (url.startsWith('search://')) {
@@ -3890,8 +4264,8 @@ Future<void> _setupScrollHandling() async {
       },
       onPageStarted: _handlePageStarted,      onPageFinished: (String url) async {
         if (!mounted) return;
-        print('=== PAGE FINISHED LOADING ==='); // Debug log
-        print('URL: $url'); // Debug log
+        //print('=== PAGE FINISHED LOADING ==='); // Debug log
+        //print('URL: $url'); // Debug log
         
         // Get title with fallback
         String? title;
@@ -3901,9 +4275,9 @@ Future<void> _setupScrollHandling() async {
             title = _extractDomainFromUrl(url);
           }
         } catch (e) {
-          print('Error getting title: $e');
+          //print('Error getting title: $e');
           title = _extractDomainFromUrl(url);
-        }        print('Title: $title'); // Debug log
+        }        //print('Title: $title'); // Debug log
         
         // FIXED: Stop loading state and animation using centralized method
         _setLoadingState(false);
@@ -3919,14 +4293,14 @@ Future<void> _setupScrollHandling() async {
         // Setup URL monitoring for dynamic content changes
         Future.microtask(() => _setupUrlMonitoring());
         
-        print('Calling _saveToHistory...'); // Debug log
+        //print('Calling _saveToHistory...'); // Debug log
         try {
           await _saveToHistory(url, title);
-          print('_saveToHistory completed'); // Debug log
+          //print('_saveToHistory completed'); // Debug log
         } catch (e) {
-          print('Error in _saveToHistory: $e'); // Debug log          print(e.toString());
-          print('Stack trace:');
-          print('${StackTrace.current}');
+          //print('Error in _saveToHistory: $e'); // Debug log          //print(e.toString());
+          //print('Stack trace:');
+          //print('${StackTrace.current}');
         }
           // Context menu is now handled by _setupScrollHandling() - no need for separate injection
           // await _injectImageContextMenuJS();
@@ -3939,7 +4313,7 @@ Future<void> _setupScrollHandling() async {
           await _initializeThemeForHomePage();
         }
         
-        print('=== PAGE LOAD COMPLETE ==='); // Debug log
+        //print('=== PAGE LOAD COMPLETE ==='); // Debug log
       },
       onWebResourceError: (WebResourceError error) async {
         if (!mounted) return;
@@ -4113,6 +4487,15 @@ Future<void> _setupScrollHandling() async {
       // Search query
       final engine = searchEngines[currentSearchEngine] ?? searchEngines['Google']!;
       urlToLoad = engine.replaceAll('{query}', Uri.encodeComponent(trimmedQuery));
+    }
+    
+    // Check for HTTP warning
+    if (urlToLoad.startsWith('http://') && !urlToLoad.startsWith('http://localhost') && !urlToLoad.contains('127.0.0.1')) {
+      final shouldContinue = await _showHttpWarningDialog();
+      if (!shouldContinue) {
+        _setLoadingState(false);
+        return;
+      }
     }
     
     // Update URL state
@@ -4806,7 +5189,7 @@ Future<void> _setupScrollHandling() async {
             final currentTheme = ThemeManager.getCurrentTheme();
             final currentThemeName = _getThemeName(currentTheme);
             
-            print('Appearance Settings - Current theme: ${currentTheme.name}, Display name: $currentThemeName');
+            //print('Appearance Settings - Current theme: ${currentTheme.name}, Display name: $currentThemeName');
             
             return Scaffold(
               backgroundColor: ThemeManager.backgroundColor(),              appBar: AppBar(
@@ -4965,30 +5348,30 @@ Future<void> _setupScrollHandling() async {
                             )).toList(),
                           ],
                         ),                        onTap: () async {
-                          print('Theme selected: ${theme.name}, isDark: ${theme.isDark}');
+                          //print('Theme selected: ${theme.name}, isDark: ${theme.isDark}');
                           
                           // Save and apply theme
                           await ThemeManager.setTheme(theme);
-                          print('Theme applied via ThemeManager: ${theme.name}');
+                          //print('Theme applied via ThemeManager: ${theme.name}');
                           
                           // Update both UIs immediately
                           setState(() {
                             isDarkMode = theme.isDark;
                           });
-                          print('Updated isDarkMode to: $isDarkMode');
+                          //print('Updated isDarkMode to: $isDarkMode');
                           
                           // Update theme selection screen to show new selection
                           setThemeScreenState(() {
                             // This rebuilds the theme selection screen with new selected theme
                           });
-                          print('Updated theme selection screen');
+                          //print('Updated theme selection screen');
                           
                           // Update appearance settings screen to show new theme name
                           if (setAppearanceState != null) {
                             setAppearanceState(() {
                               // This rebuilds the appearance settings screen with new theme name
                             });
-                            print('Updated appearance settings screen');
+                            //print('Updated appearance settings screen');
                           }
                           
                           // Update system bars to match new theme
@@ -4998,7 +5381,7 @@ Future<void> _setupScrollHandling() async {
                           final prefs = await SharedPreferences.getInstance();
                           await prefs.setString('selectedTheme', theme.name);
                           await prefs.setBool('darkMode', theme.isDark);
-                          print('Saved theme preferences: ${theme.name}, isDark: ${theme.isDark}');
+                          //print('Saved theme preferences: ${theme.name}, isDark: ${theme.isDark}');
                           
                           // Clear theme cache to force refresh
                           _cachedDarkColors = null;
@@ -5020,7 +5403,7 @@ Future<void> _setupScrollHandling() async {
                             });
                           }
                           
-                          print('Theme change completed for: ${theme.name}');
+                          //print('Theme change completed for: ${theme.name}');
                           
                           // Don't pop back to appearance settings - keep user on theme selection screen
                           // so they can see the changes immediately
@@ -5218,92 +5601,6 @@ Future<void> _setupScrollHandling() async {
           ),
         );
       },
-    );
-  }
-
-  void _showDownloadsSettings() {
-    Navigator.of(context).push(
-      _createSettingsRoute(
-        Scaffold(
-          backgroundColor: ThemeManager.backgroundColor(),          appBar: AppBar(
-            backgroundColor: ThemeManager.backgroundColor(),
-            elevation: 0,
-            centerTitle: true,
-            systemOverlayStyle: _transparentNavBar,
-            leading: IconButton(
-              icon: Icon(
-                Icons.chevron_left,
-                color: ThemeManager.textColor(),
-                size: 20,
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              AppLocalizations.of(context)!.downloads,
-              style: TextStyle(
-                color: ThemeManager.textColor(),
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),body: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            children: [
-              _buildSettingsSection(
-                title: AppLocalizations.of(context)!.downloads,
-                children: [                  _buildSettingsToggle(
-                    title: AppLocalizations.of(context)!.auto_open_downloads,
-                    subtitle: AppLocalizations.of(context)!.automatically_open_downloaded_files,
-                    value: _autoOpenDownloads,
-                    onChanged: (value) async {
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.setBool('autoOpenDownloads', value);
-                      setState(() {
-                        _autoOpenDownloads = value;
-                      });
-                    },
-                    isFirst: true,
-                  ),
-                  _buildSettingsToggle(
-                    title: AppLocalizations.of(context)!.ask_download_location,
-                    subtitle: AppLocalizations.of(context)!.ask_where_to_save_files,
-                    value: _askDownloadLocation,
-                    onChanged: (value) async {
-                      final prefs = await SharedPreferences.getInstance();
-                      await prefs.setBool('askDownloadLocation', value);
-                      setState(() {
-                        _askDownloadLocation = value;
-                      });
-                    },
-                  ),                  FutureBuilder<String>(
-                    future: _getDownloadLocation(),
-                    builder: (context, snapshot) {
-                      final downloadLocation = snapshot.data ?? AppLocalizations.of(context)!.defaultLocation;
-                      return _buildSettingsItem(
-                        title: AppLocalizations.of(context)!.download_location,
-                        subtitle: downloadLocation,
-                        onTap: _showDownloadLocationPicker,
-                      );
-                    },
-                  ),
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.open_downloads_folder,
-                    onTap: () async {
-                      final downloadLocation = await _getDownloadLocation();
-                      await OpenFile.open(downloadLocation);
-                    },
-                  ),
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.clear_downloads_history,
-                    onTap: () => _showClearDownloadsConfirmation(),
-                    isLast: true,
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -5852,25 +6149,25 @@ Future<void> _setupScrollHandling() async {
                 children: [
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.app_name,
-                    subtitle: AppLocalizations.of(context)!.version('0.2.1'),
+                    subtitle: AppLocalizations.of(context)!.version('0.4.0'),
                     isFirst: true,
                     isLast: false,
                   ),
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.flutter_version,
-                    subtitle: 'Flutter 3.32.0',
+                    subtitle: AppLocalizations.of(context)!.flutter_version_string,
                     isFirst: false,
                     isLast: false,
                   ),
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.photoncore_version,
-                    subtitle: 'Photoncore 0.1.0',
+                    subtitle: AppLocalizations.of(context)!.photoncore_version_string,
                     isFirst: false,
                     isLast: false,
                   ),
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.engine_version,
-                    subtitle: '4.7.0',
+                    subtitle: AppLocalizations.of(context)!.engine_version_string,
                     isFirst: false,
                     isLast: true,
                   ),
@@ -7380,8 +7677,8 @@ Future<void> _setupScrollHandling() async {
   }
   
   Widget _buildHistoryPanel() {
-    print('Building history panel with ${_loadedHistory.length} items');
-    print('History panel theme colors - bg: ${ThemeManager.backgroundColor()}, text: ${ThemeManager.textColor()}');
+    //print('Building history panel with ${_loadedHistory.length} items');
+    //print('History panel theme colors - bg: ${ThemeManager.backgroundColor()}, text: ${ThemeManager.textColor()}');
     
     return Container(
       height: MediaQuery.of(context).size.height,
@@ -7719,7 +8016,62 @@ Future<void> _setupScrollHandling() async {
                       isLast: true,
                     ),
                   ],
-                ),                // Other Section
+                ),
+
+                // Downloads Section
+                _buildSettingsSection(
+                  title: AppLocalizations.of(context)!.downloads,
+                  children: [
+                    _buildSettingsItem(
+                      title: AppLocalizations.of(context)!.auto_open_downloads,
+                      subtitle: AppLocalizations.of(context)!.automatically_open_downloaded_files,
+                      trailing: Switch(
+                        value: _autoOpenDownloads,
+                        onChanged: (value) async {
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.setBool('autoOpenDownloads', value);
+                          setState(() {
+                            _autoOpenDownloads = value;
+                          });
+                        },
+                        activeColor: ThemeManager.primaryColor(),
+                      ),
+                    ),
+                    _buildSettingsItem(
+                      title: AppLocalizations.of(context)!.ask_download_location,
+                      subtitle: AppLocalizations.of(context)!.ask_where_to_save_files,
+                      trailing: Switch(
+                        value: _askDownloadLocation,
+                        onChanged: (value) async {
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.setBool('askDownloadLocation', value);
+                          setState(() {
+                            _askDownloadLocation = value;
+                          });
+                        },
+                        activeColor: ThemeManager.primaryColor(),
+                      ),
+                    ),
+                    _buildSettingsItem(
+                      title: AppLocalizations.of(context)!.download_permissions,
+                      subtitle: AppLocalizations.of(context)!.manage_download_permissions,
+                      onTap: () => _showDownloadPermissionsDialog(),
+                    ),
+                    _buildSettingsItem(
+                      title: AppLocalizations.of(context)!.clear_downloads_history,
+                      subtitle: AppLocalizations.of(context)!.clear_downloads_history_description,
+                      onTap: () => _showClearDownloadsConfirmation(),
+                    ),
+                    _buildSettingsItem(
+                      title: AppLocalizations.of(context)!.download_location,
+                      subtitle: AppLocalizations.of(context)!.change_download_location,
+                      onTap: () => _showDownloadLocationPicker(),
+                      isLast: true,
+                    ),
+                  ],
+                ),
+
+                // Other Section
                 _buildSettingsSection(
                   title: AppLocalizations.of(context)!.other,
                   children: [
@@ -7921,21 +8273,22 @@ Future<void> _setupScrollHandling() async {
   }
 
   Future<void> _requestAllPermissions() async {
-    final androidInfo = await DeviceInfoPlugin().androidInfo;
-    final sdkInt = androidInfo.version.sdkInt;
+    // Show the animated permission dialog for general storage access
+    final userGranted = await _showPermissionDialog(
+      PermissionDialogType.storage,
+      fileName: null, // General permission request
+    );
     
-    if (sdkInt >= 33) {
-      await [
-        Permission.photos,
-        Permission.videos,
-        Permission.audio,
-        Permission.notification,
-      ].request();
-    } else {
-      await [
-        Permission.storage,
-        Permission.notification,
-      ].request();    }
+    if (!userGranted) {
+      // User declined permission request
+      _showCustomNotification(
+        message: AppLocalizations.of(context)!.permission_denied,
+        icon: Icons.info_outline,
+        iconColor: ThemeManager.primaryColor(),
+        duration: const Duration(seconds: 3),
+      );
+      return;
+    }
     
     // Invalidate permission cache after request
     _cachedPermissionState = null;
@@ -8010,7 +8363,160 @@ Future<void> _setupScrollHandling() async {
           ),
         ),
       ],
-    );  }  Future<void> _showClearDownloadsConfirmation() async {
+    );  }
+
+  Future<void> _showDownloadPermissionsDialog() async {
+    final permissionStatuses = await _getPermissionStatuses();
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: ThemeManager.backgroundColor(),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(
+          AppLocalizations.of(context)!.download_permissions,
+          style: TextStyle(
+            color: ThemeManager.textColor(),
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ...permissionStatuses.entries.map((entry) => ListTile(
+              title: Text(
+                _getLocalizedPermissionName(entry.key),
+                style: TextStyle(color: ThemeManager.textColor()),
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    _getLocalizedPermissionStatus(entry.value),
+                    style: TextStyle(
+                      color: entry.value == 'Granted' ? Colors.green : 
+                             entry.value == 'Denied' ? Colors.red : Colors.orange,
+                    ),
+                  ),
+                  if (entry.value != 'Granted') ...[
+                    const SizedBox(width: 8),
+                    TextButton(
+                      onPressed: () async {
+                        Permission permission;
+                        switch (entry.key) {
+                          case 'Storage':
+                            permission = Permission.storage;
+                            break;
+                          case 'Manage External Storage':
+                            permission = Permission.manageExternalStorage;
+                            break;
+                          case 'Notification':
+                            permission = Permission.notification;
+                            break;
+                          default:
+                            return;
+                        }
+                        
+                        final status = await permission.request();
+                        if (status != PermissionStatus.granted) {
+                          await openAppSettings();
+                        }
+                        Navigator.pop(context);
+                        _showDownloadPermissionsDialog(); // Refresh dialog
+                      },
+                      child: Text(
+                        AppLocalizations.of(context)!.request,
+                        style: TextStyle(color: ThemeManager.accentColor()),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            )),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              AppLocalizations.of(context)!.close,
+              style: TextStyle(
+                color: ThemeManager.textSecondaryColor(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getLocalizedPermissionName(String permissionKey) {
+    switch (permissionKey) {
+      case 'Storage':
+        return AppLocalizations.of(context)!.storage;
+      case 'Manage External Storage':
+        return AppLocalizations.of(context)!.manage_external_storage;
+      case 'Notification':
+        return AppLocalizations.of(context)!.notification;
+      default:
+        return permissionKey;
+    }
+  }
+
+  String _getLocalizedPermissionStatus(String status) {
+    switch (status) {
+      case 'Granted':
+        return AppLocalizations.of(context)!.granted;
+      case 'Denied':
+        return AppLocalizations.of(context)!.denied;
+      case 'Restricted':
+        return AppLocalizations.of(context)!.restricted;
+      case 'Limited':
+        return AppLocalizations.of(context)!.limited;
+      case 'Permanently Denied':
+        return AppLocalizations.of(context)!.permanently_denied;
+      default:
+        return AppLocalizations.of(context)!.unknown;
+    }
+  }
+
+  Future<Map<String, String>> _getPermissionStatuses() async {
+    final statuses = <String, String>{};
+    
+    // Storage permission
+    final storageStatus = await Permission.storage.status;
+    statuses['Storage'] = _getPermissionStatusText(storageStatus);
+    
+    // Manage external storage (Android 11+)
+    final manageStorageStatus = await Permission.manageExternalStorage.status;
+    statuses['Manage External Storage'] = _getPermissionStatusText(manageStorageStatus);
+    
+    // Notification permission (for download notifications)
+    final notificationStatus = await Permission.notification.status;
+    statuses['Notification'] = _getPermissionStatusText(notificationStatus);
+    
+    return statuses;
+  }
+
+  String _getPermissionStatusText(PermissionStatus status) {
+    switch (status) {
+      case PermissionStatus.granted:
+        return 'Granted';
+      case PermissionStatus.denied:
+        return 'Denied';
+      case PermissionStatus.restricted:
+        return 'Restricted';
+      case PermissionStatus.limited:
+        return 'Limited';
+      case PermissionStatus.permanentlyDenied:
+        return 'Permanently Denied';
+      default:
+        return 'Unknown';
+    }
+  }
+
+
+
+  Future<void> _showClearDownloadsConfirmation() async {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -8332,7 +8838,7 @@ Future<void> _setupScrollHandling() async {
         bookmarksList.insert(0, json.encode(bookmark));
         await prefs.setStringList('bookmarks', bookmarksList);
       } catch (e) {
-        print("Error saving bookmark: $e");
+        //print("Error saving bookmark: $e");
       }
     });
   }
@@ -8379,7 +8885,7 @@ Future<void> _setupScrollHandling() async {
     String targetUrl;
     if ((url == null || url == _homeUrl || url == 'file:///android_asset/main.html') && 
         useCustomHomePage && customHomeUrl.isNotEmpty) {
-      print('Using custom home page URL: $customHomeUrl');
+      //print('Using custom home page URL: $customHomeUrl');
       targetUrl = customHomeUrl;
     } else {
       targetUrl = url ?? (useCustomHomePage && customHomeUrl.isNotEmpty ? customHomeUrl : _homeUrl);
@@ -8421,7 +8927,7 @@ Future<void> _setupScrollHandling() async {
       // CRITICAL: Load the URL into the WebViewController AFTER initialization
       try {
         await controller.loadRequest(Uri.parse(targetUrl));
-        print('New tab loaded with URL: $targetUrl');
+        //print('New tab loaded with URL: $targetUrl');
         
         // Send theme to main.html if it's the home page
         if (targetUrl == _homeUrl || targetUrl.contains('main.html')) {
@@ -8429,7 +8935,7 @@ Future<void> _setupScrollHandling() async {
           await _sendThemeToMainHtml();
         }
       } catch (e) {
-        print('Error loading URL in new tab: $e');
+        //print('Error loading URL in new tab: $e');
       }
     });
   }
@@ -9138,10 +9644,10 @@ Future<void> _setupScrollHandling() async {
         });
       } else if (hasSelectedText) {
         // Note: Text context menu disabled - using native Android text selection instead
-        print('Text selection detected but using native Android menu instead');
+        //print('Text selection detected but using native Android menu instead');
       }
     } catch (e) {
-      print('Error showing context menu: $e');
+      //print('Error showing context menu: $e');
     }
   }
 
@@ -9191,7 +9697,7 @@ Future<void> _setupScrollHandling() async {
       }
     } catch (e) {
       _showNotification(Text(_getLocalizedContextText('pasteError', 'Error pasting text')));
-      print('Paste error: $e');
+      //print('Paste error: $e');
     }
   }
 
@@ -9219,7 +9725,7 @@ Future<void> _setupScrollHandling() async {
       ''');        _showNotification(Text(_getLocalizedContextText('textCut', 'Text cut to clipboard')));
     } catch (e) {
       _showNotification(Text(_getLocalizedContextText('cutError', 'Error cutting text')));
-      print('Cut error: $e');
+      //print('Cut error: $e');
     }  }
 
   // Helper method for context menu localization with fallback
@@ -9337,7 +9843,7 @@ Future<void> _setupScrollHandling() async {
             .toList();
       }
     } catch (e) {
-      print('File selector error: $e');
+      //print('File selector error: $e');
     }
     return [];
   }
@@ -9426,7 +9932,7 @@ Future<void> _setupScrollHandling() async {
                         
                         // Check if the pointer is still down and hasn't moved much
                         if (_pointerDownPosition != null) {
-                          print('🖐️ Long press detected at ${_pointerDownPosition!}');
+                          //print('🖐️ Long press detected at ${_pointerDownPosition!}');
                           
                           // Trigger JavaScript to check if there's an image or text at this position
                           _checkForImageAtPosition(_pointerDownPosition!);
@@ -9711,8 +10217,8 @@ Future<void> _setupScrollHandling() async {
 // New helper method to handle page start logic consistently  
 Future<void> _handlePageStarted(String url) async {
     if (!mounted) return;
-    print('=== PAGE STARTED LOADING ==='); // Debug log
-    print('URL: $url'); // Debug log
+    //print('=== PAGE STARTED LOADING ==='); // Debug log
+    //print('URL: $url'); // Debug log
     
     // Use the centralized loading state method (this will start the animation)
     _setLoadingState(true);
@@ -9733,6 +10239,19 @@ Future<void> _handlePageStarted(String url) async {
   Future<NavigationDelegate> get _navigationDelegate async {
     return NavigationDelegate(      onNavigationRequest: (NavigationRequest request) async {
         final url = request.url.toLowerCase();
+        
+        // Check for HTTP warning (but allow localhost and local IPs)
+        if (request.url.startsWith('http://') && 
+            !request.url.startsWith('http://localhost') && 
+            !request.url.contains('127.0.0.1') &&
+            !request.url.contains('192.168.') &&
+            !request.url.contains('10.0.') &&
+            !request.url.startsWith('http://file:///')) {
+          final shouldContinue = await _showHttpWarningDialog();
+          if (!shouldContinue) {
+            return NavigationDecision.prevent;
+          }
+        }
         
         // Handle search:// protocol
         if (url.startsWith('search://')) {
@@ -9761,7 +10280,7 @@ Future<void> _handlePageStarted(String url) async {
         }
         
         // FIXED: Update URL immediately when navigation starts (for immediate feedback)
-        print('🚀 Navigation request to: ${request.url}');
+        //print('🚀 Navigation request to: ${request.url}');
         _handleUrlUpdate(request.url);
         
         // Allow navigation for all other URLs
@@ -9769,25 +10288,25 @@ Future<void> _handlePageStarted(String url) async {
       },      onPageStarted: (String url) async {
         if (!mounted) return;
         
-        print('DEBUG: onPageStarted called with URL: $url');
+        //print('DEBUG: onPageStarted called with URL: $url');
         _setLoadingState(true);
         
         // FIXED: Always update URL immediately on page start for better responsiveness
-        print('🚀 Page started, updating URL to: $url');
+        //print('🚀 Page started, updating URL to: $url');
         _handleUrlUpdate(url);
         
         await _updateNavigationState();
         await _optimizationEngine.onPageStartLoad(url);      },      onPageFinished: (String url) async {
         if (!mounted) return;
         
-        print('DEBUG: onPageFinished called with URL: $url');
+        //print('DEBUG: onPageFinished called with URL: $url');
         final title = await controller.getTitle() ?? _displayUrl;
         
         // FIXED: Use centralized loading state method for proper animation handling
         _setLoadingState(false);
         
         // Force URL update on page finish - this ensures we always get the final URL
-        print('DEBUG: Forcing URL update from onPageFinished to: $url');
+        //print('DEBUG: Forcing URL update from onPageFinished to: $url');
         _displayUrl = url; // Update display URL first
         _handleUrlUpdate(url, title: title);
         
@@ -9806,8 +10325,8 @@ Future<void> _handlePageStarted(String url) async {
       },      onUrlChange: (UrlChange change) {
         if (mounted && change.url != null) {
           final url = change.url!;
-          print('DEBUG: onUrlChange called with URL: $url');
-          print('🔄 URL changed in browser, updating to: $url');
+          //print('DEBUG: onUrlChange called with URL: $url');
+          //print('🔄 URL changed in browser, updating to: $url');
           // FIXED: Immediate URL update for better responsiveness during navigation
           _handleUrlUpdate(url);
         }
@@ -9849,7 +10368,7 @@ Future<void> _handlePageStarted(String url) async {
       try {
         final currentUrl = await controller.currentUrl();
         if (currentUrl != null && currentUrl != _displayUrl && !_urlFocusNode.hasFocus) {
-          print('🔄 URL sync detected change: $_displayUrl -> $currentUrl');
+          //print('🔄 URL sync detected change: $_displayUrl -> $currentUrl');
           _handleUrlUpdate(currentUrl);
         }
       } catch (e) {
@@ -9931,6 +10450,71 @@ Future<void> _handlePageStarted(String url) async {
     }
   }
 
+  // Show HTTP warning dialog when navigating to unsecure sites
+  Future<bool> _showHttpWarningDialog() async {
+    return await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: ThemeManager.backgroundColor(),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Icon(
+                Icons.warning_amber_rounded,
+                color: Colors.orange,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  AppLocalizations.of(context)!.http_warning_title,
+                  style: TextStyle(
+                    color: ThemeManager.textColor(),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            AppLocalizations.of(context)!.http_warning_message,
+            style: TextStyle(
+              color: ThemeManager.textSecondaryColor(),
+              fontSize: 16,
+              height: 1.4,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(
+                AppLocalizations.of(context)!.go_back,
+                style: TextStyle(
+                  color: ThemeManager.textSecondaryColor(),
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(
+                AppLocalizations.of(context)!.continue_anyway,
+                style: TextStyle(
+                  color: Colors.orange,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    ) ?? false;
+  }
+
   // FIXED: Helper method to check if URL is the homepage
   bool _isHomePage(String url) {
     return url.startsWith('file:///android_asset/main.html') || url == _homeUrl;
@@ -9974,6 +10558,111 @@ Future<void> _handlePageStarted(String url) async {
     }
   }
 
+  Future<Directory> _getDefaultDownloadDirectory(int sdkInt) async {
+    // Try public Downloads directory first
+    Directory downloadDir = Directory('/storage/emulated/0/Download');
+    
+    // Test if we can write to the public Downloads directory
+    if (await downloadDir.exists()) {
+      final testFilePath = '${downloadDir.path}/.test_write_${DateTime.now().millisecondsSinceEpoch}';
+      final testFile = File(testFilePath);
+      try {
+        await testFile.writeAsString('test');
+        await testFile.delete(); // Clean up test file
+        return downloadDir; // Public Downloads directory is writable
+      } catch (e) {
+        //print('Cannot write to public Downloads directory: $e');
+      }
+    }
+    
+    if (sdkInt >= 29) {
+      // For Android 10+ (API 29+), try alternative approaches
+      try {
+        final externalDir = await getExternalStorageDirectory();
+        if (externalDir != null) {
+          // Try app-specific external storage first
+          final appDownloadsDir = Directory('${externalDir.path}/Downloads');
+          if (!await appDownloadsDir.exists()) {
+            await appDownloadsDir.create(recursive: true);
+          }
+          
+          // Test write permissions
+          final testFilePath = '${appDownloadsDir.path}/.test_write_${DateTime.now().millisecondsSinceEpoch}';
+          final testFile = File(testFilePath);
+          try {
+            await testFile.writeAsString('test');
+            await testFile.delete(); // Clean up test file
+            return appDownloadsDir; // App-specific Downloads directory is writable
+          } catch (e) {
+            //print('Cannot write to app-specific Downloads directory: $e');
+          }
+        }
+        
+        // Final fallback - use app's documents directory
+        final appDir = await getApplicationDocumentsDirectory();
+        final fallbackDir = Directory('${appDir.path}/Downloads');
+        if (!await fallbackDir.exists()) {
+          await fallbackDir.create(recursive: true);
+        }
+        return fallbackDir;
+        
+      } catch (e) {
+        // Ultimate fallback - use app's documents directory
+        final appDir = await getApplicationDocumentsDirectory();
+        final fallbackDir = Directory('${appDir.path}/Downloads');
+        if (!await fallbackDir.exists()) {
+          await fallbackDir.create(recursive: true);
+        }
+        return fallbackDir;
+      }
+    } else {
+      // For Android 9 and below, use traditional external storage
+      try {
+        final dir = await getExternalStorageDirectory();
+        if (dir == null) {
+          throw Exception('Could not access storage directory');
+        }
+        
+        // Create Downloads directory if it doesn't exist
+        if (!await downloadDir.exists()) {
+          try {
+            await downloadDir.create(recursive: true);
+          } catch (e) {
+            // If we can't create in public Downloads, use app-specific
+            downloadDir = Directory('${dir.path}/Downloads');
+            if (!await downloadDir.exists()) {
+              await downloadDir.create(recursive: true);
+            }
+          }
+        }
+        
+        // Test write permissions
+        final testFilePath = '${downloadDir.path}/.test_write_${DateTime.now().millisecondsSinceEpoch}';
+        final testFile = File(testFilePath);
+        try {
+          await testFile.writeAsString('test');
+          await testFile.delete(); // Clean up test file
+          return downloadDir;
+        } catch (e) {
+          // Fallback to app-specific directory
+          downloadDir = Directory('${dir.path}/Downloads');
+          if (!await downloadDir.exists()) {
+            await downloadDir.create(recursive: true);
+          }
+          return downloadDir;
+        }
+      } catch (e) {
+        // Final fallback - use app's documents directory
+        final appDir = await getApplicationDocumentsDirectory();
+        final fallbackDir = Directory('${appDir.path}/Downloads');
+        if (!await fallbackDir.exists()) {
+          await fallbackDir.create(recursive: true);
+        }
+        return fallbackDir;
+      }
+    }
+  }
+
   Future<String> _getDownloadLocation() async {
     final prefs = await SharedPreferences.getInstance();
     final directory = await getApplicationDocumentsDirectory();
@@ -9981,6 +10670,596 @@ Future<void> _handlePageStarted(String url) async {
   }
 
   Future<void> _handleDownload(String url) async {
+    try {
+      // Check if it's a package file first
+      if (_isPackageFile(url)) {
+        final fileName = url.split('/').last.split('?').first;
+        await _handlePackageDownload(url, fileName);
+        return;
+      }
+
+      // For regular downloads, determine file type and show appropriate dialog
+      String fileName;
+      PermissionDialogType dialogType = PermissionDialogType.downloads;
+      
+      // Handle base64 images
+      if (url.startsWith('data:image/')) {
+        final mimeType = url.split(';')[0].split(':')[1];
+        final ext = _getExtensionFromMimeType(mimeType) ?? '.png';
+        fileName = 'image_${DateTime.now().millisecondsSinceEpoch}$ext';
+        dialogType = PermissionDialogType.media;
+      } else {
+        // Extract filename from URL
+        fileName = url.split('/').last.split('?').first;
+        if (fileName.isEmpty || !fileName.contains('.')) {
+          final ext = url.toLowerCase().contains('.jpg') || url.toLowerCase().contains('jpeg') ? '.jpg' : 
+                      url.toLowerCase().contains('.png') ? '.png' :
+                      url.toLowerCase().contains('.gif') ? '.gif' :
+                      url.toLowerCase().contains('.webp') ? '.webp' : '.jpg';
+          fileName = 'image_${DateTime.now().millisecondsSinceEpoch}$ext';
+          dialogType = PermissionDialogType.media;
+        } else {
+          // Determine dialog type based on file extension
+          final ext = fileName.toLowerCase();
+          if (_isMediaFile(ext)) {
+            dialogType = PermissionDialogType.media;
+          } else {
+            dialogType = PermissionDialogType.downloads;
+          }
+        }
+      }
+
+      // Show permission dialog asking if user wants to save to public folders
+      final wantsPublicFolder = await _showPermissionDialog(
+        dialogType, 
+        fileName: fileName
+      );
+      
+      if (wantsPublicFolder) {
+        // User wants to save to Downloads/Images/Videos folder - use full download with permissions
+        await _downloadFile(url, fileName);
+      } else {
+        // User prefers app's private folder - download there directly  
+        await _downloadToPrivateFolder(url, fileName);
+      }
+
+    } catch (e) {
+      //print('Download error: $e');
+      _showCustomNotification(
+        message: 'Download failed: $e',
+        icon: Icons.error,
+        iconColor: Colors.red,
+        duration: const Duration(seconds: 4),
+      );
+    }
+  }
+
+  // Helper method to check if file is a media file (image, video, audio)
+  bool _isMediaFile(String fileName) {
+    final mediaExtensions = [
+      '.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg',  // Images
+      '.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv', '.webm',   // Videos
+      '.mp3', '.wav', '.flac', '.aac', '.ogg', '.m4a'           // Audio
+    ];
+    
+    return mediaExtensions.any((ext) => fileName.endsWith(ext));
+  }
+  
+  // Helper method to check if URL points to a package file (APK, etc.)
+  bool _isPackageFile(String url) {
+    final lowercaseUrl = url.toLowerCase();
+    final packageExtensions = ['.apk', '.xapk', '.apks', '.aab'];
+    
+    // Check if URL ends with any package extension
+    for (final extension in packageExtensions) {
+      if (lowercaseUrl.contains(extension)) {
+        return true;
+      }
+    }
+    
+    // Check if URL contains package-related keywords
+    final packageKeywords = ['package', 'install', 'app', 'android'];
+    for (final keyword in packageKeywords) {
+      if (lowercaseUrl.contains(keyword) && lowercaseUrl.contains('.apk')) {
+        return true;
+      }
+    }
+    
+    return false;
+  }
+
+  // Handle package download with special permission handling
+  Future<void> _handlePackageDownload(String url, String fileName) async {
+    try {
+      // Show package install permission dialog with package name
+      final wantsToInstall = await _showPermissionDialog(
+        PermissionDialogType.packageInstall,
+        packageName: fileName.replaceAll('.apk', '').replaceAll('.xapk', '').replaceAll('.aab', ''),
+        fileName: fileName
+      );
+      
+      if (wantsToInstall) {
+        // Show downloading notification
+        _showCustomNotification(
+          message: 'Downloading $fileName...',
+          title: 'Package Download',
+          icon: Icons.download_rounded,
+          iconColor: ThemeManager.primaryColor(),
+          duration: const Duration(seconds: 2),
+        );
+        
+        // User wants to install the package - download to private folder first
+        await _downloadToPrivateFolder(url, fileName);
+        
+        // After successful download, show installation options
+        await _showPackageInstallationOptions(fileName);
+        
+      } else {
+        // User declined - show helpful message
+        _showCustomNotification(
+          message: 'Package download cancelled. You can try downloading it again later.',
+          icon: Icons.cancel_outlined,
+          iconColor: Colors.orange,
+          duration: const Duration(seconds: 3),
+        );
+      }
+    } catch (e) {
+      //print('Package download error: $e');
+      _showCustomNotification(
+        message: 'Failed to download package: $e',
+        icon: Icons.error,
+        iconColor: Colors.red,
+        duration: const Duration(seconds: 4),
+      );
+    }
+  }
+
+  // Show installation options after package download
+  Future<void> _showPackageInstallationOptions(String fileName) async {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: ThemeManager.textColor().withOpacity(0.5),
+      pageBuilder: (context, animation, secondaryAnimation) => Container(),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        );
+
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.7, end: 1.0).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: animation,
+            child: _buildPackageInstallDialog(fileName),
+          ),
+        );
+      },
+      transitionDuration: const Duration(milliseconds: 300),
+    );
+  }
+
+  // Build the package installation dialog
+  Widget _buildPackageInstallDialog(String fileName) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: Container(
+        padding: const EdgeInsets.all(28),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          color: ThemeManager.backgroundColor(),
+          boxShadow: [
+            BoxShadow(
+              color: ThemeManager.textColor().withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Success icon with animation
+            TweenAnimationBuilder<double>(
+              duration: const Duration(milliseconds: 600),
+              tween: Tween(begin: 0.0, end: 1.0),
+              builder: (context, value, child) {
+                return Transform.scale(
+                  scale: 0.8 + (0.2 * value),
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(70),
+                      color: Colors.green.withOpacity(0.1),
+                      border: Border.all(
+                        color: Colors.green.withOpacity(0.3),
+                        width: 2,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.check_circle_rounded,
+                      size: 56,
+                      color: Colors.green,
+                    ),
+                  ),
+                );
+              },
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // Title
+            Text(
+              'Package Downloaded!',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: ThemeManager.textColor(),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            
+            const SizedBox(height: 12),
+            
+            // Package name
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: ThemeManager.surfaceColor(),
+              ),
+              child: Text(
+                fileName,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: ThemeManager.primaryColor(),
+                ),
+              ),
+            ),
+            
+            const SizedBox(height: 20),
+            
+            // Installation instructions
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                color: Colors.blue.withOpacity(0.1),
+                border: Border.all(
+                  color: Colors.blue.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.info_outline_rounded,
+                        size: 20,
+                        color: Colors.blue,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Installation Steps:',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.blue,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    '1. Tap "Install" below to open the package\n2. Enable "Install Unknown Apps" if prompted\n3. Follow Android\'s installation wizard',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: ThemeManager.textSecondaryColor(),
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 32),
+            
+            // Action buttons
+            Row(
+              children: [
+                // View in Downloads button
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      // Show downloads panel
+                      setState(() {
+                        isDownloadsVisible = true;
+                        isPanelExpanded = true;
+                      });
+                    },
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: BorderSide(
+                          color: ThemeManager.textSecondaryColor().withOpacity(0.3),
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                    icon: Icon(
+                      Icons.folder_rounded,
+                      size: 20,
+                      color: ThemeManager.textSecondaryColor(),
+                    ),
+                    label: Text(
+                      'View',
+                      style: TextStyle(
+                        color: ThemeManager.textSecondaryColor(),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+                
+                const SizedBox(width: 16),
+                
+                // Install button
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      _attemptPackageInstall(fileName);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 0,
+                    ),
+                    icon: const Icon(Icons.install_mobile_rounded, size: 20),
+                    label: const Text(
+                      'Install',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Attempt to install the package using Android's package installer
+  Future<void> _attemptPackageInstall(String fileName) async {
+    try {
+      // Find the downloaded file
+      final appDir = await getApplicationDocumentsDirectory();
+      final filePath = '${appDir.path}/Downloads/$fileName';
+      final file = File(filePath);
+      
+      if (await file.exists()) {
+        // Try to open the APK file with Android's package installer
+        final result = await OpenFile.open(filePath);
+        
+        if (result.type == ResultType.done) {
+          _showCustomNotification(
+            message: 'Package installer opened successfully.',
+            title: 'Installation Started',
+            icon: Icons.check_circle_outline_rounded,
+            iconColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          );
+        } else {
+          _showInstallationFallbackOptions(fileName, filePath);
+        }
+      } else {
+        _showCustomNotification(
+          message: 'Package file not found. Please download again.',
+          icon: Icons.error_outline_rounded,
+          iconColor: Colors.red,
+          duration: const Duration(seconds: 4),
+        );
+      }
+    } catch (e) {
+      //print('Package install error: $e');
+      _showInstallationFallbackOptions(fileName, '');
+    }
+  }
+
+  // Show fallback options if automatic installation fails
+  void _showInstallationFallbackOptions(String fileName, String filePath) {
+    _showCustomNotification(
+      message: 'Could not open installer automatically. You can find the file in Downloads and install manually.',
+      title: 'Manual Installation Required',
+      icon: Icons.info_outline_rounded,
+      iconColor: Colors.orange,
+      duration: const Duration(seconds: 6),
+      action: SnackBarAction(
+        label: 'Open Downloads',
+        onPressed: () {
+          setState(() {
+            isDownloadsVisible = true;
+            isPanelExpanded = true;
+          });
+        },
+      ),
+    );
+  }
+
+  // Download file to app's private folder (doesn't require storage permissions)
+  Future<void> _downloadToPrivateFolder(String url, String fileName) async {
+    try {
+      setState(() {
+        isDownloading = true;
+        currentDownloadUrl = url;
+        downloadProgress = 0.0;
+      });
+
+      // Get app's private documents directory
+      final appDir = await getApplicationDocumentsDirectory();
+      final privateDownloadsDir = Directory('${appDir.path}/Downloads');
+      
+      // Create private downloads directory if it doesn't exist
+      if (!await privateDownloadsDir.exists()) {
+        await privateDownloadsDir.create(recursive: true);
+      }
+
+      // Handle filename conflicts
+      String finalFileName = fileName;
+      String finalFilePath = '${privateDownloadsDir.path}/$finalFileName';
+      int counter = 1;
+      
+      while (await File(finalFilePath).exists()) {
+        final lastDot = fileName.lastIndexOf('.');
+        if (lastDot != -1) {
+          final nameWithoutExt = fileName.substring(0, lastDot);
+          final ext = fileName.substring(lastDot);
+          finalFileName = '$nameWithoutExt ($counter)$ext';
+        } else {
+          finalFileName = '$fileName ($counter)';
+        }
+        finalFilePath = '${privateDownloadsDir.path}/$finalFileName';
+        counter++;
+      }
+
+      List<int> fileBytes;
+      String mimeType = 'application/octet-stream';
+      
+      // Handle base64/data URLs
+      if (url.startsWith('data:')) {
+        final dataUrlInfo = _parseDataUrlForPrivate(url);
+        mimeType = dataUrlInfo['mimeType'] ?? mimeType;
+        fileBytes = dataUrlInfo['bytes'] ?? [];
+      } else {
+        // Regular HTTP download
+        final client = HttpClient();
+        final request = await client.getUrl(Uri.parse(url));
+        request.headers.add('User-Agent', 'Mozilla/5.0');
+        
+        final response = await request.close();
+        if (response.statusCode != 200) {
+          throw Exception('HTTP ${response.statusCode}');
+        }
+        
+        final contentType = response.headers.value('content-type');
+        if (contentType != null) {
+          mimeType = contentType;
+        }
+        
+        final List<int> bytes = [];
+        await for (final List<int> chunk in response) {
+          bytes.addAll(chunk);
+        }
+        fileBytes = bytes;
+        client.close();
+      }
+
+      // Write file to private storage
+      final file = File(finalFilePath);
+      await file.writeAsBytes(fileBytes);
+
+      // Save to downloads history
+      final downloadInfo = {
+        'url': url.startsWith('data:') ? 'data:${mimeType}' : url,
+        'filename': finalFileName,
+        'path': finalFilePath,
+        'size': fileBytes.length,
+        'timestamp': DateTime.now().toIso8601String(),
+        'mimeType': mimeType,
+        'isPrivate': true, // Mark as private download
+      };
+      
+      setState(() {
+        downloads.add(downloadInfo);
+      });
+      
+      // Save to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final downloadsList = prefs.getStringList('downloads') ?? [];
+      downloadsList.add(json.encode(downloadInfo));
+      await prefs.setStringList('downloads', downloadsList);
+      
+      // Show success notification
+      _showCustomNotification(
+        message: finalFileName,
+        title: 'Downloaded to app storage',
+        icon: Icons.download_done,
+        iconColor: Colors.green,
+        duration: const Duration(seconds: 4),
+        action: SnackBarAction(
+          label: 'Open',
+          onPressed: () => _openDownloadedFile(downloadInfo),
+        ),
+      );
+
+    } catch (e) {
+      //print('Private download error: $e');
+      _showCustomNotification(
+        message: 'Download failed: $e',
+        icon: Icons.error,
+        iconColor: Colors.red,
+      );
+    } finally {
+      setState(() {
+        isDownloading = false;
+        currentDownloadUrl = '';
+        downloadProgress = 0.0;
+      });
+    }
+  }
+
+  // Helper method to parse data URLs for private downloads
+  Map<String, dynamic> _parseDataUrlForPrivate(String dataUrl) {
+    try {
+      if (!dataUrl.startsWith('data:')) {
+        throw Exception('Invalid data URL');
+      }
+      
+      final parts = dataUrl.split(',');
+      if (parts.length != 2) {
+        throw Exception('Invalid data URL format');
+      }
+      
+      final header = parts[0];
+      final data = parts[1];
+      
+      // Extract MIME type
+      String mimeType = 'application/octet-stream';
+      final mimeMatch = RegExp(r'data:([^;]+)').firstMatch(header);
+      if (mimeMatch != null) {
+        mimeType = mimeMatch.group(1) ?? mimeType;
+      }
+      
+      // Decode base64 data
+      final bytes = base64Decode(data);
+      
+      return {
+        'mimeType': mimeType,
+        'bytes': bytes,
+      };
+    } catch (e) {
+      //print('Error parsing data URL: $e');
+      return {
+        'mimeType': 'application/octet-stream',
+        'bytes': <int>[],
+      };
+    }
+  }
+  
+  // Legacy method - keeping for compatibility but updating to use permission flow
+  Future<void> _legacyHandleDownload(String url) async {
     try {
       final notificationService = NotificationService();
       await notificationService.initialize();
@@ -10270,7 +11549,7 @@ Future<void> _handlePageStarted(String url) async {
       const platform = MethodChannel('com.solar.browser/media_scan');
       await platform.invokeMethod('scanFile', {'path': filePath});
     } catch (e) {
-      print('Failed to trigger media scan: $e');
+      //print('Failed to trigger media scan: $e');
       // Fallback: try to trigger using file operations that might trigger automatic scan
       try {
         final file = File(filePath);
@@ -10279,7 +11558,7 @@ Future<void> _handlePageStarted(String url) async {
           await file.setLastModified(DateTime.now());
         }
       } catch (e2) {
-        print('Fallback media scan also failed: $e2');
+        //print('Fallback media scan also failed: $e2');
       }
     }
   }
@@ -10302,7 +11581,7 @@ Future<void> _handlePageStarted(String url) async {
         await tabs[currentTabIndex]['controller'].reload();
       }
     } catch (e) {
-      print('Error refreshing page: $e');
+      //print('Error refreshing page: $e');
     }
   }
 
@@ -10489,17 +11768,46 @@ Future<void> _handlePageStarted(String url) async {
       String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
       
       if (selectedDirectory != null) {
-        await prefs.setString('downloadLocation', selectedDirectory);
-        setState(() {});
+        // Test write permissions to the selected directory
+        final testDir = Directory(selectedDirectory);
+        final testFilePath = '${testDir.path}/.test_write_${DateTime.now().millisecondsSinceEpoch}';
+        final testFile = File(testFilePath);
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.download_location_changed)),
-        );
+        try {
+          await testFile.writeAsString('test');
+          await testFile.delete(); // Clean up test file
+          
+          // Directory is writable, save it
+          await prefs.setString('downloadLocation', selectedDirectory);
+          setState(() {});
+          
+          _showCustomNotification(
+            message: AppLocalizations.of(context)!.download_location_changed,
+            icon: Icons.check_circle,
+            iconColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          );
+        } catch (e) {
+          //print('Cannot write to selected directory: $e');
+          _showCustomNotification(
+            message: AppLocalizations.of(context)!.cannot_write_selected_folder_choose_different,
+            icon: Icons.error,
+            iconColor: Colors.red,
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'Try Again',
+              onPressed: () => _showDownloadLocationPicker(),
+            ),
+          );
+        }
       }
     } catch (e) {
-      print('Error picking directory: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.error_changing_location)),
+      //print('Error picking directory: $e');
+      _showCustomNotification(
+        message: AppLocalizations.of(context)!.error_changing_location,
+        icon: Icons.error,
+        iconColor: Colors.red,
+        duration: const Duration(seconds: 4),
       );
     }
   }
@@ -10598,7 +11906,7 @@ Future<void> _handlePageStarted(String url) async {
         });
       }
     } catch (e) {
-      print('Error updating favicon: $e');
+      //print('Error updating favicon: $e');
     }
   }  Widget _buildNavigationPanel() {
     final width = MediaQuery.of(context).size.width - 32; // Match URL bar width calculation
@@ -10649,7 +11957,7 @@ Future<void> _handlePageStarted(String url) async {
                   await controller.loadRequest(Uri.parse(_homeUrl));
                   _handleUrlUpdate(_homeUrl);
                 } catch (e) {
-                  print('Error navigating to home: $e');
+                  //print('Error navigating to home: $e');
                 }
               },
             ),
@@ -11047,10 +12355,10 @@ Future<void> _handlePageStarted(String url) async {
     // Use custom home page if enabled and url is empty (new tab) or default home
     if (useCustomHomePage && customHomeUrl.isNotEmpty && 
         (url.isEmpty || url == 'about:blank' || url == _homeUrl || url == 'file:///android_asset/main.html')) {
-      print('Using custom home page URL: $customHomeUrl');
+      //print('Using custom home page URL: $customHomeUrl');
       url = customHomeUrl;
     } else {
-      print('Using provided URL: $url');
+      //print('Using provided URL: $url');
     }
     
     final newTab = {
@@ -11087,7 +12395,7 @@ Future<void> _handlePageStarted(String url) async {
           formattedUrl = 'https://$formattedUrl';
         }
         
-        print('Loading URL in new tab: $formattedUrl');
+        //print('Loading URL in new tab: $formattedUrl');
         await newTab['controller'].loadRequest(Uri.parse(formattedUrl));
         
         // Update the tab URL with the formatted version
@@ -11095,7 +12403,7 @@ Future<void> _handlePageStarted(String url) async {
           newTab['url'] = formattedUrl;
         }
       } catch (e) {
-        print('Error loading URL in new tab: $e');
+        //print('Error loading URL in new tab: $e');
       }
     }
   }
@@ -11429,7 +12737,7 @@ Future<void> _handlePageStarted(String url) async {
           }
         ''');
       } catch (e) {
-        print('Error sending dialog result: $e');
+        //print('Error sending dialog result: $e');
       }
     }
   }
@@ -11523,7 +12831,7 @@ Future<void> _handlePageStarted(String url) async {
       ..enableZoom(true)
       ..setUserAgent(userAgent);
     
-    print("TAB INITIALIZATION - JAVASCRIPT ENABLED: ${JavaScriptMode.unrestricted}");
+    //print("TAB INITIALIZATION - JAVASCRIPT ENABLED: ${JavaScriptMode.unrestricted}");
     
     // Configure Android-specific settings FIRST
     if (webViewController.platform is webview_flutter_android.AndroidWebViewController) {
@@ -11534,9 +12842,9 @@ Future<void> _handlePageStarted(String url) async {
         await androidController.setTextZoom(100);
         await androidController.setMediaPlaybackRequiresUserGesture(false);
         await androidController.setBackgroundColor(Colors.transparent);
-        print('Android WebView settings configured successfully');
+        //print('Android WebView settings configured successfully');
       } catch (e) {
-        print('Error setting Android WebView settings: $e');
+        //print('Error setting Android WebView settings: $e');
       }
     }
     
@@ -11565,7 +12873,7 @@ Future<void> _handlePageStarted(String url) async {
                 _showConfirmDialog(messageText, id);
               }
             } catch (e) {
-              print('DialogHandler error in tab: $e');
+              //print('DialogHandler error in tab: $e');
             }
           }
         },
@@ -11628,9 +12936,9 @@ Future<void> _handlePageStarted(String url) async {
         },
       );
       
-      print('JavaScript channels set up successfully for tab');
+      //print('JavaScript channels set up successfully for tab');
     } catch (e) {
-      print('Error setting up JavaScript channels: $e');
+      //print('Error setting up JavaScript channels: $e');
     }
     
     // Set the navigation delegate
@@ -11641,50 +12949,43 @@ Future<void> _handlePageStarted(String url) async {
     await _setupScrollHandlingForController(webViewController);
   }
 
-  Future<void> _downloadFile(String url, String? suggestedFilename) async {
+  // Add file to MediaStore for Android 10+ visibility
+  Future<void> _addToMediaStore(String filePath, String fileName, String mimeType) async {
     try {
-      // First, check if we have storage permission
-      bool hasPermission = false;
-      
       final androidInfo = await DeviceInfoPlugin().androidInfo;
       final sdkInt = androidInfo.version.sdkInt;
       
-      if (sdkInt >= 33) {
-        // For Android 13+, we need to use the MediaStore API
-        // Request notification permission for better UX
-        await Permission.notification.request();
-        hasPermission = true; // Android 13+ doesn't need explicit storage permission for downloads
+      if (sdkInt >= 29) {
+        // For Android 10+, use MediaStore API
+        const methodChannel = MethodChannel('com.vertex.solar/mediastore');
+        await methodChannel.invokeMethod('addToDownloads', {
+          'filePath': filePath,
+          'fileName': fileName,
+          'mimeType': mimeType,
+        });
       } else {
-        // For older Android versions, we need storage permission
-        final status = await Permission.storage.request();
-        hasPermission = status.isGranted;
+        // For older versions, use media scanner
+        const methodChannel = MethodChannel('com.vertex.solar/app');
+        await methodChannel.invokeMethod('scanFile', {'path': filePath});
       }
-      
-      if (!hasPermission) {
-        _showCustomNotification(
-          message: AppLocalizations.of(context)!.permission_denied,
-          icon: Icons.error_outline,
-          iconColor: ThemeManager.errorColor(),
-          duration: const Duration(seconds: 4),
-          action: SnackBarAction(
-            label: 'Settings',
-            onPressed: () {
-              openAppSettings();
-            },
-          ),
-        );
-        return;
+    } catch (e) {
+      //print('Error adding file to MediaStore: $e');
+      // Fallback: try to broadcast file change
+      try {
+        const methodChannel = MethodChannel('com.vertex.solar/app');
+        await methodChannel.invokeMethod('broadcastFileAdded', {'path': filePath});
+      } catch (e2) {
+        //print('Error broadcasting file addition: $e2');
       }
-      
-      // Set download state
-      setState(() {
-        isLoading = true;
-        isDownloading = true;
-        currentDownloadUrl = url;
-        _currentFileName = suggestedFilename;
-        downloadProgress = 0.0;
-      });
+    }
+  }
 
+  Future<void> _downloadFile(String url, String? suggestedFilename) async {
+    try {
+      // Get Android API level for storage handling (needed throughout method)
+      final androidInfo = await DeviceInfoPlugin().androidInfo;
+      final sdkInt = androidInfo.version.sdkInt;
+      
       // Get file name from URL if not provided
       String fileName = suggestedFilename ?? '';
       if (fileName.isEmpty) {
@@ -11704,7 +13005,108 @@ Future<void> _handlePageStarted(String url) async {
           }
         }
       }
+
+      // Determine the type of file and show appropriate permission dialog
+      PermissionDialogType dialogType;
+      if (_isMediaFile(fileName)) {
+        dialogType = PermissionDialogType.media;
+      } else {
+        dialogType = PermissionDialogType.downloads;
+      }
+
+      // Show animated permission dialog
+      final wantsToDownload = await _showPermissionDialog(
+        dialogType,
+        fileName: fileName,
+      );
+
+      if (!wantsToDownload) {
+        // User declined the download
+        return;
+      }
+
+      // Now check and request actual system permissions
+      bool hasPermission = false;
       
+      if (sdkInt >= 33) {
+        // For Android 13+, we need granular media permissions
+        List<Permission> mediaPermissions = [];
+        
+        if (sdkInt >= 34) {
+          // Android 14+ (API 34+) - Check for partial media access
+          mediaPermissions.addAll([
+            Permission.photos,
+            Permission.videos,
+            Permission.audio,
+          ]);
+          
+          // Check if we have partial access (Android 14 feature)
+          final photosStatus = await Permission.photos.status;
+          if (photosStatus == PermissionStatus.limited) {
+            // User granted partial access, this is acceptable
+            hasPermission = true;
+          } else {
+            // Request full access
+            final results = await mediaPermissions.request();
+            hasPermission = results.values.any((status) => 
+              status == PermissionStatus.granted || status == PermissionStatus.limited);
+          }
+        } else {
+          // Android 13 (API 33)
+          mediaPermissions.addAll([
+            Permission.photos,
+            Permission.videos,
+            Permission.audio,
+          ]);
+          
+          final results = await mediaPermissions.request();
+          hasPermission = results.values.any((status) => status == PermissionStatus.granted);
+        }
+        
+        // Request notification permission for better UX
+        await Permission.notification.request();
+        
+        // For downloading non-media files, we might need MANAGE_EXTERNAL_STORAGE
+        if (!hasPermission) {
+          final manageStorageStatus = await Permission.manageExternalStorage.status;
+          if (manageStorageStatus != PermissionStatus.granted) {
+            final result = await Permission.manageExternalStorage.request();
+            hasPermission = result == PermissionStatus.granted;
+          } else {
+            hasPermission = true;
+          }
+        }
+      } else {
+        // For older Android versions, we need storage permission
+        final status = await Permission.storage.request();
+        hasPermission = status.isGranted;
+      }
+      
+      if (!hasPermission) {
+        _showCustomNotification(
+          message: AppLocalizations.of(context)!.permission_denied,
+          icon: Icons.error_outline,
+          iconColor: ThemeManager.errorColor(),
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: AppLocalizations.of(context)!.settings_action,
+            onPressed: () {
+              openAppSettings();
+            },
+          ),
+        );
+        return;
+      }
+      
+      // Set download state
+      setState(() {
+        isLoading = true;
+        isDownloading = true;
+        currentDownloadUrl = url;
+        _currentFileName = fileName;
+        downloadProgress = 0.0;
+      });
+
       // Show download started notification
       _showCustomNotification(
         message: fileName,
@@ -11728,15 +13130,121 @@ Future<void> _handlePageStarted(String url) async {
       );
       
       // Get download directory
-      final dir = await getExternalStorageDirectory();
-      if (dir == null) {
-        throw Exception('Could not access storage directory');
+      Directory downloadDir;
+      
+      // Check if user wants to be asked for download location
+      if (_askDownloadLocation) {
+        try {
+          String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+          if (selectedDirectory != null) {
+            downloadDir = Directory(selectedDirectory);
+            
+            // Test write permissions to the selected directory
+            final testFilePath = '${downloadDir.path}/.test_write_${DateTime.now().millisecondsSinceEpoch}';
+            final testFile = File(testFilePath);
+            try {
+              await testFile.writeAsString('test');
+              await testFile.delete(); // Clean up test file
+            } catch (e) {
+              //print('Cannot write to selected directory: $e');
+              _showCustomNotification(
+                message: AppLocalizations.of(context)!.cannot_write_selected_folder,
+                icon: Icons.warning,
+                iconColor: Colors.orange,
+                duration: const Duration(seconds: 4),
+              );
+              downloadDir = await _getDefaultDownloadDirectory(sdkInt);
+            }
+          } else {
+            // User cancelled, use default location
+            downloadDir = await _getDefaultDownloadDirectory(sdkInt);
+          }
+        } catch (e) {
+          //print('Error asking for download location: $e');
+          _showCustomNotification(
+            message: AppLocalizations.of(context)!.error_selecting_folder_default,
+            icon: Icons.warning,
+            iconColor: Colors.orange,
+            duration: const Duration(seconds: 3),
+          );
+          // Fallback to default location
+          downloadDir = await _getDefaultDownloadDirectory(sdkInt);
+        }
+      } else {
+        // Use configured download location or default
+        final savedLocation = await _getDownloadLocation();
+        final defaultDir = await getApplicationDocumentsDirectory();
+        
+        // Check if saved location is the default app directory
+        if (savedLocation == defaultDir.path) {
+          // Use public Downloads folder for better accessibility
+          downloadDir = await _getDefaultDownloadDirectory(sdkInt);
+        } else {
+          // Use user's configured location but test write permissions first
+          downloadDir = Directory(savedLocation);
+          
+          // Test write permissions to the configured directory
+          if (await downloadDir.exists()) {
+            final testFilePath = '${downloadDir.path}/.test_write_${DateTime.now().millisecondsSinceEpoch}';
+            final testFile = File(testFilePath);
+            try {
+              await testFile.writeAsString('test');
+              await testFile.delete(); // Clean up test file
+              //print('Custom download location verified: ${downloadDir.path}');
+            } catch (e) {
+              //print('Cannot write to configured directory: $e');
+              _showCustomNotification(
+                message: AppLocalizations.of(context)!.cannot_write_configured_folder,
+                icon: Icons.warning,
+                iconColor: Colors.orange,
+                duration: const Duration(seconds: 4),
+              );
+              downloadDir = await _getDefaultDownloadDirectory(sdkInt);
+            }
+          } else {
+            // Directory doesn't exist, try to create it
+            try {
+              await downloadDir.create(recursive: true);
+              //print('Created custom download directory: ${downloadDir.path}');
+              
+              // Test write permissions after creation
+              final testFilePath = '${downloadDir.path}/.test_write_${DateTime.now().millisecondsSinceEpoch}';
+              final testFile = File(testFilePath);
+              try {
+                await testFile.writeAsString('test');
+                await testFile.delete(); // Clean up test file
+                //print('Custom download location verified after creation: ${downloadDir.path}');
+              } catch (e) {
+                //print('Cannot write to created directory: $e');
+                _showCustomNotification(
+                  message: AppLocalizations.of(context)!.cannot_write_configured_folder,
+                  icon: Icons.warning,
+                  iconColor: Colors.orange,
+                  duration: const Duration(seconds: 4),
+                );
+                downloadDir = await _getDefaultDownloadDirectory(sdkInt);
+              }
+            } catch (e) {
+              //print('Cannot create configured directory: $e');
+              // Directory doesn't exist and can't be created, use default
+              downloadDir = await _getDefaultDownloadDirectory(sdkInt);
+            }
+          }
+        }
       }
       
-      // Create download directory if it doesn't exist
-      final downloadDir = Directory('${dir.path}/Download');
+      // Ensure download directory exists and is writable
       if (!await downloadDir.exists()) {
-        await downloadDir.create(recursive: true);
+        try {
+          await downloadDir.create(recursive: true);
+        } catch (e) {
+          //print('Could not create download directory: $e');
+          // Fallback to default Downloads directory
+          downloadDir = await _getDefaultDownloadDirectory(sdkInt);
+          if (!await downloadDir.exists()) {
+            await downloadDir.create(recursive: true);
+          }
+        }
       }
 
       // Full path to the file
@@ -11755,8 +13263,43 @@ Future<void> _handlePageStarted(String url) async {
         fileBytes = dataUrlInfo['bytes'] ?? [];
         fileSize = fileBytes.length;
         
-        // Write the decoded bytes to file
-        await file.writeAsBytes(fileBytes);
+        // Try to write the decoded bytes to file with error handling
+        try {
+          await file.writeAsBytes(fileBytes);
+        } catch (e) {
+          //print('Error writing to file path $filePath: $e');
+          // If writing fails, try using app's private storage as fallback
+          final appDir = await getApplicationDocumentsDirectory();
+          final fallbackDir = Directory('${appDir.path}/Downloads');
+          if (!await fallbackDir.exists()) {
+            await fallbackDir.create(recursive: true);
+          }
+          
+          final fallbackFilePath = '${fallbackDir.path}/$fileName';
+          final fallbackFile = File(fallbackFilePath);
+          
+          try {
+            await fallbackFile.writeAsBytes(fileBytes);
+            
+            _showCustomNotification(
+              message: AppLocalizations.of(context)!.file_saved_to_app_storage,
+              icon: Icons.info,
+              iconColor: Colors.blue,
+              duration: const Duration(seconds: 4),
+            );
+            
+            // Continue with the fallback file path - update the original filePath variable
+            final updatedFilePath = fallbackFilePath;
+            
+            // Continue processing with the successful fallback location
+            // The rest of the download logic will use updatedFilePath
+            await _completeDownloadProcess(url, fileName, updatedFilePath, fileSize, mimeType);
+            return; // Exit early since we handled the fallback successfully
+          } catch (e2) {
+            // If even the fallback fails, throw the original error
+            throw Exception('${AppLocalizations.of(context)!.failed_write_any_location}: $e');
+          }
+        }
       } else {
         // Regular HTTP download
         final response = await http.get(Uri.parse(url), headers: {
@@ -11771,12 +13314,81 @@ Future<void> _handlePageStarted(String url) async {
         fileSize = response.contentLength ?? 0;
         mimeType = response.headers['content-type'] ?? 'application/octet-stream';
         
-        // Write file to storage
-        await file.writeAsBytes(response.bodyBytes);
+        // Try to write file to storage with error handling
+        try {
+          await file.writeAsBytes(response.bodyBytes);
+        } catch (e) {
+          //print('Error writing to file path $filePath: $e');
+          // If writing fails, try using app's private storage as fallback
+          final appDir = await getApplicationDocumentsDirectory();
+          final fallbackDir = Directory('${appDir.path}/Downloads');
+          if (!await fallbackDir.exists()) {
+            await fallbackDir.create(recursive: true);
+          }
+          
+          final fallbackFilePath = '${fallbackDir.path}/$fileName';
+          final fallbackFile = File(fallbackFilePath);
+          
+          try {
+            await fallbackFile.writeAsBytes(response.bodyBytes);
+            
+            _showCustomNotification(
+              message: AppLocalizations.of(context)!.file_saved_to_app_storage,
+              icon: Icons.info,
+              iconColor: Colors.blue,
+              duration: const Duration(seconds: 4),
+            );
+            
+            // Continue with the fallback file path
+            await _completeDownloadProcess(url, fileName, fallbackFilePath, fileSize, mimeType);
+            return; // Exit early since we handled the fallback successfully
+          } catch (e2) {
+            // If even the fallback fails, throw the original error
+            throw Exception('${AppLocalizations.of(context)!.failed_write_any_location}: $e');
+          }
+        }
       }
 
-      // Make the file visible to other apps using FileProvider for better security
+      // If we get here, the file was written successfully to the original location
+      await _completeDownloadProcess(url, fileName, filePath, fileSize, mimeType);
+
+    } catch (e) {
+      //print('Download error: $e');
+      _showCustomNotification(
+        message: "${AppLocalizations.of(context)!.download_failed}: ${e.toString()}",
+        icon: Icons.error_outline,
+        iconColor: ThemeManager.errorColor(),
+        duration: const Duration(seconds: 4),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+        isDownloading = false;
+        currentDownloadUrl = '';
+        _currentFileName = null;
+        downloadProgress = 0.0;
+      });
+    }
+  }
+
+  // Add permission monitoring
+  void _startPermissionMonitoring() {
+    // Removed permission monitoring
+  }
+
+  void _showPermissionNotification() {
+    // Removed permission notification
+  }
+
+  // Helper method to complete the download process (used for both successful writes and fallback)
+  Future<void> _completeDownloadProcess(String url, String fileName, String filePath, int fileSize, String mimeType) async {
+    try {
+      // Make the file visible to other apps and add to MediaStore
       try {
+        // First, add to MediaStore for proper system visibility
+        await _addToMediaStore(filePath, fileName, mimeType);
+        
+        // Also use FileProvider for sharing capabilities
         const methodChannel = MethodChannel('com.vertex.solar/browser');
         await methodChannel.invokeMethod('shareDownloadedFile', {
           'path': filePath,
@@ -11784,13 +13396,15 @@ Future<void> _handlePageStarted(String url) async {
           'fileName': fileName
         });
       } catch (e) {
-        print('Error sharing file: $e');
+        //print('Error registering file with system: $e');
         // Fallback to older method if needed
         try {
           const methodChannel = MethodChannel('com.vertex.solar/app');
           await methodChannel.invokeMethod('scanFile', {'path': filePath});
         } catch (e2) {
-          print('Error scanning file: $e2');
+          //print('Error scanning file: $e2');
+          // Final fallback - just notify user that file might not be immediately visible
+          //print('File saved but might not be immediately visible in gallery/file manager');
         }
       }
       
@@ -11823,57 +13437,76 @@ Future<void> _handlePageStarted(String url) async {
       downloadsList.add(json.encode(downloadInfo));
       await prefs.setStringList('downloads', downloadsList);
       
-      // Show download completed notification
-      _showCustomNotification(
-        message: fileName,
-        title: AppLocalizations.of(context)!.download_completed,
-        icon: Icons.check_circle,
-        iconColor: ThemeManager.successColor(),
-        duration: const Duration(seconds: 4),
-        isDownload: true,
-        action: SnackBarAction(
-          label: AppLocalizations.of(context)!.open,
-          onPressed: () async {
-            try {
-              await OpenFile.open(filePath);
-            } catch (e) {
-              _showCustomNotification(
-                message: AppLocalizations.of(context)!.error_opening_file_install_app,
-                icon: Icons.error,
-                iconColor: ThemeManager.errorColor(),
-                duration: const Duration(seconds: 4),
-              );
-            }
-          },
-        ),
-      );
-
+      // Auto-open file if enabled
+      if (_autoOpenDownloads) {
+        try {
+          await OpenFile.open(filePath);
+          
+          // Show download completed notification without action since file is auto-opened
+          _showCustomNotification(
+            message: fileName,
+            title: AppLocalizations.of(context)!.download_completed,
+            icon: Icons.check_circle,
+            iconColor: ThemeManager.successColor(),
+            duration: const Duration(seconds: 3),
+            isDownload: true,
+          );
+        } catch (e) {
+          // If auto-open fails, show notification with manual open action
+          _showCustomNotification(
+            message: fileName,
+            title: AppLocalizations.of(context)!.download_completed,
+            icon: Icons.check_circle,
+            iconColor: ThemeManager.successColor(),
+            duration: const Duration(seconds: 4),
+            isDownload: true,
+            action: SnackBarAction(
+              label: AppLocalizations.of(context)!.open,
+              onPressed: () async {
+                try {
+                  await OpenFile.open(filePath);
+                } catch (e) {
+                  _showCustomNotification(
+                    message: AppLocalizations.of(context)!.error_opening_file_install_app,
+                    icon: Icons.error,
+                    iconColor: ThemeManager.errorColor(),
+                    duration: const Duration(seconds: 4),
+                  );
+                }
+              },
+            ),
+          );
+        }
+      } else {
+        // Show download completed notification with manual open action
+        _showCustomNotification(
+          message: fileName,
+          title: AppLocalizations.of(context)!.download_completed,
+          icon: Icons.check_circle,
+          iconColor: ThemeManager.successColor(),
+          duration: const Duration(seconds: 4),
+          isDownload: true,
+          action: SnackBarAction(
+            label: AppLocalizations.of(context)!.open,
+            onPressed: () async {
+              try {
+                await OpenFile.open(filePath);
+              } catch (e) {
+                _showCustomNotification(
+                  message: AppLocalizations.of(context)!.error_opening_file_install_app,
+                  icon: Icons.error,
+                  iconColor: ThemeManager.errorColor(),
+                  duration: const Duration(seconds: 4),
+                );
+              }
+            },
+          ),
+        );
+      }
     } catch (e) {
-      print('Download error: $e');
-      _showCustomNotification(
-        message: "${AppLocalizations.of(context)!.download_failed}: ${e.toString()}",
-        icon: Icons.error_outline,
-        iconColor: ThemeManager.errorColor(),
-        duration: const Duration(seconds: 4),
-      );
-    } finally {
-      setState(() {
-        isLoading = false;
-        isDownloading = false;
-        currentDownloadUrl = '';
-        _currentFileName = null;
-        downloadProgress = 0.0;
-      });
+      //print('Error completing download process: $e');
+      throw e;
     }
-  }
-
-  // Add permission monitoring
-  void _startPermissionMonitoring() {
-    // Removed permission monitoring
-  }
-
-  void _showPermissionNotification() {
-    // Removed permission notification
   }
 
   Future<bool> _requestPermissions() async {
@@ -12040,7 +13673,7 @@ Future<void> _handlePageStarted(String url) async {
         );
       }
     } catch (e) {
-      print('Error removing download: $e');
+      //print('Error removing download: $e');
       _showNotification(
         Text('${AppLocalizations.of(context)!.error_removing_download}: ${e.toString()}'),
         duration: const Duration(seconds: 4),
@@ -12176,7 +13809,7 @@ Future<void> _handlePageStarted(String url) async {
   // Simplified JavaScript injection for M12 - Task 4: Allow native context menus
   Future<void> _injectImageContextMenuJS() async {
     try {
-      print('Injecting context menu JavaScript...');
+      //print('Injecting context menu JavaScript...');
       await controller.runJavaScript('''
         console.log('Context menu JavaScript loaded!');
         
@@ -12336,9 +13969,9 @@ Future<void> _handlePageStarted(String url) async {
       setState(() {
         _loadedHistory = [];
       });
-      print('History cleared successfully');
+      //print('History cleared successfully');
     } catch (e) {
-      print('Error clearing history: $e');
+      //print('Error clearing history: $e');
     }
   }
 
@@ -13106,13 +14739,13 @@ Future<void> _handlePageStarted(String url) async {
   void _handleUrlUpdate(String url, {String? title}) {
     if (!mounted) return;
     
-    print('🔄 _handleUrlUpdate START - URL: $url, title: $title');
-    print('🔄 Current tab: $currentTabIndex, _displayUrl: $_displayUrl');
-    print('🔄 URL focus: ${_urlFocusNode.hasFocus}');
+    //print('🔄 _handleUrlUpdate START - URL: $url, title: $title');
+    //print('🔄 Current tab: $currentTabIndex, _displayUrl: $_displayUrl');
+    //print('🔄 URL focus: ${_urlFocusNode.hasFocus}');
     
     // Check if URL significantly changed BEFORE updating tab data
     final shouldForceUpdate = url != _displayUrl;
-    print("🔍 URL Update Debug - URL: $url, old _displayUrl: $_displayUrl, shouldForceUpdate: $shouldForceUpdate, hasFocus: ${_urlFocusNode.hasFocus}");
+    //print("🔍 URL Update Debug - URL: $url, old _displayUrl: $_displayUrl, shouldForceUpdate: $shouldForceUpdate, hasFocus: ${_urlFocusNode.hasFocus}");
     
     // Always update the tab data
     if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
@@ -13145,7 +14778,7 @@ Future<void> _handlePageStarted(String url) async {
     // FIXED: Always update URL bar for navigation changes, but respect focus state for formatting
     if (mounted) {
       final formattedUrl = _urlFocusNode.hasFocus ? url : _formatUrl(url);
-      print("🔄 Updating URL bar to: $formattedUrl (focused: ${_urlFocusNode.hasFocus})");
+      //print("🔄 Updating URL bar to: $formattedUrl (focused: ${_urlFocusNode.hasFocus})");
       setState(() {
         // Show full URL when focused, formatted URL when not focused
         _urlController.text = formattedUrl;
@@ -13176,21 +14809,389 @@ Future<void> _handlePageStarted(String url) async {
   Future<void> _handleWebResourceError(WebResourceError error, String url) async {
     if (!mounted) return;
     
+    // Log the error details for debugging
+    //print('Web resource error: ${error.description}');
+    //print('Error code: ${error.errorCode}');
+    //print('Error type: ${error.errorType}');
+    //print('Failed URL: $url');
+    
+    // Get current page URL to determine if this is the main page or a sub-resource
+    final currentPageUrl = await controller.currentUrl();
+    final isMainPageError = currentPageUrl == null || currentPageUrl == url;
+    
+    // Only handle errors for the main page navigation, not sub-resources
+    if (!isMainPageError) {
+      //print('Ignoring sub-resource error for: $url');
+      return;
+    }
+    
+    // Check if this is a critical error that should stop loading
+    final isCriticalError = _isCriticalError(error);
+    if (!isCriticalError) {
+      //print('Ignoring non-critical error: ${error.description}');
+      return;
+    }
+    
     _setLoadingState(false);
     
-    // Log the error details
-    print('Web resource error: ${error.description}');
-    print('Error code: ${error.errorCode}');
-    print('Error type: ${error.errorType}');
-    print('Failed URL: $url');
-    
-    // Update the tab info with error state
+    // Update the tab info with error state only for main page errors
     if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
       setState(() {
         tabs[currentTabIndex]['title'] = 'Error Loading Page';
       });
     }
+    
+    // Add delay before showing error dialog to give page time to load
+    // This prevents premature error dialogs on slow connections
+    await Future.delayed(const Duration(milliseconds: 2000));
+    
+    // Check if page is still mounted and loading hasn't completed successfully
+    if (!mounted) return;
+    
+    // Double-check if the page has loaded successfully in the meantime
+    try {
+      final finalUrl = await controller.currentUrl();
+      final pageTitle = await controller.getTitle();
+      
+      // If we have a valid URL and title, the page likely loaded successfully
+      if (finalUrl != null && finalUrl.isNotEmpty && 
+          pageTitle != null && pageTitle.isNotEmpty && 
+          !pageTitle.toLowerCase().contains('error')) {
+        //print('Page appears to have loaded successfully, skipping error dialog');
+        return;
+      }
+    } catch (e) {
+      //print('Error checking page status: $e');
+    }
+    
+    // Show error dialog based on error type
+    _showWebPageErrorDialog(error, url);
   }
+  
+  // Helper method to determine if an error is critical enough to show a dialog
+  bool _isCriticalError(WebResourceError error) {
+    // Only show dialogs for main navigation errors, not sub-resource failures
+    switch (error.errorType) {
+      case WebResourceErrorType.hostLookup:
+      case WebResourceErrorType.connect:
+      case WebResourceErrorType.timeout:
+      case WebResourceErrorType.authentication:
+      case WebResourceErrorType.proxyAuthentication:
+      case WebResourceErrorType.file:
+      case WebResourceErrorType.fileNotFound:
+        return true;
+      
+      case WebResourceErrorType.io:
+        // Only show for 404 and 5xx errors, not for other IO issues
+        final desc = error.description.toLowerCase();
+        return desc.contains('404') || desc.contains('not found') || 
+               desc.contains('500') || desc.contains('502') || 
+               desc.contains('503') || desc.contains('504');
+      
+      case WebResourceErrorType.unsafeResource:
+        // Only show for SSL/TLS errors that block the main page
+        return error.description.toLowerCase().contains('ssl') ||
+               error.description.toLowerCase().contains('tls') ||
+               error.description.toLowerCase().contains('certificate');
+      
+      case WebResourceErrorType.unknown:
+      default:
+        // Be more selective about unknown errors
+        final desc = error.description.toLowerCase();
+        return desc.contains('err_internet_disconnected') ||
+               desc.contains('err_network_changed') ||
+               desc.contains('err_connection_refused') ||
+               desc.contains('err_name_not_resolved') ||
+               desc.contains('err_connection_timed_out') ||
+               desc.contains('err_connection_reset') && 
+               !desc.contains('ads') && !desc.contains('track');
+    }
+  }
+
+  // Show localized error dialog based on WebResourceError
+  Future<void> _showWebPageErrorDialog(WebResourceError error, String url) async {
+    // Determine error type and get appropriate localized messages
+    String errorTitle;
+    String errorMessage;
+    IconData errorIcon;
+    Color errorColor;
+    
+    // Map WebResourceError types to localized strings
+    switch (error.errorType) {
+      case WebResourceErrorType.hostLookup:
+      case WebResourceErrorType.timeout:
+        if (error.description.toLowerCase().contains('timeout') || 
+            error.description.toLowerCase().contains('timed out')) {
+          errorTitle = AppLocalizations.of(context)!.connection_timed_out;
+          errorMessage = AppLocalizations.of(context)!.connection_timeout_description;
+          errorIcon = Icons.access_time_rounded;
+          errorColor = Colors.orange;
+        } else {
+          errorTitle = AppLocalizations.of(context)!.dns_error;
+          errorMessage = AppLocalizations.of(context)!.dns_error_description;
+          errorIcon = Icons.dns_rounded;
+          errorColor = Colors.red;
+        }
+        break;
+        
+      case WebResourceErrorType.connect:
+        if (error.description.toLowerCase().contains('reset') || 
+            error.description.toLowerCase().contains('connection reset')) {
+          errorTitle = AppLocalizations.of(context)!.connection_reset;
+          errorMessage = AppLocalizations.of(context)!.connection_reset_description;
+          errorIcon = Icons.refresh_rounded;
+          errorColor = Colors.orange;
+        } else {
+          errorTitle = AppLocalizations.of(context)!.connection_error;
+          errorMessage = AppLocalizations.of(context)!.unable_to_connect;
+          errorIcon = Icons.wifi_off_rounded;
+          errorColor = Colors.red;
+        }
+        break;
+        
+      case WebResourceErrorType.io:
+        if (error.description.toLowerCase().contains('404') || 
+            error.description.toLowerCase().contains('not found')) {
+          errorTitle = AppLocalizations.of(context)!.page_not_found;
+          errorMessage = AppLocalizations.of(context)!.page_not_found_description;
+          errorIcon = Icons.search_off_rounded;
+          errorColor = Colors.orange;
+        } else {
+          errorTitle = AppLocalizations.of(context)!.network_error;
+          errorMessage = AppLocalizations.of(context)!.network_error_description;
+          errorIcon = Icons.signal_wifi_connected_no_internet_4_rounded;
+          errorColor = Colors.red;
+        }
+        break;
+        
+      case WebResourceErrorType.authentication:
+      case WebResourceErrorType.proxyAuthentication:
+      case WebResourceErrorType.unsafeResource:
+        errorTitle = AppLocalizations.of(context)!.ssl_error;
+        errorMessage = AppLocalizations.of(context)!.ssl_error_description;
+        errorIcon = Icons.security_rounded;
+        errorColor = Colors.red;
+        break;
+        
+      case WebResourceErrorType.file:
+      case WebResourceErrorType.fileNotFound:
+        errorTitle = AppLocalizations.of(context)!.page_not_found;
+        errorMessage = AppLocalizations.of(context)!.page_not_found_description;
+        errorIcon = Icons.file_present_rounded;
+        errorColor = Colors.orange;
+        break;
+        
+      case WebResourceErrorType.unknown:
+      default:
+        // Check error description for specific error types
+        final desc = error.description.toLowerCase();
+        if (desc.contains('err_connection_reset') || desc.contains('connection reset')) {
+          errorTitle = AppLocalizations.of(context)!.connection_reset;
+          errorMessage = AppLocalizations.of(context)!.connection_reset_description;
+          errorIcon = Icons.refresh_rounded;
+          errorColor = Colors.orange;
+        } else if (desc.contains('err_name_not_resolved') || desc.contains('dns')) {
+          errorTitle = AppLocalizations.of(context)!.dns_error;
+          errorMessage = AppLocalizations.of(context)!.dns_error_description;
+          errorIcon = Icons.dns_rounded;
+          errorColor = Colors.red;
+        } else if (desc.contains('err_connection_timed_out') || desc.contains('timeout')) {
+          errorTitle = AppLocalizations.of(context)!.connection_timed_out;
+          errorMessage = AppLocalizations.of(context)!.connection_timeout_description;
+          errorIcon = Icons.access_time_rounded;
+          errorColor = Colors.orange;
+        } else if (desc.contains('err_internet_disconnected') || desc.contains('network')) {
+          errorTitle = AppLocalizations.of(context)!.network_error;
+          errorMessage = AppLocalizations.of(context)!.network_error_description;
+          errorIcon = Icons.signal_wifi_connected_no_internet_4_rounded;
+          errorColor = Colors.red;
+        } else if (desc.contains('404') || desc.contains('not found')) {
+          errorTitle = AppLocalizations.of(context)!.page_not_found;
+          errorMessage = AppLocalizations.of(context)!.page_not_found_description;
+          errorIcon = Icons.search_off_rounded;
+          errorColor = Colors.orange;
+        } else if (desc.contains('5') && desc.length == 3) { // HTTP 5xx errors
+          errorTitle = AppLocalizations.of(context)!.server_error;
+          errorMessage = AppLocalizations.of(context)!.server_error_description;
+          errorIcon = Icons.dns_rounded;
+          errorColor = Colors.red;
+        } else {
+          errorTitle = AppLocalizations.of(context)!.connection_error;
+          errorMessage = AppLocalizations.of(context)!.unable_to_connect;
+          errorIcon = Icons.error_outline_rounded;
+          errorColor = Colors.red;
+        }
+        break;
+    }
+    
+    // Show the error dialog
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: ThemeManager.backgroundColor(),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Icon(
+                errorIcon,
+                color: errorColor,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  errorTitle,
+                  style: TextStyle(
+                    color: ThemeManager.textColor(),
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                errorMessage,
+                style: TextStyle(
+                  color: ThemeManager.textSecondaryColor(),
+                  fontSize: 16,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 12),
+              if (url.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: ThemeManager.textSecondaryColor().withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.link_rounded,
+                        size: 16,
+                        color: ThemeManager.textSecondaryColor(),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          url,
+                          style: TextStyle(
+                            color: ThemeManager.textSecondaryColor(),
+                            fontSize: 14,
+                            fontFamily: 'monospace',
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                // Navigate to home page with proper URL handling
+                try {
+                  // Check if custom home page is set
+                  final prefs = await SharedPreferences.getInstance();
+                  final useCustomHomePage = prefs.getBool('useCustomHomePage') ?? false;
+                  final customHomeUrl = prefs.getString('customHomeUrl') ?? '';
+                  
+                  String homeUrl;
+                  if (useCustomHomePage && customHomeUrl.isNotEmpty) {
+                    homeUrl = customHomeUrl;
+                  } else {
+                    homeUrl = _homeUrl;
+                  }
+                  
+                  // Load the home URL directly through the controller
+                  await controller.loadRequest(Uri.parse(homeUrl));
+                  _handleUrlUpdate(homeUrl);
+                  
+                  // Update current tab
+                  if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+                    setState(() {
+                      tabs[currentTabIndex]['url'] = homeUrl;
+                      tabs[currentTabIndex]['title'] = homeUrl.contains('main.html') ? 'Home' : 'Home Page';
+                    });
+                  }
+                } catch (e) {
+                  //print('Error navigating to home: $e');
+                  // Fallback: try to load the main.html file
+                  try {
+                    await controller.loadRequest(Uri.parse(_homeUrl));
+                    _handleUrlUpdate(_homeUrl);
+                  } catch (fallbackError) {
+                    //print('Fallback home navigation failed: $fallbackError');
+                  }
+                }
+              },
+              child: Text(
+                AppLocalizations.of(context)!.go_home,
+                style: TextStyle(
+                  color: ThemeManager.textSecondaryColor(),
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                // Retry loading the page with improved logic
+                try {
+                  _setLoadingState(true);
+                  
+                  // Add a small delay before retrying to allow network conditions to improve
+                  await Future.delayed(const Duration(milliseconds: 300));
+                  
+                  if (mounted) {
+                    // Try to reload the specific URL rather than just calling reload()
+                    if (url.isNotEmpty) {
+                      await controller.loadRequest(Uri.parse(url));
+                    } else {
+                      await controller.reload();
+                    }
+                  }
+                } catch (e) {
+                  //print('Error retrying page load: $e');
+                  if (mounted) {
+                    _setLoadingState(false);
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: ThemeManager.primaryColor(),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              ),
+              child: Text(
+                AppLocalizations.of(context)!.try_again,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  
   // Build animated language selection item with expanding tick mark
   Widget _buildAnimatedLanguageItem(String displayName, String languageCode, String currentLanguage, StateSetter setLanguageScreenState, {bool isFirst = false, bool isLast = false}) {
     final isSelected = currentLanguage == displayName;

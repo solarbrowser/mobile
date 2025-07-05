@@ -118,9 +118,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get yesterday => 'Gestern';
 
   @override
-  String get updated => 'Solar wurde aktualisiert!';
-
-  @override
   String version(String version) {
     return 'Version $version';
   }
@@ -609,6 +606,62 @@ class AppLocalizationsDe extends AppLocalizations {
   String get grant_permission => 'Berechtigung erteilen';
 
   @override
+  String get download_permissions => 'Download-Berechtigungen';
+
+  @override
+  String get manage_download_permissions =>
+      'Berechtigungen für Downloads verwalten';
+
+  @override
+  String get storage_permission => 'Speicherzugriff';
+
+  @override
+  String get notification_permission => 'Benachrichtigungen';
+
+  @override
+  String get notification_permission_description =>
+      'Für Download-Fortschritt und Fertigstellungsalarme';
+
+  @override
+  String get permission_explanation =>
+      'Diese Berechtigungen helfen, Ihr Download-Erlebnis zu verbessern. Sie können sie jederzeit in den Android-Einstellungen ändern.';
+
+  @override
+  String get clear_downloads_history_description =>
+      'Download-Verlauf entfernen (Dateien bleiben)';
+
+  @override
+  String get change_download_location =>
+      'Ändern, wo Dateien gespeichert werden';
+
+  @override
+  String get request => 'Anfordern';
+
+  @override
+  String get storage => 'Speicher';
+
+  @override
+  String get manage_external_storage => 'Externen Speicher verwalten';
+
+  @override
+  String get notification => 'Benachrichtigung';
+
+  @override
+  String get granted => 'Gewährt';
+
+  @override
+  String get denied => 'Verweigert';
+
+  @override
+  String get restricted => 'Eingeschränkt';
+
+  @override
+  String get limited => 'Begrenzt';
+
+  @override
+  String get permanently_denied => 'Dauerhaft verweigert';
+
+  @override
   String get storage_permission_denied => 'Speicherberechtigung verweigert';
 
   @override
@@ -974,7 +1027,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Zusammenfassung konnte nicht generiert werden';
 
   @override
-  String get try_again => 'Erneut Versuchen';
+  String get try_again => 'Erneut versuchen';
 
   @override
   String get no_page_to_summarize => 'Keine Seite zum Zusammenfassen';
@@ -1187,4 +1240,175 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get notice => 'Hinweis';
+
+  @override
+  String get cannot_write_selected_folder =>
+      'Kann nicht in den ausgewählten Ordner schreiben. Verwende Standard-Download-Ordner.';
+
+  @override
+  String get cannot_write_selected_folder_choose_different =>
+      'Kann nicht in den ausgewählten Ordner schreiben. Bitte wählen Sie einen anderen Ort.';
+
+  @override
+  String get cannot_write_configured_folder =>
+      'Kann nicht in den konfigurierten Ordner schreiben. Verwende Standard-Download-Ordner.';
+
+  @override
+  String get error_selecting_folder_default =>
+      'Fehler beim Auswählen des Ordners. Verwende Standard-Download-Ordner.';
+
+  @override
+  String get file_saved_to_app_storage =>
+      'Datei im App-Speicher statt im ausgewählten Ordner gespeichert';
+
+  @override
+  String get failed_write_any_location =>
+      'Datei konnte an keinem Ort geschrieben werden';
+
+  @override
+  String get settings_action => 'Einstellungen';
+
+  @override
+  String save_to_downloads_folder(String fileName) {
+    return 'Um \"$fileName\" in Ihrem Download-Ordner zu speichern, wo Sie sie in der Galerie oder im Dateimanager finden können, benötigt Solar eine Speicherberechtigung.';
+  }
+
+  @override
+  String get without_permission_private_folder =>
+      'Ohne Berechtigung wird die Datei in Solars privatem Ordner gespeichert (erreichbar über das Downloads-Panel).';
+
+  @override
+  String get enable_unknown_apps_android =>
+      'Möglicherweise müssen Sie nach dem Download \"Unbekannte Apps installieren\" in den Android-Einstellungen aktivieren.';
+
+  @override
+  String get private_folder_instead =>
+      'Dateien werden stattdessen in Solars privatem Ordner gespeichert.';
+
+  @override
+  String get save_to_downloads_title => 'In Downloads speichern?';
+
+  @override
+  String get save_to_gallery_title => 'In Galerie speichern?';
+
+  @override
+  String get storage_access_required => 'Speicherzugriff erforderlich';
+
+  @override
+  String install_package_title(String packageName) {
+    return '$packageName installieren?';
+  }
+
+  @override
+  String install_package_message(String packageName) {
+    return 'Dies wird \"$packageName\" herunterladen und für die Installation auf Ihrem Gerät vorbereiten.';
+  }
+
+  @override
+  String get save_to_gallery_message =>
+      'Um Bilder und Videos in Ihrer Galerie-App zu speichern, wo sie systemweit sichtbar sind, benötigt Solar Medienzugriff.';
+
+  @override
+  String get storage_access_message =>
+      'Um Dateien in Ihrem Gerätespeicher zu speichern, benötigt Solar Speicherzugriffsberechtigungen.';
+
+  @override
+  String get photos_videos_audio_permission => 'Fotos, Videos & Audio';
+
+  @override
+  String get storage_media_access_permission => 'Speicher- & Medienzugriff';
+
+  @override
+  String get package_installation_permission => 'Paketinstallation';
+
+  @override
+  String get storage_access_permission => 'Speicherzugriff';
+
+  @override
+  String get without_gallery_permission =>
+      'Ohne Berechtigung sind Mediendateien nur in Solars Downloads-Bereich sichtbar.';
+
+  @override
+  String get flutter_version_string => 'Flutter 3.32.5';
+
+  @override
+  String get photoncore_version_string => 'Photoncore 0.1.0';
+
+  @override
+  String get engine_version_string => '4.7.0';
+
+  @override
+  String get http_warning_title => 'Warnung vor unsicherer Verbindung';
+
+  @override
+  String get http_warning_message =>
+      'Sie sind dabei, eine Website zu besuchen, die eine unsichere Verbindung (HTTP) verwendet. Ihre Daten könnten für andere sichtbar sein. Sind Sie sicher, dass Sie fortfahren möchten?';
+
+  @override
+  String get continue_anyway => 'Trotzdem fortfahren';
+
+  @override
+  String get go_back => 'Zurück gehen';
+
+  @override
+  String get web_page_error_title => 'Seiten-Ladefehler';
+
+  @override
+  String get connection_error => 'Verbindungsfehler';
+
+  @override
+  String get page_not_found => 'Seite nicht gefunden';
+
+  @override
+  String get connection_reset => 'Verbindung zurückgesetzt';
+
+  @override
+  String get connection_timed_out => 'Verbindung abgelaufen';
+
+  @override
+  String get dns_error => 'DNS-Fehler';
+
+  @override
+  String get ssl_error => 'SSL-Zertifikatsfehler';
+
+  @override
+  String get network_error => 'Netzwerkfehler';
+
+  @override
+  String get server_error => 'Serverfehler';
+
+  @override
+  String get unable_to_connect =>
+      'Verbindung zur Website nicht möglich. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.';
+
+  @override
+  String get page_not_found_description =>
+      'Die angeforderte Seite konnte auf dem Server nicht gefunden werden. Die Seite wurde möglicherweise verschoben oder gelöscht.';
+
+  @override
+  String get connection_reset_description =>
+      'Die Verbindung zum Server wurde zurückgesetzt. Dies könnte ein vorübergehendes Problem sein.';
+
+  @override
+  String get connection_timeout_description =>
+      'Die Verbindung zum Server ist abgelaufen. Der Server könnte ausgelastet sein oder Ihre Verbindung könnte langsam sein.';
+
+  @override
+  String get dns_error_description =>
+      'Website nicht gefunden. Bitte überprüfen Sie die Webadresse und versuchen Sie es erneut.';
+
+  @override
+  String get ssl_error_description =>
+      'Es gibt ein Problem mit dem Sicherheitszertifikat der Website. Die Verbindung ist möglicherweise nicht sicher.';
+
+  @override
+  String get network_error_description =>
+      'Ein Netzwerkfehler ist aufgetreten. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.';
+
+  @override
+  String get server_error_description =>
+      'Der Server hat einen Fehler festgestellt und konnte Ihre Anfrage nicht verarbeiten.';
+
+  @override
+  String get go_home => 'Zur Startseite';
 }

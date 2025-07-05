@@ -115,9 +115,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get yesterday => '昨天';
 
   @override
-  String get updated => 'Solar 浏览器已更新！';
-
-  @override
   String version(String version) {
     return '版本 $version';
   }
@@ -590,6 +587,60 @@ class AppLocalizationsZh extends AppLocalizations {
   String get grant_permission => '授予权限';
 
   @override
+  String get download_permissions => 'Download Permissions';
+
+  @override
+  String get manage_download_permissions => 'Manage permissions for downloads';
+
+  @override
+  String get storage_permission => 'Storage Access';
+
+  @override
+  String get notification_permission => 'Notifications';
+
+  @override
+  String get notification_permission_description =>
+      'For download progress and completion alerts';
+
+  @override
+  String get permission_explanation =>
+      'These permissions help improve your download experience. You can change them anytime in Android Settings.';
+
+  @override
+  String get clear_downloads_history_description =>
+      'Remove download history (files remain)';
+
+  @override
+  String get change_download_location => 'Change where files are saved';
+
+  @override
+  String get request => 'Request';
+
+  @override
+  String get storage => 'Storage';
+
+  @override
+  String get manage_external_storage => 'Manage External Storage';
+
+  @override
+  String get notification => 'Notification';
+
+  @override
+  String get granted => 'Granted';
+
+  @override
+  String get denied => 'Denied';
+
+  @override
+  String get restricted => 'Restricted';
+
+  @override
+  String get limited => 'Limited';
+
+  @override
+  String get permanently_denied => 'Permanently Denied';
+
+  @override
   String get storage_permission_denied => '下载文件需要存储权限';
 
   @override
@@ -937,7 +988,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get failed_to_generate_summary => '生成总结失败';
 
   @override
-  String get try_again => '再试一次';
+  String get try_again => '重试';
 
   @override
   String get no_page_to_summarize => '没有页面要总结';
@@ -1142,4 +1193,158 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get notice => '通知';
+
+  @override
+  String get cannot_write_selected_folder => '无法写入所选文件夹。使用默认下载文件夹。';
+
+  @override
+  String get cannot_write_selected_folder_choose_different =>
+      '无法写入所选文件夹。请选择其他位置。';
+
+  @override
+  String get cannot_write_configured_folder => '无法写入配置的文件夹。使用默认下载文件夹。';
+
+  @override
+  String get error_selecting_folder_default => '选择文件夹时出错。使用默认下载文件夹。';
+
+  @override
+  String get file_saved_to_app_storage => '文件已保存到应用存储而非所选文件夹';
+
+  @override
+  String get failed_write_any_location => '无法将文件写入任何位置';
+
+  @override
+  String get settings_action => '设置';
+
+  @override
+  String save_to_downloads_folder(String fileName) {
+    return '要将\"$fileName\"保存到您的下载文件夹，在那里您可以在图库或文件管理器中找到它，Solar需要存储权限。';
+  }
+
+  @override
+  String get without_permission_private_folder =>
+      '没有权限，文件将保存到Solar的私有文件夹（可从下载面板访问）。';
+
+  @override
+  String get enable_unknown_apps_android => '下载后，您可能需要在Android设置中启用\"安装未知应用\"。';
+
+  @override
+  String get private_folder_instead => '文件将保存到Solar的私有文件夹中。';
+
+  @override
+  String get save_to_downloads_title => '保存到下载？';
+
+  @override
+  String get save_to_gallery_title => '保存到图库？';
+
+  @override
+  String get storage_access_required => '需要存储访问权限';
+
+  @override
+  String install_package_title(String packageName) {
+    return '安装$packageName？';
+  }
+
+  @override
+  String install_package_message(String packageName) {
+    return '这将下载并准备\"$packageName\"以便在您的设备上安装。';
+  }
+
+  @override
+  String get save_to_gallery_message =>
+      '要将图像和视频保存到您的图库应用程序，使其在整个系统中可见，Solar需要媒体访问权限。';
+
+  @override
+  String get storage_access_message => '要将文件保存到您的设备存储，Solar需要存储访问权限。';
+
+  @override
+  String get photos_videos_audio_permission => '照片、视频和音频';
+
+  @override
+  String get storage_media_access_permission => '存储和媒体访问';
+
+  @override
+  String get package_installation_permission => '包安装';
+
+  @override
+  String get storage_access_permission => '存储访问';
+
+  @override
+  String get without_gallery_permission => '没有权限，媒体文件只会在Solar的下载部分中可见。';
+
+  @override
+  String get flutter_version_string => 'Flutter 3.32.5';
+
+  @override
+  String get photoncore_version_string => 'Photoncore 0.1.0';
+
+  @override
+  String get engine_version_string => '4.7.0';
+
+  @override
+  String get http_warning_title => '不安全连接警告';
+
+  @override
+  String get http_warning_message =>
+      '您即将访问使用不安全连接（HTTP）的网站。您的数据可能对他人可见。您确定要继续吗？';
+
+  @override
+  String get continue_anyway => '仍然继续';
+
+  @override
+  String get go_back => '返回';
+
+  @override
+  String get web_page_error_title => '页面加载错误';
+
+  @override
+  String get connection_error => '连接错误';
+
+  @override
+  String get page_not_found => '页面未找到';
+
+  @override
+  String get connection_reset => '连接重置';
+
+  @override
+  String get connection_timed_out => '连接超时';
+
+  @override
+  String get dns_error => 'DNS错误';
+
+  @override
+  String get ssl_error => 'SSL证书错误';
+
+  @override
+  String get network_error => '网络错误';
+
+  @override
+  String get server_error => '服务器错误';
+
+  @override
+  String get unable_to_connect => '无法连接到网站。请检查您的互联网连接并重试。';
+
+  @override
+  String get page_not_found_description => '在服务器上找不到请求的页面。页面可能已被移动或删除。';
+
+  @override
+  String get connection_reset_description => '与服务器的连接被重置。这可能是一个临时问题。';
+
+  @override
+  String get connection_timeout_description => '与服务器的连接超时。服务器可能很忙或您的连接可能很慢。';
+
+  @override
+  String get dns_error_description => '找不到网站。请检查网址并重试。';
+
+  @override
+  String get ssl_error_description => '网站的安全证书有问题。连接可能不安全。';
+
+  @override
+  String get network_error_description => '发生网络错误。请检查您的互联网连接并重试。';
+
+  @override
+  String get server_error_description => '服务器遇到错误，无法完成您的请求。';
+
+  @override
+  String get go_home => '返回首页';
 }

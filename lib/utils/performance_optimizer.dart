@@ -59,7 +59,7 @@ class PerformanceOptimizer {
     _performanceTimers.remove(operationName);
     
     if (kDebugMode) {
-      print('Performance: $operationName took ${duration}ms');
+      //print('Performance: $operationName took ${duration}ms');
     }
     
     return duration;
@@ -148,7 +148,7 @@ class PerformanceOptimizer {
       
       // Log slow frames (> 16ms indicates dropped frames)
       if (diff.inMilliseconds > 16 && kDebugMode) {
-        print('Performance warning: Slow frame detected (${diff.inMilliseconds}ms)');
+        //print('Performance warning: Slow frame detected (${diff.inMilliseconds}ms)');
       }
     }
   }

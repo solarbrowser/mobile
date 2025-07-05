@@ -117,9 +117,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get yesterday => 'Ayer';
 
   @override
-  String get updated => '¡Solar actualizado!';
-
-  @override
   String version(String version) {
     return 'Versión $version';
   }
@@ -609,6 +606,61 @@ class AppLocalizationsEs extends AppLocalizations {
   String get grant_permission => 'Dar Permiso';
 
   @override
+  String get download_permissions => 'Permisos de Descarga';
+
+  @override
+  String get manage_download_permissions => 'Gestionar permisos para descargas';
+
+  @override
+  String get storage_permission => 'Acceso al Almacenamiento';
+
+  @override
+  String get notification_permission => 'Notificaciones';
+
+  @override
+  String get notification_permission_description =>
+      'Para progreso de descarga y alertas de finalización';
+
+  @override
+  String get permission_explanation =>
+      'Estos permisos ayudan a mejorar su experiencia de descarga. Puede cambiarlos en cualquier momento en la Configuración de Android.';
+
+  @override
+  String get clear_downloads_history_description =>
+      'Eliminar historial de descargas (archivos permanecen)';
+
+  @override
+  String get change_download_location =>
+      'Cambiar dónde se guardan los archivos';
+
+  @override
+  String get request => 'Solicitar';
+
+  @override
+  String get storage => 'Almacenamiento';
+
+  @override
+  String get manage_external_storage => 'Gestionar almacenamiento externo';
+
+  @override
+  String get notification => 'Notificación';
+
+  @override
+  String get granted => 'Concedido';
+
+  @override
+  String get denied => 'Denegado';
+
+  @override
+  String get restricted => 'Restringido';
+
+  @override
+  String get limited => 'Limitado';
+
+  @override
+  String get permanently_denied => 'Denegado permanentemente';
+
+  @override
   String get storage_permission_denied => 'Permiso de almacenamiento denegado';
 
   @override
@@ -973,7 +1025,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get failed_to_generate_summary => 'Error al generar resumen';
 
   @override
-  String get try_again => 'Intentar Nuevamente';
+  String get try_again => 'Intentar de Nuevo';
 
   @override
   String get no_page_to_summarize => 'No hay página para resumir';
@@ -1184,4 +1236,176 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get notice => 'Aviso';
+
+  @override
+  String get cannot_write_selected_folder =>
+      'No se puede escribir en la carpeta seleccionada. Usando carpeta de descargas predeterminada.';
+
+  @override
+  String get cannot_write_selected_folder_choose_different =>
+      'No se puede escribir en la carpeta seleccionada. Por favor, elige una ubicación diferente.';
+
+  @override
+  String get cannot_write_configured_folder =>
+      'No se puede escribir en la carpeta configurada. Usando carpeta de descargas predeterminada.';
+
+  @override
+  String get error_selecting_folder_default =>
+      'Error al seleccionar carpeta. Usando carpeta de descargas predeterminada.';
+
+  @override
+  String get file_saved_to_app_storage =>
+      'Archivo guardado en almacenamiento de la app en lugar de la carpeta seleccionada';
+
+  @override
+  String get failed_write_any_location =>
+      'No se pudo escribir el archivo en ninguna ubicación';
+
+  @override
+  String get settings_action => 'Configuración';
+
+  @override
+  String save_to_downloads_folder(String fileName) {
+    return 'Para guardar \"$fileName\" en tu carpeta de Descargas donde puedes encontrarlo en la Galería o Administrador de Archivos, Solar necesita permiso de almacenamiento.';
+  }
+
+  @override
+  String get without_permission_private_folder =>
+      'Sin permiso, el archivo se guardará en la carpeta privada de Solar (accesible desde el panel de Descargas).';
+
+  @override
+  String get enable_unknown_apps_android =>
+      'Es posible que necesites habilitar \"Instalar aplicaciones desconocidas\" en la configuración de Android después de la descarga.';
+
+  @override
+  String get private_folder_instead =>
+      'Los archivos se guardarán en la carpeta privada de Solar en su lugar.';
+
+  @override
+  String get save_to_downloads_title => '¿Guardar en Descargas?';
+
+  @override
+  String get save_to_gallery_title => '¿Guardar en Galería?';
+
+  @override
+  String get storage_access_required => 'Acceso al almacenamiento requerido';
+
+  @override
+  String install_package_title(String packageName) {
+    return '¿Instalar $packageName?';
+  }
+
+  @override
+  String install_package_message(String packageName) {
+    return 'Esto descargará y preparará \"$packageName\" para la instalación en tu dispositivo.';
+  }
+
+  @override
+  String get save_to_gallery_message =>
+      'Para guardar imágenes y videos en tu aplicación de Galería donde serán visibles en todo el sistema, Solar necesita acceso a medios.';
+
+  @override
+  String get storage_access_message =>
+      'Para guardar archivos en el almacenamiento de tu dispositivo, Solar necesita permisos de acceso al almacenamiento.';
+
+  @override
+  String get photos_videos_audio_permission => 'Fotos, Videos y Audio';
+
+  @override
+  String get storage_media_access_permission =>
+      'Acceso a Almacenamiento y Medios';
+
+  @override
+  String get package_installation_permission => 'Instalación de Paquetes';
+
+  @override
+  String get storage_access_permission => 'Acceso al Almacenamiento';
+
+  @override
+  String get without_gallery_permission =>
+      'Sin permiso, los archivos multimedia solo serán visibles en la sección de Descargas de Solar.';
+
+  @override
+  String get flutter_version_string => 'Flutter 3.32.5';
+
+  @override
+  String get photoncore_version_string => 'Photoncore 0.1.0';
+
+  @override
+  String get engine_version_string => '4.7.0';
+
+  @override
+  String get http_warning_title => 'Advertencia de Conexión Insegura';
+
+  @override
+  String get http_warning_message =>
+      'Estás a punto de visitar un sitio web que usa una conexión insegura (HTTP). Tus datos pueden ser visibles para otros. ¿Estás seguro de que quieres continuar?';
+
+  @override
+  String get continue_anyway => 'Continuar de Todos Modos';
+
+  @override
+  String get go_back => 'Volver Atrás';
+
+  @override
+  String get web_page_error_title => 'Error de Carga de Página';
+
+  @override
+  String get connection_error => 'Error de Conexión';
+
+  @override
+  String get page_not_found => 'Página No Encontrada';
+
+  @override
+  String get connection_reset => 'Conexión Restablecida';
+
+  @override
+  String get connection_timed_out => 'Tiempo de Conexión Agotado';
+
+  @override
+  String get dns_error => 'Error de DNS';
+
+  @override
+  String get ssl_error => 'Error de Certificado SSL';
+
+  @override
+  String get network_error => 'Error de Red';
+
+  @override
+  String get server_error => 'Error del Servidor';
+
+  @override
+  String get unable_to_connect =>
+      'No se puede conectar al sitio web. Por favor verifica tu conexión a internet e intenta de nuevo.';
+
+  @override
+  String get page_not_found_description =>
+      'La página solicitada no se pudo encontrar en el servidor. La página puede haber sido movida o eliminada.';
+
+  @override
+  String get connection_reset_description =>
+      'La conexión al servidor fue restablecida. Esto puede ser un problema temporal.';
+
+  @override
+  String get connection_timeout_description =>
+      'La conexión al servidor expiró. El servidor puede estar ocupado o tu conexión puede ser lenta.';
+
+  @override
+  String get dns_error_description =>
+      'No se puede encontrar el sitio web. Por favor verifica la dirección web e intenta de nuevo.';
+
+  @override
+  String get ssl_error_description =>
+      'Hay un problema con el certificado de seguridad del sitio web. La conexión puede no ser segura.';
+
+  @override
+  String get network_error_description =>
+      'Ocurrió un error de red. Por favor verifica tu conexión a internet e intenta de nuevo.';
+
+  @override
+  String get server_error_description =>
+      'El servidor encontró un error y no pudo completar tu solicitud.';
+
+  @override
+  String get go_home => 'Ir al Inicio';
 }

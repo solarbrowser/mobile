@@ -118,9 +118,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get yesterday => 'Dün';
 
   @override
-  String get updated => 'Solar Güncellendi!';
-
-  @override
   String version(String version) {
     return 'Sürüm $version';
   }
@@ -606,6 +603,60 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get grant_permission => 'İzin Ver';
+
+  @override
+  String get download_permissions => 'Download Permissions';
+
+  @override
+  String get manage_download_permissions => 'Manage permissions for downloads';
+
+  @override
+  String get storage_permission => 'Storage Access';
+
+  @override
+  String get notification_permission => 'Notifications';
+
+  @override
+  String get notification_permission_description =>
+      'For download progress and completion alerts';
+
+  @override
+  String get permission_explanation =>
+      'These permissions help improve your download experience. You can change them anytime in Android Settings.';
+
+  @override
+  String get clear_downloads_history_description =>
+      'Remove download history (files remain)';
+
+  @override
+  String get change_download_location => 'Change where files are saved';
+
+  @override
+  String get request => 'Request';
+
+  @override
+  String get storage => 'Storage';
+
+  @override
+  String get manage_external_storage => 'Manage External Storage';
+
+  @override
+  String get notification => 'Notification';
+
+  @override
+  String get granted => 'Granted';
+
+  @override
+  String get denied => 'Denied';
+
+  @override
+  String get restricted => 'Restricted';
+
+  @override
+  String get limited => 'Limited';
+
+  @override
+  String get permanently_denied => 'Permanently Denied';
 
   @override
   String get storage_permission_denied =>
@@ -1182,4 +1233,175 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get notice => 'Bildirim';
+
+  @override
+  String get cannot_write_selected_folder =>
+      'Seçilen klasöre yazılamıyor. Varsayılan İndirilenler klasörü kullanılıyor.';
+
+  @override
+  String get cannot_write_selected_folder_choose_different =>
+      'Seçilen klasöre yazılamıyor. Lütfen farklı bir konum seçin.';
+
+  @override
+  String get cannot_write_configured_folder =>
+      'Yapılandırılan klasöre yazılamıyor. Varsayılan İndirilenler klasörü kullanılıyor.';
+
+  @override
+  String get error_selecting_folder_default =>
+      'Klasör seçiminde hata. Varsayılan İndirilenler klasörü kullanılıyor.';
+
+  @override
+  String get file_saved_to_app_storage =>
+      'Dosya seçilen klasör yerine uygulama depolamasına kaydedildi';
+
+  @override
+  String get failed_write_any_location =>
+      'Dosya herhangi bir konuma yazılamadı';
+
+  @override
+  String get settings_action => 'Ayarlar';
+
+  @override
+  String save_to_downloads_folder(String fileName) {
+    return 'Galeri veya Dosya Yöneticisi\'nde bulabileceğiniz İndirilenler klasörüne \"$fileName\" kaydetmek için Solar\'ın depolama iznine ihtiyacı var.';
+  }
+
+  @override
+  String get without_permission_private_folder =>
+      'İzin olmadan dosya Solar\'ın özel klasörüne kaydedilecek (İndirilenler panelinden erişilebilir).';
+
+  @override
+  String get enable_unknown_apps_android =>
+      'İndirme sonrasında Android ayarlarında \"Bilinmeyen Uygulamaları Yükle\" seçeneğini etkinleştirmeniz gerekebilir.';
+
+  @override
+  String get private_folder_instead =>
+      'Dosyalar bunun yerine Solar\'ın özel klasörüne kaydedilecek.';
+
+  @override
+  String get save_to_downloads_title => 'İndirilenlere Kaydet?';
+
+  @override
+  String get save_to_gallery_title => 'Galeriye Kaydet?';
+
+  @override
+  String get storage_access_required => 'Depolama Erişimi Gerekli';
+
+  @override
+  String install_package_title(String packageName) {
+    return '$packageName Yüklensin mi?';
+  }
+
+  @override
+  String install_package_message(String packageName) {
+    return 'Bu, cihazınızda kurulum için \"$packageName\" uygulamasını indirecek ve hazırlayacak.';
+  }
+
+  @override
+  String get save_to_gallery_message =>
+      'Resim ve videoları sistem genelinde görünür olacağı Galeri uygulamanıza kaydetmek için Solar\'ın medya erişimine ihtiyacı var.';
+
+  @override
+  String get storage_access_message =>
+      'Dosyaları cihaz depolamanıza kaydetmek için Solar\'ın depolama erişim izinlerine ihtiyacı var.';
+
+  @override
+  String get photos_videos_audio_permission => 'Fotoğraflar, Videolar ve Ses';
+
+  @override
+  String get storage_media_access_permission => 'Depolama ve Medya Erişimi';
+
+  @override
+  String get package_installation_permission => 'Paket Kurulumu';
+
+  @override
+  String get storage_access_permission => 'Depolama Erişimi';
+
+  @override
+  String get without_gallery_permission =>
+      'İzin olmadan medya dosyaları yalnızca Solar\'ın İndirilenler bölümünde görünür olacak.';
+
+  @override
+  String get flutter_version_string => 'Flutter 3.32.5';
+
+  @override
+  String get photoncore_version_string => 'Photoncore 0.1.0';
+
+  @override
+  String get engine_version_string => '4.7.0';
+
+  @override
+  String get http_warning_title => 'Güvensiz Bağlantı Uyarısı';
+
+  @override
+  String get http_warning_message =>
+      'Güvensiz bağlantı (HTTP) kullanan bir web sitesini ziyaret etmek üzeresiniz. Verileriniz başkaları tarafından görülebilir. Devam etmek istediğinizden emin misiniz?';
+
+  @override
+  String get continue_anyway => 'Yine de Devam Et';
+
+  @override
+  String get go_back => 'Geri Dön';
+
+  @override
+  String get web_page_error_title => 'Sayfa Yükleme Hatası';
+
+  @override
+  String get connection_error => 'Bağlantı Hatası';
+
+  @override
+  String get page_not_found => 'Sayfa Bulunamadı';
+
+  @override
+  String get connection_reset => 'Bağlantı Sıfırlandı';
+
+  @override
+  String get connection_timed_out => 'Bağlantı Zaman Aşımı';
+
+  @override
+  String get dns_error => 'DNS Hatası';
+
+  @override
+  String get ssl_error => 'SSL Sertifika Hatası';
+
+  @override
+  String get network_error => 'Ağ Hatası';
+
+  @override
+  String get server_error => 'Sunucu Hatası';
+
+  @override
+  String get unable_to_connect =>
+      'Web sitesine bağlanılamıyor. Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.';
+
+  @override
+  String get page_not_found_description =>
+      'İstenen sayfa sunucuda bulunamadı. Sayfa taşınmış veya silinmiş olabilir.';
+
+  @override
+  String get connection_reset_description =>
+      'Sunucuyla bağlantı sıfırlandı. Bu geçici bir sorun olabilir.';
+
+  @override
+  String get connection_timeout_description =>
+      'Sunucuyla bağlantı zaman aşımına uğradı. Sunucu meşgul olabilir veya bağlantınız yavaş olabilir.';
+
+  @override
+  String get dns_error_description =>
+      'Web sitesi bulunamıyor. Lütfen web adresini kontrol edin ve tekrar deneyin.';
+
+  @override
+  String get ssl_error_description =>
+      'Web sitesinin güvenlik sertifikasında bir sorun var. Bağlantı güvenli olmayabilir.';
+
+  @override
+  String get network_error_description =>
+      'Bir ağ hatası oluştu. Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.';
+
+  @override
+  String get server_error_description =>
+      'Sunucu bir hatayla karşılaştı ve isteğiniz tamamlanamadı.';
+
+  @override
+  String get go_home => 'Ana Sayfaya Git';
 }

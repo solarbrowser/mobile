@@ -117,9 +117,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get yesterday => 'الأمس';
 
   @override
-  String get updated => 'تم تحديث متصفح Solar!';
-
-  @override
   String version(String version) {
     return 'الإصدار $version';
   }
@@ -600,6 +597,60 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get grant_permission => 'منح الإذن';
+
+  @override
+  String get download_permissions => 'Download Permissions';
+
+  @override
+  String get manage_download_permissions => 'Manage permissions for downloads';
+
+  @override
+  String get storage_permission => 'Storage Access';
+
+  @override
+  String get notification_permission => 'Notifications';
+
+  @override
+  String get notification_permission_description =>
+      'For download progress and completion alerts';
+
+  @override
+  String get permission_explanation =>
+      'These permissions help improve your download experience. You can change them anytime in Android Settings.';
+
+  @override
+  String get clear_downloads_history_description =>
+      'Remove download history (files remain)';
+
+  @override
+  String get change_download_location => 'Change where files are saved';
+
+  @override
+  String get request => 'Request';
+
+  @override
+  String get storage => 'Storage';
+
+  @override
+  String get manage_external_storage => 'Manage External Storage';
+
+  @override
+  String get notification => 'Notification';
+
+  @override
+  String get granted => 'Granted';
+
+  @override
+  String get denied => 'Denied';
+
+  @override
+  String get restricted => 'Restricted';
+
+  @override
+  String get limited => 'Limited';
+
+  @override
+  String get permanently_denied => 'Permanently Denied';
 
   @override
   String get storage_permission_denied => 'إذن التخزين مطلوب لتنزيل الملفات';
@@ -1171,4 +1222,174 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get notice => 'إشعار';
+
+  @override
+  String get cannot_write_selected_folder =>
+      'لا يمكن الكتابة في المجلد المحدد. استخدام مجلد التنزيلات الافتراضي.';
+
+  @override
+  String get cannot_write_selected_folder_choose_different =>
+      'لا يمكن الكتابة في المجلد المحدد. يرجى اختيار موقع مختلف.';
+
+  @override
+  String get cannot_write_configured_folder =>
+      'لا يمكن الكتابة في المجلد المكون. استخدام مجلد التنزيلات الافتراضي.';
+
+  @override
+  String get error_selecting_folder_default =>
+      'خطأ في تحديد المجلد. استخدام مجلد التنزيلات الافتراضي.';
+
+  @override
+  String get file_saved_to_app_storage =>
+      'تم حفظ الملف في تخزين التطبيق بدلاً من المجلد المحدد';
+
+  @override
+  String get failed_write_any_location => 'فشل في كتابة الملف في أي موقع';
+
+  @override
+  String get settings_action => 'الإعدادات';
+
+  @override
+  String save_to_downloads_folder(String fileName) {
+    return 'لحفظ \"$fileName\" في مجلد التنزيلات حيث يمكنك العثور عليه في المعرض أو مدير الملفات، يحتاج Solar إلى إذن التخزين.';
+  }
+
+  @override
+  String get without_permission_private_folder =>
+      'بدون إذن، سيتم حفظ الملف في مجلد Solar الخاص (يمكن الوصول إليه من لوحة التنزيلات).';
+
+  @override
+  String get enable_unknown_apps_android =>
+      'قد تحتاج إلى تمكين \"تثبيت التطبيقات المجهولة\" في إعدادات Android بعد التنزيل.';
+
+  @override
+  String get private_folder_instead =>
+      'سيتم حفظ الملفات في مجلد Solar الخاص بدلاً من ذلك.';
+
+  @override
+  String get save_to_downloads_title => 'حفظ في التنزيلات؟';
+
+  @override
+  String get save_to_gallery_title => 'حفظ في المعرض؟';
+
+  @override
+  String get storage_access_required => 'مطلوب الوصول إلى التخزين';
+
+  @override
+  String install_package_title(String packageName) {
+    return 'تثبيت $packageName؟';
+  }
+
+  @override
+  String install_package_message(String packageName) {
+    return 'سيؤدي هذا إلى تنزيل وإعداد \"$packageName\" للتثبيت على جهازك.';
+  }
+
+  @override
+  String get save_to_gallery_message =>
+      'لحفظ الصور ومقاطع الفيديو في تطبيق المعرض حيث ستكون مرئية في جميع أنحاء النظام، يحتاج Solar إلى الوصول إلى الوسائط.';
+
+  @override
+  String get storage_access_message =>
+      'لحفظ الملفات في تخزين جهازك، يحتاج Solar إلى أذونات الوصول إلى التخزين.';
+
+  @override
+  String get photos_videos_audio_permission => 'الصور والفيديو والصوت';
+
+  @override
+  String get storage_media_access_permission => 'الوصول إلى التخزين والوسائط';
+
+  @override
+  String get package_installation_permission => 'تثبيت الحزم';
+
+  @override
+  String get storage_access_permission => 'الوصول إلى التخزين';
+
+  @override
+  String get without_gallery_permission =>
+      'بدون إذن، ستكون ملفات الوسائط مرئية فقط في قسم التنزيلات في Solar.';
+
+  @override
+  String get flutter_version_string => 'Flutter 3.32.5';
+
+  @override
+  String get photoncore_version_string => 'Photoncore 0.1.0';
+
+  @override
+  String get engine_version_string => '4.7.0';
+
+  @override
+  String get http_warning_title => 'تحذير الاتصال غير الآمن';
+
+  @override
+  String get http_warning_message =>
+      'أنت على وشك زيارة موقع ويب يستخدم اتصالاً غير آمن (HTTP). قد تكون بياناتك مرئية للآخرين. هل أنت متأكد من أنك تريد المتابعة؟';
+
+  @override
+  String get continue_anyway => 'المتابعة على أي حال';
+
+  @override
+  String get go_back => 'العودة';
+
+  @override
+  String get web_page_error_title => 'خطأ في تحميل الصفحة';
+
+  @override
+  String get connection_error => 'خطأ في الاتصال';
+
+  @override
+  String get page_not_found => 'الصفحة غير موجودة';
+
+  @override
+  String get connection_reset => 'تم إعادة تعيين الاتصال';
+
+  @override
+  String get connection_timed_out => 'انتهت مهلة الاتصال';
+
+  @override
+  String get dns_error => 'خطأ DNS';
+
+  @override
+  String get ssl_error => 'خطأ شهادة SSL';
+
+  @override
+  String get network_error => 'خطأ في الشبكة';
+
+  @override
+  String get server_error => 'خطأ في الخادم';
+
+  @override
+  String get unable_to_connect =>
+      'غير قادر على الاتصال بالموقع. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى.';
+
+  @override
+  String get page_not_found_description =>
+      'الصفحة المطلوبة غير موجودة على الخادم. قد تكون الصفحة قد تم نقلها أو حذفها.';
+
+  @override
+  String get connection_reset_description =>
+      'تم إعادة تعيين الاتصال بالخادم. قد تكون هذه مشكلة مؤقتة.';
+
+  @override
+  String get connection_timeout_description =>
+      'انتهت مهلة الاتصال بالخادم. قد يكون الخادم مشغولاً أو قد يكون اتصالك بطيئاً.';
+
+  @override
+  String get dns_error_description =>
+      'غير قادر على العثور على الموقع. يرجى التحقق من عنوان الويب والمحاولة مرة أخرى.';
+
+  @override
+  String get ssl_error_description =>
+      'هناك مشكلة مع شهادة الأمان للموقع. قد لا يكون الاتصال آمناً.';
+
+  @override
+  String get network_error_description =>
+      'حدث خطأ في الشبكة. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى.';
+
+  @override
+  String get server_error_description =>
+      'واجه الخادم خطأ ولم يتمكن من إكمال طلبك.';
+
+  @override
+  String get go_home => 'الذهاب للرئيسية';
 }

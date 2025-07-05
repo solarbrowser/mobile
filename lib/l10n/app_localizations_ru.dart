@@ -117,9 +117,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get yesterday => 'Вчера';
 
   @override
-  String get updated => 'Solar Browser обновлён!';
-
-  @override
   String version(String version) {
     return 'Версия $version';
   }
@@ -607,6 +604,60 @@ class AppLocalizationsRu extends AppLocalizations {
   String get grant_permission => 'Дать разрешение';
 
   @override
+  String get download_permissions => 'Download Permissions';
+
+  @override
+  String get manage_download_permissions => 'Manage permissions for downloads';
+
+  @override
+  String get storage_permission => 'Storage Access';
+
+  @override
+  String get notification_permission => 'Notifications';
+
+  @override
+  String get notification_permission_description =>
+      'For download progress and completion alerts';
+
+  @override
+  String get permission_explanation =>
+      'These permissions help improve your download experience. You can change them anytime in Android Settings.';
+
+  @override
+  String get clear_downloads_history_description =>
+      'Remove download history (files remain)';
+
+  @override
+  String get change_download_location => 'Change where files are saved';
+
+  @override
+  String get request => 'Request';
+
+  @override
+  String get storage => 'Storage';
+
+  @override
+  String get manage_external_storage => 'Manage External Storage';
+
+  @override
+  String get notification => 'Notification';
+
+  @override
+  String get granted => 'Granted';
+
+  @override
+  String get denied => 'Denied';
+
+  @override
+  String get restricted => 'Restricted';
+
+  @override
+  String get limited => 'Limited';
+
+  @override
+  String get permanently_denied => 'Permanently Denied';
+
+  @override
   String get storage_permission_denied =>
       'Для загрузки файлов требуется разрешение на доступ к хранилищу';
 
@@ -968,7 +1019,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get failed_to_generate_summary => 'Не удалось создать резюме';
 
   @override
-  String get try_again => 'Попробовать снова';
+  String get try_again => 'Попробовать Снова';
 
   @override
   String get no_page_to_summarize => 'Нет страницы для резюмирования';
@@ -1182,4 +1233,175 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get notice => 'Уведомление';
+
+  @override
+  String get cannot_write_selected_folder =>
+      'Невозможно записать в выбранную папку. Используется папка загрузок по умолчанию.';
+
+  @override
+  String get cannot_write_selected_folder_choose_different =>
+      'Невозможно записать в выбранную папку. Пожалуйста, выберите другое местоположение.';
+
+  @override
+  String get cannot_write_configured_folder =>
+      'Невозможно записать в настроенную папку. Используется папка загрузок по умолчанию.';
+
+  @override
+  String get error_selecting_folder_default =>
+      'Ошибка выбора папки. Используется папка загрузок по умолчанию.';
+
+  @override
+  String get file_saved_to_app_storage =>
+      'Файл сохранен в хранилище приложения вместо выбранной папки';
+
+  @override
+  String get failed_write_any_location =>
+      'Не удалось записать файл в любое местоположение';
+
+  @override
+  String get settings_action => 'Настройки';
+
+  @override
+  String save_to_downloads_folder(String fileName) {
+    return 'Чтобы сохранить \"$fileName\" в папку Загрузки, где вы можете найти его в Галерее или Файловом менеджере, Solar нужно разрешение на хранение.';
+  }
+
+  @override
+  String get without_permission_private_folder =>
+      'Без разрешения файл будет сохранен в частную папку Solar (доступную из панели Загрузки).';
+
+  @override
+  String get enable_unknown_apps_android =>
+      'Возможно, вам нужно будет включить \"Установка неизвестных приложений\" в настройках Android после загрузки.';
+
+  @override
+  String get private_folder_instead =>
+      'Файлы будут сохранены в частную папку Solar вместо этого.';
+
+  @override
+  String get save_to_downloads_title => 'Сохранить в Загрузки?';
+
+  @override
+  String get save_to_gallery_title => 'Сохранить в Галерею?';
+
+  @override
+  String get storage_access_required => 'Требуется доступ к хранилищу';
+
+  @override
+  String install_package_title(String packageName) {
+    return 'Установить $packageName?';
+  }
+
+  @override
+  String install_package_message(String packageName) {
+    return 'Это загрузит и подготовит \"$packageName\" для установки на ваше устройство.';
+  }
+
+  @override
+  String get save_to_gallery_message =>
+      'Чтобы сохранить изображения и видео в ваше приложение Галерея, где они будут видны во всей системе, Solar нужен доступ к медиа.';
+
+  @override
+  String get storage_access_message =>
+      'Чтобы сохранить файлы в хранилище вашего устройства, Solar нужны разрешения доступа к хранилищу.';
+
+  @override
+  String get photos_videos_audio_permission => 'Фото, Видео и Аудио';
+
+  @override
+  String get storage_media_access_permission => 'Доступ к Хранилищу и Медиа';
+
+  @override
+  String get package_installation_permission => 'Установка Пакетов';
+
+  @override
+  String get storage_access_permission => 'Доступ к Хранилищу';
+
+  @override
+  String get without_gallery_permission =>
+      'Без разрешения медиафайлы будут видны только в разделе Загрузки Solar.';
+
+  @override
+  String get flutter_version_string => 'Flutter 3.32.5';
+
+  @override
+  String get photoncore_version_string => 'Photoncore 0.1.0';
+
+  @override
+  String get engine_version_string => '4.7.0';
+
+  @override
+  String get http_warning_title => 'Предупреждение о Небезопасном Соединении';
+
+  @override
+  String get http_warning_message =>
+      'Вы собираетесь посетить веб-сайт, который использует небезопасное соединение (HTTP). Ваши данные могут быть видны другим. Вы уверены, что хотите продолжить?';
+
+  @override
+  String get continue_anyway => 'Все равно Продолжить';
+
+  @override
+  String get go_back => 'Вернуться Назад';
+
+  @override
+  String get web_page_error_title => 'Ошибка Загрузки Страницы';
+
+  @override
+  String get connection_error => 'Ошибка Соединения';
+
+  @override
+  String get page_not_found => 'Страница Не Найдена';
+
+  @override
+  String get connection_reset => 'Соединение Сброшено';
+
+  @override
+  String get connection_timed_out => 'Время Ожидания Соединения Истекло';
+
+  @override
+  String get dns_error => 'Ошибка DNS';
+
+  @override
+  String get ssl_error => 'Ошибка SSL Сертификата';
+
+  @override
+  String get network_error => 'Ошибка Сети';
+
+  @override
+  String get server_error => 'Ошибка Сервера';
+
+  @override
+  String get unable_to_connect =>
+      'Не удается подключиться к веб-сайту. Проверьте ваше интернет-соединение и попробуйте снова.';
+
+  @override
+  String get page_not_found_description =>
+      'Запрашиваемая страница не найдена на сервере. Страница могла быть перемещена или удалена.';
+
+  @override
+  String get connection_reset_description =>
+      'Соединение с сервером было сброшено. Это может быть временной проблемой.';
+
+  @override
+  String get connection_timeout_description =>
+      'Время ожидания соединения с сервером истекло. Сервер может быть занят или ваше соединение может быть медленным.';
+
+  @override
+  String get dns_error_description =>
+      'Не удается найти веб-сайт. Проверьте веб-адрес и попробуйте снова.';
+
+  @override
+  String get ssl_error_description =>
+      'Проблема с сертификатом безопасности веб-сайта. Соединение может быть небезопасным.';
+
+  @override
+  String get network_error_description =>
+      'Произошла ошибка сети. Проверьте ваше интернет-соединение и попробуйте снова.';
+
+  @override
+  String get server_error_description =>
+      'Сервер столкнулся с ошибкой и не смог выполнить ваш запрос.';
+
+  @override
+  String get go_home => 'На Главную';
 }

@@ -29,7 +29,6 @@
   "notificationDescription": "Erhalten Sie Benachrichtigungen, wenn Dateien auf Ihr Gerät heruntergeladen werden",
   "allowNotifications": "Benachrichtigungen Erlauben",
   "skipForNow": "Vorerst Überspringen",
-  "updated": "Solar wurde aktualisiert!",
   "version": "Version {version}",
   "@version": {
     "placeholders": {
@@ -381,6 +380,82 @@
   "storage_permission_denied": "Speicherberechtigung verweigert",
   "@storage_permission_denied": {
     "description": "Message shown when storage permission is denied"
+  },
+  "download_permissions": "Download-Berechtigungen",
+  "@download_permissions": {
+    "description": "Title for download permissions section"
+  },
+  "manage_download_permissions": "Berechtigungen für Downloads verwalten",
+  "@manage_download_permissions": {
+    "description": "Subtitle for download permissions setting"
+  },
+  "storage_permission": "Speicherzugriff",
+  "@storage_permission": {
+    "description": "Storage permission label"
+  },
+  "notification_permission": "Benachrichtigungen",
+  "@notification_permission": {
+    "description": "Notification permission label"
+  },
+  "notification_permission_description": "Für Download-Fortschritt und Fertigstellungsalarme",
+  "@notification_permission_description": {
+    "description": "Description for notification permission"
+  },
+  "permission_explanation": "Diese Berechtigungen helfen, Ihr Download-Erlebnis zu verbessern. Sie können sie jederzeit in den Android-Einstellungen ändern.",
+  "@permission_explanation": {
+    "description": "Explanation text for permissions dialog"
+  },
+  "clear_downloads_history_description": "Download-Verlauf entfernen (Dateien bleiben)",
+  "@clear_downloads_history_description": {
+    "description": "Description for clear downloads history option"
+  },
+  "change_download_location": "Ändern, wo Dateien gespeichert werden",
+  "@change_download_location": {
+    "description": "Description for download location setting"
+  },
+  "close": "Schließen",
+  "@close": {
+    "description": "Close button text"
+  },
+  "request": "Anfordern",
+  "@request": {
+    "description": "Request button text for permissions"
+  },
+  "storage": "Speicher",
+  "@storage": {
+    "description": "Storage permission label"
+  },
+  "manage_external_storage": "Externen Speicher verwalten",
+  "@manage_external_storage": {
+    "description": "Manage external storage permission label"
+  },
+  "notification": "Benachrichtigung",
+  "@notification": {
+    "description": "Notification permission label"
+  },
+  "granted": "Gewährt",
+  "@granted": {
+    "description": "Permission granted status"
+  },
+  "denied": "Verweigert", 
+  "@denied": {
+    "description": "Permission denied status"
+  },
+  "restricted": "Eingeschränkt",
+  "@restricted": {
+    "description": "Permission restricted status"
+  },
+  "limited": "Begrenzt",
+  "@limited": {
+    "description": "Permission limited status"
+  },
+  "permanently_denied": "Dauerhaft verweigert",
+  "@permanently_denied": {
+    "description": "Permission permanently denied status"
+  },
+  "unknown": "Unbekannt",
+  "@unknown": {
+    "description": "Unknown permission status"
   },
   "incognito_mode": "Inkognito-Modus",
   "@incognito_mode": {
@@ -789,5 +864,59 @@
   "delete_file_confirm": "Sind Sie sicher, dass Sie diese Datei dauerhaft von Ihrem Gerät löschen möchten?",
   "remove_from_history": "Aus Verlauf Entfernen", 
   "delete_from_device": "Vom Gerät Löschen",
-  "notice": "Hinweis"
+  "notice": "Hinweis",
+  
+  "cannot_write_selected_folder": "Kann nicht in den ausgewählten Ordner schreiben. Verwende Standard-Download-Ordner.",
+  "cannot_write_selected_folder_choose_different": "Kann nicht in den ausgewählten Ordner schreiben. Bitte wählen Sie einen anderen Ort.",
+  "cannot_write_configured_folder": "Kann nicht in den konfigurierten Ordner schreiben. Verwende Standard-Download-Ordner.",
+  "error_selecting_folder_default": "Fehler beim Auswählen des Ordners. Verwende Standard-Download-Ordner.",
+  "file_saved_to_app_storage": "Datei im App-Speicher statt im ausgewählten Ordner gespeichert",
+  "failed_write_any_location": "Datei konnte an keinem Ort geschrieben werden",
+  "settings_action": "Einstellungen",
+  "save_to_downloads_folder": "Um \"{fileName}\" in Ihrem Download-Ordner zu speichern, wo Sie sie in der Galerie oder im Dateimanager finden können, benötigt Solar eine Speicherberechtigung.",
+  "without_permission_private_folder": "Ohne Berechtigung wird die Datei in Solars privatem Ordner gespeichert (erreichbar über das Downloads-Panel).",
+  "enable_unknown_apps_android": "Möglicherweise müssen Sie nach dem Download \"Unbekannte Apps installieren\" in den Android-Einstellungen aktivieren.",
+  "private_folder_instead": "Dateien werden stattdessen in Solars privatem Ordner gespeichert.",
+  
+  "save_to_downloads_title": "In Downloads speichern?",
+  "save_to_gallery_title": "In Galerie speichern?",
+  "storage_access_required": "Speicherzugriff erforderlich",
+  "install_package_title": "{packageName} installieren?",
+  "install_package_message": "Dies wird \"{packageName}\" herunterladen und für die Installation auf Ihrem Gerät vorbereiten.",
+  "save_to_gallery_message": "Um Bilder und Videos in Ihrer Galerie-App zu speichern, wo sie systemweit sichtbar sind, benötigt Solar Medienzugriff.",
+  "storage_access_message": "Um Dateien in Ihrem Gerätespeicher zu speichern, benötigt Solar Speicherzugriffsberechtigungen.",
+  "photos_videos_audio_permission": "Fotos, Videos & Audio",
+  "storage_media_access_permission": "Speicher- & Medienzugriff",
+  "package_installation_permission": "Paketinstallation",
+  "storage_access_permission": "Speicherzugriff",
+  "without_gallery_permission": "Ohne Berechtigung sind Mediendateien nur in Solars Downloads-Bereich sichtbar.",
+  
+  "flutter_version_string": "Flutter 3.32.5",
+  "photoncore_version_string": "Photoncore 0.1.0",
+  "engine_version_string": "4.7.0",
+  
+  "http_warning_title": "Warnung vor unsicherer Verbindung",
+  "http_warning_message": "Sie sind dabei, eine Website zu besuchen, die eine unsichere Verbindung (HTTP) verwendet. Ihre Daten könnten für andere sichtbar sein. Sind Sie sicher, dass Sie fortfahren möchten?",
+  "continue_anyway": "Trotzdem fortfahren",
+  "go_back": "Zurück gehen",
+  
+  "web_page_error_title": "Seiten-Ladefehler",
+  "connection_error": "Verbindungsfehler",
+  "page_not_found": "Seite nicht gefunden",
+  "connection_reset": "Verbindung zurückgesetzt",
+  "connection_timed_out": "Verbindung abgelaufen",
+  "dns_error": "DNS-Fehler",
+  "ssl_error": "SSL-Zertifikatsfehler",
+  "network_error": "Netzwerkfehler",
+  "server_error": "Serverfehler",
+  "unable_to_connect": "Verbindung zur Website nicht möglich. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+  "page_not_found_description": "Die angeforderte Seite konnte auf dem Server nicht gefunden werden. Die Seite wurde möglicherweise verschoben oder gelöscht.",
+  "connection_reset_description": "Die Verbindung zum Server wurde zurückgesetzt. Dies könnte ein vorübergehendes Problem sein.",
+  "connection_timeout_description": "Die Verbindung zum Server ist abgelaufen. Der Server könnte ausgelastet sein oder Ihre Verbindung könnte langsam sein.",
+  "dns_error_description": "Website nicht gefunden. Bitte überprüfen Sie die Webadresse und versuchen Sie es erneut.",
+  "ssl_error_description": "Es gibt ein Problem mit dem Sicherheitszertifikat der Website. Die Verbindung ist möglicherweise nicht sicher.",
+  "network_error_description": "Ein Netzwerkfehler ist aufgetreten. Bitte überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.",
+  "server_error_description": "Der Server hat einen Fehler festgestellt und konnte Ihre Anfrage nicht verarbeiten.",
+  "try_again": "Erneut versuchen",
+  "go_home": "Zur Startseite"
 }

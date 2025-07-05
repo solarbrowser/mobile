@@ -6,7 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'l10n/app_localizations.dart';
 import 'screens/browser_screen.dart';
 import 'screens/onboarding_screen.dart';
-import 'screens/update_screen.dart';
+
 import 'screens/pwa_screen.dart';
 import 'utils/theme_manager.dart';
 import 'utils/performance_optimizer.dart';
@@ -23,9 +23,9 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    print('✅ Firebase initialized in main.dart');
+    //print('✅ Firebase initialized in main.dart');
   } catch (e) {
-    print('❌ Firebase initialization failed in main.dart: $e');
+    //print('❌ Firebase initialization failed in main.dart: $e');
     // Don't throw error - app should still work without Firebase
   }
   
@@ -63,7 +63,6 @@ void main() async {
   binding.allowFirstFrame();
   final isFirstStart = prefs.getBool('first_start') ?? true;
   final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
-  final lastVersion = prefs.getString('last_version') ?? '0.0.0';
   final packageInfo = await PackageInfo.fromPlatform();
   final currentVersion = packageInfo.version;
   
@@ -73,7 +72,7 @@ void main() async {
     final platform = MethodChannel('com.solar.browser/shortcuts');
     initialUrl = await platform.invokeMethod('getInitialUrl');
   } catch (e) {
-    print('Error getting initial URL: $e');
+    //print('Error getting initial URL: $e');
   }
   
   // Set default preferences if first start
@@ -83,11 +82,6 @@ void main() async {
     await prefs.setString('searchEngine', 'google');
     // Don't set first_start to false here - let onboarding handle it
   }
-
-  // Save current version after showing update screen
-  if (lastVersion != currentVersion) {
-    await prefs.setString('last_version', currentVersion);
-  }
   
   // Load saved theme
   await ThemeManager.loadSavedTheme();
@@ -95,7 +89,6 @@ void main() async {
   runApp(MyApp(
     isFirstStart: isFirstStart,
     onboardingCompleted: onboardingCompleted,
-    lastVersion: lastVersion,
     currentVersion: currentVersion,
     initialLocale: prefs.getString('language') ?? systemLocale,
     initialDarkMode: prefs.getBool('darkMode') ?? systemDarkMode,
@@ -106,7 +99,6 @@ void main() async {
 class MyApp extends StatefulWidget {
   final bool isFirstStart;
   final bool onboardingCompleted;
-  final String lastVersion;
   final String currentVersion;
   final String initialLocale;
   final bool initialDarkMode;
@@ -116,7 +108,6 @@ class MyApp extends StatefulWidget {
     Key? key,
     required this.isFirstStart,
     required this.onboardingCompleted,
-    required this.lastVersion,
     required this.currentVersion,
     required this.initialLocale,
     required this.initialDarkMode,
@@ -316,12 +307,6 @@ class _MyAppState extends State<MyApp> {
               onLocaleChange: _handleLocaleChange,
               onThemeChange: _handleThemeChange,
               onSearchEngineChange: _handleSearchEngineChange,
-            );
-          } else if (widget.lastVersion != widget.currentVersion) {
-            return UpdateScreen(
-              currentVersion: widget.currentVersion,
-              oldVersion: widget.lastVersion,
-              onLocaleChange: _handleLocaleChangeString,
             );
           } else {
             return BrowserScreen(

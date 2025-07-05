@@ -324,12 +324,6 @@ abstract class AppLocalizations {
   /// **'Yesterday'**
   String get yesterday;
 
-  /// No description provided for @updated.
-  ///
-  /// In en, this message translates to:
-  /// **'Solar Updated!'**
-  String get updated;
-
   /// Version label
   ///
   /// In en, this message translates to:
@@ -1212,7 +1206,7 @@ abstract class AppLocalizations {
   /// **'No downloads yet'**
   String get no_downloads_yet;
 
-  /// Used when a name or value is not known
+  /// Unknown permission status
   ///
   /// In en, this message translates to:
   /// **'Unknown'**
@@ -1253,6 +1247,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Give Permission'**
   String get grant_permission;
+
+  /// Title for download permissions section
+  ///
+  /// In en, this message translates to:
+  /// **'Download Permissions'**
+  String get download_permissions;
+
+  /// Subtitle for download permissions setting
+  ///
+  /// In en, this message translates to:
+  /// **'Manage permissions for downloads'**
+  String get manage_download_permissions;
+
+  /// Storage permission label
+  ///
+  /// In en, this message translates to:
+  /// **'Storage Access'**
+  String get storage_permission;
+
+  /// Notification permission label
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notification_permission;
+
+  /// Description for notification permission
+  ///
+  /// In en, this message translates to:
+  /// **'For download progress and completion alerts'**
+  String get notification_permission_description;
+
+  /// Explanation text for permissions dialog
+  ///
+  /// In en, this message translates to:
+  /// **'These permissions help improve your download experience. You can change them anytime in Android Settings.'**
+  String get permission_explanation;
+
+  /// Description for clear downloads history option
+  ///
+  /// In en, this message translates to:
+  /// **'Remove download history (files remain)'**
+  String get clear_downloads_history_description;
+
+  /// Description for download location setting
+  ///
+  /// In en, this message translates to:
+  /// **'Change where files are saved'**
+  String get change_download_location;
+
+  /// Request button text for permissions
+  ///
+  /// In en, this message translates to:
+  /// **'Request'**
+  String get request;
+
+  /// Storage permission label
+  ///
+  /// In en, this message translates to:
+  /// **'Storage'**
+  String get storage;
+
+  /// Manage external storage permission label
+  ///
+  /// In en, this message translates to:
+  /// **'Manage External Storage'**
+  String get manage_external_storage;
+
+  /// Notification permission label
+  ///
+  /// In en, this message translates to:
+  /// **'Notification'**
+  String get notification;
+
+  /// Permission granted status
+  ///
+  /// In en, this message translates to:
+  /// **'Granted'**
+  String get granted;
+
+  /// Permission denied status
+  ///
+  /// In en, this message translates to:
+  /// **'Denied'**
+  String get denied;
+
+  /// Permission restricted status
+  ///
+  /// In en, this message translates to:
+  /// **'Restricted'**
+  String get restricted;
+
+  /// Permission limited status
+  ///
+  /// In en, this message translates to:
+  /// **'Limited'**
+  String get limited;
+
+  /// Permission permanently denied status
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently Denied'**
+  String get permanently_denied;
 
   /// Message shown when storage permission is denied
   ///
@@ -1926,7 +2022,7 @@ abstract class AppLocalizations {
   /// **'Failed to generate summary'**
   String get failed_to_generate_summary;
 
-  /// Try again button text
+  /// Button text to retry loading page
   ///
   /// In en, this message translates to:
   /// **'Try Again'**
@@ -2339,6 +2435,294 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Notice'**
   String get notice;
+
+  /// Error message when the selected download folder is not writable
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot write to selected folder. Using default Downloads folder.'**
+  String get cannot_write_selected_folder;
+
+  /// Error message when the selected folder is not writable and user should choose another
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot write to selected folder. Please choose a different location.'**
+  String get cannot_write_selected_folder_choose_different;
+
+  /// Error message when the configured download folder is not writable
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot write to configured folder. Using default Downloads folder.'**
+  String get cannot_write_configured_folder;
+
+  /// Error message when folder selection fails
+  ///
+  /// In en, this message translates to:
+  /// **'Error selecting folder. Using default Downloads folder.'**
+  String get error_selecting_folder_default;
+
+  /// Notification when file is saved to app storage as fallback
+  ///
+  /// In en, this message translates to:
+  /// **'File saved to app storage instead of selected folder'**
+  String get file_saved_to_app_storage;
+
+  /// Error message when file cannot be written to any location
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to write file to any location'**
+  String get failed_write_any_location;
+
+  /// Label for settings action button
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings_action;
+
+  /// Permission dialog message for saving to Downloads folder
+  ///
+  /// In en, this message translates to:
+  /// **'To save \"{fileName}\" to your Downloads folder where you can find it in Gallery or File Manager, Solar needs storage permission.'**
+  String save_to_downloads_folder(String fileName);
+
+  /// Alternative text for permission dialog when permission is denied
+  ///
+  /// In en, this message translates to:
+  /// **'Without permission, the file will be saved to Solar\'s private folder (accessible from Downloads panel).'**
+  String get without_permission_private_folder;
+
+  /// Message about enabling unknown apps for APK installation
+  ///
+  /// In en, this message translates to:
+  /// **'You may need to enable \"Install Unknown Apps\" in Android settings after download.'**
+  String get enable_unknown_apps_android;
+
+  /// Message when files will be saved to private folder
+  ///
+  /// In en, this message translates to:
+  /// **'Files will be saved to Solar\'s private folder instead.'**
+  String get private_folder_instead;
+
+  /// Title for downloads permission dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Save to Downloads?'**
+  String get save_to_downloads_title;
+
+  /// Title for gallery permission dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Save to Gallery?'**
+  String get save_to_gallery_title;
+
+  /// Title for storage access dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Storage Access Required'**
+  String get storage_access_required;
+
+  /// Title for package installation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Install {packageName}?'**
+  String install_package_title(String packageName);
+
+  /// Message for package installation dialog
+  ///
+  /// In en, this message translates to:
+  /// **'This will download and prepare \"{packageName}\" for installation on your device.'**
+  String install_package_message(String packageName);
+
+  /// Message for gallery permission dialog
+  ///
+  /// In en, this message translates to:
+  /// **'To save images and videos to your Gallery app where they\'ll be visible system-wide, Solar needs media access.'**
+  String get save_to_gallery_message;
+
+  /// Message for storage access dialog
+  ///
+  /// In en, this message translates to:
+  /// **'To save files to your device storage, Solar needs storage access permissions.'**
+  String get storage_access_message;
+
+  /// Permission name for media access
+  ///
+  /// In en, this message translates to:
+  /// **'Photos, Videos & Audio'**
+  String get photos_videos_audio_permission;
+
+  /// Permission name for storage and media access
+  ///
+  /// In en, this message translates to:
+  /// **'Storage & Media Access'**
+  String get storage_media_access_permission;
+
+  /// Permission name for package installation
+  ///
+  /// In en, this message translates to:
+  /// **'Package Installation'**
+  String get package_installation_permission;
+
+  /// Permission name for storage access
+  ///
+  /// In en, this message translates to:
+  /// **'Storage Access'**
+  String get storage_access_permission;
+
+  /// Alternative text when gallery permission is denied
+  ///
+  /// In en, this message translates to:
+  /// **'Without permission, media files will only be visible in Solar\'s Downloads section.'**
+  String get without_gallery_permission;
+
+  /// Flutter version string in about section
+  ///
+  /// In en, this message translates to:
+  /// **'Flutter 3.32.5'**
+  String get flutter_version_string;
+
+  /// Photoncore version string in about section
+  ///
+  /// In en, this message translates to:
+  /// **'Photoncore 0.1.0'**
+  String get photoncore_version_string;
+
+  /// Engine version string in about section
+  ///
+  /// In en, this message translates to:
+  /// **'4.7.0'**
+  String get engine_version_string;
+
+  /// Title for HTTP warning dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Unsecure Connection Warning'**
+  String get http_warning_title;
+
+  /// Message for HTTP warning dialog
+  ///
+  /// In en, this message translates to:
+  /// **'You are about to visit a website that uses an unsecure connection (HTTP). Your data may be visible to others. Are you sure you want to continue?'**
+  String get http_warning_message;
+
+  /// Button text to continue despite warning
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Anyway'**
+  String get continue_anyway;
+
+  /// Button text to go back from warning
+  ///
+  /// In en, this message translates to:
+  /// **'Go Back'**
+  String get go_back;
+
+  /// Title for web page error dialog
+  ///
+  /// In en, this message translates to:
+  /// **'Page Load Error'**
+  String get web_page_error_title;
+
+  /// Connection error message
+  ///
+  /// In en, this message translates to:
+  /// **'Connection Error'**
+  String get connection_error;
+
+  /// Page not found error message
+  ///
+  /// In en, this message translates to:
+  /// **'Page Not Found'**
+  String get page_not_found;
+
+  /// Connection reset error message
+  ///
+  /// In en, this message translates to:
+  /// **'Connection Reset'**
+  String get connection_reset;
+
+  /// Connection timeout error message
+  ///
+  /// In en, this message translates to:
+  /// **'Connection Timed Out'**
+  String get connection_timed_out;
+
+  /// DNS lookup error message
+  ///
+  /// In en, this message translates to:
+  /// **'DNS Error'**
+  String get dns_error;
+
+  /// SSL certificate error message
+  ///
+  /// In en, this message translates to:
+  /// **'SSL Certificate Error'**
+  String get ssl_error;
+
+  /// Generic network error message
+  ///
+  /// In en, this message translates to:
+  /// **'Network Error'**
+  String get network_error;
+
+  /// Server error message
+  ///
+  /// In en, this message translates to:
+  /// **'Server Error'**
+  String get server_error;
+
+  /// Unable to connect error description
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to connect to the website. Please check your internet connection and try again.'**
+  String get unable_to_connect;
+
+  /// Page not found error description
+  ///
+  /// In en, this message translates to:
+  /// **'The requested page could not be found on the server. The page may have been moved or deleted.'**
+  String get page_not_found_description;
+
+  /// Connection reset error description
+  ///
+  /// In en, this message translates to:
+  /// **'The connection to the server was reset. This may be a temporary issue.'**
+  String get connection_reset_description;
+
+  /// Connection timeout error description
+  ///
+  /// In en, this message translates to:
+  /// **'The connection to the server timed out. The server may be busy or your connection may be slow.'**
+  String get connection_timeout_description;
+
+  /// DNS error description
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to find the website. Please check the web address and try again.'**
+  String get dns_error_description;
+
+  /// SSL error description
+  ///
+  /// In en, this message translates to:
+  /// **'There is a problem with the website\'s security certificate. The connection may not be secure.'**
+  String get ssl_error_description;
+
+  /// Network error description
+  ///
+  /// In en, this message translates to:
+  /// **'A network error occurred. Please check your internet connection and try again.'**
+  String get network_error_description;
+
+  /// Server error description
+  ///
+  /// In en, this message translates to:
+  /// **'The server encountered an error and could not complete your request.'**
+  String get server_error_description;
+
+  /// Button text to go to home page
+  ///
+  /// In en, this message translates to:
+  /// **'Go Home'**
+  String get go_home;
 }
 
 class _AppLocalizationsDelegate

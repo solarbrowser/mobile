@@ -77,7 +77,6 @@
   "@yesterday": {
     "description": "Time indicator for events that happened yesterday"
   },
-  "updated": "Solar Updated!",
   "version": "Version {version}",
   "@version": {
     "placeholders": {
@@ -367,6 +366,82 @@
   "grant_permission": "Give Permission",
   "@grant_permission": {
     "description": "Text for the permission grant button"
+  },
+  "download_permissions": "Download Permissions",
+  "@download_permissions": {
+    "description": "Title for download permissions section"
+  },
+  "manage_download_permissions": "Manage permissions for downloads",
+  "@manage_download_permissions": {
+    "description": "Subtitle for download permissions setting"
+  },
+  "storage_permission": "Storage Access",
+  "@storage_permission": {
+    "description": "Storage permission label"
+  },
+  "notification_permission": "Notifications",
+  "@notification_permission": {
+    "description": "Notification permission label"
+  },
+  "notification_permission_description": "For download progress and completion alerts",
+  "@notification_permission_description": {
+    "description": "Description for notification permission"
+  },
+  "permission_explanation": "These permissions help improve your download experience. You can change them anytime in Android Settings.",
+  "@permission_explanation": {
+    "description": "Explanation text for permissions dialog"
+  },
+  "clear_downloads_history_description": "Remove download history (files remain)",
+  "@clear_downloads_history_description": {
+    "description": "Description for clear downloads history option"
+  },
+  "change_download_location": "Change where files are saved",
+  "@change_download_location": {
+    "description": "Description for download location setting"
+  },
+  "close": "Close",
+  "@close": {
+    "description": "Close button text"
+  },
+  "request": "Request",
+  "@request": {
+    "description": "Request button text for permissions"
+  },
+  "storage": "Storage",
+  "@storage": {
+    "description": "Storage permission label"
+  },
+  "manage_external_storage": "Manage External Storage",
+  "@manage_external_storage": {
+    "description": "Manage external storage permission label"
+  },
+  "notification": "Notification",
+  "@notification": {
+    "description": "Notification permission label"
+  },
+  "granted": "Granted",
+  "@granted": {
+    "description": "Permission granted status"
+  },
+  "denied": "Denied", 
+  "@denied": {
+    "description": "Permission denied status"
+  },
+  "restricted": "Restricted",
+  "@restricted": {
+    "description": "Permission restricted status"
+  },
+  "limited": "Limited",
+  "@limited": {
+    "description": "Permission limited status"
+  },
+  "permanently_denied": "Permanently Denied",
+  "@permanently_denied": {
+    "description": "Permission permanently denied status"
+  },
+  "unknown": "Unknown",
+  "@unknown": {
+    "description": "Unknown permission status"
   },
   "storage_permission_denied": "Storage permission is required to download files",
   "@storage_permission_denied": {
@@ -1100,5 +1175,224 @@
   "delete_file_confirm": "Are you sure you want to permanently delete this file from your device?",
   "remove_from_history": "Remove from History", 
   "delete_from_device": "Delete from Device",
-  "notice": "Notice"
+  "notice": "Notice",
+  
+  "cannot_write_selected_folder": "Cannot write to selected folder. Using default Downloads folder.",
+  "@cannot_write_selected_folder": {
+    "description": "Error message when the selected download folder is not writable"
+  },
+  "cannot_write_selected_folder_choose_different": "Cannot write to selected folder. Please choose a different location.",
+  "@cannot_write_selected_folder_choose_different": {
+    "description": "Error message when the selected folder is not writable and user should choose another"
+  },
+  "cannot_write_configured_folder": "Cannot write to configured folder. Using default Downloads folder.",
+  "@cannot_write_configured_folder": {
+    "description": "Error message when the configured download folder is not writable"
+  },
+  "error_selecting_folder_default": "Error selecting folder. Using default Downloads folder.",
+  "@error_selecting_folder_default": {
+    "description": "Error message when folder selection fails"
+  },
+  "file_saved_to_app_storage": "File saved to app storage instead of selected folder",
+  "@file_saved_to_app_storage": {
+    "description": "Notification when file is saved to app storage as fallback"
+  },
+  "failed_write_any_location": "Failed to write file to any location",
+  "@failed_write_any_location": {
+    "description": "Error message when file cannot be written to any location"
+  },
+  "settings_action": "Settings",
+  "@settings_action": {
+    "description": "Label for settings action button"
+  },
+  "save_to_downloads_folder": "To save \"{fileName}\" to your Downloads folder where you can find it in Gallery or File Manager, Solar needs storage permission.",
+  "@save_to_downloads_folder": {
+    "description": "Permission dialog message for saving to Downloads folder",
+    "placeholders": {
+      "fileName": {
+        "type": "String",
+        "example": "document.pdf"
+      }
+    }
+  },
+  "without_permission_private_folder": "Without permission, the file will be saved to Solar's private folder (accessible from Downloads panel).",
+  "@without_permission_private_folder": {
+    "description": "Alternative text for permission dialog when permission is denied"
+  },
+  "enable_unknown_apps_android": "You may need to enable \"Install Unknown Apps\" in Android settings after download.",
+  "@enable_unknown_apps_android": {
+    "description": "Message about enabling unknown apps for APK installation"
+  },
+  "private_folder_instead": "Files will be saved to Solar's private folder instead.",
+  "@private_folder_instead": {
+    "description": "Message when files will be saved to private folder"
+  },
+  
+  "save_to_downloads_title": "Save to Downloads?",
+  "@save_to_downloads_title": {
+    "description": "Title for downloads permission dialog"
+  },
+  "save_to_gallery_title": "Save to Gallery?",
+  "@save_to_gallery_title": {
+    "description": "Title for gallery permission dialog"
+  },
+  "storage_access_required": "Storage Access Required",
+  "@storage_access_required": {
+    "description": "Title for storage access dialog"
+  },
+  "install_package_title": "Install {packageName}?",
+  "@install_package_title": {
+    "description": "Title for package installation dialog",
+    "placeholders": {
+      "packageName": {
+        "type": "String",
+        "description": "Name of the package to install"
+      }
+    }
+  },
+  "install_package_message": "This will download and prepare \"{packageName}\" for installation on your device.",
+  "@install_package_message": {
+    "description": "Message for package installation dialog",
+    "placeholders": {
+      "packageName": {
+        "type": "String",
+        "description": "Name of the package to install"
+      }
+    }
+  },
+  "save_to_gallery_message": "To save images and videos to your Gallery app where they'll be visible system-wide, Solar needs media access.",
+  "@save_to_gallery_message": {
+    "description": "Message for gallery permission dialog"
+  },
+  "storage_access_message": "To save files to your device storage, Solar needs storage access permissions.",
+  "@storage_access_message": {
+    "description": "Message for storage access dialog"
+  },
+  "photos_videos_audio_permission": "Photos, Videos & Audio",
+  "@photos_videos_audio_permission": {
+    "description": "Permission name for media access"
+  },
+  "storage_media_access_permission": "Storage & Media Access",
+  "@storage_media_access_permission": {
+    "description": "Permission name for storage and media access"
+  },
+  "package_installation_permission": "Package Installation",
+  "@package_installation_permission": {
+    "description": "Permission name for package installation"
+  },
+  "storage_access_permission": "Storage Access",
+  "@storage_access_permission": {
+    "description": "Permission name for storage access"
+  },
+  "without_gallery_permission": "Without permission, media files will only be visible in Solar's Downloads section.",
+  "@without_gallery_permission": {
+    "description": "Alternative text when gallery permission is denied"
+  },
+  
+  "flutter_version_string": "Flutter 3.32.5",
+  "@flutter_version_string": {
+    "description": "Flutter version string in about section"
+  },
+  "photoncore_version_string": "Photoncore 0.1.0",
+  "@photoncore_version_string": {
+    "description": "Photoncore version string in about section"
+  },
+  "engine_version_string": "4.7.0",
+  "@engine_version_string": {
+    "description": "Engine version string in about section"
+  },
+  
+  "http_warning_title": "Unsecure Connection Warning",
+  "@http_warning_title": {
+    "description": "Title for HTTP warning dialog"
+  },
+  "http_warning_message": "You are about to visit a website that uses an unsecure connection (HTTP). Your data may be visible to others. Are you sure you want to continue?",
+  "@http_warning_message": {
+    "description": "Message for HTTP warning dialog"
+  },
+  "continue_anyway": "Continue Anyway",
+  "@continue_anyway": {
+    "description": "Button text to continue despite warning"
+  },
+  "go_back": "Go Back",
+  "@go_back": {
+    "description": "Button text to go back from warning"
+  },
+  
+  "web_page_error_title": "Page Load Error",
+  "@web_page_error_title": {
+    "description": "Title for web page error dialog"
+  },
+  "connection_error": "Connection Error",
+  "@connection_error": {
+    "description": "Connection error message"
+  },
+  "page_not_found": "Page Not Found",
+  "@page_not_found": {
+    "description": "Page not found error message"
+  },
+  "connection_reset": "Connection Reset",
+  "@connection_reset": {
+    "description": "Connection reset error message"
+  },
+  "connection_timed_out": "Connection Timed Out",
+  "@connection_timed_out": {
+    "description": "Connection timeout error message"
+  },
+  "dns_error": "DNS Error",
+  "@dns_error": {
+    "description": "DNS lookup error message"
+  },
+  "ssl_error": "SSL Certificate Error",
+  "@ssl_error": {
+    "description": "SSL certificate error message"
+  },
+  "network_error": "Network Error",
+  "@network_error": {
+    "description": "Generic network error message"
+  },
+  "server_error": "Server Error",
+  "@server_error": {
+    "description": "Server error message"
+  },
+  "unable_to_connect": "Unable to connect to the website. Please check your internet connection and try again.",
+  "@unable_to_connect": {
+    "description": "Unable to connect error description"
+  },
+  "page_not_found_description": "The requested page could not be found on the server. The page may have been moved or deleted.",
+  "@page_not_found_description": {
+    "description": "Page not found error description"
+  },
+  "connection_reset_description": "The connection to the server was reset. This may be a temporary issue.",
+  "@connection_reset_description": {
+    "description": "Connection reset error description"
+  },
+  "connection_timeout_description": "The connection to the server timed out. The server may be busy or your connection may be slow.",
+  "@connection_timeout_description": {
+    "description": "Connection timeout error description"
+  },
+  "dns_error_description": "Unable to find the website. Please check the web address and try again.",
+  "@dns_error_description": {
+    "description": "DNS error description"
+  },
+  "ssl_error_description": "There is a problem with the website's security certificate. The connection may not be secure.",
+  "@ssl_error_description": {
+    "description": "SSL error description"
+  },
+  "network_error_description": "A network error occurred. Please check your internet connection and try again.",
+  "@network_error_description": {
+    "description": "Network error description"
+  },
+  "server_error_description": "The server encountered an error and could not complete your request.",
+  "@server_error_description": {
+    "description": "Server error description"
+  },
+  "try_again": "Try Again",
+  "@try_again": {
+    "description": "Button text to retry loading page"
+  },
+  "go_home": "Go Home",
+  "@go_home": {
+    "description": "Button text to go to home page"
+  }
 }

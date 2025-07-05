@@ -115,9 +115,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get yesterday => '어제';
 
   @override
-  String get updated => 'Solar 브라우저가 업데이트되었습니다!';
-
-  @override
   String version(String version) {
     return '버전 $version';
   }
@@ -591,6 +588,60 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get grant_permission => '권한 부여';
+
+  @override
+  String get download_permissions => 'Download Permissions';
+
+  @override
+  String get manage_download_permissions => 'Manage permissions for downloads';
+
+  @override
+  String get storage_permission => 'Storage Access';
+
+  @override
+  String get notification_permission => 'Notifications';
+
+  @override
+  String get notification_permission_description =>
+      'For download progress and completion alerts';
+
+  @override
+  String get permission_explanation =>
+      'These permissions help improve your download experience. You can change them anytime in Android Settings.';
+
+  @override
+  String get clear_downloads_history_description =>
+      'Remove download history (files remain)';
+
+  @override
+  String get change_download_location => 'Change where files are saved';
+
+  @override
+  String get request => 'Request';
+
+  @override
+  String get storage => 'Storage';
+
+  @override
+  String get manage_external_storage => 'Manage External Storage';
+
+  @override
+  String get notification => 'Notification';
+
+  @override
+  String get granted => 'Granted';
+
+  @override
+  String get denied => 'Denied';
+
+  @override
+  String get restricted => 'Restricted';
+
+  @override
+  String get limited => 'Limited';
+
+  @override
+  String get permanently_denied => 'Permanently Denied';
 
   @override
   String get storage_permission_denied => '파일을 다운로드하려면 저장소 권한이 필요합니다';
@@ -1149,4 +1200,169 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get notice => '알림';
+
+  @override
+  String get cannot_write_selected_folder =>
+      '선택한 폴더에 쓸 수 없습니다. 기본 다운로드 폴더를 사용합니다.';
+
+  @override
+  String get cannot_write_selected_folder_choose_different =>
+      '선택한 폴더에 쓸 수 없습니다. 다른 위치를 선택해주세요.';
+
+  @override
+  String get cannot_write_configured_folder =>
+      '구성된 폴더에 쓸 수 없습니다. 기본 다운로드 폴더를 사용합니다.';
+
+  @override
+  String get error_selecting_folder_default =>
+      '폴더 선택 중 오류가 발생했습니다. 기본 다운로드 폴더를 사용합니다.';
+
+  @override
+  String get file_saved_to_app_storage => '파일이 선택한 폴더 대신 앱 저장소에 저장되었습니다';
+
+  @override
+  String get failed_write_any_location => '어떤 위치에도 파일을 쓸 수 없습니다';
+
+  @override
+  String get settings_action => '설정';
+
+  @override
+  String save_to_downloads_folder(String fileName) {
+    return '갤러리나 파일 관리자에서 찾을 수 있는 다운로드 폴더에 \"$fileName\"을(를) 저장하려면 Solar에 저장소 권한이 필요합니다.';
+  }
+
+  @override
+  String get without_permission_private_folder =>
+      '권한 없이는 파일이 Solar의 개인 폴더에 저장됩니다(다운로드 패널에서 접근 가능).';
+
+  @override
+  String get enable_unknown_apps_android =>
+      '다운로드 후 Android 설정에서 \"알 수 없는 앱 설치\"를 활성화해야 할 수 있습니다.';
+
+  @override
+  String get private_folder_instead => '파일이 대신 Solar의 개인 폴더에 저장됩니다.';
+
+  @override
+  String get save_to_downloads_title => '다운로드에 저장하시겠습니까?';
+
+  @override
+  String get save_to_gallery_title => '갤러리에 저장하시겠습니까?';
+
+  @override
+  String get storage_access_required => '저장소 접근 권한이 필요합니다';
+
+  @override
+  String install_package_title(String packageName) {
+    return '$packageName을(를) 설치하시겠습니까?';
+  }
+
+  @override
+  String install_package_message(String packageName) {
+    return '이것은 기기에 설치하기 위해 \"$packageName\"을(를) 다운로드하고 준비합니다.';
+  }
+
+  @override
+  String get save_to_gallery_message =>
+      '시스템 전체에서 볼 수 있는 갤러리 앱에 이미지와 비디오를 저장하려면 Solar에 미디어 접근 권한이 필요합니다.';
+
+  @override
+  String get storage_access_message =>
+      '기기 저장소에 파일을 저장하려면 Solar에 저장소 접근 권한이 필요합니다.';
+
+  @override
+  String get photos_videos_audio_permission => '사진, 동영상 및 오디오';
+
+  @override
+  String get storage_media_access_permission => '저장소 및 미디어 접근';
+
+  @override
+  String get package_installation_permission => '패키지 설치';
+
+  @override
+  String get storage_access_permission => '저장소 접근';
+
+  @override
+  String get without_gallery_permission =>
+      '권한 없이는 미디어 파일이 Solar의 다운로드 섹션에서만 볼 수 있습니다.';
+
+  @override
+  String get flutter_version_string => 'Flutter 3.32.5';
+
+  @override
+  String get photoncore_version_string => 'Photoncore 0.1.0';
+
+  @override
+  String get engine_version_string => '4.7.0';
+
+  @override
+  String get http_warning_title => '안전하지 않은 연결 경고';
+
+  @override
+  String get http_warning_message =>
+      '안전하지 않은 연결(HTTP)을 사용하는 웹사이트를 방문하려고 합니다. 귀하의 데이터가 다른 사람에게 보일 수 있습니다. 계속하시겠습니까?';
+
+  @override
+  String get continue_anyway => '어쨌든 계속';
+
+  @override
+  String get go_back => '뒤로 가기';
+
+  @override
+  String get web_page_error_title => '페이지 로드 오류';
+
+  @override
+  String get connection_error => '연결 오류';
+
+  @override
+  String get page_not_found => '페이지를 찾을 수 없음';
+
+  @override
+  String get connection_reset => '연결이 재설정됨';
+
+  @override
+  String get connection_timed_out => '연결 시간 초과';
+
+  @override
+  String get dns_error => 'DNS 오류';
+
+  @override
+  String get ssl_error => 'SSL 인증서 오류';
+
+  @override
+  String get network_error => '네트워크 오류';
+
+  @override
+  String get server_error => '서버 오류';
+
+  @override
+  String get unable_to_connect => '웹사이트에 연결할 수 없습니다. 인터넷 연결을 확인하고 다시 시도하세요.';
+
+  @override
+  String get page_not_found_description =>
+      '요청한 페이지를 서버에서 찾을 수 없습니다. 페이지가 이동되거나 삭제되었을 수 있습니다.';
+
+  @override
+  String get connection_reset_description =>
+      '서버와의 연결이 재설정되었습니다. 일시적인 문제일 수 있습니다.';
+
+  @override
+  String get connection_timeout_description =>
+      '서버와의 연결이 시간 초과되었습니다. 서버가 바쁘거나 연결이 느릴 수 있습니다.';
+
+  @override
+  String get dns_error_description => '웹사이트를 찾을 수 없습니다. 웹 주소를 확인하고 다시 시도하세요.';
+
+  @override
+  String get ssl_error_description =>
+      '웹사이트의 보안 인증서에 문제가 있습니다. 연결이 안전하지 않을 수 있습니다.';
+
+  @override
+  String get network_error_description =>
+      '네트워크 오류가 발생했습니다. 인터넷 연결을 확인하고 다시 시도하세요.';
+
+  @override
+  String get server_error_description => '서버에서 오류가 발생하여 요청을 완료할 수 없습니다.';
+
+  @override
+  String get go_home => '홈으로 가기';
 }

@@ -50,7 +50,6 @@
   "notificationMessage": "Permite que Solar descargue archivos en tu dispositivo",
   "allowNotifications": "Permitir Notificaciones",
   "skipForNow": "Omitir por Ahora",
-  "updated": "¡Solar actualizado!",
   "version": "Versión {version}",
   "@version": {
     "placeholders": {
@@ -399,6 +398,82 @@
   "storage_permission_denied": "Permiso de almacenamiento denegado",
   "@storage_permission_denied": {
     "description": "Message shown when storage permission is denied"
+  },
+  "download_permissions": "Permisos de Descarga",
+  "@download_permissions": {
+    "description": "Title for download permissions section"
+  },
+  "manage_download_permissions": "Gestionar permisos para descargas",
+  "@manage_download_permissions": {
+    "description": "Subtitle for download permissions setting"
+  },
+  "storage_permission": "Acceso al Almacenamiento",
+  "@storage_permission": {
+    "description": "Storage permission label"
+  },
+  "notification_permission": "Notificaciones",
+  "@notification_permission": {
+    "description": "Notification permission label"
+  },
+  "notification_permission_description": "Para progreso de descarga y alertas de finalización",
+  "@notification_permission_description": {
+    "description": "Description for notification permission"
+  },
+  "permission_explanation": "Estos permisos ayudan a mejorar su experiencia de descarga. Puede cambiarlos en cualquier momento en la Configuración de Android.",
+  "@permission_explanation": {
+    "description": "Explanation text for permissions dialog"
+  },
+  "clear_downloads_history_description": "Eliminar historial de descargas (archivos permanecen)",
+  "@clear_downloads_history_description": {
+    "description": "Description for clear downloads history option"
+  },
+  "change_download_location": "Cambiar dónde se guardan los archivos",
+  "@change_download_location": {
+    "description": "Description for download location setting"
+  },
+  "close": "Cerrar",
+  "@close": {
+    "description": "Close button text"
+  },
+  "request": "Solicitar",
+  "@request": {
+    "description": "Request button text for permissions"
+  },
+  "storage": "Almacenamiento",
+  "@storage": {
+    "description": "Storage permission label"
+  },
+  "manage_external_storage": "Gestionar almacenamiento externo",
+  "@manage_external_storage": {
+    "description": "Manage external storage permission label"
+  },
+  "notification": "Notificación",
+  "@notification": {
+    "description": "Notification permission label"
+  },
+  "granted": "Concedido",
+  "@granted": {
+    "description": "Permission granted status"
+  },
+  "denied": "Denegado", 
+  "@denied": {
+    "description": "Permission denied status"
+  },
+  "restricted": "Restringido",
+  "@restricted": {
+    "description": "Permission restricted status"
+  },
+  "limited": "Limitado",
+  "@limited": {
+    "description": "Permission limited status"
+  },
+  "permanently_denied": "Denegado permanentemente",
+  "@permanently_denied": {
+    "description": "Permission permanently denied status"
+  },
+  "unknown": "Desconocido",
+  "@unknown": {
+    "description": "Unknown permission status"
   },
   "incognito_mode": "Modo Incógnito",
   "@incognito_mode": {
@@ -808,5 +883,59 @@
   "delete_file_confirm": "¿Estás seguro de que quieres eliminar permanentemente este archivo de tu dispositivo?",
   "remove_from_history": "Eliminar del Historial", 
   "delete_from_device": "Eliminar del Dispositivo",
-  "notice": "Aviso"
+  "notice": "Aviso",
+  
+  "cannot_write_selected_folder": "No se puede escribir en la carpeta seleccionada. Usando carpeta de descargas predeterminada.",
+  "cannot_write_selected_folder_choose_different": "No se puede escribir en la carpeta seleccionada. Por favor, elige una ubicación diferente.",
+  "cannot_write_configured_folder": "No se puede escribir en la carpeta configurada. Usando carpeta de descargas predeterminada.",
+  "error_selecting_folder_default": "Error al seleccionar carpeta. Usando carpeta de descargas predeterminada.",
+  "file_saved_to_app_storage": "Archivo guardado en almacenamiento de la app en lugar de la carpeta seleccionada",
+  "failed_write_any_location": "No se pudo escribir el archivo en ninguna ubicación",
+  "settings_action": "Configuración",
+  "save_to_downloads_folder": "Para guardar \"{fileName}\" en tu carpeta de Descargas donde puedes encontrarlo en la Galería o Administrador de Archivos, Solar necesita permiso de almacenamiento.",
+  "without_permission_private_folder": "Sin permiso, el archivo se guardará en la carpeta privada de Solar (accesible desde el panel de Descargas).",
+  "enable_unknown_apps_android": "Es posible que necesites habilitar \"Instalar aplicaciones desconocidas\" en la configuración de Android después de la descarga.",
+  "private_folder_instead": "Los archivos se guardarán en la carpeta privada de Solar en su lugar.",
+  
+  "save_to_downloads_title": "¿Guardar en Descargas?",
+  "save_to_gallery_title": "¿Guardar en Galería?",
+  "storage_access_required": "Acceso al almacenamiento requerido",
+  "install_package_title": "¿Instalar {packageName}?",
+  "install_package_message": "Esto descargará y preparará \"{packageName}\" para la instalación en tu dispositivo.",
+  "save_to_gallery_message": "Para guardar imágenes y videos en tu aplicación de Galería donde serán visibles en todo el sistema, Solar necesita acceso a medios.",
+  "storage_access_message": "Para guardar archivos en el almacenamiento de tu dispositivo, Solar necesita permisos de acceso al almacenamiento.",
+  "photos_videos_audio_permission": "Fotos, Videos y Audio",
+  "storage_media_access_permission": "Acceso a Almacenamiento y Medios",
+  "package_installation_permission": "Instalación de Paquetes",
+  "storage_access_permission": "Acceso al Almacenamiento",
+  "without_gallery_permission": "Sin permiso, los archivos multimedia solo serán visibles en la sección de Descargas de Solar.",
+  
+  "flutter_version_string": "Flutter 3.32.5",
+  "photoncore_version_string": "Photoncore 0.1.0",
+  "engine_version_string": "4.7.0",
+  
+  "http_warning_title": "Advertencia de Conexión Insegura",
+  "http_warning_message": "Estás a punto de visitar un sitio web que usa una conexión insegura (HTTP). Tus datos pueden ser visibles para otros. ¿Estás seguro de que quieres continuar?",
+  "continue_anyway": "Continuar de Todos Modos",
+  "go_back": "Volver Atrás",
+  
+  "web_page_error_title": "Error de Carga de Página",
+  "connection_error": "Error de Conexión",
+  "page_not_found": "Página No Encontrada",
+  "connection_reset": "Conexión Restablecida",
+  "connection_timed_out": "Tiempo de Conexión Agotado",
+  "dns_error": "Error de DNS",
+  "ssl_error": "Error de Certificado SSL",
+  "network_error": "Error de Red",
+  "server_error": "Error del Servidor",
+  "unable_to_connect": "No se puede conectar al sitio web. Por favor verifica tu conexión a internet e intenta de nuevo.",
+  "page_not_found_description": "La página solicitada no se pudo encontrar en el servidor. La página puede haber sido movida o eliminada.",
+  "connection_reset_description": "La conexión al servidor fue restablecida. Esto puede ser un problema temporal.",
+  "connection_timeout_description": "La conexión al servidor expiró. El servidor puede estar ocupado o tu conexión puede ser lenta.",
+  "dns_error_description": "No se puede encontrar el sitio web. Por favor verifica la dirección web e intenta de nuevo.",
+  "ssl_error_description": "Hay un problema con el certificado de seguridad del sitio web. La conexión puede no ser segura.",
+  "network_error_description": "Ocurrió un error de red. Por favor verifica tu conexión a internet e intenta de nuevo.",
+  "server_error_description": "El servidor encontró un error y no pudo completar tu solicitud.",
+  "try_again": "Intentar de Nuevo",
+  "go_home": "Ir al Inicio"
 }

@@ -115,9 +115,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get yesterday => '昨日';
 
   @override
-  String get updated => 'Solar がアップデートされました！';
-
-  @override
   String version(String version) {
     return 'バージョン $version';
   }
@@ -593,6 +590,60 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get grant_permission => '許可を与える';
+
+  @override
+  String get download_permissions => 'Download Permissions';
+
+  @override
+  String get manage_download_permissions => 'Manage permissions for downloads';
+
+  @override
+  String get storage_permission => 'Storage Access';
+
+  @override
+  String get notification_permission => 'Notifications';
+
+  @override
+  String get notification_permission_description =>
+      'For download progress and completion alerts';
+
+  @override
+  String get permission_explanation =>
+      'These permissions help improve your download experience. You can change them anytime in Android Settings.';
+
+  @override
+  String get clear_downloads_history_description =>
+      'Remove download history (files remain)';
+
+  @override
+  String get change_download_location => 'Change where files are saved';
+
+  @override
+  String get request => 'Request';
+
+  @override
+  String get storage => 'Storage';
+
+  @override
+  String get manage_external_storage => 'Manage External Storage';
+
+  @override
+  String get notification => 'Notification';
+
+  @override
+  String get granted => 'Granted';
+
+  @override
+  String get denied => 'Denied';
+
+  @override
+  String get restricted => 'Restricted';
+
+  @override
+  String get limited => 'Limited';
+
+  @override
+  String get permanently_denied => 'Permanently Denied';
 
   @override
   String get storage_permission_denied => 'ファイルをダウンロードするにはストレージ許可が必要です';
@@ -1151,4 +1202,169 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get notice => '通知';
+
+  @override
+  String get cannot_write_selected_folder =>
+      '選択したフォルダに書き込みできません。デフォルトのダウンロードフォルダを使用します。';
+
+  @override
+  String get cannot_write_selected_folder_choose_different =>
+      '選択したフォルダに書き込みできません。別の場所を選択してください。';
+
+  @override
+  String get cannot_write_configured_folder =>
+      '設定されたフォルダに書き込みできません。デフォルトのダウンロードフォルダを使用します。';
+
+  @override
+  String get error_selecting_folder_default =>
+      'フォルダの選択でエラーが発生しました。デフォルトのダウンロードフォルダを使用します。';
+
+  @override
+  String get file_saved_to_app_storage => 'ファイルは選択したフォルダではなくアプリストレージに保存されました';
+
+  @override
+  String get failed_write_any_location => 'どの場所にもファイルを書き込めませんでした';
+
+  @override
+  String get settings_action => '設定';
+
+  @override
+  String save_to_downloads_folder(String fileName) {
+    return 'ギャラリーやファイルマネージャーで見つけることができるダウンロードフォルダに\"$fileName\"を保存するには、Solarにストレージ権限が必要です。';
+  }
+
+  @override
+  String get without_permission_private_folder =>
+      '権限がない場合、ファイルはSolarのプライベートフォルダに保存されます（ダウンロードパネルからアクセス可能）。';
+
+  @override
+  String get enable_unknown_apps_android =>
+      'ダウンロード後、Android設定で「不明なアプリのインストール」を有効にする必要がある場合があります。';
+
+  @override
+  String get private_folder_instead => 'ファイルは代わりにSolarのプライベートフォルダに保存されます。';
+
+  @override
+  String get save_to_downloads_title => 'ダウンロードに保存しますか？';
+
+  @override
+  String get save_to_gallery_title => 'ギャラリーに保存しますか？';
+
+  @override
+  String get storage_access_required => 'ストレージアクセスが必要です';
+
+  @override
+  String install_package_title(String packageName) {
+    return '$packageNameをインストールしますか？';
+  }
+
+  @override
+  String install_package_message(String packageName) {
+    return 'これにより\"$packageName\"がダウンロードされ、お使いのデバイスでのインストール準備が行われます。';
+  }
+
+  @override
+  String get save_to_gallery_message =>
+      'システム全体で表示されるギャラリーアプリに画像と動画を保存するには、Solarにメディアアクセスが必要です。';
+
+  @override
+  String get storage_access_message =>
+      'デバイスストレージにファイルを保存するには、Solarにストレージアクセス権限が必要です。';
+
+  @override
+  String get photos_videos_audio_permission => '写真、動画、音声';
+
+  @override
+  String get storage_media_access_permission => 'ストレージ＆メディアアクセス';
+
+  @override
+  String get package_installation_permission => 'パッケージインストール';
+
+  @override
+  String get storage_access_permission => 'ストレージアクセス';
+
+  @override
+  String get without_gallery_permission =>
+      '権限がない場合、メディアファイルはSolarのダウンロードセクションでのみ表示されます。';
+
+  @override
+  String get flutter_version_string => 'Flutter 3.32.5';
+
+  @override
+  String get photoncore_version_string => 'Photoncore 0.1.0';
+
+  @override
+  String get engine_version_string => '4.7.0';
+
+  @override
+  String get http_warning_title => '安全でない接続の警告';
+
+  @override
+  String get http_warning_message =>
+      '安全でない接続（HTTP）を使用するウェブサイトにアクセスしようとしています。あなたのデータが他の人に見られる可能性があります。続行してもよろしいですか？';
+
+  @override
+  String get continue_anyway => 'とにかく続行';
+
+  @override
+  String get go_back => '戻る';
+
+  @override
+  String get web_page_error_title => 'ページ読み込みエラー';
+
+  @override
+  String get connection_error => '接続エラー';
+
+  @override
+  String get page_not_found => 'ページが見つかりません';
+
+  @override
+  String get connection_reset => '接続がリセットされました';
+
+  @override
+  String get connection_timed_out => '接続がタイムアウトしました';
+
+  @override
+  String get dns_error => 'DNSエラー';
+
+  @override
+  String get ssl_error => 'SSL証明書エラー';
+
+  @override
+  String get network_error => 'ネットワークエラー';
+
+  @override
+  String get server_error => 'サーバーエラー';
+
+  @override
+  String get unable_to_connect => 'ウェブサイトに接続できません。インターネット接続を確認して再試行してください。';
+
+  @override
+  String get page_not_found_description =>
+      '要求されたページがサーバーで見つかりませんでした。ページが移動または削除された可能性があります。';
+
+  @override
+  String get connection_reset_description =>
+      'サーバーへの接続がリセットされました。これは一時的な問題である可能性があります。';
+
+  @override
+  String get connection_timeout_description =>
+      'サーバーへの接続がタイムアウトしました。サーバーが混雑しているか、接続が遅い可能性があります。';
+
+  @override
+  String get dns_error_description => 'ウェブサイトが見つかりません。ウェブアドレスを確認して再試行してください。';
+
+  @override
+  String get ssl_error_description =>
+      'ウェブサイトのセキュリティ証明書に問題があります。接続が安全でない可能性があります。';
+
+  @override
+  String get network_error_description =>
+      'ネットワークエラーが発生しました。インターネット接続を確認して再試行してください。';
+
+  @override
+  String get server_error_description => 'サーバーでエラーが発生し、リクエストを完了できませんでした。';
+
+  @override
+  String get go_home => 'ホームに戻る';
 }

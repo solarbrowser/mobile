@@ -47,7 +47,7 @@ class ImageOptimizer {
         quality: PREVIEW_QUALITY
       ));
     } catch (e) {
-      print('Error optimizing image: $e');
+      //print('Error optimizing image: $e');
       rethrow;
     }
   }
@@ -75,7 +75,7 @@ class ImageOptimizer {
 
       return Uint8List.fromList(img.encodeJpg(thumbnail, quality: 90));
     } catch (e) {
-      print('Error creating thumbnail: $e');
+      //print('Error creating thumbnail: $e');
       rethrow;
     }
   }

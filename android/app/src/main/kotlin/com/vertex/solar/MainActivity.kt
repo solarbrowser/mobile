@@ -1,10 +1,12 @@
 package com.vertex.solar
 
+import android.content.ContentValues
 import android.content.Intent
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.provider.MediaStore
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -22,6 +24,8 @@ import android.util.Base64
 import androidx.annotation.NonNull
 import androidx.core.content.FileProvider
 import java.io.File
+import java.io.FileInputStream
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -203,6 +207,58 @@ class MainActivity: FlutterActivity() {
             }
         }
         
+        // MediaStore channel for Android 10+ proper downloads handling
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "com.vertex.solar/mediastore").setMethodCallHandler { call, result ->
+            when (call.method) {
+                "addToDownloads" -> {
+                    val filePath = call.argument<String>("filePath")
+                    val fileName = call.argument<String>("fileName") 
+                    val mimeType = call.argument<String>("mimeType")
+                    
+                    if (filePath != null && fileName != null && mimeType != null) {
+                        try {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                                // Android 10+ - Use MediaStore API
+                                addToMediaStoreDownloads(filePath, fileName, mimeType)
+                                result.success("File added to MediaStore Downloads")
+                            } else {
+                                // Android 9 and below - Use MediaScanner
+                                MediaScannerConnection.scanFile(
+                                    context,
+                                    arrayOf(filePath),
+                                    arrayOf(mimeType)
+                                ) { _, uri ->
+                                    result.success("File scanned: $uri")
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error adding to MediaStore: ${e.message}", e)
+                            result.error("MEDIASTORE_ERROR", e.message, null)
+                        }
+                    } else {
+                        result.error("INVALID_ARGUMENTS", "All arguments required", null)
+                    }
+                }
+                "broadcastFileAdded" -> {
+                    val path = call.argument<String>("path")
+                    if (path != null) {
+                        try {
+                            // Broadcast that a new file was added
+                            val intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
+                            intent.data = Uri.fromFile(File(path))
+                            context.sendBroadcast(intent)
+                            result.success("Broadcast sent")
+                        } catch (e: Exception) {
+                            result.error("BROADCAST_ERROR", e.message, null)
+                        }
+                    } else {
+                        result.error("INVALID_PATH", "Path cannot be null", null)
+                    }
+                }
+                else -> result.notImplemented()
+            }
+        }
+
         // If we have a pending URL and the engine is ready, send it after a short delay
         if (!sharedUrl.isNullOrEmpty()) {
             Log.i(TAG, "Have a shared URL to send: $sharedUrl")
@@ -780,6 +836,86 @@ class MainActivity: FlutterActivity() {
             Log.d(TAG, "Legacy shortcut removal broadcast sent for: $url")
         } catch (e: Exception) {
             Log.e(TAG, "Error removing legacy shortcut: ${e.message}")
+        }
+    }
+
+    // Helper method to add files to MediaStore Downloads for Android 10+
+    private fun addToMediaStoreDownloads(filePath: String, fileName: String, mimeType: String) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            try {
+                val file = File(filePath)
+                if (!file.exists()) {
+                    Log.e(TAG, "File does not exist: $filePath")
+                    return
+                }
+
+                // Determine the appropriate MediaStore collection
+                val collection = when {
+                    mimeType.startsWith("image/") -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+                    mimeType.startsWith("video/") -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+                    mimeType.startsWith("audio/") -> MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+                    else -> MediaStore.Downloads.EXTERNAL_CONTENT_URI
+                }
+
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                    put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+                    put(MediaStore.MediaColumns.SIZE, file.length())
+                    
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                        put(MediaStore.MediaColumns.IS_PENDING, 0)
+                    }
+                }
+
+                val contentResolver = context.contentResolver
+                val uri = contentResolver.insert(collection, contentValues)
+
+                if (uri != null) {
+                    // Copy file content to MediaStore
+                    contentResolver.openOutputStream(uri)?.use { outputStream ->
+                        FileInputStream(file).use { inputStream ->
+                            inputStream.copyTo(outputStream)
+                        }
+                    }
+                    
+                    // Update the MediaStore entry to mark as complete
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                        contentValues.clear()
+                        contentValues.put(MediaStore.MediaColumns.IS_PENDING, 0)
+                        contentResolver.update(uri, contentValues, null, null)
+                    }
+                    
+                    Log.i(TAG, "File successfully added to MediaStore: $uri")
+                } else {
+                    Log.e(TAG, "Failed to create MediaStore entry")
+                    // Fallback to media scanner
+                    MediaScannerConnection.scanFile(
+                        context,
+                        arrayOf(filePath),
+                        arrayOf(mimeType),
+                        null
+                    )
+                }
+            } catch (e: IOException) {
+                Log.e(TAG, "IOException adding file to MediaStore: ${e.message}", e)
+                // Fallback to media scanner
+                MediaScannerConnection.scanFile(
+                    context,
+                    arrayOf(filePath),
+                    arrayOf(mimeType),
+                    null
+                )
+            } catch (e: Exception) {
+                Log.e(TAG, "Error adding file to MediaStore: ${e.message}", e)
+                // Fallback to media scanner
+                MediaScannerConnection.scanFile(
+                    context,
+                    arrayOf(filePath),
+                    arrayOf(mimeType),
+                    null
+                )
+            }
         }
     }
 }
