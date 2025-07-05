@@ -856,5 +856,7 @@
   "cannot_open_link": "이 링크를 열 수 없습니다. 필요한 앱이 설치되지 않았을 수 있습니다.",
   "@cannot_open_link": {
     "description": "Error message when a link cannot be opened due to missing app"
-  }
+  },
+  "creating_shortcut": "바로가기 만드는 중",
+  "check_home_screen_for_shortcut": "홈 화면에서 바로가기를 확인하세요"
 }

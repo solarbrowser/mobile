@@ -871,5 +871,7 @@
   "cannot_open_link": "Não é possível abrir este link. O aplicativo necessário pode não estar instalado.",
   "@cannot_open_link": {
     "description": "Error message when a link cannot be opened due to missing app"
-  }
+  },
+  "creating_shortcut": "Criando atalho",
+  "check_home_screen_for_shortcut": "Verifique o atalho na tela inicial"
 }

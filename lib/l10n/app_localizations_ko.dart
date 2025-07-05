@@ -1061,6 +1061,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get failed_to_install_pwa => 'PWA 설치에 실패했습니다';
 
   @override
+  String get creating_shortcut => '바로가기 만드는 중';
+
+  @override
+  String get check_home_screen_for_shortcut => '홈 화면에서 바로가기를 확인하세요';
+
+  @override
   String get error_opening_file_install_app =>
       '파일을 열 수 없습니다. 이 유형의 파일을 열 수 있는 적절한 앱을 설치해 주세요.';
 

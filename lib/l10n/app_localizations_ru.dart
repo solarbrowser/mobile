@@ -1091,6 +1091,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get failed_to_install_pwa => 'Не удалось установить PWA';
 
   @override
+  String get creating_shortcut => 'Создание ярлыка';
+
+  @override
+  String get check_home_screen_for_shortcut =>
+      'Проверьте ярлык на главном экране';
+
+  @override
   String get error_opening_file_install_app =>
       'Ошибка при открытии файла. Пожалуйста, установите подходящее приложение для открытия этого типа файлов.';
 

@@ -1,19 +1,23 @@
 package com.vertex.solar
 
+import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
+import android.util.Log
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import android.os.Bundle
-import android.util.Log
 import android.content.ComponentName
-import android.content.Context
 import android.content.pm.PackageManager
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
@@ -28,6 +32,33 @@ import java.io.FileInputStream
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+
+// Broadcast receiver to handle shortcut pin results
+class ShortcutPinReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context?, intent: Intent?) {
+        val title = intent?.getStringExtra("shortcut_title")
+        val url = intent?.getStringExtra("shortcut_url")
+        Log.d("Solar", "🎯 Shortcut pin callback received for: $title ($url)")
+        
+        // Check if the shortcut was actually created
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val shortcutManager = context?.getSystemService(Context.SHORTCUT_SERVICE) as? ShortcutManager
+            if (shortcutManager != null) {
+                val shortcuts = shortcutManager.pinnedShortcuts
+                val shortcutExists = shortcuts.any { it.id == "pwa_${url?.hashCode()}" }
+                
+                if (shortcutExists) {
+                    Log.d("Solar", "✅ Shortcut successfully created on home screen: $title")
+                } else {
+                    Log.w("Solar", "❌ Shortcut was not found on home screen, may have been rejected: $title")
+                }
+            }
+        }
+        
+        // Optional: Send feedback to Flutter side if needed
+        // You could use a method channel to notify the Dart side about the result
+    }
+}
 
 class MainActivity: FlutterActivity() {
     private val CHANNEL = "com.vertex.solar/search"
@@ -536,11 +567,68 @@ class MainActivity: FlutterActivity() {
                         }
                     }
                     
-                    // Request pin shortcut
+                    // Request pin shortcut with callback to ensure system dialog appears
                     val shortcutInfo = shortcutInfoBuilder.build()
-                    shortcutManager.requestPinShortcut(shortcutInfo, null)
                     
-                    Log.d(TAG, "Shortcut created for $title ($url)")
+                    // Create callback to handle pin shortcut result
+                    val callback = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        val intent = Intent()
+                        PendingIntent.getBroadcast(context, 0, intent, 
+                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+                    } else {
+                        null
+                    }
+                    
+                    // Check if launcher supports pinning shortcuts
+                    if (shortcutManager.isRequestPinShortcutSupported) {
+                        Log.d(TAG, "Launcher supports pin shortcuts, requesting pin shortcut")
+                        
+                        // Create callback to handle pin shortcut result
+                        val callbackIntent = Intent(this, ShortcutPinReceiver::class.java).apply {
+                            putExtra("shortcut_title", title)
+                            putExtra("shortcut_url", url)
+                        }
+                        
+                        val callback = PendingIntent.getBroadcast(
+                            this, 
+                            url.hashCode(), 
+                            callbackIntent, 
+                            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                        )
+                        
+                        // Double-check that the shortcut manager is available
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            Log.d(TAG, "Android O+ detected, using modern shortcut API")
+                            
+                            // Ensure we're on the main thread
+                            runOnUiThread {
+                                try {
+                                    Log.d(TAG, "Requesting pin shortcut on main thread...")
+                                    val pinResult = shortcutManager.requestPinShortcut(shortcutInfo, callback.intentSender)
+                                    Log.d(TAG, "Pin shortcut request result: $pinResult")
+                                    
+                                    if (pinResult) {
+                                        Log.d(TAG, "✅ Pin shortcut request was accepted - system dialog should appear")
+                                    } else {
+                                        Log.w(TAG, "❌ Pin shortcut request was rejected - trying legacy fallback")
+                                        createLegacyShortcut(url, title, favicon)
+                                    }
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Exception during pin shortcut request: ${e.message}", e)
+                                    createLegacyShortcut(url, title, favicon)
+                                }
+                            }
+                        } else {
+                            Log.d(TAG, "Pre-Android O, using legacy shortcut method")
+                            createLegacyShortcut(url, title, favicon)
+                        }
+                    } else {
+                        Log.w(TAG, "Launcher does not support pinning shortcuts, using legacy method")
+                        createLegacyShortcut(url, title, favicon)
+                    }
+                } else {
+                    Log.w(TAG, "ShortcutManager is null, using legacy method")
+                    createLegacyShortcut(url, title, favicon)
                 }
             } else {
                 // For older Android versions

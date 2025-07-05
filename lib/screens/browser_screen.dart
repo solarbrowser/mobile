@@ -165,6 +165,205 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   // <-----------WEBVIEW AND NAVIGATION----------->
   final List<WebViewController> _controllers = [];
   late WebViewController controller;
+
+  // PWA Cache Management Methods
+  
+  void _showPWACacheManagement() {
+    Navigator.of(context).push(
+      _createSettingsRoute(
+        Scaffold(
+          backgroundColor: ThemeManager.backgroundColor(),
+          appBar: AppBar(
+            backgroundColor: ThemeManager.backgroundColor(),
+            elevation: 0,
+            title: Text(
+              'PWA Cache Management',
+              style: TextStyle(
+                color: ThemeManager.textColor(),
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: ThemeManager.textColor()),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ),
+          body: FutureBuilder<Map<String, dynamic>>(
+            future: PWAManager.getCacheInfo(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              
+              final cacheInfo = snapshot.data ?? {};
+              final cachedPWAs = cacheInfo['cachedPWAs'] as List<Map<String, dynamic>>? ?? [];
+              
+              return ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  Card(
+                    color: ThemeManager.surfaceColor(),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Cache Overview',
+                            style: TextStyle(
+                              color: ThemeManager.textColor(),
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Total Size: ${cacheInfo['formattedSize'] ?? '0 B'}',
+                            style: TextStyle(color: ThemeManager.textSecondaryColor()),
+                          ),
+                          Text(
+                            'Cached PWAs: ${cacheInfo['cachedPWAsCount'] ?? 0}',
+                            style: TextStyle(color: ThemeManager.textSecondaryColor()),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  if (cachedPWAs.isNotEmpty) ...[
+                    Text(
+                      'Cached PWAs',
+                      style: TextStyle(
+                        color: ThemeManager.textColor(),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ...cachedPWAs.map((pwa) => Card(
+                      color: ThemeManager.surfaceColor(),
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        title: Text(
+                          pwa['title'] ?? 'Unknown PWA',
+                          style: TextStyle(color: ThemeManager.textColor()),
+                        ),
+                        subtitle: Text(
+                          pwa['url'] ?? '',
+                          style: TextStyle(color: ThemeManager.textSecondaryColor()),
+                        ),
+                        trailing: IconButton(
+                          icon: Icon(Icons.delete, color: ThemeManager.errorColor()),
+                          onPressed: () => _clearSpecificPWACache(pwa['url']),
+                        ),
+                      ),
+                    )).toList(),
+                  ] else
+                    Center(
+                      child: Text(
+                        'No PWAs cached for offline use',
+                        style: TextStyle(color: ThemeManager.textSecondaryColor()),
+                      ),
+                    ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+  
+  void _showClearPWACacheDialog() {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: ThemeManager.textColor().withOpacity(0.5),
+      pageBuilder: (context, animation, secondaryAnimation) => Container(),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        );
+
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.7, end: 1.0).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: animation,
+            child: AlertDialog(
+              backgroundColor: ThemeManager.surfaceColor(),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Text(
+                'Clear PWA Cache',
+                style: TextStyle(
+                  color: ThemeManager.textColor(),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              content: Text(
+                'This will remove all offline PWA data. Cached PWAs will no longer be available offline.',
+                style: TextStyle(
+                  color: ThemeManager.textColor().withOpacity(0.8),
+                  fontSize: 16,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(color: ThemeManager.textSecondaryColor()),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    Navigator.of(context).pop();
+                    await PWAManager.performCacheCleanup();
+                    // Refresh the settings view
+                    setState(() {});
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: ThemeManager.errorColor(),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Clear Cache'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      transitionDuration: const Duration(milliseconds: 300),
+    );
+  }
+  
+  Future<void> _clearSpecificPWACache(String url) async {
+    try {
+      await PWAManager.clearPWAOfflineCache(url);
+      setState(() {}); // Refresh the view
+      // Show success notification
+      showCustomNotification(
+        context: context,
+        message: 'PWA cache cleared',
+        icon: Icons.check_circle,
+        iconColor: ThemeManager.successColor(),
+        isDarkMode: ThemeManager.getCurrentTheme().isDark,
+      );
+    } catch (e) {
+      showCustomNotification(
+        context: context,
+        message: 'Failed to clear cache',
+        icon: Icons.error,
+        iconColor: ThemeManager.errorColor(),
+        isDarkMode: ThemeManager.getCurrentTheme().isDark,
+      );
+    }
+  }
   int currentTabIndex = 0;
   final List<Map<String, dynamic>> _suspendedTabs = [];
   static const int _maxActiveTabs = 5;
@@ -1585,6 +1784,9 @@ void _handleTouchEnd() {
       Future.microtask(() => _loadSettings());
       Future.microtask(() => _loadSearchEngines());
       Future.microtask(() => _loadNavigationBarSettings());
+      
+      // Cleanup old PWA caches in background
+      Future.microtask(() => PWAManager.performCacheCleanup());
       
       Future.microtask(() => _loadSavedTabs().then((_) {
         if (mounted) {
@@ -5012,6 +5214,33 @@ Future<void> _setupScrollHandling() async {
                       ),
                     ],
                   ),
+                  // PWA Cache Management Section
+                  FutureBuilder<Map<String, dynamic>>(
+                    future: PWAManager.getCacheInfo(),
+                    builder: (context, snapshot) {
+                      final cacheInfo = snapshot.data ?? {};
+                      final formattedSize = cacheInfo['formattedSize'] ?? '0 B';
+                      final cachedCount = cacheInfo['cachedPWAsCount'] ?? 0;
+                      
+                      return _buildSettingsSection(
+                        title: 'PWA Offline Cache',
+                        children: [
+                          _buildSettingsItem(
+                            title: 'Cache Size',
+                            subtitle: '$formattedSize • $cachedCount PWAs cached',
+                            onTap: () => _showPWACacheManagement(),
+                            isFirst: true,
+                          ),
+                          _buildSettingsItem(
+                            title: 'Clear PWA Cache',
+                            subtitle: 'Remove all offline PWA data',
+                            onTap: () => _showClearPWACacheDialog(),
+                            isLast: true,
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                 ],
               );
             }
@@ -7171,80 +7400,99 @@ Future<void> _setupScrollHandling() async {
                                     final filePath = download['path'] as String; // Use the stored complete path
                                     final file = File(filePath);
                                     if (await file.exists()) {
-                                      showDialog(
+                                      showGeneralDialog(
                                         context: context,
-                                        barrierColor: ThemeManager.textColor().withOpacity(0.1),
-                                        builder: (context) => AlertDialog(
-                                          backgroundColor: ThemeManager.backgroundColor(),
-                                          title: Text(
-                                            AppLocalizations.of(context)!.delete_file,
-                                            style: TextStyle(
-                                              color: ThemeManager.textColor(),
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          content: Text(
-                                            AppLocalizations.of(context)!.delete_file_confirm,
-                                            style: TextStyle(
-                                              color: ThemeManager.textColor(),
-                                            ),
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.pop(context),
-                                              child: Text(
-                                                AppLocalizations.of(context)!.cancel,
-                                                style: TextStyle(
-                                                  color: ThemeManager.textColor(),
+                                        barrierDismissible: true,
+                                        barrierColor: ThemeManager.textColor().withOpacity(0.5),
+                                        pageBuilder: (context, animation, secondaryAnimation) => Container(),
+                                        transitionBuilder: (context, animation, secondaryAnimation, child) {
+                                          final curvedAnimation = CurvedAnimation(
+                                            parent: animation,
+                                            curve: Curves.easeOutBack,
+                                          );
+
+                                          return ScaleTransition(
+                                            scale: Tween<double>(begin: 0.7, end: 1.0).animate(curvedAnimation),
+                                            child: FadeTransition(
+                                              opacity: animation,
+                                              child: AlertDialog(
+                                                backgroundColor: ThemeManager.backgroundColor(),
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius: BorderRadius.circular(20),
                                                 ),
-                                              ),
-                                            ),
-                                            TextButton(
-                                              onPressed: () async {
-                                                await file.delete();
-                                                
-                                                // Remove from downloads history
-                                                final prefs = await SharedPreferences.getInstance();
-                                                final downloadsList = prefs.getStringList('downloads') ?? [];
-                                                downloadsList.removeAt(index);
-                                                await prefs.setStringList('downloads', downloadsList);
-                                                
-                                                setState(() {
-                                                  downloads.removeAt(index);
-                                                });
-                                                
-                                                Navigator.pop(context);
-                                                _showNotification(
-                                                  Row(
-                                                    children: [
-                                                      Icon(Icons.check_circle, color: ThemeManager.successColor()),
-                                                      const SizedBox(width: 16),
-                                                      Expanded(
-                                                        child: Text(
-                                                          'File deleted from device',
-                                                          style: TextStyle(
-                                                            color: ThemeManager.textColor(),
-                                                            fontSize: 14,
-                                                            fontWeight: FontWeight.w500,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ],
+                                                title: Text(
+                                                  AppLocalizations.of(context)!.delete_file,
+                                                  style: TextStyle(
+                                                    color: ThemeManager.textColor(),
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
                                                   ),
-                                                  duration: const Duration(seconds: 4),
-                                                );
-                                              },
-                                              child: Text(
-                                                'Delete',
-                                                style: TextStyle(
-                                                  color: ThemeManager.errorColor(),
-                                                  fontWeight: FontWeight.bold,
                                                 ),
+                                                content: Text(
+                                                  AppLocalizations.of(context)!.delete_file_confirm,
+                                                  style: TextStyle(
+                                                    color: ThemeManager.textColor(),
+                                                  ),
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () => Navigator.pop(context),
+                                                    child: Text(
+                                                      AppLocalizations.of(context)!.cancel,
+                                                      style: TextStyle(
+                                                        color: ThemeManager.textColor(),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  TextButton(
+                                                    onPressed: () async {
+                                                      await file.delete();
+                                                      
+                                                      // Remove from downloads history
+                                                      final prefs = await SharedPreferences.getInstance();
+                                                      final downloadsList = prefs.getStringList('downloads') ?? [];
+                                                      downloadsList.removeAt(index);
+                                                      await prefs.setStringList('downloads', downloadsList);
+                                                      
+                                                      setState(() {
+                                                        downloads.removeAt(index);
+                                                      });
+                                                      
+                                                      Navigator.pop(context);
+                                                      _showNotification(
+                                                        Row(
+                                                          children: [
+                                                            Icon(Icons.check_circle, color: ThemeManager.successColor()),
+                                                            const SizedBox(width: 16),
+                                                            Expanded(
+                                                              child: Text(
+                                                                'File deleted from device',
+                                                                style: TextStyle(
+                                                                  color: ThemeManager.textColor(),
+                                                                  fontSize: 14,
+                                                                  fontWeight: FontWeight.w500,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        duration: const Duration(seconds: 4),
+                                                      );
+                                                    },
+                                                    child: Text(
+                                                      'Delete',
+                                                      style: TextStyle(
+                                                        color: ThemeManager.errorColor(),
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
-                                          ],
-                                        ),
+                                          );
+                                        },
+                                        transitionDuration: const Duration(milliseconds: 300),
                                       );
                                     }
                                   },
@@ -7903,58 +8151,78 @@ Future<void> _setupScrollHandling() async {
   }
 
   void _closeGroup(TabGroup group) {
-    showDialog(
+    showGeneralDialog(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: ThemeManager.surfaceColor(),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),          title: Text(
-            AppLocalizations.of(context)!.close_group,
-            style: TextStyle(
-              color: ThemeManager.textColor(),
-              fontWeight: FontWeight.w600,
-            ),
-          ),content: Text(
-            AppLocalizations.of(context)!.close_all_tabs_in_group(group.name),
-            style: TextStyle(
-              color: ThemeManager.textSecondaryColor(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),              child: Text(
-                AppLocalizations.of(context)!.cancel,
+      barrierDismissible: true,
+      barrierColor: ThemeManager.textColor().withOpacity(0.5),
+      pageBuilder: (context, animation, secondaryAnimation) => Container(),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        );
+
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.7, end: 1.0).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: animation,
+            child: AlertDialog(
+              backgroundColor: ThemeManager.surfaceColor(),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Text(
+                AppLocalizations.of(context)!.close_group,
+                style: TextStyle(
+                  color: ThemeManager.textColor(),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              content: Text(
+                AppLocalizations.of(context)!.close_all_tabs_in_group(group.name),
                 style: TextStyle(
                   color: ThemeManager.textSecondaryColor(),
                 ),
               ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                setState(() {
-                  tabs.removeWhere((tab) => tab['groupId'] == group.id);
-                  if (tabs.isEmpty) {
-                    _addNewTab();
-                  } else if (currentTabIndex >= tabs.length) {
-                    currentTabIndex = tabs.length - 1;                    controller = tabs[currentTabIndex]['controller'];
-                    _displayUrl = tabs[currentTabIndex]['url'];
-                    _urlController.text = _formatUrl(tabs[currentTabIndex]['url']);
-                  }
-                });
-              },              child: Text(
-                AppLocalizations.of(context)!.close_group,
-                style: TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.w600,
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    AppLocalizations.of(context)!.cancel,
+                    style: TextStyle(
+                      color: ThemeManager.textSecondaryColor(),
+                    ),
+                  ),
                 ),
-              ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    setState(() {
+                      tabs.removeWhere((tab) => tab['groupId'] == group.id);
+                      if (tabs.isEmpty) {
+                        _addNewTab();
+                      } else if (currentTabIndex >= tabs.length) {
+                        currentTabIndex = tabs.length - 1;
+                        controller = tabs[currentTabIndex]['controller'];
+                        _displayUrl = tabs[currentTabIndex]['url'];
+                        _urlController.text = _formatUrl(tabs[currentTabIndex]['url']);
+                      }
+                    });
+                  },
+                  child: Text(
+                    AppLocalizations.of(context)!.close_group,
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         );
       },
+      transitionDuration: const Duration(milliseconds: 300),
     );
   }
 
@@ -8698,96 +8966,236 @@ Future<void> _setupScrollHandling() async {
   Future<void> _showDownloadPermissionsDialog() async {
     final permissionStatuses = await _getPermissionStatuses();
     
-    showDialog(
+    showGeneralDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: ThemeManager.backgroundColor(),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          AppLocalizations.of(context)!.download_permissions,
-          style: TextStyle(
-            color: ThemeManager.textColor(),
-          ),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ...permissionStatuses.entries.map((entry) => ListTile(
-              title: Text(
-                _getLocalizedPermissionName(entry.key),
-                style: TextStyle(color: ThemeManager.textColor()),
-              ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
+      barrierDismissible: true,
+      barrierColor: ThemeManager.textColor().withOpacity(0.5),
+      pageBuilder: (context, animation, secondaryAnimation) => Container(),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        );
+
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.7, end: 1.0).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: animation,
+            child: AlertDialog(
+              backgroundColor: ThemeManager.backgroundColor(),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Row(
                 children: [
-                  Text(
-                    _getLocalizedPermissionStatus(entry.value),
-                    style: TextStyle(
-                      color: entry.value == 'Granted' ? Colors.green : 
-                             entry.value == 'Denied' ? Colors.red : Colors.orange,
-                    ),
+                  Icon(
+                    Icons.security_rounded,
+                    color: ThemeManager.primaryColor(),
+                    size: 24,
                   ),
-                  if (entry.value != 'Granted') ...[
-                    const SizedBox(width: 8),
-                    TextButton(
-                      onPressed: () async {
-                        Permission permission;
-                        switch (entry.key) {
-                          case 'Notification':
-                            permission = Permission.notification;
-                            break;
-                          default:
-                            return;
-                        }
-                        
-                        final status = await permission.request();
-                        
-                        if (status == PermissionStatus.granted) {
-                          // Permission granted, refresh dialog
-                          Navigator.pop(context);
-                          _showDownloadPermissionsDialog();
-                        } else if (status == PermissionStatus.permanentlyDenied) {
-                          // Only open settings if permanently denied
-                          Navigator.pop(context);
-                          _showCustomNotification(
-                            message: AppLocalizations.of(context)!.permission_permanently_denied,
-                            icon: Icons.settings,
-                            iconColor: ThemeManager.accentColor(),
-                            duration: const Duration(seconds: 5),
-                            action: SnackBarAction(
-                              label: AppLocalizations.of(context)!.settings_action,
-                              onPressed: () => openAppSettings(),
-                            ),
-                          );
-                        } else {
-                          // Permission denied but not permanently, refresh dialog to try again
-                          Navigator.pop(context);
-                          _showDownloadPermissionsDialog();
-                        }
-                      },
-                      child: Text(
-                        AppLocalizations.of(context)!.request,
-                        style: TextStyle(color: ThemeManager.accentColor()),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      AppLocalizations.of(context)!.download_permissions,
+                      style: TextStyle(
+                        color: ThemeManager.textColor(),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ],
+                  ),
                 ],
               ),
-            )),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              AppLocalizations.of(context)!.close,
-              style: TextStyle(
-                color: ThemeManager.textSecondaryColor(),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Permission explanation
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: ThemeManager.primaryColor().withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      AppLocalizations.of(context)!.permission_explanation,
+                      style: TextStyle(
+                        color: ThemeManager.textColor().withOpacity(0.8),
+                        fontSize: 14,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Permission items
+                  ...permissionStatuses.entries.map((entry) => Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: ThemeManager.surfaceColor().withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: entry.value == 'Granted' 
+                          ? Colors.green.withOpacity(0.3)
+                          : ThemeManager.textColor().withOpacity(0.1),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        // Permission icon
+                        Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: entry.value == 'Granted' 
+                              ? Colors.green.withOpacity(0.2)
+                              : ThemeManager.textColor().withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Icon(
+                            entry.key == 'Notification' 
+                              ? Icons.notifications_rounded
+                              : Icons.storage_rounded,
+                            color: entry.value == 'Granted' 
+                              ? Colors.green 
+                              : ThemeManager.textColor().withOpacity(0.6),
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        
+                        // Permission details
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _getLocalizedPermissionName(entry.key),
+                                style: TextStyle(
+                                  color: ThemeManager.textColor(),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                _getLocalizedPermissionStatus(entry.value),
+                                style: TextStyle(
+                                  color: entry.value == 'Granted' 
+                                    ? Colors.green 
+                                    : entry.value == 'Denied' 
+                                      ? Colors.red 
+                                      : Colors.orange,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        
+                        // Action button
+                        if (entry.value != 'Granted') ...[
+                          Container(
+                            decoration: BoxDecoration(
+                              color: ThemeManager.primaryColor().withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: TextButton(
+                              onPressed: () async {
+                                Permission permission;
+                                switch (entry.key) {
+                                  case 'Notification':
+                                    permission = Permission.notification;
+                                    break;
+                                  default:
+                                    return;
+                                }
+                                
+                                final status = await permission.request();
+                                
+                                if (status == PermissionStatus.granted) {
+                                  // Permission granted, refresh dialog
+                                  Navigator.pop(context);
+                                  _showDownloadPermissionsDialog();
+                                } else if (status == PermissionStatus.permanentlyDenied) {
+                                  // Only open settings if permanently denied
+                                  Navigator.pop(context);
+                                  _showCustomNotification(
+                                    message: AppLocalizations.of(context)!.permission_permanently_denied,
+                                    icon: Icons.settings,
+                                    iconColor: ThemeManager.accentColor(),
+                                    duration: const Duration(seconds: 5),
+                                    action: SnackBarAction(
+                                      label: AppLocalizations.of(context)!.settings_action,
+                                      onPressed: () => openAppSettings(),
+                                    ),
+                                  );
+                                } else {
+                                  // Permission denied but not permanently, refresh dialog to try again
+                                  Navigator.pop(context);
+                                  _showDownloadPermissionsDialog();
+                                }
+                              },
+                              style: TextButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: Text(
+                                AppLocalizations.of(context)!.request,
+                                style: TextStyle(
+                                  color: ThemeManager.primaryColor(),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ] else ...[
+                          // Granted status icon
+                          Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: Colors.green.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(
+                              Icons.check_rounded,
+                              color: Colors.green,
+                              size: 18,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  )),
+                ],
               ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    AppLocalizations.of(context)!.close,
+                    style: TextStyle(
+                      color: ThemeManager.textSecondaryColor(),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        );
+      },
+      transitionDuration: const Duration(milliseconds: 300),
     );
   }
 
@@ -8846,57 +9254,7 @@ Future<void> _setupScrollHandling() async {
 
 
 
-  Future<void> _showClearDownloadsConfirmation() async {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: ThemeManager.backgroundColor(),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Text(
-          AppLocalizations.of(context)!.clear_downloads_history,
-          style: TextStyle(
-            color: ThemeManager.textColor(),
-          ),
-        ),
-        content: Text(
-          AppLocalizations.of(context)!.clear_downloads_history_confirm,
-          style: TextStyle(
-            color: ThemeManager.textSecondaryColor(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              AppLocalizations.of(context)!.cancel,
-              style: TextStyle(
-                color: ThemeManager.textSecondaryColor(),
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              await prefs.setStringList('downloads', []);
-              setState(() {
-                downloads.clear();
-              });
-              Navigator.pop(context);
-              _showNotification(
-                Text(AppLocalizations.of(context)!.downloads_history_cleared),
-                duration: const Duration(seconds: 2),
-              );
-            },
-            child: Text(
-              AppLocalizations.of(context)!.clear,
-              style: TextStyle(
-                color: Colors.red,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );  }  Future<void> _showClearHistoryDialog() async {
+  Future<void> _showClearHistoryDialog() async {
     showCustomDialog(
       context: context,
       title: AppLocalizations.of(context)!.clear_all_history,
@@ -9749,13 +10107,31 @@ Future<void> _setupScrollHandling() async {
       // Get favicon for better PWA experience
       String? faviconUrl = await _getFaviconUrl(currentUrl);
       
-      // Direct PWA installation using the correct method
+      // Direct PWA installation using the correct method with enhanced feedback
+      // Show loading state during PWA creation
+      setState(() {
+        isLoading = true;
+      });
+
+      showCustomNotification(
+        context: context,
+        message: AppLocalizations.of(context)!.creating_shortcut,
+        icon: Icons.hourglass_empty,
+        iconColor: ThemeManager.primaryColor(),
+        isDarkMode: ThemeManager.getCurrentTheme().isDark,
+        duration: const Duration(seconds: 2),
+      );
+
       final success = await PWAManager.savePWA(
         context,
         currentUrl,
         pageTitle,
         faviconUrl,
       );
+      
+      setState(() {
+        isLoading = false;
+      });
       
       if (success) {
         showCustomNotification(
@@ -9764,7 +10140,22 @@ Future<void> _setupScrollHandling() async {
           icon: Icons.check_circle,
           iconColor: Colors.green,
           isDarkMode: ThemeManager.getCurrentTheme().isDark,
+          duration: const Duration(seconds: 3),
         );
+        
+        // Give system time to process shortcut creation and show additional guidance
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            showCustomNotification(
+              context: context,
+              message: AppLocalizations.of(context)!.check_home_screen_for_shortcut,
+              icon: Icons.home,
+              iconColor: ThemeManager.accentColor(),
+              isDarkMode: ThemeManager.getCurrentTheme().isDark,
+              duration: const Duration(seconds: 4),
+            );
+          }
+        });
       } else {
         showCustomNotification(
           context: context,
@@ -12022,6 +12413,79 @@ Future<void> _handlePageStarted(String url) async {
       isDarkMode: isDarkMode,
     );
   }
+  Future<void> _showClearDownloadsConfirmation() async {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: ThemeManager.textColor().withOpacity(0.5),
+      pageBuilder: (context, animation, secondaryAnimation) => Container(),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        );
+
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.7, end: 1.0).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: animation,
+            child: AlertDialog(
+              backgroundColor: ThemeManager.backgroundColor(),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Text(
+                AppLocalizations.of(context)!.clear_downloads_history,
+                style: TextStyle(
+                  color: ThemeManager.textColor(),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              content: Text(
+                AppLocalizations.of(context)!.clear_downloads_history_confirm,
+                style: TextStyle(
+                  color: ThemeManager.textSecondaryColor(),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    AppLocalizations.of(context)!.cancel,
+                    style: TextStyle(
+                      color: ThemeManager.textSecondaryColor(),
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setStringList('downloads', []);
+                    setState(() {
+                      downloads.clear();
+                    });
+                    Navigator.pop(context);
+                    _showNotification(
+                      Text(AppLocalizations.of(context)!.downloads_history_cleared),
+                      duration: const Duration(seconds: 2),
+                    );
+                  },
+                  child: Text(
+                    AppLocalizations.of(context)!.clear,
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      transitionDuration: const Duration(milliseconds: 300),
+    );
+  }
+
   void _showClearDownloadsDialog() {
     showCustomDialog(
       context: context,
@@ -12074,65 +12538,85 @@ Future<void> _handlePageStarted(String url) async {
     final download = downloads[index];
     final fileName = download['filename'];
     
-    showDialog(
+    showGeneralDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: ThemeManager.backgroundColor(),
-        title: Text(
-          AppLocalizations.of(context)!.delete_download,
-          style: TextStyle(
-            color: ThemeManager.textColor(),
-          ),
-        ),
-        content: Text(
-          AppLocalizations.of(context)!.delete_download_confirm(fileName),
-          style: TextStyle(
-            color: ThemeManager.textSecondaryColor(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              AppLocalizations.of(context)!.cancel,
-              style: TextStyle(
-                color: ThemeManager.textSecondaryColor(),
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () async {
-              final prefs = await SharedPreferences.getInstance();
-              final downloadsList = prefs.getStringList('downloads') ?? [];
-              downloadsList.removeAt(index);
-              await prefs.setStringList('downloads', downloadsList);
-              setState(() {
-                downloads.removeAt(index);
-              });
-              Navigator.pop(context);
-              _showNotification(
-                Row(
-                  children: [
-                    Icon(Icons.check_circle, color: ThemeManager.successColor()),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Text(AppLocalizations.of(context)!.download_removed),
-                    ),
-                  ],
+      barrierDismissible: true,
+      barrierColor: ThemeManager.textColor().withOpacity(0.5),
+      pageBuilder: (context, animation, secondaryAnimation) => Container(),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        );
+
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.7, end: 1.0).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: animation,
+            child: AlertDialog(
+              backgroundColor: ThemeManager.backgroundColor(),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Text(
+                AppLocalizations.of(context)!.delete_download,
+                style: TextStyle(
+                  color: ThemeManager.textColor(),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
-                duration: const Duration(seconds: 4),
-              );
-            },
-            child: Text(
-              AppLocalizations.of(context)!.delete,
-              style: TextStyle(
-                color: ThemeManager.errorColor(),
-                fontWeight: FontWeight.bold,
               ),
+              content: Text(
+                AppLocalizations.of(context)!.delete_download_confirm(fileName),
+                style: TextStyle(
+                  color: ThemeManager.textSecondaryColor(),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    AppLocalizations.of(context)!.cancel,
+                    style: TextStyle(
+                      color: ThemeManager.textSecondaryColor(),
+                    ),
+                  ),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    final downloadsList = prefs.getStringList('downloads') ?? [];
+                    downloadsList.removeAt(index);
+                    await prefs.setStringList('downloads', downloadsList);
+                    setState(() {
+                      downloads.removeAt(index);
+                    });
+                    Navigator.pop(context);
+                    _showNotification(
+                      Row(
+                        children: [
+                          Icon(Icons.check_circle, color: ThemeManager.successColor()),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Text(AppLocalizations.of(context)!.download_removed),
+                          ),
+                        ],
+                      ),
+                      duration: const Duration(seconds: 4),
+                    );
+                  },
+                  child: Text(
+                    AppLocalizations.of(context)!.delete,
+                    style: TextStyle(
+                      color: ThemeManager.errorColor(),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        );
+      },
+      transitionDuration: const Duration(milliseconds: 300),
     );
   }
 
@@ -13600,31 +14084,31 @@ Future<void> _handlePageStarted(String url) async {
         }
       }
 
-      // Check if we already have the necessary permissions without showing UI
+      // Always show permission dialog to explain what will happen to user
+      // Determine the type of file and show appropriate permission dialog
+      PermissionDialogType dialogType;
+      if (_isMediaFile(fileName)) {
+        dialogType = PermissionDialogType.media;
+      } else {
+        dialogType = PermissionDialogType.downloads;
+      }
+
+      // Show animated permission dialog
+      final wantsToDownload = await _showPermissionDialog(
+        dialogType,
+        fileName: fileName,
+      );
+
+      if (!wantsToDownload) {
+        // User declined the download
+        return;
+      }
+
+      // Check if we already have the necessary permissions after user confirmation
       bool hasPermission = await _checkExistingPermissions(sdkInt);
       
-      // Only show permission dialog if we don't already have permissions
+      // Request system permissions if we don't have them
       if (!hasPermission) {
-        // Determine the type of file and show appropriate permission dialog
-        PermissionDialogType dialogType;
-        if (_isMediaFile(fileName)) {
-          dialogType = PermissionDialogType.media;
-        } else {
-          dialogType = PermissionDialogType.downloads;
-        }
-
-        // Show animated permission dialog
-        final wantsToDownload = await _showPermissionDialog(
-          dialogType,
-          fileName: fileName,
-        );
-
-        if (!wantsToDownload) {
-          // User declined the download
-          return;
-        }
-
-        // Now request actual system permissions - only notification permission
         hasPermission = await _requestDownloadPermissions(sdkInt);
       }
       
@@ -14370,8 +14854,8 @@ Future<void> _handlePageStarted(String url) async {
             
             if (isPWA) {
               // Remove from PWA
-              final success = await PWAManager.deletePWA(_displayUrl);
-              if (success && mounted) {
+              final removeSuccess = await PWAManager.deletePWA(_displayUrl);
+              if (removeSuccess && mounted) {
                 _showPWANotification(
                   Row(
                     children: [
@@ -14394,9 +14878,38 @@ Future<void> _handlePageStarted(String url) async {
             } else {
               // Add to PWA
               final title = await controller.getTitle() ?? _displayUrl;
-              final success = await PWAManager.savePWA(context, _displayUrl, title, tabs[currentTabIndex]['favicon']);
               
-              if (success && mounted) {
+              // Show immediate feedback with clear message about system dialog
+              _showPWANotification(
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Text(
+                        'Creating PWA shortcut... Please look for system dialog.',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                duration: const Duration(seconds: 4),
+              );
+              
+              final addSuccess = await PWAManager.savePWA(context, _displayUrl, title, tabs[currentTabIndex]['favicon']);
+              
+              if (addSuccess && mounted) {
+                // Enhanced success message
                 _showPWANotification(
                   Row(
                     children: [
@@ -14404,7 +14917,7 @@ Future<void> _handlePageStarted(String url) async {
                       const SizedBox(width: 16),
                       Expanded(
                         child: Text(
-                          AppLocalizations.of(context)?.added_to_pwa ?? 'Added to PWA',
+                          'PWA created! If prompted by your device, please accept to add the shortcut to your home screen.',
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -14413,7 +14926,45 @@ Future<void> _handlePageStarted(String url) async {
                       ),
                     ],
                   ),
-                  duration: const Duration(seconds: 2),
+                  duration: const Duration(seconds: 6),
+                );
+              } else if (mounted) {
+                _showPWANotification(
+                  Row(
+                    children: [
+                      Icon(Icons.add_to_home_screen, color: Colors.white),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          'PWA shortcut created! Check your home screen and approve the shortcut if prompted.',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  duration: const Duration(seconds: 4),
+                );
+              } else if (mounted) {
+                _showPWANotification(
+                  Row(
+                    children: [
+                      Icon(Icons.error_outline, color: Colors.white),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Text(
+                          'Failed to create PWA shortcut. Please try again.',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  duration: const Duration(seconds: 3),
                 );
               }
             }
@@ -16473,37 +17024,53 @@ Future<void> _handlePageStarted(String url) async {
   }
 
   Future<void> _showCustomAlertDialog(String message) async {
-    return showDialog<void>(
+    return showGeneralDialog<void>(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: ThemeManager.surfaceColor(),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          title: Text(
-            AppLocalizations.of(context)!.notice,
-            style: TextStyle(
-              color: ThemeManager.textColor(),
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          content: Text(
-            message,
-            style: TextStyle(
-              color: ThemeManager.textColor().withOpacity(0.8),
-              fontSize: 16,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),              child: Text(
-                AppLocalizations.of(context)!.ok,
-                style: TextStyle(color: ThemeManager.accentColor()),
+      barrierDismissible: true,
+      barrierColor: ThemeManager.textColor().withOpacity(0.5),
+      pageBuilder: (context, animation, secondaryAnimation) => Container(),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        );
+
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.7, end: 1.0).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: animation,
+            child: AlertDialog(
+              backgroundColor: ThemeManager.surfaceColor(),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: Text(
+                AppLocalizations.of(context)!.notice,
+                style: TextStyle(
+                  color: ThemeManager.textColor(),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
+              content: Text(
+                message,
+                style: TextStyle(
+                  color: ThemeManager.textColor().withOpacity(0.8),
+                  fontSize: 16,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: Text(
+                    AppLocalizations.of(context)!.ok,
+                    style: TextStyle(color: ThemeManager.accentColor()),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         );
       },
+      transitionDuration: const Duration(milliseconds: 300),
     );
   }
   

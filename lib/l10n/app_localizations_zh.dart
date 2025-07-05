@@ -1054,6 +1054,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get failed_to_install_pwa => '安装PWA失败';
 
   @override
+  String get creating_shortcut => '正在创建快捷方式';
+
+  @override
+  String get check_home_screen_for_shortcut => '请在主屏幕上检查快捷方式';
+
+  @override
   String get error_opening_file_install_app => '打开文件时出错。请安装适合打开此类文件的应用程序。';
 
   @override

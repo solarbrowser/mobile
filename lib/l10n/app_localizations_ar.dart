@@ -1082,6 +1082,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get failed_to_install_pwa => 'فشل في تثبيت تطبيق الويب';
 
   @override
+  String get creating_shortcut => 'يتم إنشاء الاختصار';
+
+  @override
+  String get check_home_screen_for_shortcut =>
+      'تحقق من الشاشة الرئيسية بحثًا عن الاختصار';
+
+  @override
   String get error_opening_file_install_app =>
       'خطأ في فتح الملف. يرجى تثبيت تطبيق مناسب لفتح هذا النوع من الملفات.';
 

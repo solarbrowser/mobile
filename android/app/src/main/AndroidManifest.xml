@@ -76,6 +76,12 @@
               android:resource="@style/NormalTheme"
               />
         </activity>
+        
+        <!-- Broadcast receiver for shortcut pin callbacks -->
+        <receiver
+            android:name=".ShortcutPinReceiver"
+            android:exported="false" />
+            
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />

@@ -955,13 +955,6 @@
   },
   
   "open_in_app_button": "In {appName} öffnen",
-  "@open_in_app_button": {
-    "description": "Button text to open link in specific app",
-    "placeholders": {
-      "appName": {
-        "type": "String",
-        "example": "YouTube"
-      }
-    }
-  }
+  "creating_shortcut": "Verknüpfung wird erstellt",
+  "check_home_screen_for_shortcut": "Überprüfe den Startbildschirm auf die Verknüpfung"
 }

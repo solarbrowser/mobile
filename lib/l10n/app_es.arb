@@ -979,5 +979,7 @@
         "example": "YouTube"
       }
     }
-  }
+  },
+  "creating_shortcut": "Creando acceso directo",
+  "check_home_screen_for_shortcut": "Comprueba el acceso directo en la pantalla de inicio"
 }

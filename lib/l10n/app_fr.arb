@@ -915,5 +915,7 @@
         "example": "YouTube"
       }
     }
-  }
+  },
+  "creating_shortcut": "Création du raccourci",
+  "check_home_screen_for_shortcut": "Vérifiez le raccourci sur l'écran d'accueil"
 }

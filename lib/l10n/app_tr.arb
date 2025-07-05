@@ -865,5 +865,7 @@
         "example": "YouTube"
       }
     }
-  }
+  },
+  "creating_shortcut": "Kısayol oluşturuluyor",
+  "check_home_screen_for_shortcut": "Kısayol için ana ekranı kontrol et"
 }

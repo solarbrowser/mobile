@@ -1088,6 +1088,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get failed_to_install_pwa => 'PWA इंस्टॉल करने में विफल';
 
   @override
+  String get creating_shortcut => 'शॉर्टकट बनाया जा रहा है';
+
+  @override
+  String get check_home_screen_for_shortcut =>
+      'शॉर्टकट के लिए होम स्क्रीन देखें';
+
+  @override
   String get error_opening_file_install_app =>
       'फ़ाइल खोलने में त्रुटि। इस प्रकार की फ़ाइल खोलने के लिए कृपया उपयुक्त ऐप इंस्टॉल करें।';
 

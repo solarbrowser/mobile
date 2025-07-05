@@ -831,5 +831,7 @@
   "cannot_open_link": "यह लिंक नहीं खोला जा सकता। आवश्यक ऐप इंस्टॉल नहीं हो सकता है।",
   "@cannot_open_link": {
     "description": "Error message when a link cannot be opened due to missing app"
-  }
+  },
+  "creating_shortcut": "शॉर्टकट बनाया जा रहा है",
+  "check_home_screen_for_shortcut": "शॉर्टकट के लिए होम स्क्रीन देखें"
 }

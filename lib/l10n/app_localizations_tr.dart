@@ -1093,6 +1093,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get failed_to_install_pwa => 'PWA yüklenemedi';
 
   @override
+  String get creating_shortcut => 'Kısayol oluşturuluyor';
+
+  @override
+  String get check_home_screen_for_shortcut =>
+      'Kısayol için ana ekranı kontrol et';
+
+  @override
   String get error_opening_file_install_app =>
       'Dosya açılırken hata oluştu. Lütfen bu tür dosyaları açmak için uygun bir uygulama yükleyin.';
 

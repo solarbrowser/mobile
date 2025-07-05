@@ -1,15 +1,264 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 import '../utils/browser_utils.dart';
 import '../utils/theme_manager.dart';
 import '../l10n/app_localizations.dart';
 
+class PWAOfflineCache {
+  static const String _cacheKey = 'pwa_offline_cache';
+  static const String _cacheMetadataKey = 'pwa_cache_metadata';
+  static const int _maxCacheSize = 50 * 1024 * 1024; // 50MB max cache
+  static const int _maxCacheAge = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+
+  // Cache a PWA's essential resources for offline use
+  static Future<bool> cachePWAResources(String url, String title) async {
+    try {
+      final directory = await _getCacheDirectory();
+      final urlHash = url.hashCode.abs().toString();
+      final pwaDir = Directory(path.join(directory.path, 'pwa_$urlHash'));
+      
+      if (!await pwaDir.exists()) {
+        await pwaDir.create(recursive: true);
+      }
+
+      // Cache the main HTML
+      final htmlResponse = await http.get(Uri.parse(url));
+      if (htmlResponse.statusCode == 200) {
+        final htmlFile = File(path.join(pwaDir.path, 'index.html'));
+        await htmlFile.writeAsString(htmlResponse.body);
+
+        // Parse and cache critical resources
+        await _cacheCriticalResources(htmlResponse.body, url, pwaDir);
+
+        // Update cache metadata
+        await _updateCacheMetadata(url, title, pwaDir.path);
+
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print('Error caching PWA resources: $e');
+      return false;
+    }
+  }
+
+  // Cache critical resources like CSS, JS, and icons
+  static Future<void> _cacheCriticalResources(String html, String baseUrl, Directory cacheDir) async {
+    try {
+      final Uri baseUri = Uri.parse(baseUrl);
+      
+      // Simple regex patterns to find resources
+      final patterns = [
+        RegExp(r'<link[^>]+href=["'"'"']([^"'"'"']+\.css)["'"'"']', caseSensitive: false),
+        RegExp(r'<script[^>]+src=["'"'"']([^"'"'"']+\.js)["'"'"']', caseSensitive: false),
+        RegExp(r'<link[^>]+href=["'"'"']([^"'"'"']+\.ico)["'"'"']', caseSensitive: false),
+        RegExp(r'<link[^>]+href=["'"'"']([^"'"'"']+\.png)["'"'"']', caseSensitive: false),
+      ];
+
+      for (final pattern in patterns) {
+        final matches = pattern.allMatches(html);
+        for (final match in matches) {
+          final resourceUrl = match.group(1);
+          if (resourceUrl != null) {
+            await _cacheResource(resourceUrl, baseUri, cacheDir);
+          }
+        }
+      }
+    } catch (e) {
+      print('Error caching critical resources: $e');
+    }
+  }
+
+  // Cache a single resource
+  static Future<void> _cacheResource(String resourceUrl, Uri baseUri, Directory cacheDir) async {
+    try {
+      Uri fullUri;
+      if (resourceUrl.startsWith('http')) {
+        fullUri = Uri.parse(resourceUrl);
+      } else if (resourceUrl.startsWith('//')) {
+        fullUri = Uri.parse('${baseUri.scheme}:$resourceUrl');
+      } else {
+        fullUri = baseUri.resolve(resourceUrl);
+      }
+
+      final response = await http.get(fullUri);
+      if (response.statusCode == 200) {
+        final fileName = path.basename(fullUri.path);
+        final file = File(path.join(cacheDir.path, fileName));
+        await file.writeAsBytes(response.bodyBytes);
+      }
+    } catch (e) {
+      print('Error caching resource $resourceUrl: $e');
+    }
+  }
+
+  // Check if PWA has cached content
+  static Future<bool> hasCachedContent(String url) async {
+    try {
+      final directory = await _getCacheDirectory();
+      final urlHash = url.hashCode.abs().toString();
+      final pwaDir = Directory(path.join(directory.path, 'pwa_$urlHash'));
+      final htmlFile = File(path.join(pwaDir.path, 'index.html'));
+      return await htmlFile.exists();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // Get cached HTML content
+  static Future<String?> getCachedHTML(String url) async {
+    try {
+      final directory = await _getCacheDirectory();
+      final urlHash = url.hashCode.abs().toString();
+      final pwaDir = Directory(path.join(directory.path, 'pwa_$urlHash'));
+      final htmlFile = File(path.join(pwaDir.path, 'index.html'));
+      
+      if (await htmlFile.exists()) {
+        return await htmlFile.readAsString();
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  // Clear cache for a specific PWA
+  static Future<void> clearPWACache(String url) async {
+    try {
+      final directory = await _getCacheDirectory();
+      final urlHash = url.hashCode.abs().toString();
+      final pwaDir = Directory(path.join(directory.path, 'pwa_$urlHash'));
+      
+      if (await pwaDir.exists()) {
+        await pwaDir.delete(recursive: true);
+      }
+
+      // Remove from metadata
+      final prefs = await SharedPreferences.getInstance();
+      final metadataJson = prefs.getString(_cacheMetadataKey) ?? '{}';
+      final metadata = json.decode(metadataJson) as Map<String, dynamic>;
+      metadata.remove(url);
+      await prefs.setString(_cacheMetadataKey, json.encode(metadata));
+    } catch (e) {
+      print('Error clearing PWA cache: $e');
+    }
+  }
+
+  // Clear all PWA caches
+  static Future<void> clearAllCaches() async {
+    try {
+      final directory = await _getCacheDirectory();
+      if (await directory.exists()) {
+        await directory.delete(recursive: true);
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_cacheMetadataKey);
+    } catch (e) {
+      print('Error clearing all caches: $e');
+    }
+  }
+
+  // Get cache size
+  static Future<int> getCacheSize() async {
+    try {
+      final directory = await _getCacheDirectory();
+      if (!await directory.exists()) return 0;
+
+      int totalSize = 0;
+      await for (final entity in directory.list(recursive: true)) {
+        if (entity is File) {
+          totalSize += await entity.length();
+        }
+      }
+      return totalSize;
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  // Cleanup old cache entries
+  static Future<void> cleanupOldCaches() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final metadataJson = prefs.getString(_cacheMetadataKey) ?? '{}';
+      final metadata = json.decode(metadataJson) as Map<String, dynamic>;
+      
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final urlsToRemove = <String>[];
+
+      for (final entry in metadata.entries) {
+        final cacheData = entry.value as Map<String, dynamic>;
+        final timestamp = cacheData['timestamp'] as int? ?? 0;
+        
+        if (now - timestamp > _maxCacheAge) {
+          urlsToRemove.add(entry.key);
+        }
+      }
+
+      for (final url in urlsToRemove) {
+        await clearPWACache(url);
+      }
+    } catch (e) {
+      print('Error during cache cleanup: $e');
+    }
+  }
+
+  // Get cache directory
+  static Future<Directory> _getCacheDirectory() async {
+    final appDir = await getApplicationDocumentsDirectory();
+    final cacheDir = Directory(path.join(appDir.path, 'pwa_cache'));
+    if (!await cacheDir.exists()) {
+      await cacheDir.create(recursive: true);
+    }
+    return cacheDir;
+  }
+
+  // Update cache metadata
+  static Future<void> _updateCacheMetadata(String url, String title, String cachePath) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final metadataJson = prefs.getString(_cacheMetadataKey) ?? '{}';
+      final metadata = json.decode(metadataJson) as Map<String, dynamic>;
+      
+      metadata[url] = {
+        'title': title,
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+        'cachePath': cachePath,
+      };
+
+      await prefs.setString(_cacheMetadataKey, json.encode(metadata));
+    } catch (e) {
+      print('Error updating cache metadata: $e');
+    }
+  }
+
+  // Get cached PWAs list
+  static Future<List<Map<String, dynamic>>> getCachedPWAs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final metadataJson = prefs.getString(_cacheMetadataKey) ?? '{}';
+      final metadata = json.decode(metadataJson) as Map<String, dynamic>;
+      
+      return metadata.entries.map((entry) => {
+        'url': entry.key,
+        ...entry.value as Map<String, dynamic>,
+      }).toList();
+    } catch (e) {
+      return [];
+    }
+  }
+}
+
 class PWAManager {
   static const String _pwaShortcutsKey = 'pwa_shortcuts';
-  static const platform = MethodChannel('com.solar.browser/shortcuts');
+  static const platform = MethodChannel('com.vertex.solar/shortcuts');
     // Prompt for PWA name with improved styling and custom animation
   static Future<String?> showNamePrompt(BuildContext context, String title) async {
     final TextEditingController controller = TextEditingController(text: title);
@@ -293,6 +542,21 @@ class PWAManager {
       
       // Create shortcut on home screen 
       await _createShortcut(finalUrl, customTitle, finalFavicon);
+      
+      // Cache PWA resources for offline use (run in background)
+      Future.microtask(() async {
+        try {
+          //debugPrint('Starting offline cache for PWA: $customTitle');
+          final success = await PWAOfflineCache.cachePWAResources(finalUrl, customTitle);
+          if (success) {
+            //debugPrint('PWA resources cached successfully for offline use');
+          } else {
+            //debugPrint('Failed to cache PWA resources');
+          }
+        } catch (e) {
+          //debugPrint('Error caching PWA resources: $e');
+        }
+      });
       
       return true;
     } catch (e) {
@@ -894,4 +1158,104 @@ class PWAManager {
       return false;
     }
   }
-} 
+  
+  // Offline mode utilities
+  
+  // Check if device is offline
+  static Future<bool> isOffline() async {
+    try {
+      final result = await http.get(Uri.parse('https://www.google.com')).timeout(
+        const Duration(seconds: 3),
+      );
+      return result.statusCode != 200;
+    } catch (e) {
+      return true; // Assume offline if request fails
+    }
+  }
+  
+  // Get offline PWA content if available
+  static Future<String?> getOfflinePWAContent(String url) async {
+    try {
+      final isDeviceOffline = await isOffline();
+      if (isDeviceOffline) {
+        final cachedContent = await PWAOfflineCache.getCachedHTML(url);
+        if (cachedContent != null) {
+          //debugPrint('Loading PWA from offline cache');
+          return _injectOfflineIndicator(cachedContent);
+        }
+      }
+      return null;
+    } catch (e) {
+      //debugPrint('Error getting offline PWA content: $e');
+      return null;
+    }
+  }
+  
+  // Inject offline indicator into cached HTML
+  static String _injectOfflineIndicator(String html) {
+    const offlineIndicator = '''
+      <div id="offline-indicator" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: #ff9800;
+        color: white;
+        text-align: center;
+        padding: 8px;
+        font-size: 14px;
+        z-index: 9999;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      ">
+        📡 Offline Mode - Viewing cached content
+      </div>
+      <script>
+        // Add top margin to body to account for offline indicator
+        document.addEventListener('DOMContentLoaded', function() {
+          document.body.style.marginTop = '40px';
+        });
+      </script>
+    ''';
+    
+    // Try to inject before closing head tag, otherwise before closing body tag
+    if (html.contains('</head>')) {
+      return html.replaceFirst('</head>', '$offlineIndicator</head>');
+    } else if (html.contains('</body>')) {
+      return html.replaceFirst('</body>', '$offlineIndicator</body>');
+    } else {
+      return offlineIndicator + html;
+    }
+  }
+  
+  // Clear offline cache for specific PWA
+  static Future<void> clearPWAOfflineCache(String url) async {
+    await PWAOfflineCache.clearPWACache(url);
+  }
+  
+  // Get cache information
+  static Future<Map<String, dynamic>> getCacheInfo() async {
+    final cacheSize = await PWAOfflineCache.getCacheSize();
+    final cachedPWAs = await PWAOfflineCache.getCachedPWAs();
+    
+    return {
+      'totalSize': cacheSize,
+      'formattedSize': _formatFileSize(cacheSize),
+      'cachedPWAsCount': cachedPWAs.length,
+      'cachedPWAs': cachedPWAs,
+    };
+  }
+  
+  // Format file size for display
+  static String _formatFileSize(int bytes) {
+    if (bytes <= 0) return '0 B';
+    const suffixes = ['B', 'KB', 'MB', 'GB'];
+    var i = (bytes.bitLength - 1) ~/ 10;
+    if (i >= suffixes.length) i = suffixes.length - 1;
+    return '${(bytes / (1 << (i * 10))).toStringAsFixed(1)} ${suffixes[i]}';
+  }
+  
+  // Cleanup old caches
+  static Future<void> performCacheCleanup() async {
+    await PWAOfflineCache.cleanupOldCaches();
+  }
+}

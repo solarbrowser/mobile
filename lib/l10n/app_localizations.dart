@@ -2160,6 +2160,18 @@ abstract class AppLocalizations {
   /// **'Failed to install PWA'**
   String get failed_to_install_pwa;
 
+  /// Message shown when creating a PWA shortcut
+  ///
+  /// In en, this message translates to:
+  /// **'Creating shortcut...'**
+  String get creating_shortcut;
+
+  /// Message guiding user to check home screen for newly created shortcut
+  ///
+  /// In en, this message translates to:
+  /// **'Check your home screen for the new shortcut'**
+  String get check_home_screen_for_shortcut;
+
   /// Message shown when there is an error opening a file due to missing app
   ///
   /// In en, this message translates to:

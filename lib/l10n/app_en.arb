@@ -996,6 +996,14 @@
   "@failed_to_install_pwa": {
     "description": "Message shown when PWA installation fails"
   },
+  "creating_shortcut": "Creating shortcut...",
+  "@creating_shortcut": {
+    "description": "Message shown when creating a PWA shortcut"
+  },
+  "check_home_screen_for_shortcut": "Check your home screen for the new shortcut",
+  "@check_home_screen_for_shortcut": {
+    "description": "Message guiding user to check home screen for newly created shortcut"
+  },
   "error_opening_file_install_app": "Error opening file. Please install a suitable app to open this type of file.",
   "@error_opening_file_install_app": {
     "description": "Message shown when there is an error opening a file due to missing app"

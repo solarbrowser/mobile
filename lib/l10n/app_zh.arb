@@ -895,5 +895,7 @@
   "cannot_open_link": "无法打开此链接。所需的应用程序可能未安装。",
   "@cannot_open_link": {
     "description": "Error message when a link cannot be opened due to missing app"
-  }
+  },
+  "creating_shortcut": "正在创建快捷方式",
+  "check_home_screen_for_shortcut": "请在主屏幕上检查快捷方式"
 }

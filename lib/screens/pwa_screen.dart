@@ -56,7 +56,8 @@ class _PWAScreenState extends State<PWAScreen> {
     webViewController
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(Colors.transparent)
-      ..enableZoom(true)      ..setNavigationDelegate(
+      ..enableZoom(true)
+      ..setNavigationDelegate(
         NavigationDelegate(
           onPageStarted: (String url) {
             if (mounted) {
@@ -100,9 +101,32 @@ class _PWAScreenState extends State<PWAScreen> {
         'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Mobile Safari/537.36'
       );
     }
+
+    _controller = webViewController;
+    
+    // Try to load offline content if available, otherwise load normally
+    await _loadPWAContent();
+  }
+  
+  Future<void> _loadPWAContent() async {
+    try {
+      // Check for offline cached content first
+      final offlineContent = await PWAManager.getOfflinePWAContent(widget.url);
+      
+      if (offlineContent != null) {
+        // Load cached content
+        await _controller.loadHtmlString(offlineContent, baseUrl: widget.url);
+      } else {
+        // Load normally from network
+        await _controller.loadRequest(Uri.parse(widget.url));
+      }
+    } catch (e) {
+      // Fallback to normal loading
+      await _controller.loadRequest(Uri.parse(widget.url));
+    }
     
     // Add JavaScript to help with browser verification for Google sign-in
-    await webViewController.runJavaScript('''
+    await _controller.runJavaScript('''
       function enhanceBrowserVerification() {
         Object.defineProperty(navigator, 'vendor', {
           get: function() { return 'Google Inc.'; }
@@ -121,13 +145,6 @@ class _PWAScreenState extends State<PWAScreen> {
       }
       enhanceBrowserVerification();
     ''');
-    
-    // Load the URL
-    await webViewController.loadRequest(Uri.parse(widget.url));
-    
-    setState(() {
-      _controller = webViewController;
-    });
   }
 
   void _updateSystemBars() {

@@ -1,1 +1,76 @@
-{}
+{
+  "de": [
+    "email_app_not_found",
+    "phone_app_not_found",
+    "sms_app_not_found"
+  ],
+
+  "hi": [
+    "email_app_not_found",
+    "phone_app_not_found",
+    "sms_app_not_found",
+    "open_in_app_title",
+    "open_in_app_message",
+    "open_in_app_button"
+  ],
+
+  "it": [
+    "email_app_not_found",
+    "phone_app_not_found",
+    "sms_app_not_found",
+    "open_in_app_title",
+    "open_in_app_message",
+    "open_in_app_button"
+  ],
+
+  "ja": [
+    "email_app_not_found",
+    "phone_app_not_found",
+    "sms_app_not_found",
+    "open_in_app_title",
+    "open_in_app_message",
+    "open_in_app_button"
+  ],
+
+  "ko": [
+    "email_app_not_found",
+    "phone_app_not_found",
+    "sms_app_not_found",
+    "open_in_app_title",
+    "open_in_app_message",
+    "open_in_app_button"
+  ],
+
+  "pt": [
+    "email_app_not_found",
+    "phone_app_not_found",
+    "sms_app_not_found",
+    "open_in_app_title",
+    "open_in_app_message",
+    "open_in_app_button"
+  ],
+
+  "ru": [
+    "email_app_not_found",
+    "phone_app_not_found",
+    "sms_app_not_found",
+    "open_in_app_title",
+    "open_in_app_message",
+    "open_in_app_button"
+  ],
+
+  "tr": [
+    "email_app_not_found",
+    "phone_app_not_found",
+    "sms_app_not_found"
+  ],
+
+  "zh": [
+    "email_app_not_found",
+    "phone_app_not_found",
+    "sms_app_not_found",
+    "open_in_app_title",
+    "open_in_app_message",
+    "open_in_app_button"
+  ]
+}

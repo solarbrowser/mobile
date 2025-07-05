@@ -924,5 +924,7 @@
         "example": "YouTube"
       }
     }
-  }
+  },
+  "creating_shortcut": "يتم إنشاء الاختصار",
+  "check_home_screen_for_shortcut": "تحقق من الشاشة الرئيسية بحثًا عن الاختصار"
 }

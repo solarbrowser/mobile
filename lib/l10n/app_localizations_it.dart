@@ -1097,6 +1097,13 @@ class AppLocalizationsIt extends AppLocalizations {
   String get failed_to_install_pwa => 'Impossibile installare la PWA';
 
   @override
+  String get creating_shortcut => 'Creazione del collegamento';
+
+  @override
+  String get check_home_screen_for_shortcut =>
+      'Controlla la schermata principale per il collegamento';
+
+  @override
   String get error_opening_file_install_app =>
       'Errore durante l\'apertura del file. Installa un\'applicazione adatta per aprire questo tipo di file.';
 
