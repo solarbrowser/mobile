@@ -6665,7 +6665,7 @@ Future<void> _setupScrollHandling() async {
                 children: [
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.app_name,
-                    subtitle: AppLocalizations.of(context)!.version('0.4.0'),
+                    subtitle: AppLocalizations.of(context)!.version('0.4.1'),
                     isFirst: true,
                     isLast: false,
                   ),
@@ -15088,13 +15088,10 @@ Future<void> _handlePageStarted(String url) async {
                                               await AIManager.copyToClipboard(summary['text'] as String);
                                               if (!mounted) return;
                                               Navigator.pop(context);
-                                              _showNotification(
-                                                Text(
-                                                  'Summary copied to clipboard',
-                                                  style: TextStyle(
-                                                    color: ThemeManager.textColor(),
-                                                  ),
-                                                ),
+                                              _showNotificationWithCooldown(
+                                                message: AppLocalizations.of(context)!.summary_copied_to_clipboard,
+                                                icon: Icons.copy_rounded,
+                                                iconColor: Colors.green,
                                                 duration: const Duration(seconds: 2),
                                               );
                                             },
@@ -17454,16 +17451,14 @@ class _SummaryModalState extends State<_SummaryModal> {
                                 onPressed: () async {
                                   if (_summary != null) {
                                     await AIManager.copyToClipboard(_summary!);
-                                    // Show feedback
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          AppLocalizations.of(context)!.summary_copied_to_clipboard,
-                                          style: TextStyle(color: ThemeManager.textColor()),
-                                        ),
-                                        backgroundColor: ThemeManager.surfaceColor(),
-                                        duration: const Duration(seconds: 2),
-                                      ),
+                                    // Show feedback using custom notification system
+                                    showCustomNotification(
+                                      context: context,
+                                      message: AppLocalizations.of(context)!.summary_copied_to_clipboard,
+                                      icon: Icons.copy_rounded,
+                                      iconColor: Colors.green,
+                                      isDarkMode: ThemeManager.getCurrentTheme().isDark,
+                                      duration: const Duration(seconds: 2),
                                     );
                                   }
                                 },
