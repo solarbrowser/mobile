@@ -831,5 +831,89 @@
   "restricted": "Restreint",
   "save": "Enregistrer",
   "storage": "Stockage",
-  "storage_permission": "Accès au stockage"
+  "storage_permission": "Accès au stockage",
+  
+  "continue_in_browser": "Continuer dans le navigateur",
+  "@continue_in_browser": {
+    "description": "Button text to continue browsing in the web browser instead of opening native app"
+  },
+  
+  "app_not_installed": "Impossible d'ouvrir ce lien. L'application requise n'est peut-être pas installée.",
+  "@app_not_installed": {
+    "description": "Error message when trying to open a custom scheme URL but the app is not installed"
+  },
+  
+  "app_launch_failed": "Impossible d'ouvrir {appName}. L'application n'est peut-être pas installée.",
+  "@app_launch_failed": {
+    "description": "Error message when app launch fails with app name",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "Google Play Store"
+      }
+    }
+  },
+  
+  "app_required_not_installed": "Ce lien nécessite une application qui n'est pas installée.",
+  "@app_required_not_installed": {
+    "description": "User-friendly message when a link requires an app that is not available"
+  },
+  
+  "invalid_link_format": "Format de lien invalide.",
+  "@invalid_link_format": {
+    "description": "Error message for malformed URLs or custom schemes"
+  },
+  
+  "cannot_open_link": "Impossible d'ouvrir ce lien. L'application requise n'est peut-être pas installée.",
+  "@cannot_open_link": {
+    "description": "Error message when a link cannot be opened due to missing app"
+  },
+  
+  "email_app_not_found": "Aucune application de messagerie trouvée pour envoyer ce message.",
+  "@email_app_not_found": {
+    "description": "Error message when no email app is available for mailto links"
+  },
+  
+  "phone_app_not_found": "Aucune application téléphone trouvée pour passer cet appel.",
+  "@phone_app_not_found": {
+    "description": "Error message when no phone app is available for tel links"
+  },
+  
+  "sms_app_not_found": "Aucune application de messagerie trouvée pour envoyer ce SMS.",
+  "@sms_app_not_found": {
+    "description": "Error message when no SMS app is available for sms links"
+  },
+  
+  "open_in_app_title": "Ouvrir dans {appName} ?",
+  "@open_in_app_title": {
+    "description": "Dialog title asking if user wants to open link in specific app",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "YouTube"
+      }
+    }
+  },
+  
+  "open_in_app_message": "Ce lien peut être ouvert dans l'application {appName} pour une meilleure expérience.",
+  "@open_in_app_message": {
+    "description": "Dialog message explaining the link can be opened in specific app",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "YouTube"
+      }
+    }
+  },
+  
+  "open_in_app_button": "Ouvrir dans {appName}",
+  "@open_in_app_button": {
+    "description": "Button text to open link in specific app",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "YouTube"
+      }
+    }
+  }
 }

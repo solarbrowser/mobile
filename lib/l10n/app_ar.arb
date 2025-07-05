@@ -840,5 +840,89 @@
   "storage": "التخزين",
   "storage_permission": "الوصول للتخزين",
   "systemTheme": "النظام",
-  "tokyoNightTheme": "Tokyo Night"
+  "tokyoNightTheme": "Tokyo Night",
+  
+  "continue_in_browser": "المتابعة في المتصفح",
+  "@continue_in_browser": {
+    "description": "Button text to continue browsing in the web browser instead of opening native app"
+  },
+  
+  "app_not_installed": "لا يمكن فتح هذا الرابط. قد يكون التطبيق المطلوب غير مثبت.",
+  "@app_not_installed": {
+    "description": "Error message when trying to open a custom scheme URL but the app is not installed"
+  },
+  
+  "app_launch_failed": "لا يمكن فتح {appName}. قد يكون التطبيق غير مثبت.",
+  "@app_launch_failed": {
+    "description": "Error message when app launch fails with app name",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "Google Play Store"
+      }
+    }
+  },
+  
+  "app_required_not_installed": "هذا الرابط يتطلب تطبيقاً غير مثبت.",
+  "@app_required_not_installed": {
+    "description": "User-friendly message when a link requires an app that is not available"
+  },
+  
+  "invalid_link_format": "تنسيق رابط غير صحيح.",
+  "@invalid_link_format": {
+    "description": "Error message for malformed URLs or custom schemes"
+  },
+  
+  "cannot_open_link": "لا يمكن فتح هذا الرابط. قد يكون التطبيق المطلوب غير مثبت.",
+  "@cannot_open_link": {
+    "description": "Error message when a link cannot be opened due to missing app"
+  },
+  
+  "email_app_not_found": "لم يتم العثور على تطبيق بريد إلكتروني لإرسال هذه الرسالة.",
+  "@email_app_not_found": {
+    "description": "Error message when no email app is available for mailto links"
+  },
+  
+  "phone_app_not_found": "لم يتم العثور على تطبيق هاتف لإجراء هذه المكالمة.",
+  "@phone_app_not_found": {
+    "description": "Error message when no phone app is available for tel links"
+  },
+  
+  "sms_app_not_found": "لم يتم العثور على تطبيق رسائل لإرسال هذه الرسالة النصية.",
+  "@sms_app_not_found": {
+    "description": "Error message when no SMS app is available for sms links"
+  },
+  
+  "open_in_app_title": "فتح في {appName}؟",
+  "@open_in_app_title": {
+    "description": "Dialog title asking if user wants to open link in specific app",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "YouTube"
+      }
+    }
+  },
+  
+  "open_in_app_message": "يمكن فتح هذا الرابط في تطبيق {appName} للحصول على تجربة أفضل.",
+  "@open_in_app_message": {
+    "description": "Dialog message explaining the link can be opened in specific app",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "YouTube"
+      }
+    }
+  },
+  
+  "open_in_app_button": "فتح في {appName}",
+  "@open_in_app_button": {
+    "description": "Button text to open link in specific app",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "YouTube"
+      }
+    }
+  }
 }

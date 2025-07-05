@@ -833,5 +833,41 @@
   "storage_permission": "ストレージアクセス",
   "systemTheme": "システム",
   "tokyoNightTheme": "Tokyo Night",
-  "browsing_history": "ブラウザ履歴"
+  "browsing_history": "ブラウザ履歴",
+  
+  "continue_in_browser": "ブラウザで続行",
+  "@continue_in_browser": {
+    "description": "Button text to continue browsing in the web browser instead of opening native app"
+  },
+  
+  "app_not_installed": "このリンクを開けません。必要なアプリがインストールされていない可能性があります。",
+  "@app_not_installed": {
+    "description": "Error message when trying to open a custom scheme URL but the app is not installed"
+  },
+  
+  "app_launch_failed": "{appName}を開けません。アプリがインストールされていない可能性があります。",
+  "@app_launch_failed": {
+    "description": "Error message when app launch fails with app name",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "Google Play Store"
+      }
+    }
+  },
+  
+  "app_required_not_installed": "このリンクにはインストールされていないアプリが必要です。",
+  "@app_required_not_installed": {
+    "description": "User-friendly message when a link requires an app that is not available"
+  },
+  
+  "invalid_link_format": "無効なリンク形式です。",
+  "@invalid_link_format": {
+    "description": "Error message for malformed URLs or custom schemes"
+  },
+  
+  "cannot_open_link": "このリンクを開けません。必要なアプリがインストールされていない可能性があります。",
+  "@cannot_open_link": {
+    "description": "Error message when a link cannot be opened due to missing app"
+  }
 }

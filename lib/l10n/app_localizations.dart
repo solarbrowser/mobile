@@ -2640,6 +2640,12 @@ abstract class AppLocalizations {
   /// **'Go Back'**
   String get go_back;
 
+  /// Button text to continue browsing in the web browser instead of opening native app
+  ///
+  /// In en, this message translates to:
+  /// **'Continue in Browser'**
+  String get continue_in_browser;
+
   /// Title for web page error dialog
   ///
   /// In en, this message translates to:
@@ -2801,6 +2807,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Error opening file: {error}'**
   String error_opening_file_exception(String error);
+
+  /// Error message when trying to open a custom scheme URL but the app is not installed
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot open this link. The required app may not be installed.'**
+  String get app_not_installed;
+
+  /// Error message when app launch fails with app name
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot open {appName}. The app may not be installed.'**
+  String app_launch_failed(String appName);
+
+  /// User-friendly message when a link requires an app that is not available
+  ///
+  /// In en, this message translates to:
+  /// **'This link requires an app that is not installed.'**
+  String get app_required_not_installed;
+
+  /// Error message for malformed URLs or custom schemes
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid link format.'**
+  String get invalid_link_format;
+
+  /// Error message when a link cannot be opened due to missing app
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot open this link. The required app may not be installed.'**
+  String get cannot_open_link;
+
+  /// Error message when no email app is available for mailto links
+  ///
+  /// In en, this message translates to:
+  /// **'No email app found to send this message.'**
+  String get email_app_not_found;
+
+  /// Error message when no phone app is available for tel links
+  ///
+  /// In en, this message translates to:
+  /// **'No phone app found to make this call.'**
+  String get phone_app_not_found;
+
+  /// Error message when no SMS app is available for sms links
+  ///
+  /// In en, this message translates to:
+  /// **'No messaging app found to send this SMS.'**
+  String get sms_app_not_found;
+
+  /// Dialog title asking if user wants to open link in specific app
+  ///
+  /// In en, this message translates to:
+  /// **'Open in {appName}?'**
+  String open_in_app_title(String appName);
+
+  /// Dialog message explaining the link can be opened in specific app
+  ///
+  /// In en, this message translates to:
+  /// **'This link can be opened in the {appName} app for a better experience.'**
+  String open_in_app_message(String appName);
+
+  /// Button text to open link in specific app
+  ///
+  /// In en, this message translates to:
+  /// **'Open in {appName}'**
+  String open_in_app_button(String appName);
 }
 
 class _AppLocalizationsDelegate

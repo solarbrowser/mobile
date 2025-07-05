@@ -1319,6 +1319,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get go_back => '뒤로 가기';
 
   @override
+  String get continue_in_browser => '브라우저에서 계속하기';
+
+  @override
   String get web_page_error_title => '페이지 로드 오류';
 
   @override
@@ -1407,5 +1410,46 @@ class AppLocalizationsKo extends AppLocalizations {
   @override
   String error_opening_file_exception(String error) {
     return '파일 열기 오류: $error';
+  }
+
+  @override
+  String get app_not_installed => '이 링크를 열 수 없습니다. 필요한 앱이 설치되지 않았을 수 있습니다.';
+
+  @override
+  String app_launch_failed(String appName) {
+    return '$appName을(를) 열 수 없습니다. 앱이 설치되지 않았을 수 있습니다.';
+  }
+
+  @override
+  String get app_required_not_installed => '이 링크는 설치되지 않은 앱이 필요합니다.';
+
+  @override
+  String get invalid_link_format => '잘못된 링크 형식입니다.';
+
+  @override
+  String get cannot_open_link => '이 링크를 열 수 없습니다. 필요한 앱이 설치되지 않았을 수 있습니다.';
+
+  @override
+  String get email_app_not_found => 'No email app found to send this message.';
+
+  @override
+  String get phone_app_not_found => 'No phone app found to make this call.';
+
+  @override
+  String get sms_app_not_found => 'No messaging app found to send this SMS.';
+
+  @override
+  String open_in_app_title(String appName) {
+    return 'Open in $appName?';
+  }
+
+  @override
+  String open_in_app_message(String appName) {
+    return 'This link can be opened in the $appName app for a better experience.';
+  }
+
+  @override
+  String open_in_app_button(String appName) {
+    return 'Open in $appName';
   }
 }

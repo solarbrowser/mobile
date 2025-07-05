@@ -1323,6 +1323,10 @@
   "@go_back": {
     "description": "Button text to go back from warning"
   },
+  "continue_in_browser": "Continue in Browser",
+  "@continue_in_browser": {
+    "description": "Button text to continue browsing in the web browser instead of opening native app"
+  },
   
   "web_page_error_title": "Page Load Error",
   "@web_page_error_title": {
@@ -1481,5 +1485,84 @@
   "summary_copied_to_clipboard": "Summary copied to clipboard",
   "@summary_copied_to_clipboard": {
     "description": "Notification message when summary is copied to clipboard"
+  },
+  
+  "app_not_installed": "Cannot open this link. The required app may not be installed.",
+  "@app_not_installed": {
+    "description": "Error message when trying to open a custom scheme URL but the app is not installed"
+  },
+  
+  "app_launch_failed": "Cannot open {appName}. The app may not be installed.",
+  "@app_launch_failed": {
+    "description": "Error message when app launch fails with app name",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "Google Play Store"
+      }
+    }
+  },
+  
+  "app_required_not_installed": "This link requires an app that is not installed.",
+  "@app_required_not_installed": {
+    "description": "User-friendly message when a link requires an app that is not available"
+  },
+  
+  "invalid_link_format": "Invalid link format.",
+  "@invalid_link_format": {
+    "description": "Error message for malformed URLs or custom schemes"
+  },
+  
+  "cannot_open_link": "Cannot open this link. The required app may not be installed.",
+  "@cannot_open_link": {
+    "description": "Error message when a link cannot be opened due to missing app"
+  },
+  
+  "email_app_not_found": "No email app found to send this message.",
+  "@email_app_not_found": {
+    "description": "Error message when no email app is available for mailto links"
+  },
+  
+  "phone_app_not_found": "No phone app found to make this call.",
+  "@phone_app_not_found": {
+    "description": "Error message when no phone app is available for tel links"
+  },
+  
+  "sms_app_not_found": "No messaging app found to send this SMS.",
+  "@sms_app_not_found": {
+    "description": "Error message when no SMS app is available for sms links"
+  },
+  
+  "open_in_app_title": "Open in {appName}?",
+  "@open_in_app_title": {
+    "description": "Dialog title asking if user wants to open link in specific app",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "YouTube"
+      }
+    }
+  },
+  
+  "open_in_app_message": "This link can be opened in the {appName} app for a better experience.",
+  "@open_in_app_message": {
+    "description": "Dialog message explaining the link can be opened in specific app",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "YouTube"
+      }
+    }
+  },
+  
+  "open_in_app_button": "Open in {appName}",
+  "@open_in_app_button": {
+    "description": "Button text to open link in specific app",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "YouTube"
+      }
+    }
   }
 }

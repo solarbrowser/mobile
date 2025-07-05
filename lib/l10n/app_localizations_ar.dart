@@ -1345,6 +1345,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get go_back => 'العودة';
 
   @override
+  String get continue_in_browser => 'المتابعة في المتصفح';
+
+  @override
   String get web_page_error_title => 'خطأ في تحميل الصفحة';
 
   @override
@@ -1437,5 +1440,51 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String error_opening_file_exception(String error) {
     return 'خطأ في فتح الملف: $error';
+  }
+
+  @override
+  String get app_not_installed =>
+      'لا يمكن فتح هذا الرابط. قد يكون التطبيق المطلوب غير مثبت.';
+
+  @override
+  String app_launch_failed(String appName) {
+    return 'لا يمكن فتح $appName. قد يكون التطبيق غير مثبت.';
+  }
+
+  @override
+  String get app_required_not_installed => 'هذا الرابط يتطلب تطبيقاً غير مثبت.';
+
+  @override
+  String get invalid_link_format => 'تنسيق رابط غير صحيح.';
+
+  @override
+  String get cannot_open_link =>
+      'لا يمكن فتح هذا الرابط. قد يكون التطبيق المطلوب غير مثبت.';
+
+  @override
+  String get email_app_not_found =>
+      'لم يتم العثور على تطبيق بريد إلكتروني لإرسال هذه الرسالة.';
+
+  @override
+  String get phone_app_not_found =>
+      'لم يتم العثور على تطبيق هاتف لإجراء هذه المكالمة.';
+
+  @override
+  String get sms_app_not_found =>
+      'لم يتم العثور على تطبيق رسائل لإرسال هذه الرسالة النصية.';
+
+  @override
+  String open_in_app_title(String appName) {
+    return 'فتح في $appName؟';
+  }
+
+  @override
+  String open_in_app_message(String appName) {
+    return 'يمكن فتح هذا الرابط في تطبيق $appName للحصول على تجربة أفضل.';
+  }
+
+  @override
+  String open_in_app_button(String appName) {
+    return 'فتح في $appName';
   }
 }

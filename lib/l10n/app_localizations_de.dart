@@ -1366,6 +1366,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get go_back => 'Zurück gehen';
 
   @override
+  String get continue_in_browser => 'Im Browser fortfahren';
+
+  @override
   String get web_page_error_title => 'Seiten-Ladefehler';
 
   @override
@@ -1458,5 +1461,49 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String error_opening_file_exception(String error) {
     return 'Fehler beim Öffnen der Datei: $error';
+  }
+
+  @override
+  String get app_not_installed =>
+      'Dieser Link kann nicht geöffnet werden. Die erforderliche App ist möglicherweise nicht installiert.';
+
+  @override
+  String app_launch_failed(String appName) {
+    return '$appName kann nicht geöffnet werden. Die App ist möglicherweise nicht installiert.';
+  }
+
+  @override
+  String get app_required_not_installed =>
+      'Dieser Link erfordert eine App, die nicht installiert ist.';
+
+  @override
+  String get invalid_link_format => 'Ungültiges Link-Format.';
+
+  @override
+  String get cannot_open_link =>
+      'Dieser Link kann nicht geöffnet werden. Die erforderliche App ist möglicherweise nicht installiert.';
+
+  @override
+  String get email_app_not_found => 'No email app found to send this message.';
+
+  @override
+  String get phone_app_not_found => 'No phone app found to make this call.';
+
+  @override
+  String get sms_app_not_found => 'No messaging app found to send this SMS.';
+
+  @override
+  String open_in_app_title(String appName) {
+    return 'In $appName öffnen?';
+  }
+
+  @override
+  String open_in_app_message(String appName) {
+    return 'Dieser Link kann in der $appName-App für ein besseres Erlebnis geöffnet werden.';
+  }
+
+  @override
+  String open_in_app_button(String appName) {
+    return 'In $appName öffnen';
   }
 }

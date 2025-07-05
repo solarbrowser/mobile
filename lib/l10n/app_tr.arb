@@ -796,5 +796,74 @@
   "save": "Kaydet",
   "storage": "Depolama",
   "storage_permission": "Depolama erişimi",
-  "browsing_history": "Tarama geçmişi"
+  "browsing_history": "Tarama geçmişi",
+  
+  "continue_in_browser": "Tarayıcıda devam et",
+  "@continue_in_browser": {
+    "description": "Button text to continue browsing in the web browser instead of opening native app"
+  },
+  
+  "app_not_installed": "Bu bağlantı açılamıyor. Gerekli uygulama yüklü olmayabilir.",
+  "@app_not_installed": {
+    "description": "Error message when trying to open a custom scheme URL but the app is not installed"
+  },
+  
+  "app_launch_failed": "{appName} açılamıyor. Uygulama yüklü olmayabilir.",
+  "@app_launch_failed": {
+    "description": "Error message when app launch fails with app name",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "Google Play Store"
+      }
+    }
+  },
+  
+  "app_required_not_installed": "Bu bağlantı yüklü olmayan bir uygulama gerektiriyor.",
+  "@app_required_not_installed": {
+    "description": "User-friendly message when a link requires an app that is not available"
+  },
+  
+  "invalid_link_format": "Geçersiz bağlantı formatı.",
+  "@invalid_link_format": {
+    "description": "Error message for malformed URLs or custom schemes"
+  },
+  
+  "cannot_open_link": "Bu bağlantı açılamıyor. Gerekli uygulama yüklü olmayabilir.",
+  "@cannot_open_link": {
+    "description": "Error message when a link cannot be opened due to missing app"
+  },
+  
+  "open_in_app_title": "{appName} ile aç?",
+  "@open_in_app_title": {
+    "description": "Dialog title asking if user wants to open link in specific app",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "YouTube"
+      }
+    }
+  },
+  
+  "open_in_app_message": "Bu bağlantı daha iyi bir deneyim için {appName} uygulamasında açılabilir.",
+  "@open_in_app_message": {
+    "description": "Dialog message explaining the link can be opened in specific app",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "YouTube"
+      }
+    }
+  },
+  
+  "open_in_app_button": "{appName} ile aç",
+  "@open_in_app_button": {
+    "description": "Button text to open link in specific app",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "YouTube"
+      }
+    }
+  }
 }

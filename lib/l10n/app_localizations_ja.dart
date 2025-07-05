@@ -1320,6 +1320,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get go_back => '戻る';
 
   @override
+  String get continue_in_browser => 'ブラウザで続行';
+
+  @override
   String get web_page_error_title => 'ページ読み込みエラー';
 
   @override
@@ -1408,5 +1411,46 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String error_opening_file_exception(String error) {
     return 'ファイルを開くエラー：$error';
+  }
+
+  @override
+  String get app_not_installed => 'このリンクを開けません。必要なアプリがインストールされていない可能性があります。';
+
+  @override
+  String app_launch_failed(String appName) {
+    return '$appNameを開けません。アプリがインストールされていない可能性があります。';
+  }
+
+  @override
+  String get app_required_not_installed => 'このリンクにはインストールされていないアプリが必要です。';
+
+  @override
+  String get invalid_link_format => '無効なリンク形式です。';
+
+  @override
+  String get cannot_open_link => 'このリンクを開けません。必要なアプリがインストールされていない可能性があります。';
+
+  @override
+  String get email_app_not_found => 'No email app found to send this message.';
+
+  @override
+  String get phone_app_not_found => 'No phone app found to make this call.';
+
+  @override
+  String get sms_app_not_found => 'No messaging app found to send this SMS.';
+
+  @override
+  String open_in_app_title(String appName) {
+    return 'Open in $appName?';
+  }
+
+  @override
+  String open_in_app_message(String appName) {
+    return 'This link can be opened in the $appName app for a better experience.';
+  }
+
+  @override
+  String open_in_app_button(String appName) {
+    return 'Open in $appName';
   }
 }

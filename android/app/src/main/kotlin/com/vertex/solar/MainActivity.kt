@@ -33,12 +33,13 @@ class MainActivity: FlutterActivity() {
     private val CHANNEL = "com.vertex.solar/search"
     private val FILE_CHANNEL = "com.vertex.solar/app"
     private val URL_CHANNEL = "app.channel.shared.data"
-    private val SHORTCUTS_CHANNEL = "com.solar.browser/shortcuts"
+    private val SHORTCUTS_CHANNEL = "com.vertex.solar/shortcuts"
+    private val APP_LAUNCHER_CHANNEL = "com.vertex.solar/app_launcher"
     private var sharedUrl: String? = null
     private var initialUrl: String? = null
 
     companion object {
-        private const val TAG = "SolarBrowser"
+        private const val TAG = "Solar"
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -256,6 +257,27 @@ class MainActivity: FlutterActivity() {
                     }
                 }
                 else -> result.notImplemented()
+            }
+        }
+
+        // App Launcher channel for launching native apps
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, APP_LAUNCHER_CHANNEL).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "isAppInstalled" -> {
+                    val packageName = call.arguments as String
+                    val isInstalled = isAppInstalled(packageName)
+                    result.success(isInstalled)
+                }
+                "launchApp" -> {
+                    val arguments = call.arguments as Map<String, Any>
+                    val packageName = arguments["packageName"] as String
+                    val url = arguments["url"] as String
+                    val success = launchApp(packageName, url)
+                    result.success(success)
+                }
+                else -> {
+                    result.notImplemented()
+                }
             }
         }
 
@@ -916,6 +938,59 @@ class MainActivity: FlutterActivity() {
                     null
                 )
             }
+        }
+    }
+
+    // App launcher helper methods
+    private fun isAppInstalled(packageName: String): Boolean {
+        return try {
+            packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES)
+            true
+        } catch (e: PackageManager.NameNotFoundException) {
+            false
+        }
+    }
+
+    private fun launchApp(packageName: String, url: String): Boolean {
+        return try {
+            Log.i(TAG, "Attempting to launch app: $packageName with URL: $url")
+            
+            // First try to launch with the URL intent
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            intent.setPackage(packageName)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            
+            // Check if the specific package can handle this intent
+            if (intent.resolveActivity(packageManager) != null) {
+                Log.i(TAG, "Launching app with URL intent")
+                startActivity(intent)
+                true
+            } else {
+                // Try without setting specific package (let system choose)
+                val genericIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                genericIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                
+                if (genericIntent.resolveActivity(packageManager) != null) {
+                    Log.i(TAG, "Launching with generic intent")
+                    startActivity(genericIntent)
+                    true
+                } else {
+                    // Last fallback: Launch the app normally without URL
+                    val launchIntent = packageManager.getLaunchIntentForPackage(packageName)
+                    if (launchIntent != null) {
+                        Log.i(TAG, "Launching app normally")
+                        launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        startActivity(launchIntent)
+                        true
+                    } else {
+                        Log.w(TAG, "Could not launch app: $packageName")
+                        false
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error launching app $packageName: ${e.message}", e)
+            false
         }
     }
 }

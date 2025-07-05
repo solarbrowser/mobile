@@ -894,5 +894,74 @@
   "open_image_in_new_tab": "Bild in neuem Tab öffnen",
   "open_link": "Link öffnen",
   "open_link_in_new_tab": "Link in neuem Tab öffnen",
-  "save": "Speichern"
+  "save": "Speichern",
+  
+  "continue_in_browser": "Im Browser fortfahren",
+  "@continue_in_browser": {
+    "description": "Button text to continue browsing in the web browser instead of opening native app"
+  },
+  
+  "app_not_installed": "Dieser Link kann nicht geöffnet werden. Die erforderliche App ist möglicherweise nicht installiert.",
+  "@app_not_installed": {
+    "description": "Error message when trying to open a custom scheme URL but the app is not installed"
+  },
+  
+  "app_launch_failed": "{appName} kann nicht geöffnet werden. Die App ist möglicherweise nicht installiert.",
+  "@app_launch_failed": {
+    "description": "Error message when app launch fails with app name",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "Google Play Store"
+      }
+    }
+  },
+  
+  "app_required_not_installed": "Dieser Link erfordert eine App, die nicht installiert ist.",
+  "@app_required_not_installed": {
+    "description": "User-friendly message when a link requires an app that is not available"
+  },
+  
+  "invalid_link_format": "Ungültiges Link-Format.",
+  "@invalid_link_format": {
+    "description": "Error message for malformed URLs or custom schemes"
+  },
+  
+  "cannot_open_link": "Dieser Link kann nicht geöffnet werden. Die erforderliche App ist möglicherweise nicht installiert.",
+  "@cannot_open_link": {
+    "description": "Error message when a link cannot be opened due to missing app"
+  },
+  
+  "open_in_app_title": "In {appName} öffnen?",
+  "@open_in_app_title": {
+    "description": "Dialog title asking if user wants to open link in specific app",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "YouTube"
+      }
+    }
+  },
+  
+  "open_in_app_message": "Dieser Link kann in der {appName}-App für ein besseres Erlebnis geöffnet werden.",
+  "@open_in_app_message": {
+    "description": "Dialog message explaining the link can be opened in specific app",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "YouTube"
+      }
+    }
+  },
+  
+  "open_in_app_button": "In {appName} öffnen",
+  "@open_in_app_button": {
+    "description": "Button text to open link in specific app",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "YouTube"
+      }
+    }
+  }
 }

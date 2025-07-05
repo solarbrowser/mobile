@@ -31,7 +31,8 @@ import 'package:solar/screens/pwa_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import '../firebase_options.dart';
-import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../services/app_launcher_service.dart';
 
 class Debouncer {
   final int milliseconds;
@@ -793,6 +794,14 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   bool _isLoading = false;
     // <-----------INCOGNITO MODE----------->
   bool _isIncognitoModeActive = false;
+  
+  // <-----------NOTIFICATION COOLDOWN----------->
+  Map<String, DateTime> _notificationCooldowns = {};
+  static const Duration _notificationCooldownDuration = Duration(seconds: 10);
+  
+  // <-----------DIALOG COOLDOWN----------->
+  Map<String, DateTime> _dialogCooldowns = {};
+  static const Duration _dialogCooldownDuration = Duration(seconds: 5);
   
   // <-----------HISTORY ENCRYPTION----------->
   bool _isHistoryLocked = false;
@@ -3528,6 +3537,58 @@ Future<void> _setupScrollHandling() async {
            lowerUrl.contains('getfile');
   }
   
+  // Check if URL uses a custom app scheme that should be handled externally
+  bool _isCustomAppScheme(String url) {
+    try {
+      final uri = Uri.parse(url);
+      final scheme = uri.scheme.toLowerCase();
+      
+      // Check if it's a system scheme
+      if (AppLauncherService.isSystemScheme(url)) {
+        return true;
+      }
+      
+      // Check for other custom app schemes
+      final customSchemes = [
+        'market',
+        'vnd.youtube',
+        'com.instagram.android',
+        'fb',
+        'twitter',
+        'tweetbot',
+        'whatsapp',
+        'telegram',
+        'tg',
+        'skype',
+        'spotify',
+        'intent',
+        'googlechrome',
+        'googlechromes',
+        'android-app',
+        'linkedin',
+        'reddit',
+        'discord',
+        'amazon',
+        'ebay',
+        'aliexpress',
+        'nflx',
+        'twitch',
+        'github',
+        'zoomus',
+        'paypal',
+        'medium',
+        'googlegmail',
+        'googledrive',
+        'instagram',
+        'snssdk1233', // TikTok
+      ];
+      
+      return customSchemes.contains(scheme);
+    } catch (e) {
+      return false;
+    }
+  }
+  
   Future<void> _setupUrlMonitoring() async {
     // Enhanced URL monitoring for better compatibility with modern websites like Google
     await controller.runJavaScript('''
@@ -4638,6 +4699,41 @@ Future<void> _setupScrollHandling() async {
   }  Future<void> _loadUrl(String query) async {
     final trimmedQuery = query.trim();
     if (trimmedQuery.isEmpty) return;
+    
+    // Prevent custom schemes from being loaded in WebView
+    if (_isCustomAppScheme(trimmedQuery)) {
+      try {
+        final uri = Uri.parse(trimmedQuery);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } else {
+          final l10n = AppLocalizations.of(context)!;
+          _showNotificationWithCooldown(
+            message: l10n.cannot_open_link,
+            icon: Icons.error_outline,
+            iconColor: Colors.orange,
+            duration: const Duration(seconds: 3),
+          );
+        }
+      } catch (e) {
+        final l10n = AppLocalizations.of(context)!;
+        _showNotificationWithCooldown(
+          message: l10n.invalid_link_format,
+          icon: Icons.error_outline,
+          iconColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        );
+      }
+      
+      // Navigate back instead of staying on current page
+      if (await controller.canGoBack()) {
+        await controller.goBack();
+      } else {
+        // If can't go back, go to home page
+        _loadUrl(_homeUrl);
+      }
+      return;
+    }
     
     _setLoadingState(true);
     
@@ -10502,6 +10598,79 @@ Future<void> _handlePageStarted(String url) async {
           }
         }
         
+        // Handle custom app schemes that should not be loaded in WebView
+        if (_isCustomAppScheme(request.url)) {
+          // Try to launch with AppLauncherService first (handles both system schemes and app schemes)
+          final launched = await AppLauncherService.tryLaunchApp(request.url);
+          if (!launched) {
+            // If AppLauncherService fails, try with url_launcher as fallback
+            try {
+              final uri = Uri.parse(request.url);
+              if (await canLaunchUrl(uri)) {
+                await launchUrl(uri, mode: LaunchMode.externalApplication);
+              } else {
+                // Only show notification for schemes that clearly need an app but it's not available
+                // Don't spam for every failed URL
+                final scheme = uri.scheme.toLowerCase();
+                if (['mailto', 'tel', 'sms', 'market'].contains(scheme)) {
+                  final l10n = AppLocalizations.of(context)!;
+                  _showNotificationWithCooldown(
+                    message: l10n.app_not_installed,
+                    icon: Icons.error_outline,
+                    iconColor: Colors.orange,
+                    duration: const Duration(seconds: 3),
+                  );
+                }
+              }
+            } catch (e) {
+              // Only show error for important schemes, not every malformed URL
+              final uri = Uri.tryParse(request.url);
+              if (uri != null) {
+                final scheme = uri.scheme.toLowerCase();
+                if (['mailto', 'tel', 'sms', 'market'].contains(scheme)) {
+                  final l10n = AppLocalizations.of(context)!;
+                  _showNotificationWithCooldown(
+                    message: l10n.invalid_link_format,
+                    icon: Icons.error_outline,
+                    iconColor: Colors.orange,
+                    duration: const Duration(seconds: 3),
+                  );
+                }
+              }
+            }
+          }
+          return NavigationDecision.prevent;
+        }
+        
+        // Check if URL can be opened in a native app
+        if (AppLauncherService.canOpenInApp(request.url)) {
+          final appInfo = AppLauncherService.getAppInfo(request.url);
+          if (appInfo != null) {
+            // Check dialog cooldown to prevent multiple dialogs for the same URL
+            if (_shouldShowDialog(request.url)) {
+              final shouldOpenInApp = await _showAppLaunchDialog(appInfo['appName']!, request.url);
+              if (shouldOpenInApp) {
+                final launched = await AppLauncherService.tryLaunchApp(request.url);
+                if (!launched) {
+                  // If launch failed, show error message instead of continuing
+                  final l10n = AppLocalizations.of(context)!;
+                  _showNotificationWithCooldown(
+                    message: l10n.app_launch_failed(appInfo['appName']!),
+                    icon: Icons.error_outline,
+                    iconColor: Colors.orange,
+                    duration: const Duration(seconds: 3),
+                  );
+                }
+                // Always prevent navigation for app-supported URLs, whether launch succeeded or failed
+                return NavigationDecision.prevent;
+              }
+            } else {
+              // Dialog already shown recently, just prevent navigation
+              return NavigationDecision.prevent;
+            }
+          }
+        }
+        
         // Check if URL is a direct file download
         if (_isDownloadUrl(url)) {
           _handleDownload(request.url);
@@ -12822,6 +12991,51 @@ Future<void> _handlePageStarted(String url) async {
     }
   }
 
+  /// Check if a notification should be shown (prevents spam)
+  bool _shouldShowNotification(String message) {
+    final now = DateTime.now();
+    final lastShown = _notificationCooldowns[message];
+    
+    if (lastShown == null || now.difference(lastShown) > _notificationCooldownDuration) {
+      _notificationCooldowns[message] = now;
+      return true;
+    }
+    
+    return false;
+  }
+
+  /// Check if a dialog should be shown (prevents spam)
+  bool _shouldShowDialog(String url) {
+    final now = DateTime.now();
+    final lastShown = _dialogCooldowns[url];
+    
+    if (lastShown == null || now.difference(lastShown) > _dialogCooldownDuration) {
+      _dialogCooldowns[url] = now;
+      return true;
+    }
+    
+    return false;
+  }
+
+  /// Show notification with spam prevention
+  void _showNotificationWithCooldown({
+    required String message,
+    IconData? icon,
+    Color? iconColor,
+    Duration? duration,
+    SnackBarAction? action,
+  }) {
+    if (_shouldShowNotification(message)) {
+      _showCustomNotification(
+        message: message,
+        icon: icon,
+        iconColor: iconColor,
+        duration: duration,
+        action: action,
+      );
+    }
+  }
+
   void _showBookmarkAddedNotification() {
     _showCustomNotification(
       message: AppLocalizations.of(context)!.bookmark_added,
@@ -12946,6 +13160,152 @@ Future<void> _handlePageStarted(String url) async {
       ],
     );
   }
+
+  /// Shows a dialog asking if user wants to open URL in native app
+  Future<bool> _showAppLaunchDialog(String appName, String url) async {
+    final completer = Completer<bool>();
+    
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: ThemeManager.textColor().withOpacity(0.5),
+      pageBuilder: (context, animation, secondaryAnimation) => Container(),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        );
+
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.7, end: 1.0).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: animation,
+            child: Dialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              child: Container(
+                padding: const EdgeInsets.all(28),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(24),
+                  color: ThemeManager.backgroundColor(),
+                  boxShadow: [
+                    BoxShadow(
+                      color: ThemeManager.primaryColor().withOpacity(0.1),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // App icon
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: ThemeManager.primaryColor().withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Icon(
+                        Icons.launch_rounded,
+                        size: 32,
+                        color: ThemeManager.primaryColor(),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    
+                    // Title
+                    Text(
+                      AppLocalizations.of(context)!.open_in_app_title(appName),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: ThemeManager.textColor(),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    
+                    // Message
+                    Text(
+                      AppLocalizations.of(context)!.open_in_app_message(appName),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: ThemeManager.textSecondaryColor(),
+                        height: 1.4,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 28),
+                    
+                    // Buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              completer.complete(false);
+                            },
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: BorderSide(
+                                  color: ThemeManager.textSecondaryColor().withOpacity(0.3),
+                                ),
+                              ),
+                            ),
+                            child: Text(
+                              AppLocalizations.of(context)!.continue_in_browser,
+                              style: TextStyle(
+                                color: ThemeManager.textSecondaryColor(),
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              completer.complete(true);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: ThemeManager.primaryColor(),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              AppLocalizations.of(context)!.open_in_app_button(appName),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+      transitionDuration: const Duration(milliseconds: 300),
+    );
+    
+    return completer.future;
+  }
+
   void _sendDialogResult(String? dialogId, dynamic result) {
     if (dialogId != null) {
       try {
@@ -14709,6 +15069,48 @@ Future<void> _handlePageStarted(String url) async {
 
   Future<void> _handleWebResourceError(WebResourceError error, String url) async {
     if (!mounted) return;
+    
+    // Handle ERR_UNKNOWN_URL_SCHEME specifically
+    if (error.description.toLowerCase().contains('err_unknown_url_scheme') || 
+        error.description.toLowerCase().contains('unknown url scheme')) {
+      
+      // Check if this is a custom app scheme that we can handle
+      if (_isCustomAppScheme(url)) {
+        try {
+          final uri = Uri.parse(url);
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+            // Navigate back or to home page instead of showing error
+            if (await controller.canGoBack()) {
+              await controller.goBack();
+            } else {
+              // If can't go back, go to home page
+              _loadUrl(_homeUrl);
+            }
+            return;
+          }
+        } catch (e) {
+          // Silently handle error
+        }
+        
+        // Show user-friendly message instead of browser error
+        _showCustomNotification(
+          message: 'This link requires an app that is not installed.',
+          icon: Icons.info_outline,
+          iconColor: Colors.blue,
+          duration: const Duration(seconds: 3),
+        );
+        
+        // Navigate back instead of to blank page
+        if (await controller.canGoBack()) {
+          await controller.goBack();
+        } else {
+          // If can't go back, go to home page
+          _loadUrl(_homeUrl);
+        }
+        return;
+      }
+    }
     
     // Log the error details for debugging
     //print('Web resource error: ${error.description}');

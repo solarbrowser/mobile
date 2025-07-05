@@ -835,5 +835,41 @@
   "save": "Salvar",
   "set_home_page_url": "Definir URL da página inicial",
   "storage": "Armazenamento",
-  "storage_permission": "Acesso ao armazenamento"
+  "storage_permission": "Acesso ao armazenamento",
+  
+  "continue_in_browser": "Continuar no navegador",
+  "@continue_in_browser": {
+    "description": "Button text to continue browsing in the web browser instead of opening native app"
+  },
+  
+  "app_not_installed": "Não é possível abrir este link. O aplicativo necessário pode não estar instalado.",
+  "@app_not_installed": {
+    "description": "Error message when trying to open a custom scheme URL but the app is not installed"
+  },
+  
+  "app_launch_failed": "Não é possível abrir {appName}. O aplicativo pode não estar instalado.",
+  "@app_launch_failed": {
+    "description": "Error message when app launch fails with app name",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "Google Play Store"
+      }
+    }
+  },
+  
+  "app_required_not_installed": "Este link requer um aplicativo que não está instalado.",
+  "@app_required_not_installed": {
+    "description": "User-friendly message when a link requires an app that is not available"
+  },
+  
+  "invalid_link_format": "Formato de link inválido.",
+  "@invalid_link_format": {
+    "description": "Error message for malformed URLs or custom schemes"
+  },
+  
+  "cannot_open_link": "Não é possível abrir este link. O aplicativo necessário pode não estar instalado.",
+  "@cannot_open_link": {
+    "description": "Error message when a link cannot be opened due to missing app"
+  }
 }

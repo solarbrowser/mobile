@@ -1357,6 +1357,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get go_back => 'Geri Dön';
 
   @override
+  String get continue_in_browser => 'Tarayıcıda devam et';
+
+  @override
   String get web_page_error_title => 'Sayfa Yükleme Hatası';
 
   @override
@@ -1449,5 +1452,49 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String error_opening_file_exception(String error) {
     return 'Dosya açma hatası: $error';
+  }
+
+  @override
+  String get app_not_installed =>
+      'Bu bağlantı açılamıyor. Gerekli uygulama yüklü olmayabilir.';
+
+  @override
+  String app_launch_failed(String appName) {
+    return '$appName açılamıyor. Uygulama yüklü olmayabilir.';
+  }
+
+  @override
+  String get app_required_not_installed =>
+      'Bu bağlantı yüklü olmayan bir uygulama gerektiriyor.';
+
+  @override
+  String get invalid_link_format => 'Geçersiz bağlantı formatı.';
+
+  @override
+  String get cannot_open_link =>
+      'Bu bağlantı açılamıyor. Gerekli uygulama yüklü olmayabilir.';
+
+  @override
+  String get email_app_not_found => 'No email app found to send this message.';
+
+  @override
+  String get phone_app_not_found => 'No phone app found to make this call.';
+
+  @override
+  String get sms_app_not_found => 'No messaging app found to send this SMS.';
+
+  @override
+  String open_in_app_title(String appName) {
+    return '$appName ile aç?';
+  }
+
+  @override
+  String open_in_app_message(String appName) {
+    return 'Bu bağlantı daha iyi bir deneyim için $appName uygulamasında açılabilir.';
+  }
+
+  @override
+  String open_in_app_button(String appName) {
+    return '$appName ile aç';
   }
 }

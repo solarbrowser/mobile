@@ -859,5 +859,41 @@
   "storage_permission": "存储访问",
   "systemTheme": "系统",
   "tokyoNightTheme": "Tokyo Night",
-  "browsing_history": "浏览历史"
+  "browsing_history": "浏览历史",
+  
+  "continue_in_browser": "在浏览器中继续",
+  "@continue_in_browser": {
+    "description": "Button text to continue browsing in the web browser instead of opening native app"
+  },
+  
+  "app_not_installed": "无法打开此链接。所需的应用可能未安装。",
+  "@app_not_installed": {
+    "description": "Error message when trying to open a custom scheme URL but the app is not installed"
+  },
+  
+  "app_launch_failed": "无法打开{appName}。应用可能未安装。",
+  "@app_launch_failed": {
+    "description": "Error message when app launch fails with app name",
+    "placeholders": {
+      "appName": {
+        "type": "String",
+        "example": "Google Play Store"
+      }
+    }
+  },
+  
+  "app_required_not_installed": "此链接需要一个未安装的应用。",
+  "@app_required_not_installed": {
+    "description": "User-friendly message when a link requires an app that is not available"
+  },
+  
+  "invalid_link_format": "无效的链接格式。",
+  "@invalid_link_format": {
+    "description": "Error message for malformed URLs or custom schemes"
+  },
+  
+  "cannot_open_link": "无法打开此链接。所需的应用程序可能未安装。",
+  "@cannot_open_link": {
+    "description": "Error message when a link cannot be opened due to missing app"
+  }
 }
