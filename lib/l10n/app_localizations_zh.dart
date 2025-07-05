@@ -42,13 +42,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get darkTheme => '深色';
 
   @override
-  String get systemTheme => 'System';
+  String get systemTheme => '系统';
 
   @override
   String get tokyoNightTheme => 'Tokyo Night';
 
   @override
-  String get solarizedLightTheme => 'Solarized Light';
+  String get solarizedLightTheme => 'Solarized 浅色';
 
   @override
   String get draculaTheme => 'Dracula';
@@ -66,10 +66,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get catppuccinTheme => 'Catppuccin';
 
   @override
-  String get nordLightTheme => 'Nord Light';
+  String get nordLightTheme => 'Nord 浅色';
 
   @override
-  String get gruvboxLightTheme => 'Gruvbox Light';
+  String get gruvboxLightTheme => 'Gruvbox 浅色';
 
   @override
   String get next => '下一步';
@@ -214,7 +214,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get clear_browser_data => '清除浏览器数据';
 
   @override
-  String get browsing_history => 'Browsing History';
+  String get browsing_history => '浏览历史';
 
   @override
   String get cookies => 'Cookie';
@@ -331,6 +331,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get permission_denied => '存储权限被拒绝';
 
   @override
+  String get permission_permanently_denied => '权限被永久拒绝。请在设置中启用。';
+
+  @override
   String get download_location_changed => '下载位置已更改';
 
   @override
@@ -404,6 +407,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get downloads_history_cleared => '下载历史已清除';
+
+  @override
+  String get sort_by => '排序方式';
+
+  @override
+  String get name => '名称';
+
+  @override
+  String get date => '日期';
 
   @override
   String delete_download_confirm(String fileName) {
@@ -530,34 +542,34 @@ class AppLocalizationsZh extends AppLocalizations {
   String get open_in_new_tab => '在新标签页中打开';
 
   @override
-  String get copy_image_link => 'Copy Image Link';
+  String get copy_image_link => '复制图片链接';
 
   @override
-  String get open_image_in_new_tab => 'Open Image in New Tab';
+  String get open_image_in_new_tab => '在新标签页中打开图片';
 
   @override
-  String get open_link => 'Open Link';
+  String get open_link => '打开链接';
 
   @override
-  String get open_link_in_new_tab => 'Open Link in New Tab';
+  String get open_link_in_new_tab => '在新标签页中打开链接';
 
   @override
-  String get copy_link_address => 'Copy Link Address';
+  String get copy_link_address => '复制链接地址';
 
   @override
-  String get failed_to_download_image => 'Failed to download image';
+  String get failed_to_download_image => '图片下载失败';
 
   @override
-  String get custom_home_page => 'Custom Home Page';
+  String get custom_home_page => '自定义主页';
 
   @override
-  String get set_home_page_url => 'Set Home Page URL';
+  String get set_home_page_url => '设置主页URL';
 
   @override
-  String get not_set => 'Not set';
+  String get not_set => '未设置';
 
   @override
-  String get save => 'Save';
+  String get save => '保存';
 
   @override
   String get downloading => '下载中...';
@@ -587,58 +599,55 @@ class AppLocalizationsZh extends AppLocalizations {
   String get grant_permission => '授予权限';
 
   @override
-  String get download_permissions => 'Download Permissions';
+  String get download_permissions => '下载权限';
 
   @override
-  String get manage_download_permissions => 'Manage permissions for downloads';
+  String get manage_download_permissions => '管理下载权限';
 
   @override
-  String get storage_permission => 'Storage Access';
+  String get storage_permission => '存储访问';
 
   @override
-  String get notification_permission => 'Notifications';
+  String get notification_permission => '通知';
 
   @override
-  String get notification_permission_description =>
-      'For download progress and completion alerts';
+  String get notification_permission_description => '用于下载进度和完成提醒';
 
   @override
-  String get permission_explanation =>
-      'These permissions help improve your download experience. You can change them anytime in Android Settings.';
+  String get permission_explanation => '这些权限有助于改善您的下载体验。您可以随时在Android设置中更改它们。';
 
   @override
-  String get clear_downloads_history_description =>
-      'Remove download history (files remain)';
+  String get clear_downloads_history_description => '清除下载历史（文件保留）';
 
   @override
-  String get change_download_location => 'Change where files are saved';
+  String get change_download_location => '更改下载位置';
 
   @override
-  String get request => 'Request';
+  String get request => '请求';
 
   @override
-  String get storage => 'Storage';
+  String get storage => '存储';
 
   @override
-  String get manage_external_storage => 'Manage External Storage';
+  String get manage_external_storage => '管理外部存储';
 
   @override
-  String get notification => 'Notification';
+  String get notification => '通知';
 
   @override
-  String get granted => 'Granted';
+  String get granted => '已授予';
 
   @override
-  String get denied => 'Denied';
+  String get denied => '已拒绝';
 
   @override
-  String get restricted => 'Restricted';
+  String get restricted => '受限制';
 
   @override
-  String get limited => 'Limited';
+  String get limited => '受限';
 
   @override
-  String get permanently_denied => 'Permanently Denied';
+  String get permanently_denied => '永久拒绝';
 
   @override
   String get storage_permission_denied => '下载文件需要存储权限';
@@ -764,7 +773,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get summary_length => '摘要长度';
 
   @override
-  String get generating_summary => 'Generating summary...';
+  String get generating_summary => '正在生成摘要...';
 
   @override
   String get summary_copied_to_clipboard => '摘要已复制到剪贴板';

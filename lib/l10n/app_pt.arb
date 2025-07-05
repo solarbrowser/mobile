@@ -1,6 +1,5 @@
-﻿{
+{
   "@@locale": "pt",
-  
   "welcomeToSolar": "Bem-vindo ao Solar",
   "welcomeDescription": "Um navegador moderno, rÃ¡pido e seguro",
   "termsOfService": "Ao continuar, vocÃª concorda com nossos Termos de ServiÃ§o e PolÃ­tica de Privacidade",
@@ -45,7 +44,7 @@
   "general": "Geral",
   "appearance": "AparÃªncia",
   "downloads": "Downloads",
-  "settings": "ConfiguraÃ§Ãµes",
+  "settings": "Configurações",
   "help": "Ajuda",
   "about": "Sobre",
   "language": "Idioma",
@@ -109,6 +108,11 @@
   "reset": "Redefinir",
   "reset_complete": "O navegador foi redefinido",
   "permission_denied": "PermissÃ£o de armazenamento negada",
+  "permission_permanently_denied": "Permissão negada permanentemente. Por favor, habilite-a nas Configurações.",
+  "sort_by": "Classificar por",
+  "name": "Nome",
+  "size": "Tamanho",
+  "date": "Data",
   "download_location_changed": "Local de download alterado",
   "error_changing_location": "Erro ao alterar o local",
   "enable_cookies": "Ativar cookies",
@@ -131,7 +135,7 @@
   "exit_app_confirm": "Tem certeza que deseja sair?",
   "exit": "Sair",
   "size": "Tamanho",
-  "auto_open_downloads": "Abrir downloads automaticamente",
+  "auto_open_downloads": "Abrir Downloads Automaticamente",
   "clear_downloads_history": "Limpar histÃ³rico de downloads",
   "downloads_history_cleared": "HistÃ³rico de downloads limpo",
   "delete_download_confirm": "Deseja excluir {fileName} do histÃ³rico de downloads?\nO arquivo baixado nÃ£o serÃ¡ excluÃ­do.",
@@ -246,7 +250,7 @@
   "file_exists": "O arquivo jÃ¡ existe",
   "file_saved": "Arquivo salvo em Downloads",
   "no_tabs_open": "Nenhuma aba aberta",
-  "incognito": "NavegaÃ§Ã£o anÃ´nima",
+  "incognito": "Incógnito",
   "clear_all": "Limpar tudo",
   "clear_history": "Limpar histÃ³rico",
   "clear_history_confirmation": "Tem certeza que deseja limpar o histÃ³rico de navegaÃ§Ã£o?",
@@ -321,37 +325,38 @@
   "searchTheWeb": "Pesquisar na web",
   "recentSearches": "Pesquisas recentes",
   "storage_permission_granted": "PermissÃ£o de armazenamento concedida",
-  
   "summary_length": "Comprimento do resumo",
   "summary_language": "Idioma do resumo",
-  
-  "classic_navigation": "NavegaÃ§Ã£o ClÃ¡ssica",  "classic_navigation_description": "Exibir botÃµes de navegaÃ§Ã£o na parte inferior da tela",
+  "classic_navigation": "NavegaÃ§Ã£o ClÃ¡ssica",
+  "classic_navigation_description": "Usar controles de navegaÃ§Ã£o estilo navegador clÃ¡ssico",
   "ok": "OK",
-  "welcome_screen_reset": "Redefinir tela de boas-vindas",
-  "welcome_screen_reset_message": "A tela de boas-vindas serÃ¡ exibida na prÃ³xima inicializaÃ§Ã£o do aplicativo. Reinicie o aplicativo para ver a polÃ­tica de privacidade e os termos de serviÃ§o atualizados.",
-  "customize_navigation": "Personalizar navegaÃ§Ã£o",
-  "bookmark_removed": "Marcador removido",
+  "welcome_screen_reset": "Redefinir Tela de Boas-vindas",
+  "welcome_screen_reset_message": "Isso redefinirÃ¡ a tela de boas-vindas para que ela apareÃ§a novamente na prÃ³xima vez que vocÃª iniciar o app.",
+  "customize_navigation": "Personalizar NavegaÃ§Ã£o",
+  "bookmark_removed": "Favorito removido",
   "navigation_buttons": "BotÃµes de navegaÃ§Ã£o",
   "available_buttons": "BotÃµes disponÃ­veis",
   "enabled_buttons": "BotÃµes habilitados",
   "button_back": "Voltar",
   "button_forward": "AvanÃ§ar",
-  "button_bookmark": "Marcador",
+  "button_bookmark": "Favorito",
   "button_share": "Compartilhar",
   "button_menu": "Menu",
-  "button_bookmarks": "Marcadores",
+  "button_bookmarks": "Favoritos",
   "navigation_bar_animations": "AnimaÃ§Ãµes da barra de navegaÃ§Ã£o",
-  "restore_defaults": "Restaurar padrÃµes",  "drag_to_reorder": "Arraste para reordenar",
-  "add": "ADICIONAR",  "restored_tab": "Aba Restaurada",
+  "restore_defaults": "Restaurar padrÃµes",
+  "drag_to_reorder": "Arraste para reordenar",
+  "add": "Adicionar",
+  "restored_tab": "Aba restaurada",
   "rename": "Renomear",
   "rename_pwa": "Renomear PWA",
   "pwa_name": "Nome do PWA",
-  "pwa_renamed": "PWA e atalho da tela inicial renomeados",  "pwa_removed": "PWA e atalho da tela inicial removidos",
+  "pwa_renamed": "PWA renomeado",
+  "pwa_removed": "PWA removido",
   "remove": "Remover",
   "@remove": {
-    "description": "Button text for removing something"
+    "description": "Remove button text"
   },
-
   "install_packages_permission": "PermissÃ£o de InstalaÃ§Ã£o de Pacotes",
   "@install_packages_permission": {
     "description": "Install packages permission title"
@@ -487,86 +492,65 @@
   "developer": "Desenvolvedor",
   "@developer": {
     "description": "Developer section title"
-  },  "reset_welcome_screen": "Redefinir Tela de Boas-vindas",
+  },
+  "reset_welcome_screen": "Redefinir Tela de Boas-vindas",
   "@reset_welcome_screen": {
     "description": "Reset welcome screen option"
   },
-  "restored_tab": "Aba restaurada",
   "@restored_tab": {
     "description": "Message when a tab is restored"
   },
-  "welcome_screen_reset": "Redefinir Tela de Boas-vindas",
   "@welcome_screen_reset": {
     "description": "Dialog title for resetting welcome screen"
   },
-  "welcome_screen_reset_message": "Isso redefinirÃ¡ a tela de boas-vindas para que ela apareÃ§a novamente na prÃ³xima vez que vocÃª iniciar o app.",
   "@welcome_screen_reset_message": {
     "description": "Dialog message for resetting welcome screen"
   },
-  "ok": "OK",
   "@ok": {
     "description": "OK button text"
   },
-  "customize_navigation": "Personalizar NavegaÃ§Ã£o",
   "@customize_navigation": {
     "description": "Title for navigation customization"
   },
-  "button_back": "Voltar",
   "@button_back": {
     "description": "Back button label"
   },
-  "button_forward": "AvanÃ§ar",
   "@button_forward": {
     "description": "Forward button label"
   },
-  "button_bookmark": "Favorito",
   "@button_bookmark": {
     "description": "Bookmark button label"
   },
-  "button_bookmarks": "Favoritos",
   "@button_bookmarks": {
     "description": "Bookmarks button label"
   },
-  "button_share": "Compartilhar",
   "@button_share": {
     "description": "Share button label"
   },
-  "button_menu": "Menu",
   "@button_menu": {
     "description": "Menu button label"
   },
-  "available_buttons": "BotÃµes disponÃ­veis",
   "@available_buttons": {
     "description": "Label for available navigation buttons"
   },
-  "add": "Adicionar",
   "@add": {
     "description": "Add button text"
   },
-  "rename_pwa": "Renomear PWA",
   "@rename_pwa": {
     "description": "Option to rename a PWA"
   },
-  "pwa_name": "Nome do PWA",
   "@pwa_name": {
     "description": "Hint for PWA name input field"
   },
-  "rename": "Renomear",
   "@rename": {
     "description": "Rename button text"
   },
-  "pwa_renamed": "PWA renomeado",
   "@pwa_renamed": {
     "description": "Confirmation message when PWA is renamed"
   },
-  "remove": "Remover",
-  "@remove": {
-    "description": "Remove button text"
-  },
-  "pwa_removed": "PWA removido",
   "@pwa_removed": {
     "description": "Confirmation message when PWA is removed"
-  },  "bookmark_removed": "Favorito removido",
+  },
   "@bookmark_removed": {
     "description": "Confirmation message when bookmark is removed"
   },
@@ -602,11 +586,9 @@
   "@navigation_controls": {
     "description": "Title for navigation controls settings"
   },
-  "classic_navigation": "NavegaÃ§Ã£o ClÃ¡ssica",
   "@classic_navigation": {
     "description": "Label for classic navigation mode"
   },
-  "classic_navigation_description": "Usar controles de navegaÃ§Ã£o estilo navegador clÃ¡ssico",
   "@classic_navigation_description": {
     "description": "Description for classic navigation setting"
   },
@@ -618,10 +600,10 @@
   "@ai_summary_settings": {
     "description": "Title for AI summary settings"
   },
-  "auto_open_downloads": "Abrir Downloads Automaticamente",
   "@auto_open_downloads": {
     "description": "Setting title for auto-opening downloads"
-  },  "ask_download_location_title": "Perguntar Local de Download",
+  },
+  "ask_download_location_title": "Perguntar Local de Download",
   "@ask_download_location_title": {
     "description": "Setting title for asking download location"
   },
@@ -685,7 +667,8 @@
   "group_name": "Nome do Grupo",
   "@group_name": {
     "description": "Input label for tab group name"
-  },  "color": "Cor",
+  },
+  "color": "Cor",
   "@color": {
     "description": "Color selection label"
   },
@@ -695,7 +678,6 @@
   },
   "create": "Criar",
   "summarize": "Resumir",
-  "previous_summaries": "Resumos Anteriores",
   "no_summaries_available": "Nenhum resumo disponÃ­vel",
   "page_summary": "Resumo da PÃ¡gina",
   "failed_to_generate_summary": "Falha ao gerar resumo",
@@ -708,7 +690,6 @@
   "confirm": "Confirmar",
   "input_required": "Entrada Necessária",
   "alert": "Alerta",
-  "settings": "Configurações",
   "add_tabs_to_group": "Adicionar Abas ao Grupo",
   "ungroup_tabs": "Desagrupar abas",
   "delete_group": "Excluir grupo",
@@ -757,7 +738,6 @@
   "webApp": "Aplicativo Web",
   "exampleUrl": "https://exemplo.com",
   "enterText": "Digite o texto...",
-  
   "failed_to_get_news_data": "Não foi possível obter o link de dados de notícias do servidor",
   "failed_to_load_news_server": "Falha ao carregar notícias do servidor",
   "network_error_loading_news": "Erro de rede ao carregar notícias",
@@ -767,10 +747,9 @@
   "close_all": "Fechar Tudo",
   "delete_file": "Excluir Arquivo",
   "delete_file_confirm": "Tem certeza de que deseja excluir permanentemente este arquivo do seu dispositivo?",
-  "remove_from_history": "Remover do Histórico", 
+  "remove_from_history": "Remover do Histórico",
   "delete_from_device": "Excluir do Dispositivo",
   "notice": "Aviso",
-  
   "cannot_write_selected_folder": "Não é possível escrever na pasta selecionada. Usando pasta de downloads padrão.",
   "cannot_write_selected_folder_choose_different": "Não é possível escrever na pasta selecionada. Por favor, escolha um local diferente.",
   "cannot_write_configured_folder": "Não é possível escrever na pasta configurada. Usando pasta de downloads padrão.",
@@ -782,7 +761,6 @@
   "without_permission_private_folder": "Sem permissão, o arquivo será salvo na pasta privada do Solar (acessível do painel de Downloads).",
   "enable_unknown_apps_android": "Você pode precisar habilitar \"Instalar aplicativos desconhecidos\" nas configurações do Android após o download.",
   "private_folder_instead": "Os arquivos serão salvos na pasta privada do Solar em vez disso.",
-  
   "save_to_downloads_title": "Salvar em Downloads?",
   "save_to_gallery_title": "Salvar na Galeria?",
   "storage_access_required": "Acesso ao armazenamento necessário",
@@ -795,16 +773,13 @@
   "package_installation_permission": "Instalação de Pacotes",
   "storage_access_permission": "Acesso ao Armazenamento",
   "without_gallery_permission": "Sem permissão, arquivos de mídia só serão visíveis na seção de Downloads do Solar.",
-  
   "flutter_version_string": "Flutter 3.32.5",
   "photoncore_version_string": "Photoncore 0.1.0",
   "engine_version_string": "4.7.0",
-  
   "http_warning_title": "Aviso de Conexão Insegura",
   "http_warning_message": "Você está prestes a visitar um site que usa uma conexão insegura (HTTP). Seus dados podem ser visíveis para outros. Tem certeza de que deseja continuar?",
   "continue_anyway": "Continuar Mesmo Assim",
   "go_back": "Voltar",
-  
   "web_page_error_title": "Erro de Carregamento da Página",
   "connection_error": "Erro de Conexão",
   "page_not_found": "Página Não Encontrada",
@@ -822,20 +797,43 @@
   "ssl_error_description": "Há um problema com o certificado de segurança do site. A conexão pode não ser segura.",
   "network_error_description": "Ocorreu um erro de rede. Verifique sua conexão com a internet e tente novamente.",
   "server_error_description": "O servidor encontrou um erro e não foi possível completar sua solicitação.",
-  "try_again": "Tentar Novamente",
   "go_home": "Ir para Início",
-  "skip": "Pular",
-  "continueText": "Continuar",
   "package_downloaded": "Pacote baixado!",
   "installation_steps": "Passos de instalação:",
   "installation_instructions": "1. Toque em \"Instalar\" abaixo para abrir o pacote\n2. Habilite \"Instalar aplicativos desconhecidos\" se solicitado\n3. Siga o assistente de instalação do Android",
   "view": "Ver",
   "install": "Instalar",
   "file_deleted_from_device": "Arquivo excluído do dispositivo",
-  "delete": "Excluir",
-  "incognito": "Incógnito",
   "cannot_open_file_path_not_found": "Não é possível abrir o arquivo: caminho não encontrado",
   "error_opening_file_message": "Erro ao abrir arquivo: {message}",
   "error_opening_file_exception": "Erro ao abrir arquivo: {error}",
-  "summary_copied_to_clipboard": "Resumo copiado para a área de transferência"
+  "summary_copied_to_clipboard": "Resumo copiado para a área de transferência",
+  "change_download_location": "Alterar local de download",
+  "clear_downloads_history_description": "Remover histórico de downloads (arquivos permanecem)",
+  "copy_image_link": "Copiar link da imagem",
+  "copy_link_address": "Copiar endereço do link",
+  "custom_home_page": "Página inicial personalizada",
+  "denied": "Negado",
+  "download_permissions": "Permissões de download",
+  "failed_to_download_image": "Falha ao baixar a imagem",
+  "generating_summary": "Gerando resumo...",
+  "granted": "Concedido",
+  "limited": "Limitado",
+  "manage_download_permissions": "Gerenciar permissões de download",
+  "manage_external_storage": "Gerenciar armazenamento externo",
+  "not_set": "Não definido",
+  "notification": "Notificação",
+  "notification_permission": "Notificações",
+  "notification_permission_description": "Para alertas de progresso e conclusão de download",
+  "open_image_in_new_tab": "Abrir imagem em nova aba",
+  "open_link": "Abrir link",
+  "open_link_in_new_tab": "Abrir link em nova aba",
+  "permanently_denied": "Negado permanentemente",
+  "permission_explanation": "Essas permissões ajudam a melhorar sua experiência de download. Você pode alterá-las a qualquer momento nas Configurações do Android.",
+  "request": "Solicitar",
+  "restricted": "Restrito",
+  "save": "Salvar",
+  "set_home_page_url": "Definir URL da página inicial",
+  "storage": "Armazenamento",
+  "storage_permission": "Acesso ao armazenamento"
 }

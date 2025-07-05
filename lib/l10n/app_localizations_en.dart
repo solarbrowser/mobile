@@ -334,6 +334,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get permission_denied => 'Storage permission denied';
 
   @override
+  String get permission_permanently_denied =>
+      'Permission permanently denied. Please enable it in Settings.';
+
+  @override
   String get download_location_changed =>
       'Download location changed successfully';
 
@@ -413,6 +417,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get downloads_history_cleared => 'Downloads history cleared';
+
+  @override
+  String get sort_by => 'Sort by';
+
+  @override
+  String get name => 'Name';
+
+  @override
+  String get date => 'Date';
 
   @override
   String delete_download_confirm(String fileName) {

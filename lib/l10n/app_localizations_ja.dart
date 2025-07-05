@@ -42,13 +42,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get darkTheme => 'ダーク';
 
   @override
-  String get systemTheme => 'System';
+  String get systemTheme => 'システム';
 
   @override
   String get tokyoNightTheme => 'Tokyo Night';
 
   @override
-  String get solarizedLightTheme => 'Solarized Light';
+  String get solarizedLightTheme => 'Solarized ライト';
 
   @override
   String get draculaTheme => 'Dracula';
@@ -66,10 +66,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get catppuccinTheme => 'Catppuccin';
 
   @override
-  String get nordLightTheme => 'Nord Light';
+  String get nordLightTheme => 'Nord ライト';
 
   @override
-  String get gruvboxLightTheme => 'Gruvbox Light';
+  String get gruvboxLightTheme => 'Gruvbox ライト';
 
   @override
   String get next => '次へ';
@@ -214,7 +214,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get clear_browser_data => 'ブラウザデータを消去';
 
   @override
-  String get browsing_history => 'Browsing History';
+  String get browsing_history => 'ブラウザ履歴';
 
   @override
   String get cookies => 'Cookie';
@@ -332,6 +332,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get permission_denied => 'ストレージのアクセス許可が拒否されました';
 
   @override
+  String get permission_permanently_denied => '許可が恒久的に拒否されました。設定で有効にしてください。';
+
+  @override
   String get download_location_changed => 'ダウンロード先を変更しました';
 
   @override
@@ -405,6 +408,15 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get downloads_history_cleared => 'ダウンロード履歴を消去しました';
+
+  @override
+  String get sort_by => '並び替え';
+
+  @override
+  String get name => '名前';
+
+  @override
+  String get date => '日付';
 
   @override
   String delete_download_confirm(String fileName) {
@@ -534,34 +546,34 @@ class AppLocalizationsJa extends AppLocalizations {
   String get open_in_new_tab => '新しいタブで開く';
 
   @override
-  String get copy_image_link => 'Copy Image Link';
+  String get copy_image_link => '画像リンクをコピー';
 
   @override
-  String get open_image_in_new_tab => 'Open Image in New Tab';
+  String get open_image_in_new_tab => '新しいタブで画像を開く';
 
   @override
-  String get open_link => 'Open Link';
+  String get open_link => 'リンクを開く';
 
   @override
-  String get open_link_in_new_tab => 'Open Link in New Tab';
+  String get open_link_in_new_tab => '新しいタブでリンクを開く';
 
   @override
-  String get copy_link_address => 'Copy Link Address';
+  String get copy_link_address => 'リンクアドレスをコピー';
 
   @override
-  String get failed_to_download_image => 'Failed to download image';
+  String get failed_to_download_image => '画像のダウンロードに失敗しました';
 
   @override
-  String get custom_home_page => 'Custom Home Page';
+  String get custom_home_page => 'カスタムホームページ';
 
   @override
-  String get set_home_page_url => 'Set Home Page URL';
+  String get set_home_page_url => 'ホームページURLを設定';
 
   @override
-  String get not_set => 'Not set';
+  String get not_set => '設定されていません';
 
   @override
-  String get save => 'Save';
+  String get save => '保存';
 
   @override
   String get downloading => 'ダウンロード中...';
@@ -592,58 +604,56 @@ class AppLocalizationsJa extends AppLocalizations {
   String get grant_permission => '許可を与える';
 
   @override
-  String get download_permissions => 'Download Permissions';
+  String get download_permissions => 'ダウンロード権限';
 
   @override
-  String get manage_download_permissions => 'Manage permissions for downloads';
+  String get manage_download_permissions => 'ダウンロード権限を管理';
 
   @override
-  String get storage_permission => 'Storage Access';
+  String get storage_permission => 'ストレージアクセス';
 
   @override
-  String get notification_permission => 'Notifications';
+  String get notification_permission => '通知';
 
   @override
-  String get notification_permission_description =>
-      'For download progress and completion alerts';
+  String get notification_permission_description => 'ダウンロード進行状況と完了アラート用';
 
   @override
   String get permission_explanation =>
-      'These permissions help improve your download experience. You can change them anytime in Android Settings.';
+      'これらの権限は、ダウンロード体験を向上させるのに役立ちます。Android設定でいつでも変更できます。';
 
   @override
-  String get clear_downloads_history_description =>
-      'Remove download history (files remain)';
+  String get clear_downloads_history_description => 'ダウンロード履歴を削除（ファイルは残る）';
 
   @override
-  String get change_download_location => 'Change where files are saved';
+  String get change_download_location => 'ダウンロード場所を変更';
 
   @override
-  String get request => 'Request';
+  String get request => 'リクエスト';
 
   @override
-  String get storage => 'Storage';
+  String get storage => 'ストレージ';
 
   @override
-  String get manage_external_storage => 'Manage External Storage';
+  String get manage_external_storage => '外部ストレージを管理';
 
   @override
-  String get notification => 'Notification';
+  String get notification => '通知';
 
   @override
-  String get granted => 'Granted';
+  String get granted => '許可されました';
 
   @override
-  String get denied => 'Denied';
+  String get denied => '拒否されました';
 
   @override
-  String get restricted => 'Restricted';
+  String get restricted => '制限されています';
 
   @override
-  String get limited => 'Limited';
+  String get limited => '制限付き';
 
   @override
-  String get permanently_denied => 'Permanently Denied';
+  String get permanently_denied => '永続的に拒否されました';
 
   @override
   String get storage_permission_denied => 'ファイルをダウンロードするにはストレージ許可が必要です';
@@ -769,7 +779,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get summary_length => '要約の長さ';
 
   @override
-  String get generating_summary => 'Generating summary...';
+  String get generating_summary => '要約を生成中...';
 
   @override
   String get summary_copied_to_clipboard => '要約がクリップボードにコピーされました';

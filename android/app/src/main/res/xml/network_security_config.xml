@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- For browser apps, we need to allow HTTP traffic -->
-    <!-- But still maintain security where possible -->
+    <!-- For browser apps, we need to allow HTTP traffic for web compatibility -->
+    <!-- The browser app shows security warnings to users for HTTP sites -->
     <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates src="system"/>

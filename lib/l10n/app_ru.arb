@@ -1,6 +1,5 @@
-﻿{
+{
   "@@locale": "ru",
-
   "welcomeToSolar": "Добро пожаловать в Solar",
   "welcomeDescription": "Современный, быстрый и безопасный браузер",
   "termsOfService": "Продолжая, вы соглашаетесь с нашими Условиями использования и Политикой конфиденциальности",
@@ -101,6 +100,11 @@
   "reset": "Сбросить",
   "reset_complete": "Браузер сброшен",
   "permission_denied": "Доступ к хранилищу запрещён",
+  "permission_permanently_denied": "Доступ запрещён навсегда. Пожалуйста, включите его в Настройках.",
+  "sort_by": "Сортировать по",
+  "name": "Имя",
+  "size": "Размер",
+  "date": "Дата",
   "download_location_changed": "Папка загрузки изменена",
   "error_changing_location": "Ошибка при изменении папки",
   "enable_cookies": "Включить файлы cookie",
@@ -265,7 +269,7 @@
   "classic_navigation_description": "Показывать кнопки навигации внизу экрана",
   "ok": "ОК",
   "welcome_screen_reset": "Сброс экрана приветствия",
-  "welcome_screen_reset_message": "Экран приветствия будет показан при следующем запуске приложения. Пожалуйста, перезапустите приложение, чтобы увидеть обновленную политику конфиденциальности и условия использования.",
+  "welcome_screen_reset_message": "Это сбросит экран приветствия, чтобы он снова появился при следующем запуске приложения.",
   "customize_navigation": "Настроить навигацию",
   "bookmark_removed": "Закладка удалена",
   "navigation_buttons": "Кнопки навигации",
@@ -281,15 +285,15 @@
   "restore_defaults": "Восстановить по умолчанию",
   "drag_to_reorder": "Перетащите для изменения порядка",
   "add": "ДОБАВИТЬ",
-  "restored_tab": "Восстановленная Вкладка",
+  "restored_tab": "Вкладка восстановлена",
   "rename": "Переименовать",
   "rename_pwa": "Переименовать PWA",
   "pwa_name": "Имя PWA",
-  "pwa_renamed": "PWA и ярлык главного экрана переименованы",
-  "pwa_removed": "PWA и ярлык главного экрана удалены",
+  "pwa_renamed": "PWA переименовано",
+  "pwa_removed": "PWA удалено",
   "remove": "Удалить",
   "@remove": {
-    "description": "Button text for removing something"
+    "description": "Remove button text"
   },
   "install_packages_permission": "Разрешение на установку пакетов",
   "@install_packages_permission": {
@@ -422,7 +426,7 @@
       }
     }
   },
-  "previous_summaries": "Предыдущие сводки",
+  "previous_summaries": "Предыдущие резюме",
   "@previous_summaries": {
     "description": "Label for accessing previously generated summaries"
   },
@@ -518,11 +522,9 @@
   "@reset_welcome_screen": {
     "description": "Reset welcome screen option"
   },
-  "restored_tab": "Вкладка восстановлена",
   "@restored_tab": {
     "description": "Message when a tab is restored"
   },
-  "welcome_screen_reset_message": "Это сбросит экран приветствия, чтобы он снова появился при следующем запуске приложения.",
   "@welcome_screen_reset_message": {
     "description": "Dialog message for resetting welcome screen"
   },
@@ -565,14 +567,9 @@
   "@rename": {
     "description": "Rename button text"
   },
-  "pwa_renamed": "PWA переименовано",
   "@pwa_renamed": {
     "description": "Confirmation message when PWA is renamed"
   },
-  "@remove": {
-    "description": "Remove button text"
-  },
-  "pwa_removed": "PWA удалено",
   "@pwa_removed": {
     "description": "Confirmation message when PWA is removed"
   },
@@ -697,11 +694,10 @@
   },
   "create": "Создать",
   "summarize": "Резюмировать",
-  "previous_summaries": "Предыдущие резюме",
   "no_summaries_available": "Нет доступных резюме",
   "page_summary": "Резюме страницы",
   "failed_to_generate_summary": "Не удалось создать резюме",
-  "try_again": "Попробовать снова",
+  "try_again": "Попробовать Снова",
   "no_page_to_summarize": "Нет страницы для резюмирования",
   "no_content_found_to_summarize": "Не найдено содержимое для резюмирования",
   "theme": "Тема",
@@ -758,7 +754,6 @@
   "webApp": "Веб-приложение",
   "exampleUrl": "https://пример.com",
   "enterText": "Введите текст...",
-  
   "failed_to_get_news_data": "Не удалось получить ссылку на данные новостей с сервера",
   "failed_to_load_news_server": "Не удалось загрузить новости с сервера",
   "network_error_loading_news": "Ошибка сети при загрузке новостей",
@@ -768,10 +763,9 @@
   "close_all": "Закрыть Все",
   "delete_file": "Удалить Файл",
   "delete_file_confirm": "Вы уверены, что хотите навсегда удалить этот файл с вашего устройства?",
-  "remove_from_history": "Удалить из Истории", 
+  "remove_from_history": "Удалить из Истории",
   "delete_from_device": "Удалить с Устройства",
   "notice": "Уведомление",
-  
   "cannot_write_selected_folder": "Невозможно записать в выбранную папку. Используется папка загрузок по умолчанию.",
   "cannot_write_selected_folder_choose_different": "Невозможно записать в выбранную папку. Пожалуйста, выберите другое местоположение.",
   "cannot_write_configured_folder": "Невозможно записать в настроенную папку. Используется папка загрузок по умолчанию.",
@@ -783,7 +777,6 @@
   "without_permission_private_folder": "Без разрешения файл будет сохранен в частную папку Solar (доступную из панели Загрузки).",
   "enable_unknown_apps_android": "Возможно, вам нужно будет включить \"Установка неизвестных приложений\" в настройках Android после загрузки.",
   "private_folder_instead": "Файлы будут сохранены в частную папку Solar вместо этого.",
-  
   "save_to_downloads_title": "Сохранить в Загрузки?",
   "save_to_gallery_title": "Сохранить в Галерею?",
   "storage_access_required": "Требуется доступ к хранилищу",
@@ -796,16 +789,13 @@
   "package_installation_permission": "Установка Пакетов",
   "storage_access_permission": "Доступ к Хранилищу",
   "without_gallery_permission": "Без разрешения медиафайлы будут видны только в разделе Загрузки Solar.",
-  
   "flutter_version_string": "Flutter 3.32.5",
   "photoncore_version_string": "Photoncore 0.1.0",
   "engine_version_string": "4.7.0",
-  
   "http_warning_title": "Предупреждение о Небезопасном Соединении",
   "http_warning_message": "Вы собираетесь посетить веб-сайт, который использует небезопасное соединение (HTTP). Ваши данные могут быть видны другим. Вы уверены, что хотите продолжить?",
   "continue_anyway": "Все равно Продолжить",
   "go_back": "Вернуться Назад",
-  
   "web_page_error_title": "Ошибка Загрузки Страницы",
   "connection_error": "Ошибка Соединения",
   "page_not_found": "Страница Не Найдена",
@@ -823,20 +813,53 @@
   "ssl_error_description": "Проблема с сертификатом безопасности веб-сайта. Соединение может быть небезопасным.",
   "network_error_description": "Произошла ошибка сети. Проверьте ваше интернет-соединение и попробуйте снова.",
   "server_error_description": "Сервер столкнулся с ошибкой и не смог выполнить ваш запрос.",
-  "try_again": "Попробовать Снова",
   "go_home": "На Главную",
-  "skip": "Пропустить",
-  "continueText": "Продолжить",
   "package_downloaded": "Пакет загружен!",
   "installation_steps": "Шаги установки:",
   "installation_instructions": "1. Нажмите \"Установить\" ниже, чтобы открыть пакет\n2. Включите \"Установка неизвестных приложений\", если будет предложено\n3. Следуйте мастеру установки Android",
   "view": "Просмотр",
   "install": "Установить",
   "file_deleted_from_device": "Файл удален с устройства",
-  "delete": "Удалить",
-  "incognito": "Инкогнито",
   "cannot_open_file_path_not_found": "Невозможно открыть файл: путь не найден",
   "error_opening_file_message": "Ошибка открытия файла: {message}",
   "error_opening_file_exception": "Ошибка открытия файла: {error}",
-  "summary_copied_to_clipboard": "Резюме скопировано в буфер обмена"
+  "summary_copied_to_clipboard": "Резюме скопировано в буфер обмена",
+  "catppuccinTheme": "Catppuccin",
+  "change_download_location": "Изменить место загрузки",
+  "clear_downloads_history_description": "Удалить историю загрузок (файлы остаются)",
+  "copy_image_link": "Скопировать ссылку на изображение",
+  "copy_link_address": "Скопировать адрес ссылки",
+  "custom_home_page": "Пользовательская домашняя страница",
+  "denied": "Отклонено",
+  "download_permissions": "Разрешения загрузки",
+  "draculaTheme": "Dracula",
+  "failed_to_download_image": "Не удалось загрузить изображение",
+  "generating_summary": "Создание резюме...",
+  "granted": "Предоставлено",
+  "gruvboxLightTheme": "Gruvbox Светлый",
+  "gruvboxTheme": "Gruvbox",
+  "limited": "Ограничено",
+  "manage_download_permissions": "Управление разрешениями загрузки",
+  "manage_external_storage": "Управление внешним хранилищем",
+  "nordLightTheme": "Nord Светлый",
+  "nordTheme": "Nord",
+  "not_set": "Не установлено",
+  "notification": "Уведомление",
+  "notification_permission": "Уведомления",
+  "notification_permission_description": "Для оповещений о ходе загрузки и завершении",
+  "oneDarkTheme": "One Dark",
+  "open_image_in_new_tab": "Открыть изображение в новой вкладке",
+  "open_link": "Открыть ссылку",
+  "open_link_in_new_tab": "Открыть ссылку в новой вкладке",
+  "permanently_denied": "Постоянно отклонено",
+  "permission_explanation": "Эти разрешения помогают улучшить ваш опыт загрузки. Вы можете изменить их в любое время в настройках Android.",
+  "request": "Запрос",
+  "restricted": "Ограничено",
+  "save": "Сохранить",
+  "set_home_page_url": "Установить URL домашней страницы",
+  "solarizedLightTheme": "Solarized Светлый",
+  "storage": "Хранилище",
+  "storage_permission": "Доступ к хранилищу",
+  "systemTheme": "Системная",
+  "tokyoNightTheme": "Tokyo Night"
 }

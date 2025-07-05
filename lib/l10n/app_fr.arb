@@ -1,6 +1,5 @@
 {
   "@@locale": "fr",
-  
   "welcomeToSolar": "Bienvenue sur Solar",
   "welcomeDescription": "Un navigateur moderne, rapide et sécurisé",
   "termsOfService": "En continuant, vous acceptez nos Conditions d'utilisation et notre Politique de confidentialité",
@@ -40,7 +39,6 @@
   "and": "et",
   "data_collection": "Collecte de données",
   "data_collection_details": "• Nous collectons les données minimales nécessaires au fonctionnement du navigateur\n• Votre historique de navigation reste sur votre appareil\n• Nous ne suivons pas votre activité en ligne\n• Vous pouvez effacer toutes les données à tout moment",
-
   "general": "Général",
   "appearance": "Apparence",
   "downloads": "Téléchargements",
@@ -108,6 +106,11 @@
   "reset": "Réinitialiser",
   "reset_complete": "Navigateur réinitialisé",
   "permission_denied": "Permission de stockage refusée",
+  "permission_permanently_denied": "Permission refusée définitivement. Veuillez l'activer dans les Paramètres.",
+  "sort_by": "Trier par",
+  "name": "Nom",
+  "size": "Taille",
+  "date": "Date",
   "download_location_changed": "Emplacement de téléchargement modifié",
   "error_changing_location": "Erreur lors du changement d'emplacement",
   "enable_cookies": "Activer les cookies",
@@ -130,7 +133,7 @@
   "exit_app_confirm": "Voulez-vous vraiment quitter ?",
   "exit": "Quitter",
   "size": "Taille",
-  "auto_open_downloads": "Ouvrir automatiquement les téléchargements",
+  "auto_open_downloads": "Ouvrir Automatiquement les Téléchargements",
   "clear_downloads_history": "Effacer l'historique des téléchargements",
   "downloads_history_cleared": "Historique des téléchargements effacé",
   "delete_download_confirm": "Voulez-vous supprimer {fileName} de l'historique des téléchargements ?\nLe fichier téléchargé ne sera pas supprimé.",
@@ -242,7 +245,7 @@
   "file_exists": "Le fichier existe déjà",
   "file_saved": "Fichier enregistré dans Téléchargements",
   "no_tabs_open": "Aucun onglet ouvert",
-  "incognito": "Navigation privée",
+  "incognito": "Incognito",
   "clear_all": "Tout effacer",
   "clear_history": "Effacer l'historique",
   "clear_history_confirmation": "Voulez-vous vraiment effacer l'historique de navigation ?",
@@ -316,10 +319,11 @@
   },
   "searchTheWeb": "Rechercher sur le web",
   "recentSearches": "Recherches récentes",
-  "classic_navigation": "Navigation Classique",  "classic_navigation_description": "Afficher les boutons de navigation en bas de l'écran",
+  "classic_navigation": "Navigation Classique",
+  "classic_navigation_description": "Utiliser les contrôles de navigation de style navigateur classique",
   "ok": "OK",
   "welcome_screen_reset": "Réinitialiser l'écran d'accueil",
-  "welcome_screen_reset_message": "L'écran d'accueil sera affiché au prochain démarrage de l'application. Veuillez redémarrer l'application pour voir la politique de confidentialité et les conditions d'utilisation mises à jour.",
+  "welcome_screen_reset_message": "Cela réinitialisera l'écran d'accueil pour qu'il apparaisse à nouveau la prochaine fois que vous démarrez l'application.",
   "customize_navigation": "Personnaliser la navigation",
   "bookmark_removed": "Signet supprimé",
   "navigation_buttons": "Boutons de navigation",
@@ -332,17 +336,19 @@
   "button_menu": "Menu",
   "button_bookmarks": "Signets",
   "navigation_bar_animations": "Animations de la barre de navigation",
-  "restore_defaults": "Restaurer les paramètres par défaut",  "drag_to_reorder": "Glisser pour réorganiser",
-  "add": "AJOUTER",  "restored_tab": "Onglet Restauré",
+  "restore_defaults": "Restaurer les paramètres par défaut",
+  "drag_to_reorder": "Glisser pour réorganiser",
+  "add": "Ajouter",
+  "restored_tab": "Onglet restauré",
   "rename": "Renommer",
   "rename_pwa": "Renommer PWA",
-  "pwa_name": "Nom de PWA",
-  "pwa_renamed": "PWA et raccourci d'écran d'accueil renommés",  "pwa_removed": "PWA et raccourci d'écran d'accueil supprimés",
+  "pwa_name": "Nom PWA",
+  "pwa_renamed": "PWA renommé",
+  "pwa_removed": "PWA supprimé",
   "remove": "Supprimer",
   "@remove": {
-    "description": "Button text for removing something"
+    "description": "Remove button text"
   },
-
   "skip": "Ignorer",
   "@skip": {
     "description": "Skip button text"
@@ -482,86 +488,65 @@
   "developer": "Développeur",
   "@developer": {
     "description": "Developer section title"
-  },  "reset_welcome_screen": "Réinitialiser l'écran d'accueil",
+  },
+  "reset_welcome_screen": "Réinitialiser l'écran d'accueil",
   "@reset_welcome_screen": {
     "description": "Reset welcome screen option"
   },
-  "restored_tab": "Onglet restauré",
   "@restored_tab": {
     "description": "Message when a tab is restored"
   },
-  "welcome_screen_reset": "Réinitialiser l'écran d'accueil",
   "@welcome_screen_reset": {
     "description": "Dialog title for resetting welcome screen"
   },
-  "welcome_screen_reset_message": "Cela réinitialisera l'écran d'accueil pour qu'il apparaisse à nouveau la prochaine fois que vous démarrez l'application.",
   "@welcome_screen_reset_message": {
     "description": "Dialog message for resetting welcome screen"
   },
-  "ok": "OK",
   "@ok": {
     "description": "OK button text"
   },
-  "customize_navigation": "Personnaliser la navigation",
   "@customize_navigation": {
     "description": "Title for navigation customization"
   },
-  "button_back": "Retour",
   "@button_back": {
     "description": "Back button label"
   },
-  "button_forward": "Suivant",
   "@button_forward": {
     "description": "Forward button label"
   },
-  "button_bookmark": "Signet",
   "@button_bookmark": {
     "description": "Bookmark button label"
   },
-  "button_bookmarks": "Signets",
   "@button_bookmarks": {
     "description": "Bookmarks button label"
   },
-  "button_share": "Partager",
   "@button_share": {
     "description": "Share button label"
   },
-  "button_menu": "Menu",
   "@button_menu": {
     "description": "Menu button label"
   },
-  "available_buttons": "Boutons disponibles",
   "@available_buttons": {
     "description": "Label for available navigation buttons"
   },
-  "add": "Ajouter",
   "@add": {
     "description": "Add button text"
   },
-  "rename_pwa": "Renommer PWA",
   "@rename_pwa": {
     "description": "Option to rename a PWA"
   },
-  "pwa_name": "Nom PWA",
   "@pwa_name": {
     "description": "Hint for PWA name input field"
   },
-  "rename": "Renommer",
   "@rename": {
     "description": "Rename button text"
   },
-  "pwa_renamed": "PWA renommé",
   "@pwa_renamed": {
     "description": "Confirmation message when PWA is renamed"
   },
-  "remove": "Supprimer",
-  "@remove": {
-    "description": "Remove button text"
-  },
-  "pwa_removed": "PWA supprimé",
   "@pwa_removed": {
     "description": "Confirmation message when PWA is removed"
-  },  "bookmark_removed": "Signet supprimé",
+  },
   "@bookmark_removed": {
     "description": "Confirmation message when bookmark is removed"
   },
@@ -597,11 +582,9 @@
   "@navigation_controls": {
     "description": "Title for navigation controls settings"
   },
-  "classic_navigation": "Navigation Classique",
   "@classic_navigation": {
     "description": "Label for classic navigation mode"
   },
-  "classic_navigation_description": "Utiliser les contrôles de navigation de style navigateur classique",
   "@classic_navigation_description": {
     "description": "Description for classic navigation setting"
   },
@@ -613,10 +596,10 @@
   "@ai_summary_settings": {
     "description": "Title for AI summary settings"
   },
-  "auto_open_downloads": "Ouvrir Automatiquement les Téléchargements",
   "@auto_open_downloads": {
     "description": "Setting title for auto-opening downloads"
-  },  "ask_download_location_title": "Demander l'Emplacement de Téléchargement",
+  },
+  "ask_download_location_title": "Demander l'Emplacement de Téléchargement",
   "@ask_download_location_title": {
     "description": "Setting title for asking download location"
   },
@@ -680,28 +663,29 @@
   "group_name": "Nom du Groupe",
   "@group_name": {
     "description": "Input label for tab group name"
-  },  "color": "Couleur",
+  },
+  "color": "Couleur",
   "@color": {
     "description": "Color selection label"
-  },  "close_group": "Fermer le Groupe",
+  },
+  "close_group": "Fermer le Groupe",
   "@close_group": {
     "description": "Dialog title for closing a tab group"
   },
   "create": "Créer",
   "summarize": "Résumer",
-  "previous_summaries": "Résumés Précédents",
   "no_summaries_available": "Aucun résumé disponible",
   "page_summary": "Résumé de Page",
   "failed_to_generate_summary": "Échec de génération du résumé",
   "try_again": "Réessayer",
-  "no_page_to_summarize": "Aucune page à résumer",  "no_content_found_to_summarize": "Aucun contenu trouvé à résumer",
+  "no_page_to_summarize": "Aucune page à résumer",
+  "no_content_found_to_summarize": "Aucun contenu trouvé à résumer",
   "theme": "Thème",
   "check": "Vérifier",
   "pwa": "PWA",
   "confirm": "Confirmer",
   "input_required": "Saisie Requise",
   "alert": "Alerte",
-  "settings": "Paramètres",
   "add_tabs_to_group": "Ajouter des Onglets au Groupe",
   "ungroup_tabs": "Dégrouper les onglets",
   "delete_group": "Supprimer le groupe",
@@ -733,29 +717,6 @@
   "acceptContinue": "Accepter et Continuer",
   "welcome": "Bienvenue",
   "systemThemeDesc": "Suit le système",
-  "lightThemeDesc": "Lumineux et net",
-  "darkThemeDesc": "Doux pour les yeux",
-  "solarizedLightThemeDesc": "Thème clair chaleureux",
-  "nordLightThemeDesc": "Thème clair frais",
-  "gruvboxLightThemeDesc": "Thème clair rétro",
-  "tokyoNightThemeDesc": "Thème nocturne vibrant",
-  "draculaThemeDesc": "Thème violet foncé",
-  "nordThemeDesc": "Thème sombre frais",
-  "gruvboxThemeDesc": "Thème sombre rétro",
-  "oneDarkThemeDesc": "Thème inspiré éditeur",
-  "catppuccinThemeDesc": "Thème sombre pastel",
-  "latestNews": "Dernières Actualités",
-  "errorLoadingNews": "Erreur lors du chargement des actualités",
-  "defaultLocation": "Emplacement par défaut",
-  "webApp": "Application Web",
-  "exampleUrl": "https://exemple.com",
-  "enterText": "Saisir du texte...",
-  
-  "exampleUrl": "https://exemple.com",
-  "enterText": "Entrer du texte...",
-  "custom_home_page": "Page d'accueil personnalisée",
-  "set_home_page_url": "Définir l'URL de la page d'accueil",
-  "systemThemeDesc": "Suit le système",
   "lightThemeDesc": "Lumineux et propre",
   "darkThemeDesc": "Repose les yeux",
   "solarizedLightThemeDesc": "Thème clair chaleureux",
@@ -771,7 +732,10 @@
   "errorLoadingNews": "Erreur lors du chargement des nouvelles",
   "defaultLocation": "Emplacement par défaut",
   "webApp": "Application Web",
-  
+  "exampleUrl": "https://exemple.com",
+  "enterText": "Entrer du texte...",
+  "custom_home_page": "Page d'accueil personnalisée",
+  "set_home_page_url": "Définir l'URL de la page d'accueil",
   "failed_to_get_news_data": "Impossible d'obtenir le lien de données d'actualités du serveur",
   "failed_to_load_news_server": "Échec du chargement des actualités depuis le serveur",
   "network_error_loading_news": "Erreur réseau lors du chargement des actualités",
@@ -781,10 +745,9 @@
   "close_all": "Fermer Tout",
   "delete_file": "Supprimer le Fichier",
   "delete_file_confirm": "Êtes-vous sûr de vouloir supprimer définitivement ce fichier de votre appareil ?",
-  "remove_from_history": "Retirer de l'Historique", 
+  "remove_from_history": "Retirer de l'Historique",
   "delete_from_device": "Supprimer de l'Appareil",
   "notice": "Avis",
-  
   "cannot_write_selected_folder": "Impossible d'écrire dans le dossier sélectionné. Utilisation du dossier de téléchargement par défaut.",
   "cannot_write_selected_folder_choose_different": "Impossible d'écrire dans le dossier sélectionné. Veuillez choisir un emplacement différent.",
   "cannot_write_configured_folder": "Impossible d'écrire dans le dossier configuré. Utilisation du dossier de téléchargement par défaut.",
@@ -796,7 +759,6 @@
   "without_permission_private_folder": "Sans autorisation, le fichier sera enregistré dans le dossier privé de Solar (accessible depuis le panneau Téléchargements).",
   "enable_unknown_apps_android": "Vous devrez peut-être activer \"Installer des applications inconnues\" dans les paramètres Android après le téléchargement.",
   "private_folder_instead": "Les fichiers seront enregistrés dans le dossier privé de Solar à la place.",
-  
   "save_to_downloads_title": "Enregistrer dans les Téléchargements ?",
   "save_to_gallery_title": "Enregistrer dans la Galerie ?",
   "storage_access_required": "Accès au stockage requis",
@@ -809,16 +771,13 @@
   "package_installation_permission": "Installation de Paquets",
   "storage_access_permission": "Accès au Stockage",
   "without_gallery_permission": "Sans autorisation, les fichiers multimédias ne seront visibles que dans la section Téléchargements de Solar.",
-  
   "flutter_version_string": "Flutter 3.32.5",
   "photoncore_version_string": "Photoncore 0.1.0",
   "engine_version_string": "4.7.0",
-  
   "http_warning_title": "Avertissement de Connexion Non Sécurisée",
   "http_warning_message": "Vous êtes sur le point de visiter un site web qui utilise une connexion non sécurisée (HTTP). Vos données peuvent être visibles par d'autres. Êtes-vous sûr de vouloir continuer ?",
   "continue_anyway": "Continuer Quand Même",
   "go_back": "Retourner",
-  
   "web_page_error_title": "Erreur de Chargement de Page",
   "connection_error": "Erreur de Connexion",
   "page_not_found": "Page Non Trouvée",
@@ -836,20 +795,41 @@
   "ssl_error_description": "Il y a un problème avec le certificat de sécurité du site web. La connexion peut ne pas être sécurisée.",
   "network_error_description": "Une erreur réseau s'est produite. Veuillez vérifier votre connexion internet et réessayer.",
   "server_error_description": "Le serveur a rencontré une erreur et n'a pas pu compléter votre demande.",
-  "try_again": "Réessayer",
   "go_home": "Aller à l'Accueil",
-  "skip": "Ignorer",
-  "continueText": "Continuer",
   "package_downloaded": "Paquet téléchargé !",
   "installation_steps": "Étapes d'installation :",
   "installation_instructions": "1. Appuyez sur \"Installer\" ci-dessous pour ouvrir le paquet\n2. Activez \"Installer des apps inconnues\" si demandé\n3. Suivez l'assistant d'installation Android",
   "view": "Voir",
   "install": "Installer",
   "file_deleted_from_device": "Fichier supprimé de l'appareil",
-  "delete": "Supprimer",
-  "incognito": "Incognito",
   "cannot_open_file_path_not_found": "Impossible d'ouvrir le fichier : chemin introuvable",
   "error_opening_file_message": "Erreur lors de l'ouverture du fichier : {message}",
   "error_opening_file_exception": "Erreur lors de l'ouverture du fichier : {error}",
-  "summary_copied_to_clipboard": "Résumé copié dans le presse-papiers"
+  "summary_copied_to_clipboard": "Résumé copié dans le presse-papiers",
+  "change_download_location": "Changer l'emplacement de téléchargement",
+  "clear_downloads_history_description": "Supprimer l'historique des téléchargements (les fichiers restent)",
+  "copy_image_link": "Copier le lien de l'image",
+  "copy_link_address": "Copier l'adresse du lien",
+  "denied": "Refusé",
+  "download_permissions": "Autorisations de téléchargement",
+  "failed_to_download_image": "Échec du téléchargement de l'image",
+  "generating_summary": "Génération du résumé...",
+  "granted": "Accordé",
+  "limited": "Limité",
+  "manage_download_permissions": "Gérer les autorisations de téléchargement",
+  "manage_external_storage": "Gérer le stockage externe",
+  "not_set": "Non défini",
+  "notification": "Notification",
+  "notification_permission": "Notifications",
+  "notification_permission_description": "Pour les alertes de progression et d'achèvement de téléchargement",
+  "open_image_in_new_tab": "Ouvrir l'image dans un nouvel onglet",
+  "open_link": "Ouvrir le lien",
+  "open_link_in_new_tab": "Ouvrir le lien dans un nouvel onglet",
+  "permanently_denied": "Refusé définitivement",
+  "permission_explanation": "Ces autorisations améliorent votre expérience de téléchargement. Vous pouvez les modifier à tout moment dans les paramètres Android.",
+  "request": "Demander",
+  "restricted": "Restreint",
+  "save": "Enregistrer",
+  "storage": "Stockage",
+  "storage_permission": "Accès au stockage"
 }

@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "it",
   "welcomeToSolar": "Benvenuto su Solar",
   "welcomeDescription": "Un browser moderno, veloce e sicuro",
@@ -106,6 +106,11 @@
   "reset": "Ripristina",
   "reset_complete": "Browser ripristinato",
   "permission_denied": "Permesso di archiviazione negato",
+  "permission_permanently_denied": "Permesso negato definitivamente. Si prega di abilitarlo nelle Impostazioni.",
+  "sort_by": "Ordina per",
+  "name": "Nome",
+  "size": "Dimensione",
+  "date": "Data",
   "download_location_changed": "Posizione download modificata",
   "error_changing_location": "Errore nel cambio posizione",
   "enable_cookies": "Abilita cookie",
@@ -128,7 +133,7 @@
   "exit_app_confirm": "Sei sicuro di voler uscire?",
   "exit": "Esci",
   "size": "Dimensione",
-  "auto_open_downloads": "Apri download automaticamente",
+  "auto_open_downloads": "Apri Download Automaticamente",
   "clear_downloads_history": "Cancella cronologia download",
   "downloads_history_cleared": "Cronologia download cancellata",
   "delete_download_confirm": "Vuoi eliminare {fileName} dalla cronologia download?\nIl file scaricato non verrà eliminato.",
@@ -317,11 +322,11 @@
   "summary_length": "Lunghezza del riassunto",
   "summary_language": "Lingua del riassunto",
   "classic_navigation": "Navigazione Classica",
-  "classic_navigation_description": "Mostra i pulsanti di navigazione nella parte inferiore dello schermo",
+  "classic_navigation_description": "Usa i controlli di navigazione in stile browser classico",
   "ok": "OK",
-  "welcome_screen_reset": "Ripristina schermata di benvenuto",
-  "welcome_screen_reset_message": "La schermata di benvenuto verrà mostrata al prossimo avvio dell'app. Riavvia l'app per vedere la politica sulla privacy e i termini di servizio aggiornati.",
-  "customize_navigation": "Personalizza navigazione",
+  "welcome_screen_reset": "Reimposta Schermata di Benvenuto",
+  "welcome_screen_reset_message": "Questo reimposterà la schermata di benvenuto in modo che appaia di nuovo la prossima volta che avvii l'app.",
+  "customize_navigation": "Personalizza Navigazione",
   "bookmark_removed": "Segnalibro rimosso",
   "navigation_buttons": "Pulsanti di navigazione",
   "available_buttons": "Pulsanti disponibili",
@@ -335,16 +340,16 @@
   "navigation_bar_animations": "Animazioni barra di navigazione",
   "restore_defaults": "Ripristina predefiniti",
   "drag_to_reorder": "Trascina per riordinare",
-  "add": "AGGIUNGI",
-  "restored_tab": "Scheda Ripristinata",
+  "add": "Aggiungi",
+  "restored_tab": "Scheda ripristinata",
   "rename": "Rinomina",
   "rename_pwa": "Rinomina PWA",
   "pwa_name": "Nome PWA",
-  "pwa_renamed": "PWA e collegamento schermata home rinominati",
-  "pwa_removed": "PWA e collegamento schermata home rimossi",
+  "pwa_renamed": "PWA rinominata",
+  "pwa_removed": "PWA rimossa",
   "remove": "Rimuovi",
   "@remove": {
-    "description": "Button text for removing something"
+    "description": "Remove button text"
   },
   "skip": "Salta",
   "@skip": {
@@ -494,83 +499,60 @@
   "@reset_welcome_screen": {
     "description": "Reset welcome screen option"
   },
-  "restored_tab": "Scheda ripristinata",
   "@restored_tab": {
     "description": "Message when a tab is restored"
   },
-  "welcome_screen_reset": "Reimposta Schermata di Benvenuto",
   "@welcome_screen_reset": {
     "description": "Dialog title for resetting welcome screen"
   },
-  "welcome_screen_reset_message": "Questo reimposterà la schermata di benvenuto in modo che appaia di nuovo la prossima volta che avvii l'app.",
   "@welcome_screen_reset_message": {
     "description": "Dialog message for resetting welcome screen"
   },
-  "ok": "OK",
   "@ok": {
     "description": "OK button text"
   },
-  "customize_navigation": "Personalizza Navigazione",
   "@customize_navigation": {
     "description": "Title for navigation customization"
   },
-  "button_back": "Indietro",
   "@button_back": {
     "description": "Back button label"
   },
-  "button_forward": "Avanti",
   "@button_forward": {
     "description": "Forward button label"
   },
-  "button_bookmark": "Segnalibro",
   "@button_bookmark": {
     "description": "Bookmark button label"
   },
-  "button_bookmarks": "Segnalibri",
   "@button_bookmarks": {
     "description": "Bookmarks button label"
   },
-  "button_share": "Condividi",
   "@button_share": {
     "description": "Share button label"
   },
-  "button_menu": "Menu",
   "@button_menu": {
     "description": "Menu button label"
   },
-  "available_buttons": "Pulsanti disponibili",
   "@available_buttons": {
     "description": "Label for available navigation buttons"
   },
-  "add": "Aggiungi",
   "@add": {
     "description": "Add button text"
   },
-  "rename_pwa": "Rinomina PWA",
   "@rename_pwa": {
     "description": "Option to rename a PWA"
   },
-  "pwa_name": "Nome PWA",
   "@pwa_name": {
     "description": "Hint for PWA name input field"
   },
-  "rename": "Rinomina",
   "@rename": {
     "description": "Rename button text"
   },
-  "pwa_renamed": "PWA rinominata",
   "@pwa_renamed": {
     "description": "Confirmation message when PWA is renamed"
   },
-  "remove": "Rimuovi",
-  "@remove": {
-    "description": "Remove button text"
-  },
-  "pwa_removed": "PWA rimossa",
   "@pwa_removed": {
     "description": "Confirmation message when PWA is removed"
   },
-  "bookmark_removed": "Segnalibro rimosso",
   "@bookmark_removed": {
     "description": "Confirmation message when bookmark is removed"
   },
@@ -606,11 +588,9 @@
   "@navigation_controls": {
     "description": "Title for navigation controls settings"
   },
-  "classic_navigation": "Navigazione Classica",
   "@classic_navigation": {
     "description": "Label for classic navigation mode"
   },
-  "classic_navigation_description": "Usa i controlli di navigazione in stile browser classico",
   "@classic_navigation_description": {
     "description": "Description for classic navigation setting"
   },
@@ -622,7 +602,6 @@
   "@ai_summary_settings": {
     "description": "Title for AI summary settings"
   },
-  "auto_open_downloads": "Apri Download Automaticamente",
   "@auto_open_downloads": {
     "description": "Setting title for auto-opening downloads"
   },
@@ -701,7 +680,6 @@
   },
   "create": "Crea",
   "summarize": "Riassumi",
-  "previous_summaries": "Riassunti Precedenti",
   "no_summaries_available": "Nessun riassunto disponibile",
   "page_summary": "Riassunto Pagina",
   "failed_to_generate_summary": "Impossibile generare riassunto",
@@ -714,7 +692,6 @@
   "confirm": "Conferma",
   "input_required": "Input Richiesto",
   "alert": "Avviso",
-  "settings": "Impostazioni",
   "add_tabs_to_group": "Aggiungi Schede al Gruppo",
   "ungroup_tabs": "Separa schede",
   "delete_group": "Elimina gruppo",
@@ -747,26 +724,6 @@
   "welcome": "Benvenuto",
   "systemThemeDesc": "Segue il sistema",
   "lightThemeDesc": "Luminoso e pulito",
-  "darkThemeDesc": "Delicato sugli occhi",
-  "solarizedLightThemeDesc": "Tema chiaro caldo",
-  "nordLightThemeDesc": "Tema chiaro freddo",
-  "gruvboxLightThemeDesc": "Tema chiaro retro",
-  "tokyoNightThemeDesc": "Tema notturno vibrante",
-  "draculaThemeDesc": "Tema viola scuro",
-  "nordThemeDesc": "Tema scuro freddo",
-  "gruvboxThemeDesc": "Tema scuro retro",
-  "oneDarkThemeDesc": "Tema ispirato all'editor",
-  "catppuccinThemeDesc": "Tema scuro pastello",
-  "latestNews": "Ultime Notizie",
-  "errorLoadingNews": "Errore nel caricamento delle notizie",
-  "defaultLocation": "Posizione predefinita",
-  "webApp": "App Web",
-  "exampleUrl": "https://esempio.com",
-  "enterText": "Inserisci testo...",
-  "custom_home_page": "Pagina iniziale personalizzata",
-  "set_home_page_url": "Imposta URL pagina iniziale",
-  "systemThemeDesc": "Segue il sistema",
-  "lightThemeDesc": "Luminoso e pulito",
   "darkThemeDesc": "Rilassante per gli occhi",
   "solarizedLightThemeDesc": "Tema chiaro caldo",
   "nordLightThemeDesc": "Tema chiaro freddo",
@@ -781,7 +738,10 @@
   "errorLoadingNews": "Errore nel caricamento delle notizie",
   "defaultLocation": "Posizione predefinita",
   "webApp": "App Web",
-  
+  "exampleUrl": "https://esempio.com",
+  "enterText": "Inserisci testo...",
+  "custom_home_page": "Pagina iniziale personalizzata",
+  "set_home_page_url": "Imposta URL pagina iniziale",
   "failed_to_get_news_data": "Impossibile ottenere il collegamento dati notizie dal server",
   "failed_to_load_news_server": "Impossibile caricare le notizie dal server",
   "network_error_loading_news": "Errore di rete durante il caricamento delle notizie",
@@ -791,10 +751,9 @@
   "close_all": "Chiudi Tutto",
   "delete_file": "Elimina File",
   "delete_file_confirm": "Sei sicuro di voler eliminare definitivamente questo file dal tuo dispositivo?",
-  "remove_from_history": "Rimuovi dalla Cronologia", 
+  "remove_from_history": "Rimuovi dalla Cronologia",
   "delete_from_device": "Elimina dal Dispositivo",
   "notice": "Avviso",
-  
   "cannot_write_selected_folder": "Impossibile scrivere nella cartella selezionata. Utilizzando la cartella di download predefinita.",
   "cannot_write_selected_folder_choose_different": "Impossibile scrivere nella cartella selezionata. Si prega di scegliere una posizione diversa.",
   "cannot_write_configured_folder": "Impossibile scrivere nella cartella configurata. Utilizzando la cartella di download predefinita.",
@@ -806,7 +765,6 @@
   "without_permission_private_folder": "Senza permesso, il file sarà salvato nella cartella privata di Solar (accessibile dal pannello Download).",
   "enable_unknown_apps_android": "Potrebbe essere necessario abilitare \"Installa app sconosciute\" nelle impostazioni Android dopo il download.",
   "private_folder_instead": "I file saranno salvati nella cartella privata di Solar invece.",
-  
   "save_to_downloads_title": "Salvare nei Download?",
   "save_to_gallery_title": "Salvare nella Galleria?",
   "storage_access_required": "Accesso allo storage richiesto",
@@ -819,16 +777,13 @@
   "package_installation_permission": "Installazione Pacchetti",
   "storage_access_permission": "Accesso allo Storage",
   "without_gallery_permission": "Senza permesso, i file multimediali saranno visibili solo nella sezione Download di Solar.",
-  
   "flutter_version_string": "Flutter 3.32.5",
   "photoncore_version_string": "Photoncore 0.1.0",
   "engine_version_string": "4.7.0",
-  
   "http_warning_title": "Avviso Connessione Non Sicura",
   "http_warning_message": "Stai per visitare un sito web che usa una connessione non sicura (HTTP). I tuoi dati potrebbero essere visibili ad altri. Sei sicuro di voler continuare?",
   "continue_anyway": "Continua Comunque",
   "go_back": "Torna Indietro",
-  
   "web_page_error_title": "Errore di Caricamento Pagina",
   "connection_error": "Errore di Connessione",
   "page_not_found": "Pagina Non Trovata",
@@ -846,20 +801,42 @@
   "ssl_error_description": "C'è un problema con il certificato di sicurezza del sito web. La connessione potrebbe non essere sicura.",
   "network_error_description": "Si è verificato un errore di rete. Controlla la tua connessione internet e riprova.",
   "server_error_description": "Il server ha riscontrato un errore e non è riuscito a completare la richiesta.",
-  "try_again": "Riprova",
   "go_home": "Vai alla Home",
-  "skip": "Salta",
-  "continueText": "Continua",
   "package_downloaded": "Pacchetto scaricato!",
   "installation_steps": "Passaggi di installazione:",
   "installation_instructions": "1. Tocca \"Installa\" qui sotto per aprire il pacchetto\n2. Abilita \"Installa app sconosciute\" se richiesto\n3. Segui la procedura guidata di installazione di Android",
   "view": "Visualizza",
   "install": "Installa",
   "file_deleted_from_device": "File eliminato dal dispositivo",
-  "delete": "Elimina",
-  "incognito": "Incognito",
   "cannot_open_file_path_not_found": "Impossibile aprire il file: percorso non trovato",
   "error_opening_file_message": "Errore nell'apertura del file: {message}",
   "error_opening_file_exception": "Errore nell'apertura del file: {error}",
-  "summary_copied_to_clipboard": "Riassunto copiato negli appunti"
+  "summary_copied_to_clipboard": "Riassunto copiato negli appunti",
+  "change_download_location": "Cambia posizione download",
+  "clear_downloads_history_description": "Rimuovi cronologia download (i file rimangono)",
+  "copy_image_link": "Copia link immagine",
+  "copy_link_address": "Copia indirizzo link",
+  "denied": "Negato",
+  "download_permissions": "Permessi download",
+  "failed_to_download_image": "Impossibile scaricare l'immagine",
+  "generating_summary": "Generando riassunto...",
+  "granted": "Concesso",
+  "limited": "Limitato",
+  "manage_download_permissions": "Gestisci permessi download",
+  "manage_external_storage": "Gestisci archiviazione esterna",
+  "not_set": "Non impostato",
+  "notification": "Notifica",
+  "notification_permission": "Notifiche",
+  "notification_permission_description": "Per avvisi di progresso e completamento download",
+  "open_image_in_new_tab": "Apri immagine in nuova scheda",
+  "open_link": "Apri link",
+  "open_link_in_new_tab": "Apri link in nuova scheda",
+  "permanently_denied": "Negato permanentemente",
+  "permission_explanation": "Questi permessi migliorano la tua esperienza di download. Puoi modificarli in qualsiasi momento nelle Impostazioni Android.",
+  "request": "Richiedi",
+  "restricted": "Limitato",
+  "save": "Salva",
+  "storage": "Archiviazione",
+  "storage_permission": "Accesso archiviazione",
+  "browsing_history": "Cronologia di navigazione"
 }

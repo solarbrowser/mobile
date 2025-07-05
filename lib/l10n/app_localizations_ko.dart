@@ -42,13 +42,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get darkTheme => '다크';
 
   @override
-  String get systemTheme => 'System';
+  String get systemTheme => '시스템';
 
   @override
   String get tokyoNightTheme => 'Tokyo Night';
 
   @override
-  String get solarizedLightTheme => 'Solarized Light';
+  String get solarizedLightTheme => 'Solarized 라이트';
 
   @override
   String get draculaTheme => 'Dracula';
@@ -66,10 +66,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get catppuccinTheme => 'Catppuccin';
 
   @override
-  String get nordLightTheme => 'Nord Light';
+  String get nordLightTheme => 'Nord 라이트';
 
   @override
-  String get gruvboxLightTheme => 'Gruvbox Light';
+  String get gruvboxLightTheme => 'Gruvbox 라이트';
 
   @override
   String get next => '다음';
@@ -103,12 +103,12 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String min_ago(int minutes) {
-    return '$minutes min ago';
+    return '$minutes분 전';
   }
 
   @override
   String hr_ago(int hours) {
-    return '$hours hr ago';
+    return '$hours시간 전';
   }
 
   @override
@@ -332,6 +332,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get permission_denied => '저장소 권한이 거부되었습니다';
 
   @override
+  String get permission_permanently_denied =>
+      '권한이 영구적으로 거부되었습니다. 설정에서 활성화해 주세요.';
+
+  @override
   String get download_location_changed => '다운로드 위치가 변경되었습니다';
 
   @override
@@ -405,6 +409,15 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get downloads_history_cleared => '다운로드 기록이 삭제되었습니다';
+
+  @override
+  String get sort_by => '정렬 기준';
+
+  @override
+  String get name => '이름';
+
+  @override
+  String get date => '날짜';
 
   @override
   String delete_download_confirm(String fileName) {
@@ -532,34 +545,34 @@ class AppLocalizationsKo extends AppLocalizations {
   String get open_in_new_tab => '새 탭에서 열기';
 
   @override
-  String get copy_image_link => 'Copy Image Link';
+  String get copy_image_link => '이미지 링크 복사';
 
   @override
-  String get open_image_in_new_tab => 'Open Image in New Tab';
+  String get open_image_in_new_tab => '새 탭에서 이미지 열기';
 
   @override
-  String get open_link => 'Open Link';
+  String get open_link => '링크 열기';
 
   @override
-  String get open_link_in_new_tab => 'Open Link in New Tab';
+  String get open_link_in_new_tab => '새 탭에서 링크 열기';
 
   @override
-  String get copy_link_address => 'Copy Link Address';
+  String get copy_link_address => '링크 주소 복사';
 
   @override
-  String get failed_to_download_image => 'Failed to download image';
+  String get failed_to_download_image => '이미지 다운로드 실패';
 
   @override
-  String get custom_home_page => 'Custom Home Page';
+  String get custom_home_page => '사용자 정의 홈페이지';
 
   @override
-  String get set_home_page_url => 'Set Home Page URL';
+  String get set_home_page_url => '홈페이지 URL 설정';
 
   @override
-  String get not_set => 'Not set';
+  String get not_set => '설정되지 않음';
 
   @override
-  String get save => 'Save';
+  String get save => '저장';
 
   @override
   String get downloading => '다운로드 중...';
@@ -590,58 +603,56 @@ class AppLocalizationsKo extends AppLocalizations {
   String get grant_permission => '권한 부여';
 
   @override
-  String get download_permissions => 'Download Permissions';
+  String get download_permissions => '다운로드 권한';
 
   @override
-  String get manage_download_permissions => 'Manage permissions for downloads';
+  String get manage_download_permissions => '다운로드 권한 관리';
 
   @override
-  String get storage_permission => 'Storage Access';
+  String get storage_permission => '저장소 접근';
 
   @override
-  String get notification_permission => 'Notifications';
+  String get notification_permission => '알림';
 
   @override
-  String get notification_permission_description =>
-      'For download progress and completion alerts';
+  String get notification_permission_description => '다운로드 진행률 및 완료 알림용';
 
   @override
   String get permission_explanation =>
-      'These permissions help improve your download experience. You can change them anytime in Android Settings.';
+      '이러한 권한은 다운로드 경험을 개선하는 데 도움이 됩니다. Android 설정에서 언제든지 변경할 수 있습니다.';
 
   @override
-  String get clear_downloads_history_description =>
-      'Remove download history (files remain)';
+  String get clear_downloads_history_description => '다운로드 기록 삭제 (파일은 유지)';
 
   @override
-  String get change_download_location => 'Change where files are saved';
+  String get change_download_location => '다운로드 위치 변경';
 
   @override
-  String get request => 'Request';
+  String get request => '요청';
 
   @override
-  String get storage => 'Storage';
+  String get storage => '저장소';
 
   @override
-  String get manage_external_storage => 'Manage External Storage';
+  String get manage_external_storage => '외부 저장소 관리';
 
   @override
-  String get notification => 'Notification';
+  String get notification => '알림';
 
   @override
-  String get granted => 'Granted';
+  String get granted => '허용됨';
 
   @override
-  String get denied => 'Denied';
+  String get denied => '거부됨';
 
   @override
-  String get restricted => 'Restricted';
+  String get restricted => '제한됨';
 
   @override
-  String get limited => 'Limited';
+  String get limited => '제한됨';
 
   @override
-  String get permanently_denied => 'Permanently Denied';
+  String get permanently_denied => '영구 거부됨';
 
   @override
   String get storage_permission_denied => '파일을 다운로드하려면 저장소 권한이 필요합니다';
@@ -767,7 +778,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get summary_length => '요약 길이';
 
   @override
-  String get generating_summary => 'Generating summary...';
+  String get generating_summary => '요약 생성 중...';
 
   @override
   String get summary_copied_to_clipboard => '요약이 클립보드에 복사되었습니다';
@@ -919,7 +930,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get navigation_controls => '내비게이션 컨트롤';
 
   @override
-  String get ai_settings => 'AI Settings';
+  String get ai_settings => 'AI 설정';
 
   @override
   String get ai_summary_settings => 'AI 요약 설정';

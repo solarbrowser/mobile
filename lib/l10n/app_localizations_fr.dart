@@ -335,6 +335,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get permission_denied => 'Permission de stockage refusée';
 
   @override
+  String get permission_permanently_denied =>
+      'Permission refusée définitivement. Veuillez l\'activer dans les Paramètres.';
+
+  @override
   String get download_location_changed =>
       'Emplacement de téléchargement modifié';
 
@@ -420,6 +424,15 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get downloads_history_cleared =>
       'Historique des téléchargements effacé';
+
+  @override
+  String get sort_by => 'Trier par';
+
+  @override
+  String get name => 'Nom';
+
+  @override
+  String get date => 'Date';
 
   @override
   String delete_download_confirm(String fileName) {
@@ -553,22 +566,22 @@ class AppLocalizationsFr extends AppLocalizations {
   String get open_in_new_tab => 'Ouvrir dans un nouvel onglet';
 
   @override
-  String get copy_image_link => 'Copy Image Link';
+  String get copy_image_link => 'Copier le lien de l\'image';
 
   @override
-  String get open_image_in_new_tab => 'Open Image in New Tab';
+  String get open_image_in_new_tab => 'Ouvrir l\'image dans un nouvel onglet';
 
   @override
-  String get open_link => 'Open Link';
+  String get open_link => 'Ouvrir le lien';
 
   @override
-  String get open_link_in_new_tab => 'Open Link in New Tab';
+  String get open_link_in_new_tab => 'Ouvrir le lien dans un nouvel onglet';
 
   @override
-  String get copy_link_address => 'Copy Link Address';
+  String get copy_link_address => 'Copier l\'adresse du lien';
 
   @override
-  String get failed_to_download_image => 'Failed to download image';
+  String get failed_to_download_image => 'Échec du téléchargement de l\'image';
 
   @override
   String get custom_home_page => 'Page d\'accueil personnalisée';
@@ -577,10 +590,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get set_home_page_url => 'Définir l\'URL de la page d\'accueil';
 
   @override
-  String get not_set => 'Not set';
+  String get not_set => 'Non défini';
 
   @override
-  String get save => 'Save';
+  String get save => 'Enregistrer';
 
   @override
   String get downloading => 'Téléchargement en cours...';
@@ -612,58 +625,60 @@ class AppLocalizationsFr extends AppLocalizations {
   String get grant_permission => 'Donner la Permission';
 
   @override
-  String get download_permissions => 'Download Permissions';
+  String get download_permissions => 'Autorisations de téléchargement';
 
   @override
-  String get manage_download_permissions => 'Manage permissions for downloads';
+  String get manage_download_permissions =>
+      'Gérer les autorisations de téléchargement';
 
   @override
-  String get storage_permission => 'Storage Access';
+  String get storage_permission => 'Accès au stockage';
 
   @override
   String get notification_permission => 'Notifications';
 
   @override
   String get notification_permission_description =>
-      'For download progress and completion alerts';
+      'Pour les alertes de progression et d\'achèvement de téléchargement';
 
   @override
   String get permission_explanation =>
-      'These permissions help improve your download experience. You can change them anytime in Android Settings.';
+      'Ces autorisations améliorent votre expérience de téléchargement. Vous pouvez les modifier à tout moment dans les paramètres Android.';
 
   @override
   String get clear_downloads_history_description =>
-      'Remove download history (files remain)';
+      'Supprimer l\'historique des téléchargements (les fichiers restent)';
 
   @override
-  String get change_download_location => 'Change where files are saved';
+  String get change_download_location =>
+      'Changer l\'emplacement de téléchargement';
 
   @override
-  String get request => 'Request';
+  String get request => 'Demander';
 
   @override
-  String get storage => 'Storage';
+  String get storage => 'Stockage';
 
   @override
-  String get manage_external_storage => 'Manage External Storage';
+  String get manage_external_storage => 'Gérer le stockage externe';
 
   @override
   String get notification => 'Notification';
 
   @override
-  String get granted => 'Granted';
+  String get granted => 'Accordé';
 
   @override
-  String get denied => 'Denied';
+  String get denied => 'Refusé';
 
   @override
-  String get restricted => 'Restricted';
+  String get restricted => 'Restreint';
 
   @override
-  String get limited => 'Limited';
+  String get limited => 'Limité';
 
   @override
-  String get permanently_denied => 'Permanently Denied';
+  String get permanently_denied => 'Refusé définitivement';
 
   @override
   String get storage_permission_denied => 'Permission de stockage refusée';
@@ -795,7 +810,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get summary_length => 'Longueur du Résumé';
 
   @override
-  String get generating_summary => 'Generating summary...';
+  String get generating_summary => 'Génération du résumé...';
 
   @override
   String get summary_copied_to_clipboard =>

@@ -163,6 +163,7 @@
   "reset": "Reset",
   "reset_complete": "Browser has been reset",
   "permission_denied": "Storage permission denied",
+  "permission_permanently_denied": "Permission permanently denied. Please enable it in Settings.",
   "download_location_changed": "Download location changed successfully",
   "error_changing_location": "Error changing download location",
   "enable_cookies": "Enable Cookies",
@@ -188,6 +189,10 @@
   "auto_open_downloads": "Auto-open downloads",
   "clear_downloads_history": "Clear downloads history",
   "downloads_history_cleared": "Downloads history cleared",
+  "sort_by": "Sort by",
+  "name": "Name",
+  "size": "Size",
+  "date": "Date",
   "delete_download_confirm": "Do you want to delete {fileName} from downloads history?\nThe downloaded file will not be deleted.",
   "@delete_download_confirm": {
     "description": "Confirmation message for deleting a download from history",

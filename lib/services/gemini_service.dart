@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'ai_manager.dart';
 
 class GeminiService {
-  static const String _apiKey = 'AIzaSyDb4B7zeUNFw-yon6b1IylzS3ZBCLse6kA';
+  static const String _apiKey = '';
   static const String _baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
   static const String _summariesKey = 'gemini_previous_summaries';
   static const int _maxSummaries = 50;
@@ -42,8 +42,8 @@ class GeminiService {
       final prompt = text.length < 100 
         ? "Briefly describe what this text is about in a few sentences: $truncatedText"
         : (isFullPage 
-            ? "$lengthInstruction of this webpage content, capturing the main points and key details:\n\n$truncatedText"
-            : "$lengthInstruction of this text, capturing the main points:\n\n$truncatedText");
+            ? "$lengthInstruction of this webpage content, capturing the main points and key details. Focus on factual information only:\n\n$truncatedText"
+            : "$lengthInstruction of this text, capturing the main points and factual information:\n\n$truncatedText");
 
       final response = await http.post(
         Uri.parse('$_baseUrl?key=$_apiKey'),
@@ -60,14 +60,26 @@ class GeminiService {
           'safetySettings': [
             {
               'category': 'HARM_CATEGORY_DANGEROUS_CONTENT',
-              'threshold': 'BLOCK_NONE'
+              'threshold': 'BLOCK_HIGH'
+            },
+            {
+              'category': 'HARM_CATEGORY_HATE_SPEECH',
+              'threshold': 'BLOCK_HIGH'
+            },
+            {
+              'category': 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
+              'threshold': 'BLOCK_HIGH'
+            },
+            {
+              'category': 'HARM_CATEGORY_HARASSMENT',
+              'threshold': 'BLOCK_HIGH'
             }
           ],
           'generationConfig': {
-            'temperature': 0.7,
+            'temperature': 0.3, // Lower temperature for more factual summaries
             'candidateCount': 1,
             'maxOutputTokens': maxOutputTokens,
-            'topP': 0.95
+            'topP': 0.8 // More focused responses
           }
         }),
       );
@@ -77,6 +89,14 @@ class GeminiService {
       }
 
       final jsonResponse = jsonDecode(response.body);
+      
+      // Check if content was blocked by safety filters
+      if (jsonResponse['candidates'] != null && 
+          jsonResponse['candidates'].isNotEmpty &&
+          jsonResponse['candidates'][0]['finishReason'] == 'SAFETY') {
+        throw Exception('Content was blocked due to safety guidelines. Please try summarizing different content.');
+      }
+      
       if (jsonResponse['candidates'] == null || jsonResponse['candidates'].isEmpty) {
         throw Exception('No response from AI');
       }

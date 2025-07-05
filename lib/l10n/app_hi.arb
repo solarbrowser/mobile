@@ -1,6 +1,5 @@
-﻿{
+{
   "@@locale": "hi",
-  
   "welcomeToSolar": "Solar में आपका स्वागत है",
   "welcomeDescription": "एक आधुनिक, तेज़ और सुरक्षित ब्राउज़र",
   "termsOfService": "जारी रखकर, आप हमारी सेवा की शर्तों और गोपनीयता नीति से सहमत हैं",
@@ -106,6 +105,11 @@
   "reading_mode": "रीडिंग मोड",
   "save_page": "पेज सहेजें",
   "permission_denied": "स्टोरेज अनुमति अस्वीकृत",
+  "permission_permanently_denied": "अनुमति स्थायी रूप से अस्वीकृत। कृपया इसे सेटिंग्स में सक्षम करें।",
+  "sort_by": "द्वारा क्रमबद्ध करें",
+  "name": "नाम",
+  "size": "आकार",
+  "date": "दिनांक",
   "download_location_changed": "डाउनलोड स्थान बदल गया",
   "error_changing_location": "स्थान बदलने में त्रुटि",
   "enable_cookies": "कुकीज़ सक्षम करें",
@@ -128,7 +132,7 @@
   "exit_app_confirm": "क्या आप वाकई बाहर निकलना चाहते हैं?",
   "exit": "बाहर निकलें",
   "size": "आकार",
-  "auto_open_downloads": "डाउनलोड स्वचालित रूप से खोलें",
+  "auto_open_downloads": "डाउनलोड्स स्वचालित रूप से खोलें",
   "clear_downloads_history": "डाउनलोड इतिहास साफ़ करें",
   "downloads_history_cleared": "डाउनलोड इतिहास साफ़ हो गया",
   "delete_download_confirm": "क्या आप {fileName} को डाउनलोड इतिहास से हटाना चाहते हैं?\nडाउनलोड की गई फ़ाइल नहीं हटेगी।",
@@ -231,7 +235,7 @@
   "file_exists": "फ़ाइल पहले से मौजूद है",
   "file_saved": "फ़ाइल डाउनलोड में सहेजी गई",
   "no_tabs_open": "कोई टैब नहीं खुला है",
-  "incognito": "गुप्त मोड",
+  "incognito": "गुप्त",
   "clear_all": "सभी साफ़ करें",
   "clear_history": "इतिहास साफ़ करें",
   "clear_history_confirmation": "क्या आप वाकई ब्राउज़िंग इतिहास साफ़ करना चाहते हैं?",
@@ -306,10 +310,10 @@
   "searchTheWeb": "वेब खोजें",
   "recentSearches": "हाल की खोजें",
   "classic_navigation": "क्लासिक नेविगेशन",
-  "classic_navigation_description": "स्क्रीन के निचले हिस्से में नेविगेशन बटन दिखाएं",
+  "classic_navigation_description": "क्लासिक ब्राउज़र शैली नेविगेशन नियंत्रण का उपयोग करें",
   "ok": "ठीक है",
   "welcome_screen_reset": "स्वागत स्क्रीन रीसेट करें",
-  "welcome_screen_reset_message": "अगली ऐप शुरुआत पर स्वागत स्क्रीन दिखाई जाएगी। कृपया अपडेट की गई गोपनीयता नीति और सेवा की शर्तें देखने के लिए ऐप को पुनः आरंभ करें।",
+  "welcome_screen_reset_message": "यह स्वागत स्क्रीन को रीसेट कर देगा ताकि यह अगली बार ऐप शुरू करने पर फिर से दिखाई दे।",
   "customize_navigation": "नेविगेशन कस्टमाइज़ करें",
   "bookmark_removed": "बुकमार्क हटाया गया",
   "navigation_buttons": "नेविगेशन बटन",
@@ -325,17 +329,16 @@
   "restore_defaults": "डिफ़ॉल्ट पुनर्स्थापित करें",
   "drag_to_reorder": "फिर से क्रम में लगाने के लिए खींचें",
   "add": "जोड़ें",
-  "restored_tab": "पुनर्स्थापित टैब",
+  "restored_tab": "टैब पुनर्स्थापित",
   "rename": "नाम बदलें",
   "rename_pwa": "PWA का नाम बदलें",
   "pwa_name": "PWA का नाम",
-  "pwa_renamed": "PWA और होम स्क्रीन शॉर्टकट का नाम बदल दिया गया",
-  "pwa_removed": "PWA और होम स्क्रीन शॉर्टकट हटा दिया गया",
+  "pwa_renamed": "PWA का नाम बदल दिया गया",
+  "pwa_removed": "PWA हटाया गया",
   "remove": "हटाएं",
   "@remove": {
     "description": "Button text for removing something"
   },
-
   "skip": "छोड़ें",
   "@skip": {
     "description": "Skip button text"
@@ -488,22 +491,18 @@
   "@developer": {
     "description": "Developer section title"
   },
-  "restored_tab": "टैब पुनर्स्थापित",
   "@restored_tab": {
     "description": "Message when a tab is restored"
   },
-  "welcome_screen_reset_message": "यह स्वागत स्क्रीन को रीसेट कर देगा ताकि यह अगली बार ऐप शुरू करने पर फिर से दिखाई दे।",
   "@welcome_screen_reset_message": {
     "description": "Dialog message for resetting welcome screen"
   },
   "@ok": {
     "description": "OK button text"
   },
-  "pwa_renamed": "PWA का नाम बदल दिया गया",
   "@pwa_renamed": {
     "description": "Confirmation message when PWA is renamed"
   },
-  "pwa_removed": "PWA हटाया गया",
   "@pwa_removed": {
     "description": "Confirmation message when PWA is removed"
   },
@@ -539,7 +538,6 @@
   "@navigation_controls": {
     "description": "Title for navigation controls settings"
   },
-  "classic_navigation_description": "क्लासिक ब्राउज़र शैली नेविगेशन नियंत्रण का उपयोग करें",
   "@classic_navigation_description": {
     "description": "Description for classic navigation setting"
   },
@@ -551,7 +549,6 @@
   "@ai_summary_settings": {
     "description": "Title for AI summary settings"
   },
-  "auto_open_downloads": "डाउनलोड्स स्वचालित रूप से खोलें",
   "@auto_open_downloads": {
     "description": "Setting title for auto-opening downloads"
   },
@@ -690,7 +687,6 @@
   "webApp": "वेब ऐप",
   "exampleUrl": "https://उदाहरण.com",
   "enterText": "टेक्स्ट दर्ज करें...",
-  
   "failed_to_get_news_data": "सर्वर से समाचार डेटा लिंक प्राप्त नहीं कर सका",
   "failed_to_load_news_server": "सर्वर से समाचार लोड करने में विफल",
   "network_error_loading_news": "समाचार लोड करते समय नेटवर्क त्रुटि",
@@ -700,10 +696,9 @@
   "close_all": "सभी बंद करें",
   "delete_file": "फ़ाइल हटाएं",
   "delete_file_confirm": "क्या आप वाकई इस फ़ाइल को अपने डिवाइस से स्थायी रूप से हटाना चाहते हैं?",
-  "remove_from_history": "इतिहास से हटाएं", 
+  "remove_from_history": "इतिहास से हटाएं",
   "delete_from_device": "डिवाइस से हटाएं",
   "notice": "सूचना",
-  
   "cannot_write_selected_folder": "चयनित फ़ोल्डर में लिखने में असमर्थ। डिफ़ॉल्ट डाउनलोड फ़ोल्डर का उपयोग कर रहे हैं।",
   "cannot_write_selected_folder_choose_different": "चयनित फ़ोल्डर में लिखने में असमर्थ। कृपया एक अलग स्थान चुनें।",
   "cannot_write_configured_folder": "कॉन्फ़िगर किए गए फ़ोल्डर में लिखने में असमर्थ। डिफ़ॉल्ट डाउनलोड फ़ोल्डर का उपयोग कर रहे हैं।",
@@ -715,7 +710,6 @@
   "without_permission_private_folder": "अनुमति के बिना, फ़ाइल Solar के निजी फ़ोल्डर में सहेजी जाएगी (डाउनलोड पैनल से पहुंच योग्य)।",
   "enable_unknown_apps_android": "डाउनलोड के बाद आपको Android सेटिंग्स में \"अज्ञात ऐप्स इंस्टॉल करें\" को सक्षम करने की आवश्यकता हो सकती है।",
   "private_folder_instead": "इसके बजाय फ़ाइलें Solar के निजी फ़ोल्डर में सहेजी जाएंगी।",
-  
   "save_to_downloads_title": "डाउनलोड में सहेजें?",
   "save_to_gallery_title": "गैलरी में सहेजें?",
   "storage_access_required": "स्टोरेज एक्सेस आवश्यक है",
@@ -728,16 +722,13 @@
   "package_installation_permission": "पैकेज इंस्टॉलेशन",
   "storage_access_permission": "स्टोरेज एक्सेस",
   "without_gallery_permission": "अनुमति के बिना, मीडिया फ़ाइलें केवल Solar के डाउनलोड सेक्शन में दिखाई देंगी।",
-  
   "flutter_version_string": "Flutter 3.32.5",
   "photoncore_version_string": "Photoncore 0.1.0",
   "engine_version_string": "4.7.0",
-  
   "http_warning_title": "असुरक्षित कनेक्शन चेतावनी",
   "http_warning_message": "आप एक वेबसाइट पर जाने वाले हैं जो असुरक्षित कनेक्शन (HTTP) का उपयोग करती है। आपका डेटा दूसरों को दिखाई दे सकता है। क्या आप वाकई जारी रखना चाहते हैं?",
   "continue_anyway": "फिर भी जारी रखें",
   "go_back": "वापस जाएं",
-  
   "web_page_error_title": "पेज लोड त्रुटि",
   "connection_error": "कनेक्शन त्रुटि",
   "page_not_found": "पेज नहीं मिला",
@@ -755,20 +746,54 @@
   "ssl_error_description": "वेबसाइट के सुरक्षा प्रमाणपत्र में समस्या है। कनेक्शन सुरक्षित नहीं हो सकता।",
   "network_error_description": "नेटवर्क त्रुटि हुई। कृपया अपना इंटरनेट कनेक्शन जाँचें और पुनः प्रयास करें।",
   "server_error_description": "सर्वर में त्रुटि हुई और आपका अनुरोध पूरा नहीं हो सका।",
-  "try_again": "पुनः प्रयास करें",
   "go_home": "होम पर जाएं",
-  "skip": "छोड़ें",
-  "continueText": "जारी रखें",
   "package_downloaded": "पैकेज डाउनलोड हो गया!",
   "installation_steps": "इंस्टॉलेशन के चरण:",
   "installation_instructions": "1. पैकेज खोलने के लिए नीचे \"इंस्टॉल\" पर टैप करें\n2. यदि पूछा जाए तो \"अज्ञात ऐप्स इंस्टॉल करें\" सक्षम करें\n3. Android के इंस्टॉलेशन विज़ार्ड का पालन करें",
   "view": "देखें",
   "install": "इंस्टॉल करें",
   "file_deleted_from_device": "फ़ाइल डिवाइस से हटा दी गई",
-  "delete": "हटाएं",
-  "incognito": "गुप्त",
   "cannot_open_file_path_not_found": "फ़ाइल नहीं खोली जा सकी: पथ नहीं मिला",
   "error_opening_file_message": "फ़ाइल खोलने में त्रुटि: {message}",
   "error_opening_file_exception": "फ़ाइल खोलने में त्रुटि: {error}",
-  "summary_copied_to_clipboard": "सारांश क्लिपबोर्ड में कॉपी किया गया"
+  "summary_copied_to_clipboard": "सारांश क्लिपबोर्ड में कॉपी किया गया",
+  "catppuccinTheme": "Catppuccin",
+  "change_download_location": "डाउनलोड स्थान बदलें",
+  "clear_downloads_history_description": "डाउनलोड इतिहास हटाएं (फ़ाइलें रहती हैं)",
+  "copy_image_link": "छवि लिंक कॉपी करें",
+  "copy_link_address": "लिंक पता कॉपी करें",
+  "custom_home_page": "कस्टम होम पेज",
+  "denied": "अस्वीकृत",
+  "download_permissions": "डाउनलोड अनुमतियां",
+  "draculaTheme": "Dracula",
+  "failed_to_download_image": "छवि डाउनलोड करने में विफल",
+  "generating_summary": "सारांश बनाई जा रही है...",
+  "granted": "अनुमति दी गई",
+  "gruvboxLightTheme": "Gruvbox लाइट",
+  "gruvboxTheme": "Gruvbox",
+  "limited": "सीमित",
+  "manage_download_permissions": "डाउनलोड अनुमतियों का प्रबंधन करें",
+  "manage_external_storage": "बाहरी स्टोरेज प्रबंधित करें",
+  "nordLightTheme": "Nord लाइट",
+  "nordTheme": "Nord",
+  "not_set": "सेट नहीं",
+  "notification": "सूचना",
+  "notification_permission": "सूचनाएं",
+  "notification_permission_description": "डाउनलोड प्रगति और पूर्णता अलर्ट के लिए",
+  "oneDarkTheme": "One Dark",
+  "open_image_in_new_tab": "नए टैब में छवि खोलें",
+  "open_link": "लिंक खोलें",
+  "open_link_in_new_tab": "नए टैब में लिंक खोलें",
+  "permanently_denied": "स्थायी रूप से अस्वीकृत",
+  "permission_explanation": "ये अनुमतियां आपके डाउनलोड अनुभव को बेहतर बनाने में मदद करती हैं। आप इन्हें Android सेटिंग्स में कभी भी बदल सकते हैं।",
+  "request": "अनुरोध",
+  "restricted": "प्रतिबंधित",
+  "save": "सेव करें",
+  "set_home_page_url": "होम पेज URL सेट करें",
+  "solarizedLightTheme": "Solarized लाइट",
+  "storage": "स्टोरेज",
+  "storage_permission": "स्टोरेज एक्सेस",
+  "systemTheme": "सिस्टम",
+  "tokyoNightTheme": "Tokyo Night",
+  "reset_welcome_screen": "स्वागत स्क्रीन रीसेट करें"
 }

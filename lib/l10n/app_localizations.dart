@@ -750,6 +750,12 @@ abstract class AppLocalizations {
   /// **'Storage permission denied'**
   String get permission_denied;
 
+  /// No description provided for @permission_permanently_denied.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission permanently denied. Please enable it in Settings.'**
+  String get permission_permanently_denied;
+
   /// No description provided for @download_location_changed.
   ///
   /// In en, this message translates to:
@@ -899,6 +905,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Downloads history cleared'**
   String get downloads_history_cleared;
+
+  /// No description provided for @sort_by.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by'**
+  String get sort_by;
+
+  /// No description provided for @name.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get name;
+
+  /// No description provided for @date.
+  ///
+  /// In en, this message translates to:
+  /// **'Date'**
+  String get date;
 
   /// Confirmation message for deleting a download from history
   ///

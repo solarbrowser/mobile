@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "zh",
   "welcomeToSolar": "欢迎使用 Solar",
   "welcomeDescription": "现代、快速、安全的浏览器",
@@ -100,6 +100,11 @@
   "reset": "重置",
   "reset_complete": "浏览器已重置",
   "permission_denied": "存储权限被拒绝",
+  "permission_permanently_denied": "权限被永久拒绝。请在设置中启用。",
+  "sort_by": "排序方式",
+  "name": "名称",
+  "size": "大小",
+  "date": "日期",
   "download_location_changed": "下载位置已更改",
   "error_changing_location": "更改位置时出错",
   "enable_cookies": "启用 Cookie",
@@ -122,7 +127,7 @@
   "exit_app_confirm": "确定要退出吗？",
   "exit": "退出",
   "size": "大小",
-  "auto_open_downloads": "自动打开下载项",
+  "auto_open_downloads": "自动打开下载",
   "clear_downloads_history": "清除下载历史",
   "downloads_history_cleared": "下载历史已清除",
   "delete_download_confirm": "是否要从下载历史中删除 {fileName}？\n已下载的文件不会被删除。",
@@ -265,16 +270,16 @@
   "summary_length": "摘要长度",
   "summary_language": "摘要语言",
   "classic_navigation": "经典导航",
-  "classic_navigation_description": "在屏幕底部显示导航按钮",
+  "classic_navigation_description": "使用经典浏览器风格的导航控件",
   "ok": "确定",
   "welcome_screen_reset": "重置欢迎屏幕",
-  "welcome_screen_reset_message": "欢迎屏幕将在下次应用启动时显示。请重新启动应用以查看更新的隐私政策和服务条款。",
+  "welcome_screen_reset_message": "这将重置欢迎屏幕，使其在下次启动应用时再次出现。",
   "customize_navigation": "自定义导航",
-  "bookmark_removed": "书签已移除",
+  "bookmark_removed": "书签已删除",
   "navigation_buttons": "导航按钮",
   "available_buttons": "可用按钮",
   "enabled_buttons": "已启用按钮",
-  "button_back": "返回",
+  "button_back": "后退",
   "button_forward": "前进",
   "button_bookmark": "书签",
   "button_share": "分享",
@@ -284,15 +289,15 @@
   "restore_defaults": "恢复默认",
   "drag_to_reorder": "拖拽重新排序",
   "add": "添加",
-  "restored_tab": "已恢复的标签页",
+  "restored_tab": "标签页已恢复",
   "rename": "重命名",
   "rename_pwa": "重命名PWA",
   "pwa_name": "PWA名称",
-  "pwa_renamed": "PWA和主屏幕快捷方式已重命名",
-  "pwa_removed": "PWA和主屏幕快捷方式已移除",
+  "pwa_renamed": "PWA已重命名",
+  "pwa_removed": "PWA已移除",
   "remove": "移除",
   "@remove": {
-    "description": "Button text for removing something"
+    "description": "Remove button text"
   },
   "install_packages_permission": "安装包权限",
   "@install_packages_permission": {
@@ -517,71 +522,51 @@
   "@reset_welcome_screen": {
     "description": "Reset welcome screen option"
   },
-  "restored_tab": "标签页已恢复",
   "@restored_tab": {
     "description": "Message when a tab is restored"
   },
-  "welcome_screen_reset_message": "这将重置欢迎屏幕，使其在下次启动应用时再次出现。",
   "@welcome_screen_reset_message": {
     "description": "Dialog message for resetting welcome screen"
   },
-  "button_back": "后退",
   "@button_back": {
     "description": "Back button label"
   },
-  "button_forward": "前进",
   "@button_forward": {
     "description": "Forward button label"
   },
-  "button_bookmark": "书签",
   "@button_bookmark": {
     "description": "Bookmark button label"
   },
-  "button_bookmarks": "书签",
   "@button_bookmarks": {
     "description": "Bookmarks button label"
   },
-  "button_share": "分享",
   "@button_share": {
     "description": "Share button label"
   },
-  "button_menu": "菜单",
   "@button_menu": {
     "description": "Menu button label"
   },
-  "available_buttons": "可用按钮",
   "@available_buttons": {
     "description": "Label for available navigation buttons"
   },
-  "add": "添加",
   "@add": {
     "description": "Add button text"
   },
-  "rename_pwa": "重命名PWA",
   "@rename_pwa": {
     "description": "Option to rename a PWA"
   },
-  "pwa_name": "PWA名称",
   "@pwa_name": {
     "description": "Hint for PWA name input field"
   },
-  "rename": "重命名",
   "@rename": {
     "description": "Rename button text"
   },
-  "pwa_renamed": "PWA已重命名",
   "@pwa_renamed": {
     "description": "Confirmation message when PWA is renamed"
   },
-  "remove": "移除",
-  "@remove": {
-    "description": "Remove button text"
-  },
-  "pwa_removed": "PWA已移除",
   "@pwa_removed": {
     "description": "Confirmation message when PWA is removed"
   },
-  "bookmark_removed": "书签已删除",
   "@bookmark_removed": {
     "description": "Confirmation message when bookmark is removed"
   },
@@ -617,7 +602,6 @@
   "@navigation_controls": {
     "description": "Title for navigation controls settings"
   },
-  "classic_navigation_description": "使用经典浏览器风格的导航控件",
   "@classic_navigation_description": {
     "description": "Description for classic navigation setting"
   },
@@ -629,7 +613,6 @@
   "@ai_summary_settings": {
     "description": "Title for AI summary settings"
   },
-  "auto_open_downloads": "自动打开下载",
   "@auto_open_downloads": {
     "description": "Setting title for auto-opening downloads"
   },
@@ -711,7 +694,7 @@
   "no_summaries_available": "没有可用的总结",
   "page_summary": "页面总结",
   "failed_to_generate_summary": "生成总结失败",
-  "try_again": "再试一次",
+  "try_again": "重试",
   "no_page_to_summarize": "没有页面要总结",
   "no_content_found_to_summarize": "未找到要总结的内容",
   "theme": "主题",
@@ -768,7 +751,6 @@
   "webApp": "网页应用",
   "exampleUrl": "https://示例.com",
   "enterText": "输入文本...",
-  
   "failed_to_get_news_data": "无法从服务器获取新闻数据链接",
   "failed_to_load_news_server": "从服务器加载新闻失败",
   "network_error_loading_news": "加载新闻时网络错误",
@@ -778,10 +760,9 @@
   "close_all": "全部关闭",
   "delete_file": "删除文件",
   "delete_file_confirm": "您确定要从设备中永久删除此文件吗？",
-  "remove_from_history": "从历史记录中删除", 
+  "remove_from_history": "从历史记录中删除",
   "delete_from_device": "从设备删除",
   "notice": "通知",
-  
   "cannot_write_selected_folder": "无法写入所选文件夹。使用默认下载文件夹。",
   "cannot_write_selected_folder_choose_different": "无法写入所选文件夹。请选择其他位置。",
   "cannot_write_configured_folder": "无法写入配置的文件夹。使用默认下载文件夹。",
@@ -793,7 +774,6 @@
   "without_permission_private_folder": "没有权限，文件将保存到Solar的私有文件夹（可从下载面板访问）。",
   "enable_unknown_apps_android": "下载后，您可能需要在Android设置中启用\"安装未知应用\"。",
   "private_folder_instead": "文件将保存到Solar的私有文件夹中。",
-  
   "save_to_downloads_title": "保存到下载？",
   "save_to_gallery_title": "保存到图库？",
   "storage_access_required": "需要存储访问权限",
@@ -806,16 +786,13 @@
   "package_installation_permission": "包安装",
   "storage_access_permission": "存储访问",
   "without_gallery_permission": "没有权限，媒体文件只会在Solar的下载部分中可见。",
-  
   "flutter_version_string": "Flutter 3.32.5",
   "photoncore_version_string": "Photoncore 0.1.0",
   "engine_version_string": "4.7.0",
-  
   "http_warning_title": "不安全连接警告",
   "http_warning_message": "您即将访问使用不安全连接（HTTP）的网站。您的数据可能对他人可见。您确定要继续吗？",
   "continue_anyway": "仍然继续",
   "go_back": "返回",
-  
   "web_page_error_title": "页面加载错误",
   "connection_error": "连接错误",
   "page_not_found": "页面未找到",
@@ -833,20 +810,54 @@
   "ssl_error_description": "网站的安全证书有问题。连接可能不安全。",
   "network_error_description": "发生网络错误。请检查您的互联网连接并重试。",
   "server_error_description": "服务器遇到错误，无法完成您的请求。",
-  "try_again": "重试",
   "go_home": "返回首页",
-  "skip": "跳过",
-  "continueText": "继续",
   "package_downloaded": "软件包已下载！",
   "installation_steps": "安装步骤：",
   "installation_instructions": "1. 点击下方\"安装\"按钮打开软件包\n2. 如果系统提示，请启用\"安装未知应用\"\n3. 按照Android安装向导操作",
   "view": "查看",
   "install": "安装",
   "file_deleted_from_device": "文件已从设备删除",
-  "delete": "删除",
-  "incognito": "隐身",
   "cannot_open_file_path_not_found": "无法打开文件：找不到路径",
   "error_opening_file_message": "打开文件错误：{message}",
   "error_opening_file_exception": "打开文件错误：{error}",
-  "summary_copied_to_clipboard": "摘要已复制到剪贴板"
+  "summary_copied_to_clipboard": "摘要已复制到剪贴板",
+  "catppuccinTheme": "Catppuccin",
+  "change_download_location": "更改下载位置",
+  "clear_downloads_history_description": "清除下载历史（文件保留）",
+  "copy_image_link": "复制图片链接",
+  "copy_link_address": "复制链接地址",
+  "custom_home_page": "自定义主页",
+  "denied": "已拒绝",
+  "download_permissions": "下载权限",
+  "draculaTheme": "Dracula",
+  "failed_to_download_image": "图片下载失败",
+  "generating_summary": "正在生成摘要...",
+  "granted": "已授予",
+  "gruvboxLightTheme": "Gruvbox 浅色",
+  "gruvboxTheme": "Gruvbox",
+  "limited": "受限",
+  "manage_download_permissions": "管理下载权限",
+  "manage_external_storage": "管理外部存储",
+  "nordLightTheme": "Nord 浅色",
+  "nordTheme": "Nord",
+  "not_set": "未设置",
+  "notification": "通知",
+  "notification_permission": "通知",
+  "notification_permission_description": "用于下载进度和完成提醒",
+  "oneDarkTheme": "One Dark",
+  "open_image_in_new_tab": "在新标签页中打开图片",
+  "open_link": "打开链接",
+  "open_link_in_new_tab": "在新标签页中打开链接",
+  "permanently_denied": "永久拒绝",
+  "permission_explanation": "这些权限有助于改善您的下载体验。您可以随时在Android设置中更改它们。",
+  "request": "请求",
+  "restricted": "受限制",
+  "save": "保存",
+  "set_home_page_url": "设置主页URL",
+  "solarizedLightTheme": "Solarized 浅色",
+  "storage": "存储",
+  "storage_permission": "存储访问",
+  "systemTheme": "系统",
+  "tokyoNightTheme": "Tokyo Night",
+  "browsing_history": "浏览历史"
 }

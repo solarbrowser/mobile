@@ -1,6 +1,5 @@
-﻿{
+{
   "@@locale": "ko",
-  
   "welcomeToSolar": "Solar에 오신 것을 환영합니다",
   "welcomeDescription": "현대적이고 빠르며 안전한 브라우저",
   "termsOfService": "계속하면 서비스 약관 및 개인정보 보호정책에 동의하게 됩니다",
@@ -101,6 +100,11 @@
   "reset": "초기화",
   "reset_complete": "브라우저가 초기화되었습니다",
   "permission_denied": "저장소 권한이 거부되었습니다",
+  "permission_permanently_denied": "권한이 영구적으로 거부되었습니다. 설정에서 활성화해 주세요.",
+  "sort_by": "정렬 기준",
+  "name": "이름",
+  "size": "크기",
+  "date": "날짜",
   "download_location_changed": "다운로드 위치가 변경되었습니다",
   "error_changing_location": "위치 변경 오류",
   "enable_cookies": "쿠키 활성화",
@@ -229,16 +233,14 @@
   "searchTheWeb": "웹 검색",
   "recentSearches": "최근 검색",
   "storage_permission_granted": "저장소 권한이 승인되었습니다",
-  
   "summary_length": "요약 길이",
   "summary_language": "요약 언어",
-  
   "classic_navigation": "클래식 내비게이션",
-  "classic_navigation_description": "화면 하단에 탐색 버튼 표시",
+  "classic_navigation_description": "클래식 브라우저 스타일 내비게이션 컨트롤 사용",
   "ok": "확인",
   "welcome_screen_reset": "환영 화면 재설정",
-  "welcome_screen_reset_message": "다음 앱 시작 시 환영 화면이 표시됩니다. 업데이트된 개인정보처리방침과 이용약관을 보려면 앱을 다시 시작하세요.",
-  "customize_navigation": "내비게이션 사용자 지정",
+  "welcome_screen_reset_message": "이렇게 하면 환영 화면이 재설정되어 다음에 앱을 시작할 때 다시 나타납니다.",
+  "customize_navigation": "내비게이션 사용자 정의",
   "bookmark_removed": "북마크가 제거되었습니다",
   "navigation_buttons": "내비게이션 버튼",
   "available_buttons": "사용 가능한 버튼",
@@ -257,13 +259,12 @@
   "rename": "이름 바꾸기",
   "rename_pwa": "PWA 이름 바꾸기",
   "pwa_name": "PWA 이름",
-  "pwa_renamed": "PWA 및 홈 화면 바로가기 이름이 변경되었습니다",
-  "pwa_removed": "PWA 및 홈 화면 바로가기가 제거되었습니다",
+  "pwa_renamed": "PWA 이름이 변경되었습니다",
+  "pwa_removed": "PWA가 제거되었습니다",
   "remove": "제거",
   "@remove": {
     "description": "Button text for removing something"
   },
-
   "install_packages_permission": "패키지 설치 권한",
   "@install_packages_permission": {
     "description": "Install packages permission title"
@@ -496,14 +497,12 @@
   "@reset_welcome_screen": {
     "description": "Reset welcome screen option"
   },
-  "welcome_screen_reset_message": "이렇게 하면 환영 화면이 재설정되어 다음에 앱을 시작할 때 다시 나타납니다.",
   "@welcome_screen_reset_message": {
     "description": "Dialog message for resetting welcome screen"
   },
   "@ok": {
     "description": "OK button text"
   },
-  "customize_navigation": "내비게이션 사용자 정의",
   "@customize_navigation": {
     "description": "Title for navigation customization"
   },
@@ -531,11 +530,9 @@
   "@add": {
     "description": "Add button text"
   },
-  "pwa_renamed": "PWA 이름이 변경되었습니다",
   "@pwa_renamed": {
     "description": "Confirmation message when PWA is renamed"
   },
-  "pwa_removed": "PWA가 제거되었습니다",
   "@pwa_removed": {
     "description": "Confirmation message when PWA is removed"
   },
@@ -571,7 +568,6 @@
   "@navigation_controls": {
     "description": "Title for navigation controls settings"
   },
-  "classic_navigation_description": "클래식 브라우저 스타일 내비게이션 컨트롤 사용",
   "@classic_navigation_description": {
     "description": "Description for classic navigation setting"
   },
@@ -654,7 +650,6 @@
   },
   "create": "생성",
   "summarize": "요약",
-  "previous_summaries": "이전 요약",
   "no_summaries_available": "사용 가능한 요약이 없습니다",
   "page_summary": "페이지 요약",
   "failed_to_generate_summary": "요약 생성 실패",
@@ -715,7 +710,6 @@
   "webApp": "웹 앱",
   "exampleUrl": "https://예시.com",
   "enterText": "텍스트 입력...",
-  
   "failed_to_get_news_data": "서버에서 뉴스 데이터 링크를 가져올 수 없습니다",
   "failed_to_load_news_server": "서버에서 뉴스를 로드하지 못했습니다",
   "network_error_loading_news": "뉴스 로딩 중 네트워크 오류",
@@ -725,10 +719,9 @@
   "close_all": "모두 닫기",
   "delete_file": "파일 삭제",
   "delete_file_confirm": "이 파일을 기기에서 영구적으로 삭제하시겠습니까?",
-  "remove_from_history": "기록에서 제거", 
+  "remove_from_history": "기록에서 제거",
   "delete_from_device": "기기에서 삭제",
   "notice": "알림",
-  
   "cannot_write_selected_folder": "선택한 폴더에 쓸 수 없습니다. 기본 다운로드 폴더를 사용합니다.",
   "cannot_write_selected_folder_choose_different": "선택한 폴더에 쓸 수 없습니다. 다른 위치를 선택해주세요.",
   "cannot_write_configured_folder": "구성된 폴더에 쓸 수 없습니다. 기본 다운로드 폴더를 사용합니다.",
@@ -740,7 +733,6 @@
   "without_permission_private_folder": "권한 없이는 파일이 Solar의 개인 폴더에 저장됩니다(다운로드 패널에서 접근 가능).",
   "enable_unknown_apps_android": "다운로드 후 Android 설정에서 \"알 수 없는 앱 설치\"를 활성화해야 할 수 있습니다.",
   "private_folder_instead": "파일이 대신 Solar의 개인 폴더에 저장됩니다.",
-  
   "save_to_downloads_title": "다운로드에 저장하시겠습니까?",
   "save_to_gallery_title": "갤러리에 저장하시겠습니까?",
   "storage_access_required": "저장소 접근 권한이 필요합니다",
@@ -753,16 +745,13 @@
   "package_installation_permission": "패키지 설치",
   "storage_access_permission": "저장소 접근",
   "without_gallery_permission": "권한 없이는 미디어 파일이 Solar의 다운로드 섹션에서만 볼 수 있습니다.",
-  
   "flutter_version_string": "Flutter 3.32.5",
   "photoncore_version_string": "Photoncore 0.1.0",
   "engine_version_string": "4.7.0",
-  
   "http_warning_title": "안전하지 않은 연결 경고",
   "http_warning_message": "안전하지 않은 연결(HTTP)을 사용하는 웹사이트를 방문하려고 합니다. 귀하의 데이터가 다른 사람에게 보일 수 있습니다. 계속하시겠습니까?",
   "continue_anyway": "어쨌든 계속",
   "go_back": "뒤로 가기",
-  
   "web_page_error_title": "페이지 로드 오류",
   "connection_error": "연결 오류",
   "page_not_found": "페이지를 찾을 수 없음",
@@ -780,20 +769,56 @@
   "ssl_error_description": "웹사이트의 보안 인증서에 문제가 있습니다. 연결이 안전하지 않을 수 있습니다.",
   "network_error_description": "네트워크 오류가 발생했습니다. 인터넷 연결을 확인하고 다시 시도하세요.",
   "server_error_description": "서버에서 오류가 발생하여 요청을 완료할 수 없습니다.",
-  "try_again": "다시 시도",
   "go_home": "홈으로 가기",
-  "skip": "건너뛰기",
-  "continueText": "계속",
   "package_downloaded": "패키지가 다운로드되었습니다!",
   "installation_steps": "설치 단계:",
   "installation_instructions": "1. 아래 \"설치\"를 눌러 패키지를 여세요\n2. 요청되면 \"알 수 없는 앱 설치\"를 활성화하세요\n3. Android 설치 마법사를 따르세요",
   "view": "보기",
   "install": "설치",
   "file_deleted_from_device": "기기에서 파일이 삭제되었습니다",
-  "delete": "삭제",
-  "incognito": "시크릿",
   "cannot_open_file_path_not_found": "파일을 열 수 없습니다: 경로를 찾을 수 없음",
   "error_opening_file_message": "파일 열기 오류: {message}",
   "error_opening_file_exception": "파일 열기 오류: {error}",
-  "summary_copied_to_clipboard": "요약이 클립보드에 복사되었습니다"
+  "summary_copied_to_clipboard": "요약이 클립보드에 복사되었습니다",
+  "catppuccinTheme": "Catppuccin",
+  "change_download_location": "다운로드 위치 변경",
+  "clear_downloads_history_description": "다운로드 기록 삭제 (파일은 유지)",
+  "copy_image_link": "이미지 링크 복사",
+  "copy_link_address": "링크 주소 복사",
+  "custom_home_page": "사용자 정의 홈페이지",
+  "denied": "거부됨",
+  "download_permissions": "다운로드 권한",
+  "draculaTheme": "Dracula",
+  "failed_to_download_image": "이미지 다운로드 실패",
+  "generating_summary": "요약 생성 중...",
+  "granted": "허용됨",
+  "gruvboxLightTheme": "Gruvbox 라이트",
+  "gruvboxTheme": "Gruvbox",
+  "limited": "제한됨",
+  "manage_download_permissions": "다운로드 권한 관리",
+  "manage_external_storage": "외부 저장소 관리",
+  "nordLightTheme": "Nord 라이트",
+  "nordTheme": "Nord",
+  "not_set": "설정되지 않음",
+  "notification": "알림",
+  "notification_permission": "알림",
+  "notification_permission_description": "다운로드 진행률 및 완료 알림용",
+  "oneDarkTheme": "One Dark",
+  "open_image_in_new_tab": "새 탭에서 이미지 열기",
+  "open_link": "링크 열기",
+  "open_link_in_new_tab": "새 탭에서 링크 열기",
+  "permanently_denied": "영구 거부됨",
+  "permission_explanation": "이러한 권한은 다운로드 경험을 개선하는 데 도움이 됩니다. Android 설정에서 언제든지 변경할 수 있습니다.",
+  "request": "요청",
+  "restricted": "제한됨",
+  "save": "저장",
+  "set_home_page_url": "홈페이지 URL 설정",
+  "solarizedLightTheme": "Solarized 라이트",
+  "storage": "저장소",
+  "storage_permission": "저장소 접근",
+  "systemTheme": "시스템",
+  "tokyoNightTheme": "Tokyo Night",
+  "ai_settings": "AI 설정",
+  "hr_ago": "{hours}시간 전",
+  "min_ago": "{minutes}분 전"
 }

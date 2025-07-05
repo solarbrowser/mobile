@@ -43,13 +43,13 @@ class AppLocalizationsRu extends AppLocalizations {
   String get darkTheme => 'Тёмная';
 
   @override
-  String get systemTheme => 'System';
+  String get systemTheme => 'Системная';
 
   @override
   String get tokyoNightTheme => 'Tokyo Night';
 
   @override
-  String get solarizedLightTheme => 'Solarized Light';
+  String get solarizedLightTheme => 'Solarized Светлый';
 
   @override
   String get draculaTheme => 'Dracula';
@@ -67,10 +67,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get catppuccinTheme => 'Catppuccin';
 
   @override
-  String get nordLightTheme => 'Nord Light';
+  String get nordLightTheme => 'Nord Светлый';
 
   @override
-  String get gruvboxLightTheme => 'Gruvbox Light';
+  String get gruvboxLightTheme => 'Gruvbox Светлый';
 
   @override
   String get next => 'Далее';
@@ -334,6 +334,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get permission_denied => 'Доступ к хранилищу запрещён';
 
   @override
+  String get permission_permanently_denied =>
+      'Доступ запрещён навсегда. Пожалуйста, включите его в Настройках.';
+
+  @override
   String get download_location_changed => 'Папка загрузки изменена';
 
   @override
@@ -413,6 +417,15 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get downloads_history_cleared => 'История загрузок очищена';
+
+  @override
+  String get sort_by => 'Сортировать по';
+
+  @override
+  String get name => 'Имя';
+
+  @override
+  String get date => 'Дата';
 
   @override
   String delete_download_confirm(String fileName) {
@@ -544,34 +557,34 @@ class AppLocalizationsRu extends AppLocalizations {
   String get open_in_new_tab => 'Открыть в новой вкладке';
 
   @override
-  String get copy_image_link => 'Copy Image Link';
+  String get copy_image_link => 'Скопировать ссылку на изображение';
 
   @override
-  String get open_image_in_new_tab => 'Open Image in New Tab';
+  String get open_image_in_new_tab => 'Открыть изображение в новой вкладке';
 
   @override
-  String get open_link => 'Open Link';
+  String get open_link => 'Открыть ссылку';
 
   @override
-  String get open_link_in_new_tab => 'Open Link in New Tab';
+  String get open_link_in_new_tab => 'Открыть ссылку в новой вкладке';
 
   @override
-  String get copy_link_address => 'Copy Link Address';
+  String get copy_link_address => 'Скопировать адрес ссылки';
 
   @override
-  String get failed_to_download_image => 'Failed to download image';
+  String get failed_to_download_image => 'Не удалось загрузить изображение';
 
   @override
-  String get custom_home_page => 'Custom Home Page';
+  String get custom_home_page => 'Пользовательская домашняя страница';
 
   @override
-  String get set_home_page_url => 'Set Home Page URL';
+  String get set_home_page_url => 'Установить URL домашней страницы';
 
   @override
-  String get not_set => 'Not set';
+  String get not_set => 'Не установлено';
 
   @override
-  String get save => 'Save';
+  String get save => 'Сохранить';
 
   @override
   String get downloading => 'Загрузка...';
@@ -604,58 +617,58 @@ class AppLocalizationsRu extends AppLocalizations {
   String get grant_permission => 'Дать разрешение';
 
   @override
-  String get download_permissions => 'Download Permissions';
+  String get download_permissions => 'Разрешения загрузки';
 
   @override
-  String get manage_download_permissions => 'Manage permissions for downloads';
+  String get manage_download_permissions => 'Управление разрешениями загрузки';
 
   @override
-  String get storage_permission => 'Storage Access';
+  String get storage_permission => 'Доступ к хранилищу';
 
   @override
-  String get notification_permission => 'Notifications';
+  String get notification_permission => 'Уведомления';
 
   @override
   String get notification_permission_description =>
-      'For download progress and completion alerts';
+      'Для оповещений о ходе загрузки и завершении';
 
   @override
   String get permission_explanation =>
-      'These permissions help improve your download experience. You can change them anytime in Android Settings.';
+      'Эти разрешения помогают улучшить ваш опыт загрузки. Вы можете изменить их в любое время в настройках Android.';
 
   @override
   String get clear_downloads_history_description =>
-      'Remove download history (files remain)';
+      'Удалить историю загрузок (файлы остаются)';
 
   @override
-  String get change_download_location => 'Change where files are saved';
+  String get change_download_location => 'Изменить место загрузки';
 
   @override
-  String get request => 'Request';
+  String get request => 'Запрос';
 
   @override
-  String get storage => 'Storage';
+  String get storage => 'Хранилище';
 
   @override
-  String get manage_external_storage => 'Manage External Storage';
+  String get manage_external_storage => 'Управление внешним хранилищем';
 
   @override
-  String get notification => 'Notification';
+  String get notification => 'Уведомление';
 
   @override
-  String get granted => 'Granted';
+  String get granted => 'Предоставлено';
 
   @override
-  String get denied => 'Denied';
+  String get denied => 'Отклонено';
 
   @override
-  String get restricted => 'Restricted';
+  String get restricted => 'Ограничено';
 
   @override
-  String get limited => 'Limited';
+  String get limited => 'Ограничено';
 
   @override
-  String get permanently_denied => 'Permanently Denied';
+  String get permanently_denied => 'Постоянно отклонено';
 
   @override
   String get storage_permission_denied =>
@@ -787,7 +800,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get summary_length => 'Длина сводки';
 
   @override
-  String get generating_summary => 'Generating summary...';
+  String get generating_summary => 'Создание резюме...';
 
   @override
   String get summary_copied_to_clipboard => 'Резюме скопировано в буфер обмена';

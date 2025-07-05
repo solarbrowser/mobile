@@ -217,7 +217,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get clear_browser_data => 'Verileri Temizle';
 
   @override
-  String get browsing_history => 'Browsing History';
+  String get browsing_history => 'Tarama geçmişi';
 
   @override
   String get cookies => 'Çerezler';
@@ -335,6 +335,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get permission_denied => 'Depolama izni reddedildi';
 
   @override
+  String get permission_permanently_denied =>
+      'İzin kalıcı olarak reddedildi. Lütfen Ayarlar\'da etkinleştirin.';
+
+  @override
   String get download_location_changed =>
       'İndirme konumu başarıyla değiştirildi';
 
@@ -415,6 +419,15 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get downloads_history_cleared => 'İndirme geçmişi temizlendi';
+
+  @override
+  String get sort_by => 'Sıralama ölçütü';
+
+  @override
+  String get name => 'Ad';
+
+  @override
+  String get date => 'Tarih';
 
   @override
   String delete_download_confirm(String fileName) {
@@ -546,22 +559,22 @@ class AppLocalizationsTr extends AppLocalizations {
   String get open_in_new_tab => 'Yeni Sekmede Aç';
 
   @override
-  String get copy_image_link => 'Copy Image Link';
+  String get copy_image_link => 'Resim bağlantısını kopyala';
 
   @override
-  String get open_image_in_new_tab => 'Open Image in New Tab';
+  String get open_image_in_new_tab => 'Resmi yeni sekmede aç';
 
   @override
-  String get open_link => 'Open Link';
+  String get open_link => 'Bağlantıyı aç';
 
   @override
-  String get open_link_in_new_tab => 'Open Link in New Tab';
+  String get open_link_in_new_tab => 'Bağlantıyı yeni sekmede aç';
 
   @override
-  String get copy_link_address => 'Copy Link Address';
+  String get copy_link_address => 'Bağlantı adresini kopyala';
 
   @override
-  String get failed_to_download_image => 'Failed to download image';
+  String get failed_to_download_image => 'Resim indirilemedi';
 
   @override
   String get custom_home_page => 'Özel Ana Sayfa';
@@ -570,10 +583,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get set_home_page_url => 'Ana Sayfa URL\'sini Ayarla';
 
   @override
-  String get not_set => 'Not set';
+  String get not_set => 'Ayarlanmamış';
 
   @override
-  String get save => 'Save';
+  String get save => 'Kaydet';
 
   @override
   String get downloading => 'İndiriliyor...';
@@ -605,58 +618,58 @@ class AppLocalizationsTr extends AppLocalizations {
   String get grant_permission => 'İzin Ver';
 
   @override
-  String get download_permissions => 'Download Permissions';
+  String get download_permissions => 'İndirme izinleri';
 
   @override
-  String get manage_download_permissions => 'Manage permissions for downloads';
+  String get manage_download_permissions => 'İndirme izinlerini yönet';
 
   @override
-  String get storage_permission => 'Storage Access';
+  String get storage_permission => 'Depolama erişimi';
 
   @override
-  String get notification_permission => 'Notifications';
+  String get notification_permission => 'Bildirimler';
 
   @override
   String get notification_permission_description =>
-      'For download progress and completion alerts';
+      'İndirme ilerlemesi ve tamamlanma uyarıları için';
 
   @override
   String get permission_explanation =>
-      'These permissions help improve your download experience. You can change them anytime in Android Settings.';
+      'Bu izinler indirme deneyiminizi iyileştirmeye yardımcı olur. Android Ayarlarında istediğiniz zaman değiştirebilirsiniz.';
 
   @override
   String get clear_downloads_history_description =>
-      'Remove download history (files remain)';
+      'İndirme geçmişini temizle (dosyalar kalır)';
 
   @override
-  String get change_download_location => 'Change where files are saved';
+  String get change_download_location => 'İndirme konumunu değiştir';
 
   @override
-  String get request => 'Request';
+  String get request => 'İstek';
 
   @override
-  String get storage => 'Storage';
+  String get storage => 'Depolama';
 
   @override
-  String get manage_external_storage => 'Manage External Storage';
+  String get manage_external_storage => 'Harici depolamayı yönet';
 
   @override
-  String get notification => 'Notification';
+  String get notification => 'Bildirim';
 
   @override
-  String get granted => 'Granted';
+  String get granted => 'Verildi';
 
   @override
-  String get denied => 'Denied';
+  String get denied => 'Reddedildi';
 
   @override
-  String get restricted => 'Restricted';
+  String get restricted => 'Kısıtlı';
 
   @override
-  String get limited => 'Limited';
+  String get limited => 'Sınırlı';
 
   @override
-  String get permanently_denied => 'Permanently Denied';
+  String get permanently_denied => 'Kalıcı olarak reddedildi';
 
   @override
   String get storage_permission_denied =>
@@ -789,7 +802,7 @@ class AppLocalizationsTr extends AppLocalizations {
   String get summary_length => 'Özet Uzunluğu';
 
   @override
-  String get generating_summary => 'Generating summary...';
+  String get generating_summary => 'Özet oluşturuluyor...';
 
   @override
   String get summary_copied_to_clipboard => 'Özet panoya kopyalandı';

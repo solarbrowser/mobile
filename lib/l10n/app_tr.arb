@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "tr",
   "welcomeToSolar": "Solar'a Hoş Geldiniz",
   "welcomeDescription": "Modern, hızlı ve güvenli",
@@ -23,7 +23,7 @@
   "next": "İleri",
   "back": "Geri",
   "getStarted": "Başlayın",
-  "continueText": "Devam",
+  "continueText": "Devam Et",
   "notifications": "Bildirimler",
   "notificationDescription": "Cihazınıza dosyalar indirildiğinde bildirim alın",
   "allowNotifications": "Bildirimlere İzin Ver",
@@ -105,6 +105,11 @@
   "reset": "Sıfırla",
   "reset_complete": "Sıfırlandı",
   "permission_denied": "Depolama izni reddedildi",
+  "permission_permanently_denied": "İzin kalıcı olarak reddedildi. Lütfen Ayarlar'da etkinleştirin.",
+  "sort_by": "Sıralama ölçütü",
+  "name": "Ad",
+  "size": "Boyut",
+  "date": "Tarih",
   "download_location_changed": "İndirme konumu başarıyla değiştirildi",
   "error_changing_location": "Konum değiştirme hatası",
   "enable_cookies": "Çerezleri Etkinleştir",
@@ -127,7 +132,7 @@
   "exit_app_confirm": "Çıkmak istediğinizden emin misiniz?",
   "exit": "Çık",
   "size": "Boyut",
-  "auto_open_downloads": "İndirmeleri otomatik aç",
+  "auto_open_downloads": "İndirmeleri Otomatik Aç",
   "clear_downloads_history": "İndirme geçmişini temizle",
   "downloads_history_cleared": "İndirme geçmişi temizlendi",
   "delete_download_confirm": "{fileName} dosyasını indirme geçmişinden silmek istiyor musunuz?\nİndirilen dosya silinmeyecektir.",
@@ -220,7 +225,7 @@
       }
     }
   },
-    "yesterday": "Dün",
+  "yesterday": "Dün",
   "@yesterday": {
     "description": "Time indicator for events that happened yesterday"
   },
@@ -239,13 +244,12 @@
   "file_exists": "Dosya zaten mevcut",
   "file_saved": "Dosya İndirilenler'e kaydedildi",
   "no_tabs_open": "Açık sekme yok",
-  "incognito": "Gizli mod",
+  "incognito": "Gizli",
   "clear_all": "Tümünü temizle",
   "clear_history": "Geçmişi temizle",
   "clear_history_confirmation": "Tarama geçmişini silmek istediğinizden emin misiniz?",
   "no_history": "Tarama geçmişi yok",
   "today": "Bugün",
-  "yesterday": "Dün",
   "days_ago": "{days} gün önce",
   "@days_ago": {
     "description": "Shows how many days ago something happened",
@@ -360,14 +364,14 @@
   },
   "storage_permission_granted": "Depolama izni verildi",
   "classic_navigation": "Klasik Navigasyon",
-  "classic_navigation_description": "Ekranın altında gezinme düğmelerini göster",
+  "classic_navigation_description": "Klasik tarayıcı tarzı navigasyon kontrollerini kullan",
   "ok": "Tamam",
   "welcome_screen_reset": "Karşılama Ekranını Sıfırla",
-  "welcome_screen_reset_message": "Karşılama ekranı bir sonraki uygulama başlatışında gösterilecektir. Güncellenmiş gizlilik politikasını ve kullanım koşullarını görmek için lütfen uygulamayı yeniden başlatın.",
+  "welcome_screen_reset_message": "Bu, hoş geldin ekranını sıfırlayacak ve uygulamayı bir sonraki başlatışınızda tekrar görünecek.",
   "customize_navigation": "Navigasyonu Özelleştir",
   "bookmark_removed": "Yer imi kaldırıldı",
   "navigation_buttons": "Navigasyon Düğmeleri",
-  "available_buttons": "Kullanılabilir Düğmeler",
+  "available_buttons": "Mevcut düğmeler",
   "enabled_buttons": "Etkin Düğmeler",
   "button_back": "Geri",
   "button_forward": "İleri",
@@ -383,8 +387,8 @@
   "rename": "Yeniden Adlandır",
   "rename_pwa": "PWA'yı Yeniden Adlandır",
   "pwa_name": "PWA adı",
-  "pwa_renamed": "PWA ve ana ekran kısayolu yeniden adlandırıldı",
-  "pwa_removed": "PWA ve ana ekran kısayolu kaldırıldı",
+  "pwa_renamed": "PWA yeniden adlandırıldı",
+  "pwa_removed": "PWA kaldırıldı",
   "remove": "Kaldır",
   "@remove": {
     "description": "Button text for removing something"
@@ -501,19 +505,15 @@
   "@reset_welcome_screen": {
     "description": "Reset welcome screen option"
   },
-  "welcome_screen_reset_message": "Bu, hoş geldin ekranını sıfırlayacak ve uygulamayı bir sonraki başlatışınızda tekrar görünecek.",
   "@welcome_screen_reset_message": {
     "description": "Dialog message for resetting welcome screen"
   },
-  "available_buttons": "Mevcut düğmeler",
   "@available_buttons": {
     "description": "Label for available navigation buttons"
   },
-  "pwa_renamed": "PWA yeniden adlandırıldı",
   "@pwa_renamed": {
     "description": "Confirmation message when PWA is renamed"
   },
-  "pwa_removed": "PWA kaldırıldı",
   "@pwa_removed": {
     "description": "Confirmation message when PWA is removed"
   },
@@ -549,7 +549,6 @@
   "@navigation_controls": {
     "description": "Title for navigation controls settings"
   },
-  "classic_navigation_description": "Klasik tarayıcı tarzı navigasyon kontrollerini kullan",
   "@classic_navigation_description": {
     "description": "Description for classic navigation setting"
   },
@@ -561,7 +560,6 @@
   "@ai_summary_settings": {
     "description": "Title for AI summary settings"
   },
-  "auto_open_downloads": "İndirmeleri Otomatik Aç",
   "@auto_open_downloads": {
     "description": "Setting title for auto-opening downloads"
   },
@@ -692,7 +690,7 @@
   "draculaThemeDesc": "Koyu mor tema",
   "nordThemeDesc": "Soğuk koyu tema",
   "gruvboxThemeDesc": "Retro koyu tema",
-  "oneDarkThemeDesc": "Editör esinlenmesi tema",
+  "oneDarkThemeDesc": "Editörden ilhamlı tema",
   "catppuccinThemeDesc": "Pastel koyu tema",
   "latestNews": "Son Haberler",
   "errorLoadingNews": "Haberler yüklenirken hata",
@@ -702,21 +700,6 @@
   "enterText": "Metin girin...",
   "custom_home_page": "Özel Ana Sayfa",
   "set_home_page_url": "Ana Sayfa URL'sini Ayarla",
-  "systemThemeDesc": "Sistemi takip eder",
-  "lightThemeDesc": "Parlak ve temiz",
-  "darkThemeDesc": "Göze rahat",
-  "solarizedLightThemeDesc": "Sıcak açık tema",
-  "nordLightThemeDesc": "Soğuk açık tema",
-  "gruvboxLightThemeDesc": "Retro açık tema",
-  "tokyoNightThemeDesc": "Canlı gece teması",
-  "draculaThemeDesc": "Koyu mor tema",
-  "nordThemeDesc": "Soğuk koyu tema",
-  "gruvboxThemeDesc": "Retro koyu tema",
-  "oneDarkThemeDesc": "Editörden ilhamlı tema",
-  "catppuccinThemeDesc": "Pastel koyu tema",
-  "latestNews": "Son Haberler",
-  "errorLoadingNews": "Haberler yüklenirken hata",
-  
   "failed_to_get_news_data": "Sunucudan haber verisi bağlantısı alınamadı",
   "failed_to_load_news_server": "Sunucudan haberler yüklenemedi",
   "network_error_loading_news": "Haberler yüklenirken ağ hatası",
@@ -726,10 +709,9 @@
   "close_all": "Hepsini Kapat",
   "delete_file": "Dosyayı Sil",
   "delete_file_confirm": "Bu dosyayı cihazınızdan kalıcı olarak silmek istediğinizden emin misiniz?",
-  "remove_from_history": "Geçmişten Kaldır", 
+  "remove_from_history": "Geçmişten Kaldır",
   "delete_from_device": "Cihazdan Sil",
   "notice": "Bildirim",
-  
   "cannot_write_selected_folder": "Seçilen klasöre yazılamıyor. Varsayılan İndirilenler klasörü kullanılıyor.",
   "cannot_write_selected_folder_choose_different": "Seçilen klasöre yazılamıyor. Lütfen farklı bir konum seçin.",
   "cannot_write_configured_folder": "Yapılandırılan klasöre yazılamıyor. Varsayılan İndirilenler klasörü kullanılıyor.",
@@ -741,7 +723,6 @@
   "without_permission_private_folder": "İzin olmadan dosya Solar'ın özel klasörüne kaydedilecek (İndirilenler panelinden erişilebilir).",
   "enable_unknown_apps_android": "İndirme sonrasında Android ayarlarında \"Bilinmeyen Uygulamaları Yükle\" seçeneğini etkinleştirmeniz gerekebilir.",
   "private_folder_instead": "Dosyalar bunun yerine Solar'ın özel klasörüne kaydedilecek.",
-  
   "save_to_downloads_title": "İndirilenlere Kaydet?",
   "save_to_gallery_title": "Galeriye Kaydet?",
   "storage_access_required": "Depolama Erişimi Gerekli",
@@ -754,16 +735,13 @@
   "package_installation_permission": "Paket Kurulumu",
   "storage_access_permission": "Depolama Erişimi",
   "without_gallery_permission": "İzin olmadan medya dosyaları yalnızca Solar'ın İndirilenler bölümünde görünür olacak.",
-  
   "flutter_version_string": "Flutter 3.32.5",
   "photoncore_version_string": "Photoncore 0.1.0",
   "engine_version_string": "4.7.0",
-  
   "http_warning_title": "Güvensiz Bağlantı Uyarısı",
   "http_warning_message": "Güvensiz bağlantı (HTTP) kullanan bir web sitesini ziyaret etmek üzeresiniz. Verileriniz başkaları tarafından görülebilir. Devam etmek istediğinizden emin misiniz?",
   "continue_anyway": "Yine de Devam Et",
   "go_back": "Geri Dön",
-  
   "web_page_error_title": "Sayfa Yükleme Hatası",
   "connection_error": "Bağlantı Hatası",
   "page_not_found": "Sayfa Bulunamadı",
@@ -781,20 +759,42 @@
   "ssl_error_description": "Web sitesinin güvenlik sertifikasında bir sorun var. Bağlantı güvenli olmayabilir.",
   "network_error_description": "Bir ağ hatası oluştu. Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.",
   "server_error_description": "Sunucu bir hatayla karşılaştı ve isteğiniz tamamlanamadı.",
-  "try_again": "Tekrar Dene",
   "go_home": "Ana Sayfaya Git",
-  "skip": "Atla",
-  "continueText": "Devam Et",
   "package_downloaded": "Paket İndirildi!",
   "installation_steps": "Kurulum Adımları:",
   "installation_instructions": "1. Paketi açmak için aşağıdaki \"Kur\" butonuna dokunun\n2. İstenirse \"Bilinmeyen Uygulamaları Yükle\" seçeneğini etkinleştirin\n3. Android kurulum sihirbazını takip edin",
   "view": "Görüntüle",
   "install": "Kur",
   "file_deleted_from_device": "Dosya cihazdan silindi",
-  "delete": "Sil",
-  "incognito": "Gizli",
   "cannot_open_file_path_not_found": "Dosya açılamıyor: yol bulunamadı",
   "error_opening_file_message": "Dosya açma hatası: {message}",
   "error_opening_file_exception": "Dosya açma hatası: {error}",
-  "summary_copied_to_clipboard": "Özet panoya kopyalandı"
+  "summary_copied_to_clipboard": "Özet panoya kopyalandı",
+  "change_download_location": "İndirme konumunu değiştir",
+  "clear_downloads_history_description": "İndirme geçmişini temizle (dosyalar kalır)",
+  "copy_image_link": "Resim bağlantısını kopyala",
+  "copy_link_address": "Bağlantı adresini kopyala",
+  "denied": "Reddedildi",
+  "download_permissions": "İndirme izinleri",
+  "failed_to_download_image": "Resim indirilemedi",
+  "generating_summary": "Özet oluşturuluyor...",
+  "granted": "Verildi",
+  "limited": "Sınırlı",
+  "manage_download_permissions": "İndirme izinlerini yönet",
+  "manage_external_storage": "Harici depolamayı yönet",
+  "not_set": "Ayarlanmamış",
+  "notification": "Bildirim",
+  "notification_permission": "Bildirimler",
+  "notification_permission_description": "İndirme ilerlemesi ve tamamlanma uyarıları için",
+  "open_image_in_new_tab": "Resmi yeni sekmede aç",
+  "open_link": "Bağlantıyı aç",
+  "open_link_in_new_tab": "Bağlantıyı yeni sekmede aç",
+  "permanently_denied": "Kalıcı olarak reddedildi",
+  "permission_explanation": "Bu izinler indirme deneyiminizi iyileştirmeye yardımcı olur. Android Ayarlarında istediğiniz zaman değiştirebilirsiniz.",
+  "request": "İstek",
+  "restricted": "Kısıtlı",
+  "save": "Kaydet",
+  "storage": "Depolama",
+  "storage_permission": "Depolama erişimi",
+  "browsing_history": "Tarama geçmişi"
 }

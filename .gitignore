@@ -46,3 +46,5 @@ app.*.map.json
 
 lib/services/ai_service.dart
 lib/services/gemini_service.dart
+android/app/google-services.json
+lib/firebase_options.dart

@@ -1,6 +1,5 @@
 {
   "@@locale": "ar",
-  
   "welcomeToSolar": "مرحباً بك في Solar",
   "welcomeDescription": "متصفح حديث وسريع وآمن",
   "termsOfService": "بالمتابعة، فإنك توافق على شروط الخدمة وسياسة الخصوصية",
@@ -30,7 +29,6 @@
   "and": "و",
   "data_collection": "جمع البيانات",
   "data_collection_details": "• نجمع الحد الأدنى من البيانات اللازمة لوظائف المتصفح\n• يبقى سجل التصفح على جهازك\n• لا نتتبع نشاطك عبر الإنترنت\n• يمكنك مسح جميع البيانات في أي وقت",
-
   "general": "عام",
   "appearance": "المظهر",
   "downloads": "التنزيلات",
@@ -98,6 +96,11 @@
   "reset": "إعادة تعيين",
   "reset_complete": "تمت إعادة تعيين المتصفح",
   "permission_denied": "تم رفض إذن التخزين",
+  "permission_permanently_denied": "تم رفض الإذن نهائياً. يرجى تفعيله في الإعدادات.",
+  "sort_by": "ترتيب حسب",
+  "name": "الاسم",
+  "size": "الحجم",
+  "date": "التاريخ",
   "download_location_changed": "تم تغيير موقع التنزيل بنجاح",
   "error_changing_location": "خطأ في تغيير موقع التنزيل",
   "enable_cookies": "تمكين ملفات تعريف الارتباط",
@@ -120,7 +123,7 @@
   "exit_app_confirm": "هل أنت متأكد أنك تريد الخروج؟",
   "exit": "خروج",
   "size": "الحجم",
-  "auto_open_downloads": "فتح التنزيلات تلقائياً",
+  "auto_open_downloads": "فتح التحميلات تلقائياً",
   "clear_downloads_history": "مسح سجل التنزيلات",
   "downloads_history_cleared": "تم مسح سجل التنزيلات",
   "delete_download_confirm": "هل تريد حذف {fileName} من سجل التنزيلات؟\nلن يتم حذف الملف الذي تم تنزيله.",
@@ -229,7 +232,7 @@
   "file_exists": "الملف موجود بالفعل",
   "file_saved": "تم حفظ الملف في التنزيلات",
   "no_tabs_open": "لا توجد علامات تبويب مفتوحة",
-  "incognito": "التصفح المتخفي",
+  "incognito": "خفي",
   "clear_all": "مسح الكل",
   "clear_history": "مسح السجل",
   "clear_history_confirmation": "هل أنت متأكد أنك تريد مسح سجل التصفح؟",
@@ -303,33 +306,36 @@
   },
   "searchTheWeb": "البحث في الويب",
   "recentSearches": "عمليات البحث الأخيرة",
-  "classic_navigation": "التنقل الكلاسيكي",  "classic_navigation_description": "عرض أزرار التنقل في أسفل الشاشة",
+  "classic_navigation": "التنقل الكلاسيكي",
+  "classic_navigation_description": "استخدام عناصر التحكم في التنقل بنمط المتصفح الكلاسيكي",
   "ok": "موافق",
   "welcome_screen_reset": "إعادة تعيين شاشة الترحيب",
-  "welcome_screen_reset_message": "ستظهر شاشة الترحيب في بدء التطبيق التالي. يرجى إعادة تشغيل التطبيق لرؤية سياسة الخصوصية وشروط الخدمة المحدثة.",
+  "welcome_screen_reset_message": "سيؤدي هذا إلى إعادة تعيين شاشة الترحيب بحيث تظهر مرة أخرى في المرة القادمة التي تبدأ فيها التطبيق.",
   "customize_navigation": "تخصيص التنقل",
-  "bookmark_removed": "تمت إزالة الإشارة المرجعية",
+  "bookmark_removed": "تم حذف الإشارة المرجعية",
   "navigation_buttons": "أزرار التنقل",
   "available_buttons": "الأزرار المتاحة",
   "enabled_buttons": "الأزرار المفعلة",
-  "button_back": "الخلف",
-  "button_forward": "الأمام",
+  "button_back": "رجوع",
+  "button_forward": "تقدم",
   "button_bookmark": "إشارة مرجعية",
   "button_share": "مشاركة",
-  "button_menu": "القائمة",
-  "button_bookmarks": "الإشارات المرجعية",
+  "button_menu": "قائمة",
+  "button_bookmarks": "إشارات مرجعية",
   "navigation_bar_animations": "رسوم متحركة لشريط التنقل",
-  "restore_defaults": "استعادة الافتراضية",  "drag_to_reorder": "اسحب لإعادة الترتيب",
-  "add": "إضافة",  "restored_tab": "علامة تبويب مستعادة",
+  "restore_defaults": "استعادة الافتراضية",
+  "drag_to_reorder": "اسحب لإعادة الترتيب",
+  "add": "إضافة",
+  "restored_tab": "تم استعادة علامة التبويب",
   "rename": "إعادة تسمية",
   "rename_pwa": "إعادة تسمية PWA",
   "pwa_name": "اسم PWA",
-  "pwa_renamed": "تم إعادة تسمية PWA واختصار الشاشة الرئيسية",  "pwa_removed": "تم إزالة PWA واختصار الشاشة الرئيسية",
+  "pwa_renamed": "تم إعادة تسمية PWA",
+  "pwa_removed": "تم إزالة PWA",
   "remove": "إزالة",
   "@remove": {
-    "description": "Button text for removing something"
+    "description": "Remove button text"
   },
-
   "skip": "تخطي",
   "@skip": {
     "description": "Skip button text"
@@ -481,86 +487,65 @@
   "developer": "المطور",
   "@developer": {
     "description": "Developer section title"
-  },  "reset_welcome_screen": "إعادة تعيين شاشة الترحيب",
+  },
+  "reset_welcome_screen": "إعادة تعيين شاشة الترحيب",
   "@reset_welcome_screen": {
     "description": "Reset welcome screen option"
   },
-  "restored_tab": "تم استعادة علامة التبويب",
   "@restored_tab": {
     "description": "Message when a tab is restored"
   },
-  "welcome_screen_reset": "إعادة تعيين شاشة الترحيب",
   "@welcome_screen_reset": {
     "description": "Dialog title for resetting welcome screen"
   },
-  "welcome_screen_reset_message": "سيؤدي هذا إلى إعادة تعيين شاشة الترحيب بحيث تظهر مرة أخرى في المرة القادمة التي تبدأ فيها التطبيق.",
   "@welcome_screen_reset_message": {
     "description": "Dialog message for resetting welcome screen"
   },
-  "ok": "موافق",
   "@ok": {
     "description": "OK button text"
   },
-  "customize_navigation": "تخصيص التنقل",
   "@customize_navigation": {
     "description": "Title for navigation customization"
   },
-  "button_back": "رجوع",
   "@button_back": {
     "description": "Back button label"
   },
-  "button_forward": "تقدم",
   "@button_forward": {
     "description": "Forward button label"
   },
-  "button_bookmark": "إشارة مرجعية",
   "@button_bookmark": {
     "description": "Bookmark button label"
   },
-  "button_bookmarks": "إشارات مرجعية",
   "@button_bookmarks": {
     "description": "Bookmarks button label"
   },
-  "button_share": "مشاركة",
   "@button_share": {
     "description": "Share button label"
   },
-  "button_menu": "قائمة",
   "@button_menu": {
     "description": "Menu button label"
   },
-  "available_buttons": "الأزرار المتاحة",
   "@available_buttons": {
     "description": "Label for available navigation buttons"
   },
-  "add": "إضافة",
   "@add": {
     "description": "Add button text"
   },
-  "rename_pwa": "إعادة تسمية PWA",
   "@rename_pwa": {
     "description": "Option to rename a PWA"
   },
-  "pwa_name": "اسم PWA",
   "@pwa_name": {
     "description": "Hint for PWA name input field"
   },
-  "rename": "إعادة تسمية",
   "@rename": {
     "description": "Rename button text"
   },
-  "pwa_renamed": "تم إعادة تسمية PWA",
   "@pwa_renamed": {
     "description": "Confirmation message when PWA is renamed"
   },
-  "remove": "إزالة",
-  "@remove": {
-    "description": "Remove button text"
-  },
-  "pwa_removed": "تم إزالة PWA",
   "@pwa_removed": {
     "description": "Confirmation message when PWA is removed"
-  },  "bookmark_removed": "تم حذف الإشارة المرجعية",
+  },
   "@bookmark_removed": {
     "description": "Confirmation message when bookmark is removed"
   },
@@ -596,11 +581,9 @@
   "@navigation_controls": {
     "description": "Title for navigation controls settings"
   },
-  "classic_navigation": "التنقل الكلاسيكي",
   "@classic_navigation": {
     "description": "Label for classic navigation mode"
   },
-  "classic_navigation_description": "استخدام عناصر التحكم في التنقل بنمط المتصفح الكلاسيكي",
   "@classic_navigation_description": {
     "description": "Description for classic navigation setting"
   },
@@ -612,10 +595,10 @@
   "@ai_summary_settings": {
     "description": "Title for AI summary settings"
   },
-  "auto_open_downloads": "فتح التحميلات تلقائياً",
   "@auto_open_downloads": {
     "description": "Setting title for auto-opening downloads"
-  },  "ask_download_location_title": "السؤال عن موقع التحميل",
+  },
+  "ask_download_location_title": "السؤال عن موقع التحميل",
   "@ask_download_location_title": {
     "description": "Setting title for asking download location"
   },
@@ -679,28 +662,29 @@
   "group_name": "اسم المجموعة",
   "@group_name": {
     "description": "Input label for tab group name"
-  },  "color": "اللون",
+  },
+  "color": "اللون",
   "@color": {
     "description": "Color selection label"
-  },  "close_group": "إغلاق المجموعة",
+  },
+  "close_group": "إغلاق المجموعة",
   "@close_group": {
     "description": "Dialog title for closing a tab group"
   },
   "create": "إنشاء",
   "summarize": "تلخيص",
-  "previous_summaries": "الملخصات السابقة",
   "no_summaries_available": "لا توجد ملخصات متاحة",
   "page_summary": "ملخص الصفحة",
   "failed_to_generate_summary": "فشل في إنشاء الملخص",
   "try_again": "حاول مرة أخرى",
-  "no_page_to_summarize": "لا توجد صفحة للتلخيص",  "no_content_found_to_summarize": "لم يتم العثور على محتوى للتلخيص",
+  "no_page_to_summarize": "لا توجد صفحة للتلخيص",
+  "no_content_found_to_summarize": "لم يتم العثور على محتوى للتلخيص",
   "theme": "السمة",
   "check": "فحص",
   "pwa": "PWA",
   "confirm": "تأكيد",
   "input_required": "مطلوب إدخال",
   "alert": "تحذير",
-  "settings": "الإعدادات",
   "add_tabs_to_group": "إضافة علامات تبويب إلى المجموعة",
   "ungroup_tabs": "إلغاء تجميع علامات التبويب",
   "delete_group": "حذف المجموعة",
@@ -749,7 +733,6 @@
   "webApp": "تطبيق ويب",
   "exampleUrl": "https://مثال.com",
   "enterText": "أدخل النص...",
-  
   "failed_to_get_news_data": "تعذر الحصول على رابط بيانات الأخبار من الخادم",
   "failed_to_load_news_server": "فشل في تحميل الأخبار من الخادم",
   "network_error_loading_news": "خطأ في الشبكة أثناء تحميل الأخبار",
@@ -759,10 +742,9 @@
   "close_all": "إغلاق الكل",
   "delete_file": "حذف الملف",
   "delete_file_confirm": "هل أنت متأكد من أنك تريد حذف هذا الملف نهائياً من جهازك؟",
-  "remove_from_history": "إزالة من التاريخ", 
+  "remove_from_history": "إزالة من التاريخ",
   "delete_from_device": "حذف من الجهاز",
   "notice": "إشعار",
-  
   "cannot_write_selected_folder": "لا يمكن الكتابة في المجلد المحدد. استخدام مجلد التنزيلات الافتراضي.",
   "cannot_write_selected_folder_choose_different": "لا يمكن الكتابة في المجلد المحدد. يرجى اختيار موقع مختلف.",
   "cannot_write_configured_folder": "لا يمكن الكتابة في المجلد المكون. استخدام مجلد التنزيلات الافتراضي.",
@@ -774,7 +756,6 @@
   "without_permission_private_folder": "بدون إذن، سيتم حفظ الملف في مجلد Solar الخاص (يمكن الوصول إليه من لوحة التنزيلات).",
   "enable_unknown_apps_android": "قد تحتاج إلى تمكين \"تثبيت التطبيقات المجهولة\" في إعدادات Android بعد التنزيل.",
   "private_folder_instead": "سيتم حفظ الملفات في مجلد Solar الخاص بدلاً من ذلك.",
-  
   "save_to_downloads_title": "حفظ في التنزيلات؟",
   "save_to_gallery_title": "حفظ في المعرض؟",
   "storage_access_required": "مطلوب الوصول إلى التخزين",
@@ -787,16 +768,13 @@
   "package_installation_permission": "تثبيت الحزم",
   "storage_access_permission": "الوصول إلى التخزين",
   "without_gallery_permission": "بدون إذن، ستكون ملفات الوسائط مرئية فقط في قسم التنزيلات في Solar.",
-  
   "flutter_version_string": "Flutter 3.32.5",
   "photoncore_version_string": "Photoncore 0.1.0",
   "engine_version_string": "4.7.0",
-  
   "http_warning_title": "تحذير الاتصال غير الآمن",
   "http_warning_message": "أنت على وشك زيارة موقع ويب يستخدم اتصالاً غير آمن (HTTP). قد تكون بياناتك مرئية للآخرين. هل أنت متأكد من أنك تريد المتابعة؟",
   "continue_anyway": "المتابعة على أي حال",
   "go_back": "العودة",
-  
   "web_page_error_title": "خطأ في تحميل الصفحة",
   "connection_error": "خطأ في الاتصال",
   "page_not_found": "الصفحة غير موجودة",
@@ -814,20 +792,53 @@
   "ssl_error_description": "هناك مشكلة مع شهادة الأمان للموقع. قد لا يكون الاتصال آمناً.",
   "network_error_description": "حدث خطأ في الشبكة. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى.",
   "server_error_description": "واجه الخادم خطأ ولم يتمكن من إكمال طلبك.",
-  "try_again": "حاول مرة أخرى",
   "go_home": "الذهاب للرئيسية",
-  "skip": "تخطي",
-  "continueText": "متابعة", 
   "package_downloaded": "تم تنزيل الحزمة!",
   "installation_steps": "خطوات التثبيت:",
   "installation_instructions": "1. اضغط \"تثبيت\" أدناه لفتح الحزمة\n2. فعل \"تثبيت التطبيقات المجهولة\" إذا طُلب منك\n3. اتبع معالج التثبيت في Android",
   "view": "عرض",
   "install": "تثبيت",
   "file_deleted_from_device": "تم حذف الملف من الجهاز",
-  "delete": "حذف",
-  "incognito": "خفي",
   "cannot_open_file_path_not_found": "لا يمكن فتح الملف: المسار غير موجود",
   "error_opening_file_message": "خطأ في فتح الملف: {message}",
   "error_opening_file_exception": "خطأ في فتح الملف: {error}",
-  "summary_copied_to_clipboard": "تم نسخ الملخص إلى الحافظة"
+  "summary_copied_to_clipboard": "تم نسخ الملخص إلى الحافظة",
+  "catppuccinTheme": "Catppuccin",
+  "change_download_location": "تغيير مكان حفظ الملفات",
+  "clear_downloads_history_description": "إزالة سجل التنزيلات (الملفات تبقى)",
+  "copy_image_link": "نسخ رابط الصورة",
+  "copy_link_address": "نسخ عنوان الرابط",
+  "custom_home_page": "صفحة رئيسية مخصصة",
+  "denied": "مرفوض",
+  "download_permissions": "أذونات التنزيل",
+  "draculaTheme": "Dracula",
+  "failed_to_download_image": "فشل في تنزيل الصورة",
+  "generating_summary": "جاري إنشاء الملخص...",
+  "granted": "ممنوح",
+  "gruvboxLightTheme": "Gruvbox فاتح",
+  "gruvboxTheme": "Gruvbox",
+  "limited": "محدود",
+  "manage_download_permissions": "إدارة أذونات التنزيل",
+  "manage_external_storage": "إدارة التخزين الخارجي",
+  "nordLightTheme": "Nord فاتح",
+  "nordTheme": "Nord",
+  "not_set": "غير محدد",
+  "notification": "إشعار",
+  "notification_permission": "الإشعارات",
+  "notification_permission_description": "للحصول على تنبيهات تقدم التنزيل والإكمال",
+  "oneDarkTheme": "One Dark",
+  "open_image_in_new_tab": "فتح الصورة في علامة تبويب جديدة",
+  "open_link": "فتح الرابط",
+  "open_link_in_new_tab": "فتح الرابط في علامة تبويب جديدة",
+  "permanently_denied": "مرفوض نهائياً",
+  "permission_explanation": "تساعد هذه الأذونات في تحسين تجربة التنزيل. يمكنك تغييرها في أي وقت في إعدادات Android.",
+  "request": "طلب",
+  "restricted": "مقيد",
+  "save": "حفظ",
+  "set_home_page_url": "تعيين رابط الصفحة الرئيسية",
+  "solarizedLightTheme": "Solarized فاتح",
+  "storage": "التخزين",
+  "storage_permission": "الوصول للتخزين",
+  "systemTheme": "النظام",
+  "tokyoNightTheme": "Tokyo Night"
 }

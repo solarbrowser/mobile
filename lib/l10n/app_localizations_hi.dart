@@ -43,13 +43,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get darkTheme => 'डार्क';
 
   @override
-  String get systemTheme => 'System';
+  String get systemTheme => 'सिस्टम';
 
   @override
   String get tokyoNightTheme => 'Tokyo Night';
 
   @override
-  String get solarizedLightTheme => 'Solarized Light';
+  String get solarizedLightTheme => 'Solarized लाइट';
 
   @override
   String get draculaTheme => 'Dracula';
@@ -67,10 +67,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get catppuccinTheme => 'Catppuccin';
 
   @override
-  String get nordLightTheme => 'Nord Light';
+  String get nordLightTheme => 'Nord लाइट';
 
   @override
-  String get gruvboxLightTheme => 'Gruvbox Light';
+  String get gruvboxLightTheme => 'Gruvbox लाइट';
 
   @override
   String get next => 'अगला';
@@ -334,6 +334,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get permission_denied => 'स्टोरेज अनुमति अस्वीकृत';
 
   @override
+  String get permission_permanently_denied =>
+      'अनुमति स्थायी रूप से अस्वीकृत। कृपया इसे सेटिंग्स में सक्षम करें।';
+
+  @override
   String get download_location_changed => 'डाउनलोड स्थान बदल गया';
 
   @override
@@ -413,6 +417,15 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get downloads_history_cleared => 'डाउनलोड इतिहास साफ़ हो गया';
+
+  @override
+  String get sort_by => 'द्वारा क्रमबद्ध करें';
+
+  @override
+  String get name => 'नाम';
+
+  @override
+  String get date => 'दिनांक';
 
   @override
   String delete_download_confirm(String fileName) {
@@ -544,34 +557,34 @@ class AppLocalizationsHi extends AppLocalizations {
   String get open_in_new_tab => 'नए टैब में खोलें';
 
   @override
-  String get copy_image_link => 'Copy Image Link';
+  String get copy_image_link => 'छवि लिंक कॉपी करें';
 
   @override
-  String get open_image_in_new_tab => 'Open Image in New Tab';
+  String get open_image_in_new_tab => 'नए टैब में छवि खोलें';
 
   @override
-  String get open_link => 'Open Link';
+  String get open_link => 'लिंक खोलें';
 
   @override
-  String get open_link_in_new_tab => 'Open Link in New Tab';
+  String get open_link_in_new_tab => 'नए टैब में लिंक खोलें';
 
   @override
-  String get copy_link_address => 'Copy Link Address';
+  String get copy_link_address => 'लिंक पता कॉपी करें';
 
   @override
-  String get failed_to_download_image => 'Failed to download image';
+  String get failed_to_download_image => 'छवि डाउनलोड करने में विफल';
 
   @override
-  String get custom_home_page => 'Custom Home Page';
+  String get custom_home_page => 'कस्टम होम पेज';
 
   @override
-  String get set_home_page_url => 'Set Home Page URL';
+  String get set_home_page_url => 'होम पेज URL सेट करें';
 
   @override
-  String get not_set => 'Not set';
+  String get not_set => 'सेट नहीं';
 
   @override
-  String get save => 'Save';
+  String get save => 'सेव करें';
 
   @override
   String get downloading => 'डाउनलोड हो रहा है...';
@@ -603,58 +616,58 @@ class AppLocalizationsHi extends AppLocalizations {
   String get grant_permission => 'अनुमति दें';
 
   @override
-  String get download_permissions => 'Download Permissions';
+  String get download_permissions => 'डाउनलोड अनुमतियां';
 
   @override
-  String get manage_download_permissions => 'Manage permissions for downloads';
+  String get manage_download_permissions => 'डाउनलोड अनुमतियों का प्रबंधन करें';
 
   @override
-  String get storage_permission => 'Storage Access';
+  String get storage_permission => 'स्टोरेज एक्सेस';
 
   @override
-  String get notification_permission => 'Notifications';
+  String get notification_permission => 'सूचनाएं';
 
   @override
   String get notification_permission_description =>
-      'For download progress and completion alerts';
+      'डाउनलोड प्रगति और पूर्णता अलर्ट के लिए';
 
   @override
   String get permission_explanation =>
-      'These permissions help improve your download experience. You can change them anytime in Android Settings.';
+      'ये अनुमतियां आपके डाउनलोड अनुभव को बेहतर बनाने में मदद करती हैं। आप इन्हें Android सेटिंग्स में कभी भी बदल सकते हैं।';
 
   @override
   String get clear_downloads_history_description =>
-      'Remove download history (files remain)';
+      'डाउनलोड इतिहास हटाएं (फ़ाइलें रहती हैं)';
 
   @override
-  String get change_download_location => 'Change where files are saved';
+  String get change_download_location => 'डाउनलोड स्थान बदलें';
 
   @override
-  String get request => 'Request';
+  String get request => 'अनुरोध';
 
   @override
-  String get storage => 'Storage';
+  String get storage => 'स्टोरेज';
 
   @override
-  String get manage_external_storage => 'Manage External Storage';
+  String get manage_external_storage => 'बाहरी स्टोरेज प्रबंधित करें';
 
   @override
-  String get notification => 'Notification';
+  String get notification => 'सूचना';
 
   @override
-  String get granted => 'Granted';
+  String get granted => 'अनुमति दी गई';
 
   @override
-  String get denied => 'Denied';
+  String get denied => 'अस्वीकृत';
 
   @override
-  String get restricted => 'Restricted';
+  String get restricted => 'प्रतिबंधित';
 
   @override
-  String get limited => 'Limited';
+  String get limited => 'सीमित';
 
   @override
-  String get permanently_denied => 'Permanently Denied';
+  String get permanently_denied => 'स्थायी रूप से अस्वीकृत';
 
   @override
   String get storage_permission_denied =>
@@ -783,7 +796,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get summary_length => 'सारांश लंबाई';
 
   @override
-  String get generating_summary => 'Generating summary...';
+  String get generating_summary => 'सारांश बनाई जा रही है...';
 
   @override
   String get summary_copied_to_clipboard =>
@@ -848,7 +861,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get developer => 'डेवलपर';
 
   @override
-  String get reset_welcome_screen => 'Reset Welcome Screen';
+  String get reset_welcome_screen => 'स्वागत स्क्रीन रीसेट करें';
 
   @override
   String get restored_tab => 'टैब पुनर्स्थापित';

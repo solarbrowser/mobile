@@ -1,6 +1,5 @@
 {
   "@@locale": "es",
-  
   "welcomeToSolar": "Bienvenido a Solar",
   "welcomeDescription": "Un navegador moderno, rápido y seguro",
   "termsOfService": "Al continuar, aceptas nuestros Términos de servicio y Política de privacidad",
@@ -31,17 +30,21 @@
   "just_now": "Ahora mismo",
   "min_ago": "hace {minutes} min",
   "@min_ago": {
+    "description": "Time indicator for events that happened minutes ago",
     "placeholders": {
       "minutes": {
-        "type": "int"
+        "type": "int",
+        "example": "5"
       }
     }
   },
-  "hr_ago": "hace {hours} h",
+  "hr_ago": "hace {hours} hr",
   "@hr_ago": {
+    "description": "Time indicator for events that happened hours ago",
     "placeholders": {
       "hours": {
-        "type": "int"
+        "type": "int",
+        "example": "2"
       }
     }
   },
@@ -61,11 +64,10 @@
   "and": "y",
   "data_collection": "Recopilación de datos",
   "data_collection_details": "• Recopilamos los datos mínimos necesarios para la funcionalidad del navegador\n• Tu historial de navegación permanece en tu dispositivo\n• No rastreamos tu actividad en línea\n• Puedes borrar todos los datos en cualquier momento",
-
   "general": "General",
   "appearance": "Apariencia",
   "downloads": "Descargas",
-  "settings": "Ajustes",
+  "settings": "Configuración",
   "help": "Ayuda",
   "about": "Acerca de",
   "language": "Idioma",
@@ -129,6 +131,12 @@
   "reset": "Restablecer",
   "reset_complete": "Navegador restablecido",
   "permission_denied": "Permiso de almacenamiento denegado",
+  "permission_permanently_denied": "Permiso denegado permanentemente. Por favor, habilítelo en Configuración.",
+  "sort_by": "Ordenar por",
+  "name": "Nombre",
+  "size": "Tamaño",
+  "date": "Fecha",
+  "permission_permanently_denied": "Permiso denegado permanentemente. Por favor, habilítelo en Configuración.",
   "download_location_changed": "Ubicación de descargas cambiada correctamente",
   "error_changing_location": "Error al cambiar la ubicación",
   "enable_cookies": "Activar cookies",
@@ -151,7 +159,7 @@
   "exit_app_confirm": "¿Estás seguro de que quieres salir?",
   "exit": "Salir",
   "size": "Tamaño",
-  "auto_open_downloads": "Abrir descargas automáticamente",
+  "auto_open_downloads": "Abrir Descargas Automáticamente",
   "clear_downloads_history": "Borrar historial de descargas",
   "downloads_history_cleared": "Historial de descargas borrado",
   "delete_download_confirm": "¿Quieres eliminar {fileName} del historial de descargas?\nEl archivo descargado no se eliminará.",
@@ -220,31 +228,9 @@
   "downloading": "Descargando...",
   "no_downloads_yet": "No hay descargas",
   "unknown": "Desconocido",
-  "just_now": "Ahora mismo",
   "@just_now": {
     "description": "Time indicator for events that just happened"
   },
-  "min_ago": "hace {minutes} min",
-  "@min_ago": {
-    "description": "Time indicator for events that happened minutes ago",
-    "placeholders": {
-      "minutes": {
-        "type": "int",
-        "example": "5"
-      }
-    }
-  },
-  "hr_ago": "hace {hours} hr",
-  "@hr_ago": {
-    "description": "Time indicator for events that happened hours ago",
-    "placeholders": {
-      "hours": {
-        "type": "int",
-        "example": "2"
-      }
-    }
-  },
-  "yesterday": "Ayer",
   "@yesterday": {
     "description": "Time indicator for events that happened yesterday"
   },
@@ -340,14 +326,15 @@
   },
   "searchTheWeb": "Buscar en la web",
   "recentSearches": "Búsquedas recientes",
-  "classic_navigation": "Navegación Clásica",  "classic_navigation_description": "Mostrar botones de navegación en la parte inferior de la pantalla",
-  "ok": "OK",
+  "classic_navigation": "Navegación Clásica",
+  "classic_navigation_description": "Usar controles de navegación estilo navegador clásico",
+  "ok": "Aceptar",
   "welcome_screen_reset": "Restablecer Pantalla de Bienvenida",
-  "welcome_screen_reset_message": "La pantalla de bienvenida se mostrará en el próximo inicio de la aplicación. Por favor, reinicia la aplicación para ver la política de privacidad y términos de servicio actualizados.",
+  "welcome_screen_reset_message": "Esto restablecerá la pantalla de bienvenida para que aparezca nuevamente la próxima vez que inicie la aplicación.",
   "customize_navigation": "Personalizar Navegación",
   "bookmark_removed": "Marcador eliminado",
   "navigation_buttons": "Botones de Navegación",
-  "available_buttons": "Botones Disponibles",
+  "available_buttons": "Botones disponibles",
   "enabled_buttons": "Botones Habilitados",
   "button_back": "Atrás",
   "button_forward": "Adelante",
@@ -356,18 +343,19 @@
   "button_menu": "Menú",
   "button_bookmarks": "Marcadores",
   "navigation_bar_animations": "Animaciones de Barra de Navegación",
-  "restore_defaults": "Restaurar Predeterminados",  "drag_to_reorder": "Arrastra para reordenar",
-  "add": "AÑADIR",  "restored_tab": "Pestaña Restaurada",
+  "restore_defaults": "Restaurar Predeterminados",
+  "drag_to_reorder": "Arrastra para reordenar",
+  "add": "Agregar",
+  "restored_tab": "Pestaña restaurada",
   "rename": "Renombrar",
   "rename_pwa": "Renombrar PWA",
-  "pwa_name": "Nombre de PWA",
-  "pwa_renamed": "PWA y acceso directo de pantalla de inicio renombrados",  "pwa_removed": "PWA y acceso directo de pantalla de inicio eliminados",
+  "pwa_name": "Nombre del PWA",
+  "pwa_renamed": "PWA renombrado",
+  "pwa_removed": "PWA eliminado",
   "remove": "Eliminar",
   "@remove": {
-    "description": "Button text for removing something"
+    "description": "Remove button text"
   },
-
-  "skip": "Omitir",
   "@skip": {
     "description": "Skip button text"
   },
@@ -431,7 +419,6 @@
   "@change_download_location": {
     "description": "Description for download location setting"
   },
-  "close": "Cerrar",
   "@close": {
     "description": "Close button text"
   },
@@ -455,7 +442,7 @@
   "@granted": {
     "description": "Permission granted status"
   },
-  "denied": "Denegado", 
+  "denied": "Denegado",
   "@denied": {
     "description": "Permission denied status"
   },
@@ -471,7 +458,6 @@
   "@permanently_denied": {
     "description": "Permission permanently denied status"
   },
-  "unknown": "Desconocido",
   "@unknown": {
     "description": "Unknown permission status"
   },
@@ -582,86 +568,65 @@
   "developer": "Desarrollador",
   "@developer": {
     "description": "Developer section title"
-  },  "reset_welcome_screen": "Restablecer Pantalla de Bienvenida",
+  },
+  "reset_welcome_screen": "Restablecer Pantalla de Bienvenida",
   "@reset_welcome_screen": {
     "description": "Reset welcome screen option"
   },
-  "restored_tab": "Pestaña restaurada",
   "@restored_tab": {
     "description": "Message when a tab is restored"
   },
-  "welcome_screen_reset": "Restablecer Pantalla de Bienvenida",
   "@welcome_screen_reset": {
     "description": "Dialog title for resetting welcome screen"
   },
-  "welcome_screen_reset_message": "Esto restablecerá la pantalla de bienvenida para que aparezca nuevamente la próxima vez que inicie la aplicación.",
   "@welcome_screen_reset_message": {
     "description": "Dialog message for resetting welcome screen"
   },
-  "ok": "Aceptar",
   "@ok": {
     "description": "OK button text"
   },
-  "customize_navigation": "Personalizar Navegación",
   "@customize_navigation": {
     "description": "Title for navigation customization"
   },
-  "button_back": "Atrás",
   "@button_back": {
     "description": "Back button label"
   },
-  "button_forward": "Adelante",
   "@button_forward": {
     "description": "Forward button label"
   },
-  "button_bookmark": "Marcador",
   "@button_bookmark": {
     "description": "Bookmark button label"
   },
-  "button_bookmarks": "Marcadores",
   "@button_bookmarks": {
     "description": "Bookmarks button label"
   },
-  "button_share": "Compartir",
   "@button_share": {
     "description": "Share button label"
   },
-  "button_menu": "Menú",
   "@button_menu": {
     "description": "Menu button label"
   },
-  "available_buttons": "Botones disponibles",
   "@available_buttons": {
     "description": "Label for available navigation buttons"
   },
-  "add": "Agregar",
   "@add": {
     "description": "Add button text"
   },
-  "rename_pwa": "Renombrar PWA",
   "@rename_pwa": {
     "description": "Option to rename a PWA"
   },
-  "pwa_name": "Nombre del PWA",
   "@pwa_name": {
     "description": "Hint for PWA name input field"
   },
-  "rename": "Renombrar",
   "@rename": {
     "description": "Rename button text"
   },
-  "pwa_renamed": "PWA renombrado",
   "@pwa_renamed": {
     "description": "Confirmation message when PWA is renamed"
   },
-  "remove": "Eliminar",
-  "@remove": {
-    "description": "Remove button text"
-  },
-  "pwa_removed": "PWA eliminado",
   "@pwa_removed": {
     "description": "Confirmation message when PWA is removed"
-  },  "bookmark_removed": "Marcador eliminado",
+  },
   "@bookmark_removed": {
     "description": "Confirmation message when bookmark is removed"
   },
@@ -697,11 +662,9 @@
   "@navigation_controls": {
     "description": "Title for navigation controls settings"
   },
-  "classic_navigation": "Navegación Clásica",
   "@classic_navigation": {
     "description": "Label for classic navigation mode"
   },
-  "classic_navigation_description": "Usar controles de navegación estilo navegador clásico",
   "@classic_navigation_description": {
     "description": "Description for classic navigation setting"
   },
@@ -713,10 +676,10 @@
   "@ai_summary_settings": {
     "description": "Title for AI summary settings"
   },
-  "auto_open_downloads": "Abrir Descargas Automáticamente",
   "@auto_open_downloads": {
     "description": "Setting title for auto-opening downloads"
-  },  "ask_download_location_title": "Preguntar Ubicación de Descarga",
+  },
+  "ask_download_location_title": "Preguntar Ubicación de Descarga",
   "@ask_download_location_title": {
     "description": "Setting title for asking download location"
   },
@@ -780,28 +743,29 @@
   "group_name": "Nombre del Grupo",
   "@group_name": {
     "description": "Input label for tab group name"
-  },  "color": "Color",
+  },
+  "color": "Color",
   "@color": {
     "description": "Color selection label"
-  },  "close_group": "Cerrar Grupo",
+  },
+  "close_group": "Cerrar Grupo",
   "@close_group": {
     "description": "Dialog title for closing a tab group"
   },
   "create": "Crear",
   "summarize": "Resumir",
-  "previous_summaries": "Resúmenes Anteriores",
   "no_summaries_available": "No hay resúmenes disponibles",
   "page_summary": "Resumen de Página",
   "failed_to_generate_summary": "Error al generar resumen",
-  "try_again": "Intentar Nuevamente",
-  "no_page_to_summarize": "No hay página para resumir",  "no_content_found_to_sumarize": "No se encontró contenido para resumir",
+  "try_again": "Intentar de Nuevo",
+  "no_page_to_summarize": "No hay página para resumir",
+  "no_content_found_to_sumarize": "No se encontró contenido para resumir",
   "theme": "Tema",
   "check": "Verificar",
   "pwa": "PWA",
   "confirm": "Confirmar",
   "input_required": "Entrada Requerida",
   "alert": "Alerta",
-  "settings": "Configuración",
   "add_tabs_to_group": "Agregar Pestañas al Grupo",
   "ungroup_tabs": "Desagrupar pestañas",
   "delete_group": "Eliminar grupo",
@@ -834,29 +798,6 @@
   "welcome": "Bienvenido",
   "systemThemeDesc": "Sigue el sistema",
   "lightThemeDesc": "Brillante y limpio",
-  "darkThemeDesc": "Suave para los ojos",
-  "solarizedLightThemeDesc": "Tema claro cálido",
-  "nordLightThemeDesc": "Tema claro frío",
-  "gruvboxLightThemeDesc": "Tema claro retro",
-  "tokyoNightThemeDesc": "Tema nocturno vibrante",
-  "draculaThemeDesc": "Tema morado oscuro",
-  "nordThemeDesc": "Tema oscuro frío",
-  "gruvboxThemeDesc": "Tema oscuro retro",
-  "oneDarkThemeDesc": "Tema inspirado en editor",
-  "catppuccinThemeDesc": "Tema oscuro pastel",
-  "latestNews": "Últimas Noticias",
-  "errorLoadingNews": "Error al cargar noticias",
-  "defaultLocation": "Ubicación predeterminada",
-  "webApp": "Aplicación Web",
-  "exampleUrl": "https://ejemplo.com",
-  "enterText": "Introduce texto...",
-  
-  "exampleUrl": "https://ejemplo.com",
-  "enterText": "Introducir texto...",
-  "custom_home_page": "Página de inicio personalizada",
-  "set_home_page_url": "Establecer URL de página de inicio",
-  "systemThemeDesc": "Sigue el sistema",
-  "lightThemeDesc": "Brillante y limpio", 
   "darkThemeDesc": "Fácil para los ojos",
   "solarizedLightThemeDesc": "Tema claro cálido",
   "nordLightThemeDesc": "Tema claro frío",
@@ -871,7 +812,10 @@
   "errorLoadingNews": "Error al cargar noticias",
   "defaultLocation": "Ubicación predeterminada",
   "webApp": "Aplicación Web",
-  
+  "exampleUrl": "https://ejemplo.com",
+  "enterText": "Introducir texto...",
+  "custom_home_page": "Página de inicio personalizada",
+  "set_home_page_url": "Establecer URL de página de inicio",
   "failed_to_get_news_data": "No se pudo obtener el enlace de datos de noticias del servidor",
   "failed_to_load_news_server": "Error al cargar noticias del servidor",
   "network_error_loading_news": "Error de red al cargar noticias",
@@ -881,10 +825,9 @@
   "close_all": "Cerrar Todo",
   "delete_file": "Eliminar Archivo",
   "delete_file_confirm": "¿Estás seguro de que quieres eliminar permanentemente este archivo de tu dispositivo?",
-  "remove_from_history": "Eliminar del Historial", 
+  "remove_from_history": "Eliminar del Historial",
   "delete_from_device": "Eliminar del Dispositivo",
   "notice": "Aviso",
-  
   "cannot_write_selected_folder": "No se puede escribir en la carpeta seleccionada. Usando carpeta de descargas predeterminada.",
   "cannot_write_selected_folder_choose_different": "No se puede escribir en la carpeta seleccionada. Por favor, elige una ubicación diferente.",
   "cannot_write_configured_folder": "No se puede escribir en la carpeta configurada. Usando carpeta de descargas predeterminada.",
@@ -896,7 +839,6 @@
   "without_permission_private_folder": "Sin permiso, el archivo se guardará en la carpeta privada de Solar (accesible desde el panel de Descargas).",
   "enable_unknown_apps_android": "Es posible que necesites habilitar \"Instalar aplicaciones desconocidas\" en la configuración de Android después de la descarga.",
   "private_folder_instead": "Los archivos se guardarán en la carpeta privada de Solar en su lugar.",
-  
   "save_to_downloads_title": "¿Guardar en Descargas?",
   "save_to_gallery_title": "¿Guardar en Galería?",
   "storage_access_required": "Acceso al almacenamiento requerido",
@@ -909,16 +851,13 @@
   "package_installation_permission": "Instalación de Paquetes",
   "storage_access_permission": "Acceso al Almacenamiento",
   "without_gallery_permission": "Sin permiso, los archivos multimedia solo serán visibles en la sección de Descargas de Solar.",
-  
   "flutter_version_string": "Flutter 3.32.5",
   "photoncore_version_string": "Photoncore 0.1.0",
   "engine_version_string": "4.7.0",
-  
   "http_warning_title": "Advertencia de Conexión Insegura",
   "http_warning_message": "Estás a punto de visitar un sitio web que usa una conexión insegura (HTTP). Tus datos pueden ser visibles para otros. ¿Estás seguro de que quieres continuar?",
   "continue_anyway": "Continuar de Todos Modos",
   "go_back": "Volver Atrás",
-  
   "web_page_error_title": "Error de Carga de Página",
   "connection_error": "Error de Conexión",
   "page_not_found": "Página No Encontrada",
@@ -936,20 +875,25 @@
   "ssl_error_description": "Hay un problema con el certificado de seguridad del sitio web. La conexión puede no ser segura.",
   "network_error_description": "Ocurrió un error de red. Por favor verifica tu conexión a internet e intenta de nuevo.",
   "server_error_description": "El servidor encontró un error y no pudo completar tu solicitud.",
-  "try_again": "Intentar de Nuevo",
   "go_home": "Ir al Inicio",
-  "skip": "Omitir",
-  "continueText": "Continuar", 
   "package_downloaded": "¡Paquete descargado!",
   "installation_steps": "Pasos de instalación:",
   "installation_instructions": "1. Toca \"Instalar\" abajo para abrir el paquete\n2. Habilita \"Instalar apps desconocidas\" si se solicita\n3. Sigue el asistente de instalación de Android",
   "view": "Ver",
   "install": "Instalar",
   "file_deleted_from_device": "Archivo eliminado del dispositivo",
-  "delete": "Eliminar",
-  "incognito": "Incógnito",
   "cannot_open_file_path_not_found": "No se puede abrir el archivo: ruta no encontrada",
   "error_opening_file_message": "Error al abrir archivo: {message}",
   "error_opening_file_exception": "Error al abrir archivo: {error}",
-  "summary_copied_to_clipboard": "Resumen copiado al portapapeles"
+  "summary_copied_to_clipboard": "Resumen copiado al portapapeles",
+  "copy_image_link": "Copiar enlace de imagen",
+  "copy_link_address": "Copiar dirección del enlace",
+  "failed_to_download_image": "Error al descargar la imagen",
+  "generating_summary": "Generando resumen...",
+  "not_set": "No establecido",
+  "open_image_in_new_tab": "Abrir imagen en nueva pestaña",
+  "open_link": "Abrir enlace",
+  "open_link_in_new_tab": "Abrir enlace en nueva pestaña",
+  "save": "Guardar",
+  "no_content_found_to_summarize": "No se encontró contenido para resumir"
 }

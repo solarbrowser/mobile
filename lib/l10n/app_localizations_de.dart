@@ -335,6 +335,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get permission_denied => 'Speicherberechtigung verweigert';
 
   @override
+  String get permission_permanently_denied =>
+      'Berechtigung dauerhaft verweigert. Bitte aktivieren Sie sie in den Einstellungen.';
+
+  @override
   String get download_location_changed =>
       'Download-Speicherort erfolgreich geändert';
 
@@ -416,6 +420,15 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get downloads_history_cleared => 'Download-Verlauf gelöscht';
+
+  @override
+  String get sort_by => 'Sortieren nach';
+
+  @override
+  String get name => 'Name';
+
+  @override
+  String get date => 'Datum';
 
   @override
   String delete_download_confirm(String fileName) {
@@ -547,22 +560,23 @@ class AppLocalizationsDe extends AppLocalizations {
   String get open_in_new_tab => 'In neuem Tab öffnen';
 
   @override
-  String get copy_image_link => 'Copy Image Link';
+  String get copy_image_link => 'Bildlink kopieren';
 
   @override
-  String get open_image_in_new_tab => 'Open Image in New Tab';
+  String get open_image_in_new_tab => 'Bild in neuem Tab öffnen';
 
   @override
-  String get open_link => 'Open Link';
+  String get open_link => 'Link öffnen';
 
   @override
-  String get open_link_in_new_tab => 'Open Link in New Tab';
+  String get open_link_in_new_tab => 'Link in neuem Tab öffnen';
 
   @override
-  String get copy_link_address => 'Copy Link Address';
+  String get copy_link_address => 'Link-Adresse kopieren';
 
   @override
-  String get failed_to_download_image => 'Failed to download image';
+  String get failed_to_download_image =>
+      'Bild konnte nicht heruntergeladen werden';
 
   @override
   String get custom_home_page => 'Benutzerdefinierte Startseite';
@@ -571,10 +585,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get set_home_page_url => 'Startseiten-URL festlegen';
 
   @override
-  String get not_set => 'Not set';
+  String get not_set => 'Nicht eingestellt';
 
   @override
-  String get save => 'Save';
+  String get save => 'Speichern';
 
   @override
   String get downloading => 'Wird heruntergeladen...';
@@ -791,7 +805,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get summary_length => 'Zusammenfassungslänge';
 
   @override
-  String get generating_summary => 'Generating summary...';
+  String get generating_summary => 'Zusammenfassung wird erstellt...';
 
   @override
   String get summary_copied_to_clipboard =>

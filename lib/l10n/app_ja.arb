@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "ja",
   "welcomeToSolar": "Solar へようこそ",
   "welcomeDescription": "モダンで高速、安全なブラウザ",
@@ -107,6 +107,11 @@
   "reading_mode": "リーディングモード",
   "save_page": "ページを保存",
   "permission_denied": "ストレージのアクセス許可が拒否されました",
+  "permission_permanently_denied": "許可が恒久的に拒否されました。設定で有効にしてください。",
+  "sort_by": "並び替え",
+  "name": "名前",
+  "size": "サイズ",
+  "date": "日付",
   "download_location_changed": "ダウンロード先を変更しました",
   "error_changing_location": "場所の変更中にエラーが発生しました",
   "enable_cookies": "Cookie を有効にする",
@@ -129,7 +134,7 @@
   "exit_app_confirm": "本当に終了しますか？",
   "exit": "終了",
   "size": "サイズ",
-  "auto_open_downloads": "ダウンロード後に自動で開く",
+  "auto_open_downloads": "ダウンロードを自動で開く",
   "clear_downloads_history": "ダウンロード履歴を消去",
   "downloads_history_cleared": "ダウンロード履歴を消去しました",
   "delete_download_confirm": "{fileName}をダウンロード履歴から削除しますか？\nダウンロードしたファイルは削除されません。",
@@ -261,10 +266,10 @@
   "summary_length": "要約の長さ",
   "summary_language": "要約の言語",
   "classic_navigation": "クラシックナビゲーション",
-  "classic_navigation_description": "画面下部にナビゲーションボタンを表示",
+  "classic_navigation_description": "クラシックブラウザスタイルのナビゲーションコントロールを使用",
   "ok": "OK",
   "welcome_screen_reset": "ウェルカム画面をリセット",
-  "welcome_screen_reset_message": "次回アプリ起動時にウェルカム画面が表示されます。更新されたプライバシーポリシーと利用規約を確認するためにアプリを再起動してください。",
+  "welcome_screen_reset_message": "これにより、ウェルカム画面がリセットされ、次回アプリを起動するときに再び表示されます。",
   "customize_navigation": "ナビゲーションをカスタマイズ",
   "bookmark_removed": "ブックマークが削除されました",
   "navigation_buttons": "ナビゲーションボタン",
@@ -280,12 +285,12 @@
   "restore_defaults": "デフォルトに戻す",
   "drag_to_reorder": "ドラッグして並び替え",
   "add": "追加",
-  "restored_tab": "復元されたタブ",
+  "restored_tab": "タブが復元されました",
   "rename": "名前を変更",
   "rename_pwa": "PWAの名前を変更",
   "pwa_name": "PWA名",
-  "pwa_renamed": "PWAとホーム画面ショートカットの名前を変更しました",
-  "pwa_removed": "PWAとホーム画面ショートカットを削除しました",
+  "pwa_renamed": "PWAの名前が変更されました",
+  "pwa_removed": "PWAが削除されました",
   "remove": "削除",
   "@remove": {
     "description": "Button text for removing something"
@@ -521,27 +526,21 @@
   "@reset_welcome_screen": {
     "description": "Reset welcome screen option"
   },
-  "restored_tab": "タブが復元されました",
   "@restored_tab": {
     "description": "Message when a tab is restored"
   },
-  "welcome_screen_reset_message": "これにより、ウェルカム画面がリセットされ、次回アプリを起動するときに再び表示されます。",
   "@welcome_screen_reset_message": {
     "description": "Dialog message for resetting welcome screen"
   },
-  "customize_navigation": "ナビゲーションをカスタマイズ",
   "@customize_navigation": {
     "description": "Title for navigation customization"
   },
-  "pwa_renamed": "PWAの名前が変更されました",
   "@pwa_renamed": {
     "description": "Confirmation message when PWA is renamed"
   },
-  "pwa_removed": "PWAが削除されました",
   "@pwa_removed": {
     "description": "Confirmation message when PWA is removed"
   },
-  "bookmark_removed": "ブックマークが削除されました",
   "@bookmark_removed": {
     "description": "Confirmation message when bookmark is removed"
   },
@@ -577,7 +576,6 @@
   "@navigation_controls": {
     "description": "Title for navigation controls settings"
   },
-  "classic_navigation_description": "クラシックブラウザスタイルのナビゲーションコントロールを使用",
   "@classic_navigation_description": {
     "description": "Description for classic navigation setting"
   },
@@ -589,7 +587,6 @@
   "@ai_summary_settings": {
     "description": "Title for AI summary settings"
   },
-  "auto_open_downloads": "ダウンロードを自動で開く",
   "@auto_open_downloads": {
     "description": "Setting title for auto-opening downloads"
   },
@@ -668,7 +665,6 @@
   },
   "create": "作成",
   "summarize": "要約",
-  "previous_summaries": "以前の要約",
   "no_summaries_available": "利用可能な要約はありません",
   "page_summary": "ページ要約",
   "failed_to_generate_summary": "要約の生成に失敗しました",
@@ -729,7 +725,6 @@
   "webApp": "ウェブアプリ",
   "exampleUrl": "https://例.com",
   "enterText": "テキストを入力...",
-  
   "failed_to_get_news_data": "サーバーからニュースデータリンクを取得できませんでした",
   "failed_to_load_news_server": "サーバーからニュースの読み込みに失敗しました",
   "network_error_loading_news": "ニュース読み込み中にネットワークエラー",
@@ -739,10 +734,9 @@
   "close_all": "すべて閉じる",
   "delete_file": "ファイルを削除",
   "delete_file_confirm": "このファイルをデバイスから完全に削除してもよろしいですか？",
-  "remove_from_history": "履歴から削除", 
+  "remove_from_history": "履歴から削除",
   "delete_from_device": "デバイスから削除",
   "notice": "通知",
-  
   "cannot_write_selected_folder": "選択したフォルダに書き込みできません。デフォルトのダウンロードフォルダを使用します。",
   "cannot_write_selected_folder_choose_different": "選択したフォルダに書き込みできません。別の場所を選択してください。",
   "cannot_write_configured_folder": "設定されたフォルダに書き込みできません。デフォルトのダウンロードフォルダを使用します。",
@@ -754,7 +748,6 @@
   "without_permission_private_folder": "権限がない場合、ファイルはSolarのプライベートフォルダに保存されます（ダウンロードパネルからアクセス可能）。",
   "enable_unknown_apps_android": "ダウンロード後、Android設定で「不明なアプリのインストール」を有効にする必要がある場合があります。",
   "private_folder_instead": "ファイルは代わりにSolarのプライベートフォルダに保存されます。",
-  
   "save_to_downloads_title": "ダウンロードに保存しますか？",
   "save_to_gallery_title": "ギャラリーに保存しますか？",
   "storage_access_required": "ストレージアクセスが必要です",
@@ -767,16 +760,13 @@
   "package_installation_permission": "パッケージインストール",
   "storage_access_permission": "ストレージアクセス",
   "without_gallery_permission": "権限がない場合、メディアファイルはSolarのダウンロードセクションでのみ表示されます。",
-  
   "flutter_version_string": "Flutter 3.32.5",
   "photoncore_version_string": "Photoncore 0.1.0",
   "engine_version_string": "4.7.0",
-  
   "http_warning_title": "安全でない接続の警告",
   "http_warning_message": "安全でない接続（HTTP）を使用するウェブサイトにアクセスしようとしています。あなたのデータが他の人に見られる可能性があります。続行してもよろしいですか？",
   "continue_anyway": "とにかく続行",
   "go_back": "戻る",
-  
   "web_page_error_title": "ページ読み込みエラー",
   "connection_error": "接続エラー",
   "page_not_found": "ページが見つかりません",
@@ -794,20 +784,54 @@
   "ssl_error_description": "ウェブサイトのセキュリティ証明書に問題があります。接続が安全でない可能性があります。",
   "network_error_description": "ネットワークエラーが発生しました。インターネット接続を確認して再試行してください。",
   "server_error_description": "サーバーでエラーが発生し、リクエストを完了できませんでした。",
-  "try_again": "再試行",
   "go_home": "ホームに戻る",
-  "skip": "スキップ",
-  "continueText": "続行",
   "package_downloaded": "パッケージがダウンロードされました！",
   "installation_steps": "インストール手順：",
   "installation_instructions": "1. 下の「インストール」をタップしてパッケージを開いてください\n2. 促された場合は「不明なアプリのインストール」を有効にしてください\n3. Androidのインストールウィザードに従ってください",
   "view": "表示",
   "install": "インストール",
   "file_deleted_from_device": "ファイルがデバイスから削除されました",
-  "delete": "削除",
-  "incognito": "シークレット",
   "cannot_open_file_path_not_found": "ファイルを開けません：パスが見つかりません",
   "error_opening_file_message": "ファイルを開くエラー：{message}",
   "error_opening_file_exception": "ファイルを開くエラー：{error}",
-  "summary_copied_to_clipboard": "要約がクリップボードにコピーされました"
+  "summary_copied_to_clipboard": "要約がクリップボードにコピーされました",
+  "catppuccinTheme": "Catppuccin",
+  "change_download_location": "ダウンロード場所を変更",
+  "clear_downloads_history_description": "ダウンロード履歴を削除（ファイルは残る）",
+  "copy_image_link": "画像リンクをコピー",
+  "copy_link_address": "リンクアドレスをコピー",
+  "custom_home_page": "カスタムホームページ",
+  "denied": "拒否されました",
+  "download_permissions": "ダウンロード権限",
+  "draculaTheme": "Dracula",
+  "failed_to_download_image": "画像のダウンロードに失敗しました",
+  "generating_summary": "要約を生成中...",
+  "granted": "許可されました",
+  "gruvboxLightTheme": "Gruvbox ライト",
+  "gruvboxTheme": "Gruvbox",
+  "limited": "制限付き",
+  "manage_download_permissions": "ダウンロード権限を管理",
+  "manage_external_storage": "外部ストレージを管理",
+  "nordLightTheme": "Nord ライト",
+  "nordTheme": "Nord",
+  "not_set": "設定されていません",
+  "notification": "通知",
+  "notification_permission": "通知",
+  "notification_permission_description": "ダウンロード進行状況と完了アラート用",
+  "oneDarkTheme": "One Dark",
+  "open_image_in_new_tab": "新しいタブで画像を開く",
+  "open_link": "リンクを開く",
+  "open_link_in_new_tab": "新しいタブでリンクを開く",
+  "permanently_denied": "永続的に拒否されました",
+  "permission_explanation": "これらの権限は、ダウンロード体験を向上させるのに役立ちます。Android設定でいつでも変更できます。",
+  "request": "リクエスト",
+  "restricted": "制限されています",
+  "save": "保存",
+  "set_home_page_url": "ホームページURLを設定",
+  "solarizedLightTheme": "Solarized ライト",
+  "storage": "ストレージ",
+  "storage_permission": "ストレージアクセス",
+  "systemTheme": "システム",
+  "tokyoNightTheme": "Tokyo Night",
+  "browsing_history": "ブラウザ履歴"
 }

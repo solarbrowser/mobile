@@ -43,13 +43,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get darkTheme => 'داكن';
 
   @override
-  String get systemTheme => 'System';
+  String get systemTheme => 'النظام';
 
   @override
   String get tokyoNightTheme => 'Tokyo Night';
 
   @override
-  String get solarizedLightTheme => 'Solarized Light';
+  String get solarizedLightTheme => 'Solarized فاتح';
 
   @override
   String get draculaTheme => 'Dracula';
@@ -67,10 +67,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get catppuccinTheme => 'Catppuccin';
 
   @override
-  String get nordLightTheme => 'Nord Light';
+  String get nordLightTheme => 'Nord فاتح';
 
   @override
-  String get gruvboxLightTheme => 'Gruvbox Light';
+  String get gruvboxLightTheme => 'Gruvbox فاتح';
 
   @override
   String get next => 'التالي';
@@ -334,6 +334,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get permission_denied => 'تم رفض إذن التخزين';
 
   @override
+  String get permission_permanently_denied =>
+      'تم رفض الإذن نهائياً. يرجى تفعيله في الإعدادات.';
+
+  @override
   String get download_location_changed => 'تم تغيير موقع التنزيل بنجاح';
 
   @override
@@ -410,6 +414,15 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get downloads_history_cleared => 'تم مسح سجل التنزيلات';
+
+  @override
+  String get sort_by => 'ترتيب حسب';
+
+  @override
+  String get name => 'الاسم';
+
+  @override
+  String get date => 'التاريخ';
 
   @override
   String delete_download_confirm(String fileName) {
@@ -540,34 +553,34 @@ class AppLocalizationsAr extends AppLocalizations {
   String get open_in_new_tab => 'فتح في علامة تبويب جديدة';
 
   @override
-  String get copy_image_link => 'Copy Image Link';
+  String get copy_image_link => 'نسخ رابط الصورة';
 
   @override
-  String get open_image_in_new_tab => 'Open Image in New Tab';
+  String get open_image_in_new_tab => 'فتح الصورة في علامة تبويب جديدة';
 
   @override
-  String get open_link => 'Open Link';
+  String get open_link => 'فتح الرابط';
 
   @override
-  String get open_link_in_new_tab => 'Open Link in New Tab';
+  String get open_link_in_new_tab => 'فتح الرابط في علامة تبويب جديدة';
 
   @override
-  String get copy_link_address => 'Copy Link Address';
+  String get copy_link_address => 'نسخ عنوان الرابط';
 
   @override
-  String get failed_to_download_image => 'Failed to download image';
+  String get failed_to_download_image => 'فشل في تنزيل الصورة';
 
   @override
-  String get custom_home_page => 'Custom Home Page';
+  String get custom_home_page => 'صفحة رئيسية مخصصة';
 
   @override
-  String get set_home_page_url => 'Set Home Page URL';
+  String get set_home_page_url => 'تعيين رابط الصفحة الرئيسية';
 
   @override
-  String get not_set => 'Not set';
+  String get not_set => 'غير محدد';
 
   @override
-  String get save => 'Save';
+  String get save => 'حفظ';
 
   @override
   String get downloading => 'جاري التحميل...';
@@ -599,58 +612,58 @@ class AppLocalizationsAr extends AppLocalizations {
   String get grant_permission => 'منح الإذن';
 
   @override
-  String get download_permissions => 'Download Permissions';
+  String get download_permissions => 'أذونات التنزيل';
 
   @override
-  String get manage_download_permissions => 'Manage permissions for downloads';
+  String get manage_download_permissions => 'إدارة أذونات التنزيل';
 
   @override
-  String get storage_permission => 'Storage Access';
+  String get storage_permission => 'الوصول للتخزين';
 
   @override
-  String get notification_permission => 'Notifications';
+  String get notification_permission => 'الإشعارات';
 
   @override
   String get notification_permission_description =>
-      'For download progress and completion alerts';
+      'للحصول على تنبيهات تقدم التنزيل والإكمال';
 
   @override
   String get permission_explanation =>
-      'These permissions help improve your download experience. You can change them anytime in Android Settings.';
+      'تساعد هذه الأذونات في تحسين تجربة التنزيل. يمكنك تغييرها في أي وقت في إعدادات Android.';
 
   @override
   String get clear_downloads_history_description =>
-      'Remove download history (files remain)';
+      'إزالة سجل التنزيلات (الملفات تبقى)';
 
   @override
-  String get change_download_location => 'Change where files are saved';
+  String get change_download_location => 'تغيير مكان حفظ الملفات';
 
   @override
-  String get request => 'Request';
+  String get request => 'طلب';
 
   @override
-  String get storage => 'Storage';
+  String get storage => 'التخزين';
 
   @override
-  String get manage_external_storage => 'Manage External Storage';
+  String get manage_external_storage => 'إدارة التخزين الخارجي';
 
   @override
-  String get notification => 'Notification';
+  String get notification => 'إشعار';
 
   @override
-  String get granted => 'Granted';
+  String get granted => 'ممنوح';
 
   @override
-  String get denied => 'Denied';
+  String get denied => 'مرفوض';
 
   @override
-  String get restricted => 'Restricted';
+  String get restricted => 'مقيد';
 
   @override
-  String get limited => 'Limited';
+  String get limited => 'محدود';
 
   @override
-  String get permanently_denied => 'Permanently Denied';
+  String get permanently_denied => 'مرفوض نهائياً';
 
   @override
   String get storage_permission_denied => 'إذن التخزين مطلوب لتنزيل الملفات';
@@ -780,7 +793,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get summary_length => 'طول الملخص';
 
   @override
-  String get generating_summary => 'Generating summary...';
+  String get generating_summary => 'جاري إنشاء الملخص...';
 
   @override
   String get summary_copied_to_clipboard => 'تم نسخ الملخص إلى الحافظة';

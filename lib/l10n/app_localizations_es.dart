@@ -334,6 +334,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get permission_denied => 'Permiso de almacenamiento denegado';
 
   @override
+  String get permission_permanently_denied =>
+      'Permiso denegado permanentemente. Por favor, habilítelo en Configuración.';
+
+  @override
   String get download_location_changed =>
       'Ubicación de descargas cambiada correctamente';
 
@@ -415,6 +419,15 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get downloads_history_cleared => 'Historial de descargas borrado';
+
+  @override
+  String get sort_by => 'Ordenar por';
+
+  @override
+  String get name => 'Nombre';
+
+  @override
+  String get date => 'Fecha';
 
   @override
   String delete_download_confirm(String fileName) {
@@ -547,22 +560,22 @@ class AppLocalizationsEs extends AppLocalizations {
   String get open_in_new_tab => 'Abrir en nueva pestaña';
 
   @override
-  String get copy_image_link => 'Copy Image Link';
+  String get copy_image_link => 'Copiar enlace de imagen';
 
   @override
-  String get open_image_in_new_tab => 'Open Image in New Tab';
+  String get open_image_in_new_tab => 'Abrir imagen en nueva pestaña';
 
   @override
-  String get open_link => 'Open Link';
+  String get open_link => 'Abrir enlace';
 
   @override
-  String get open_link_in_new_tab => 'Open Link in New Tab';
+  String get open_link_in_new_tab => 'Abrir enlace en nueva pestaña';
 
   @override
-  String get copy_link_address => 'Copy Link Address';
+  String get copy_link_address => 'Copiar dirección del enlace';
 
   @override
-  String get failed_to_download_image => 'Failed to download image';
+  String get failed_to_download_image => 'Error al descargar la imagen';
 
   @override
   String get custom_home_page => 'Página de inicio personalizada';
@@ -571,10 +584,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get set_home_page_url => 'Establecer URL de página de inicio';
 
   @override
-  String get not_set => 'Not set';
+  String get not_set => 'No establecido';
 
   @override
-  String get save => 'Save';
+  String get save => 'Guardar';
 
   @override
   String get downloading => 'Descargando...';
@@ -790,7 +803,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get summary_length => 'Longitud del Resumen';
 
   @override
-  String get generating_summary => 'Generating summary...';
+  String get generating_summary => 'Generando resumen...';
 
   @override
   String get summary_copied_to_clipboard => 'Resumen copiado al portapapeles';
@@ -1031,7 +1044,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get no_page_to_summarize => 'No hay página para resumir';
 
   @override
-  String get no_content_found_to_summarize => 'No content found to summarize';
+  String get no_content_found_to_summarize =>
+      'No se encontró contenido para resumir';
 
   @override
   String get theme => 'Tema';

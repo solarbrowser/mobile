@@ -217,7 +217,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get clear_browser_data => 'Cancella dati browser';
 
   @override
-  String get browsing_history => 'Browsing History';
+  String get browsing_history => 'Cronologia di navigazione';
 
   @override
   String get cookies => 'Cookie';
@@ -335,6 +335,10 @@ class AppLocalizationsIt extends AppLocalizations {
   String get permission_denied => 'Permesso di archiviazione negato';
 
   @override
+  String get permission_permanently_denied =>
+      'Permesso negato definitivamente. Si prega di abilitarlo nelle Impostazioni.';
+
+  @override
   String get download_location_changed => 'Posizione download modificata';
 
   @override
@@ -415,6 +419,15 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get downloads_history_cleared => 'Cronologia download cancellata';
+
+  @override
+  String get sort_by => 'Ordina per';
+
+  @override
+  String get name => 'Nome';
+
+  @override
+  String get date => 'Data';
 
   @override
   String delete_download_confirm(String fileName) {
@@ -546,22 +559,22 @@ class AppLocalizationsIt extends AppLocalizations {
   String get open_in_new_tab => 'Apri in nuova scheda';
 
   @override
-  String get copy_image_link => 'Copy Image Link';
+  String get copy_image_link => 'Copia link immagine';
 
   @override
-  String get open_image_in_new_tab => 'Open Image in New Tab';
+  String get open_image_in_new_tab => 'Apri immagine in nuova scheda';
 
   @override
-  String get open_link => 'Open Link';
+  String get open_link => 'Apri link';
 
   @override
-  String get open_link_in_new_tab => 'Open Link in New Tab';
+  String get open_link_in_new_tab => 'Apri link in nuova scheda';
 
   @override
-  String get copy_link_address => 'Copy Link Address';
+  String get copy_link_address => 'Copia indirizzo link';
 
   @override
-  String get failed_to_download_image => 'Failed to download image';
+  String get failed_to_download_image => 'Impossibile scaricare l\'immagine';
 
   @override
   String get custom_home_page => 'Pagina iniziale personalizzata';
@@ -570,10 +583,10 @@ class AppLocalizationsIt extends AppLocalizations {
   String get set_home_page_url => 'Imposta URL pagina iniziale';
 
   @override
-  String get not_set => 'Not set';
+  String get not_set => 'Non impostato';
 
   @override
-  String get save => 'Save';
+  String get save => 'Salva';
 
   @override
   String get downloading => 'Download in corso...';
@@ -607,58 +620,58 @@ class AppLocalizationsIt extends AppLocalizations {
   String get grant_permission => 'Concedi Permesso';
 
   @override
-  String get download_permissions => 'Download Permissions';
+  String get download_permissions => 'Permessi download';
 
   @override
-  String get manage_download_permissions => 'Manage permissions for downloads';
+  String get manage_download_permissions => 'Gestisci permessi download';
 
   @override
-  String get storage_permission => 'Storage Access';
+  String get storage_permission => 'Accesso archiviazione';
 
   @override
-  String get notification_permission => 'Notifications';
+  String get notification_permission => 'Notifiche';
 
   @override
   String get notification_permission_description =>
-      'For download progress and completion alerts';
+      'Per avvisi di progresso e completamento download';
 
   @override
   String get permission_explanation =>
-      'These permissions help improve your download experience. You can change them anytime in Android Settings.';
+      'Questi permessi migliorano la tua esperienza di download. Puoi modificarli in qualsiasi momento nelle Impostazioni Android.';
 
   @override
   String get clear_downloads_history_description =>
-      'Remove download history (files remain)';
+      'Rimuovi cronologia download (i file rimangono)';
 
   @override
-  String get change_download_location => 'Change where files are saved';
+  String get change_download_location => 'Cambia posizione download';
 
   @override
-  String get request => 'Request';
+  String get request => 'Richiedi';
 
   @override
-  String get storage => 'Storage';
+  String get storage => 'Archiviazione';
 
   @override
-  String get manage_external_storage => 'Manage External Storage';
+  String get manage_external_storage => 'Gestisci archiviazione esterna';
 
   @override
-  String get notification => 'Notification';
+  String get notification => 'Notifica';
 
   @override
-  String get granted => 'Granted';
+  String get granted => 'Concesso';
 
   @override
-  String get denied => 'Denied';
+  String get denied => 'Negato';
 
   @override
-  String get restricted => 'Restricted';
+  String get restricted => 'Limitato';
 
   @override
-  String get limited => 'Limited';
+  String get limited => 'Limitato';
 
   @override
-  String get permanently_denied => 'Permanently Denied';
+  String get permanently_denied => 'Negato permanentemente';
 
   @override
   String get storage_permission_denied =>
@@ -791,7 +804,7 @@ class AppLocalizationsIt extends AppLocalizations {
   String get summary_length => 'Lunghezza del riassunto';
 
   @override
-  String get generating_summary => 'Generating summary...';
+  String get generating_summary => 'Generando riassunto...';
 
   @override
   String get summary_copied_to_clipboard => 'Riassunto copiato negli appunti';

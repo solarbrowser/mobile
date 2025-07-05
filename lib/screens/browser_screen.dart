@@ -198,10 +198,199 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   int? _currentDownloadSize;
   List<Map<String, dynamic>> downloads = [];
 
+  // <-----------DOWNLOAD SORTING----------->
+  String _downloadSortBy = 'date'; // 'date', 'name', 'size'
+  bool _downloadSortAscending = false; // false = newest/largest first
+
+  // <-----------DOWNLOAD SORTING METHODS----------->
+  List<Map<String, dynamic>> _getSortedDownloads() {
+    final sortedList = List<Map<String, dynamic>>.from(downloads);
+    
+    sortedList.sort((a, b) {
+      switch (_downloadSortBy) {
+        case 'name':
+          final aName = (a['filename'] as String? ?? '').toLowerCase();
+          final bName = (b['filename'] as String? ?? '').toLowerCase();
+          return _downloadSortAscending ? aName.compareTo(bName) : bName.compareTo(aName);
+        
+        case 'size':
+          final aSize = a['sizeBytes'] as int? ?? 0;
+          final bSize = b['sizeBytes'] as int? ?? 0;
+          return _downloadSortAscending ? aSize.compareTo(bSize) : bSize.compareTo(aSize);
+        
+        case 'date':
+        default:
+          final aTime = DateTime.tryParse(a['timestamp'] as String? ?? '') ?? DateTime(1970);
+          final bTime = DateTime.tryParse(b['timestamp'] as String? ?? '') ?? DateTime(1970);
+          return _downloadSortAscending ? aTime.compareTo(bTime) : bTime.compareTo(aTime);
+      }
+    });
+    
+    return sortedList;
+  }
+
+  void _setSortOption(String sortBy) {
+    setState(() {
+      if (_downloadSortBy == sortBy) {
+        _downloadSortAscending = !_downloadSortAscending;
+      } else {
+        _downloadSortBy = sortBy;
+        _downloadSortAscending = sortBy == 'name'; // Names ascending by default, others descending
+      }
+    });
+  }
+
+  Widget _buildSortChip({
+    required String label,
+    required String value,
+    required IconData icon,
+  }) {
+    final isSelected = _downloadSortBy == value;
+    return GestureDetector(
+      onTap: () => _setSortOption(value),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected 
+              ? ThemeManager.primaryColor() 
+              : ThemeManager.surfaceColor().withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected 
+                ? ThemeManager.primaryColor() 
+                : ThemeManager.surfaceColor().withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: isSelected 
+                  ? Colors.white 
+                  : ThemeManager.textSecondaryColor(),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                color: isSelected 
+                    ? Colors.white 
+                    : ThemeManager.textSecondaryColor(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // <-----------PERMISSION CACHING----------->
   bool? _cachedPermissionState;
   DateTime? _lastPermissionCheck;
   static const Duration _permissionCacheTimeout = Duration(seconds: 30);
+
+  // <-----------PERMISSION CHECKING METHODS----------->
+  Future<bool> _checkExistingPermissions(int sdkInt) async {
+    try {
+      // Use cached permission state if still valid
+      if (_cachedPermissionState != null && 
+          _lastPermissionCheck != null &&
+          DateTime.now().difference(_lastPermissionCheck!) < _permissionCacheTimeout) {
+        return _cachedPermissionState!;
+      }
+
+      bool hasPermission = false;
+      
+      if (sdkInt >= 33) {
+        // Android 13+
+        if (sdkInt >= 34) {
+          // Android 14+ - Check for partial or full media access
+          final photosStatus = await Permission.photos.status;
+          final videosStatus = await Permission.videos.status;
+          final audioStatus = await Permission.audio.status;
+          
+          hasPermission = [photosStatus, videosStatus, audioStatus].any((status) => 
+            status == PermissionStatus.granted || status == PermissionStatus.limited);
+        } else {
+          // Android 13
+          final photosStatus = await Permission.photos.status;
+          final videosStatus = await Permission.videos.status;
+          final audioStatus = await Permission.audio.status;
+          
+          hasPermission = [photosStatus, videosStatus, audioStatus].any((status) => 
+            status == PermissionStatus.granted);
+        }
+      } else {
+        // Android 12 and below - Check storage permission
+        final storageStatus = await Permission.storage.status;
+        hasPermission = storageStatus == PermissionStatus.granted;
+      }
+      
+      // Cache the result
+      _cachedPermissionState = hasPermission;
+      _lastPermissionCheck = DateTime.now();
+      
+      return hasPermission;
+    } catch (e) {
+      //print('Error checking existing permissions: $e');
+      return false;
+    }
+  }
+
+  Future<bool> _requestDownloadPermissions(int sdkInt) async {
+    try {
+      bool hasPermission = false;
+      
+      if (sdkInt >= 33) {
+        // For Android 13+, we need granular media permissions
+        List<Permission> mediaPermissions = [];
+        
+        if (sdkInt >= 34) {
+          // Android 14+ (API 34+)
+          mediaPermissions.addAll([
+            Permission.photos,
+            Permission.videos,
+            Permission.audio,
+          ]);
+          
+          final results = await mediaPermissions.request();
+          hasPermission = results.values.any((status) => 
+            status == PermissionStatus.granted || status == PermissionStatus.limited);
+        } else {
+          // Android 13 (API 33)
+          mediaPermissions.addAll([
+            Permission.photos,
+            Permission.videos,
+            Permission.audio,
+          ]);
+          
+          final results = await mediaPermissions.request();
+          hasPermission = results.values.any((status) => status == PermissionStatus.granted);
+        }
+        
+        // Request notification permission for better UX
+        await Permission.notification.request();
+      } else {
+        // For older Android versions, we need storage permission
+        final status = await Permission.storage.request();
+        hasPermission = status.isGranted;
+      }
+      
+      // Update cache
+      _cachedPermissionState = hasPermission;
+      _lastPermissionCheck = DateTime.now();
+      
+      return hasPermission;
+    } catch (e) {
+      //print('Error requesting download permissions: $e');
+      return false;
+    }
+  }
 
   // <-----------GETTERS----------->
   String? get currentFileName => _currentFileName;
@@ -6586,6 +6775,49 @@ Future<void> _setupScrollHandling() async {
             AppLocalizations.of(context)!.downloads,
             onBack: () => _hidePanelWithAnimation(),
           ),
+          // Sort controls
+          if (downloads.isNotEmpty) Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Text(
+                  AppLocalizations.of(context)!.sort_by,
+                  style: TextStyle(
+                    color: ThemeManager.textSecondaryColor(),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildSortChip(
+                          label: AppLocalizations.of(context)!.date,
+                          value: 'date',
+                          icon: Icons.access_time,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildSortChip(
+                          label: AppLocalizations.of(context)!.name,
+                          value: 'name',
+                          icon: Icons.sort_by_alpha,
+                        ),
+                        const SizedBox(width: 8),
+                        _buildSortChip(
+                          label: AppLocalizations.of(context)!.size,
+                          value: 'size',
+                          icon: Icons.data_usage,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: downloads.isEmpty && !isDownloading
                 ? _buildEmptyState(
@@ -6594,7 +6826,7 @@ Future<void> _setupScrollHandling() async {
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    itemCount: isDownloading ? downloads.length + 1 : downloads.length,
+                    itemCount: isDownloading ? _getSortedDownloads().length + 1 : _getSortedDownloads().length,
                     itemBuilder: (context, index) {
                       if (isDownloading && index == 0) {
                         final downloadedSize = (downloadProgress * (currentDownloadSize ?? 0)).toInt();
@@ -6714,7 +6946,7 @@ Future<void> _setupScrollHandling() async {
                       }
                       
                       final downloadIndex = isDownloading ? index - 1 : index;
-                      final download = downloads[downloadIndex];
+                      final download = _getSortedDownloads()[downloadIndex];
                       final fileName = download['filename']?.toString() ?? AppLocalizations.of(context)!.unknown;
                       final filePath = download['path']?.toString();
                       final fileSize = download['size']?.toString() ?? '0 B';
@@ -8405,12 +8637,6 @@ Future<void> _setupScrollHandling() async {
                       onPressed: () async {
                         Permission permission;
                         switch (entry.key) {
-                          case 'Storage':
-                            permission = Permission.storage;
-                            break;
-                          case 'Manage External Storage':
-                            permission = Permission.manageExternalStorage;
-                            break;
                           case 'Notification':
                             permission = Permission.notification;
                             break;
@@ -8419,11 +8645,29 @@ Future<void> _setupScrollHandling() async {
                         }
                         
                         final status = await permission.request();
-                        if (status != PermissionStatus.granted) {
-                          await openAppSettings();
+                        
+                        if (status == PermissionStatus.granted) {
+                          // Permission granted, refresh dialog
+                          Navigator.pop(context);
+                          _showDownloadPermissionsDialog();
+                        } else if (status == PermissionStatus.permanentlyDenied) {
+                          // Only open settings if permanently denied
+                          Navigator.pop(context);
+                          _showCustomNotification(
+                            message: AppLocalizations.of(context)!.permission_permanently_denied,
+                            icon: Icons.settings,
+                            iconColor: ThemeManager.accentColor(),
+                            duration: const Duration(seconds: 5),
+                            action: SnackBarAction(
+                              label: AppLocalizations.of(context)!.settings_action,
+                              onPressed: () => openAppSettings(),
+                            ),
+                          );
+                        } else {
+                          // Permission denied but not permanently, refresh dialog to try again
+                          Navigator.pop(context);
+                          _showDownloadPermissionsDialog();
                         }
-                        Navigator.pop(context);
-                        _showDownloadPermissionsDialog(); // Refresh dialog
                       },
                       child: Text(
                         AppLocalizations.of(context)!.request,
@@ -8453,10 +8697,6 @@ Future<void> _setupScrollHandling() async {
 
   String _getLocalizedPermissionName(String permissionKey) {
     switch (permissionKey) {
-      case 'Storage':
-        return AppLocalizations.of(context)!.storage;
-      case 'Manage External Storage':
-        return AppLocalizations.of(context)!.manage_external_storage;
       case 'Notification':
         return AppLocalizations.of(context)!.notification;
       default:
@@ -8484,15 +8724,7 @@ Future<void> _setupScrollHandling() async {
   Future<Map<String, String>> _getPermissionStatuses() async {
     final statuses = <String, String>{};
     
-    // Storage permission
-    final storageStatus = await Permission.storage.status;
-    statuses['Storage'] = _getPermissionStatusText(storageStatus);
-    
-    // Manage external storage (Android 11+)
-    final manageStorageStatus = await Permission.manageExternalStorage.status;
-    statuses['Manage External Storage'] = _getPermissionStatusText(manageStorageStatus);
-    
-    // Notification permission (for download notifications)
+    // Only notification permission (for download notifications)
     final notificationStatus = await Permission.notification.status;
     statuses['Notification'] = _getPermissionStatusText(notificationStatus);
     
@@ -13008,80 +13240,32 @@ Future<void> _handlePageStarted(String url) async {
         }
       }
 
-      // Determine the type of file and show appropriate permission dialog
-      PermissionDialogType dialogType;
-      if (_isMediaFile(fileName)) {
-        dialogType = PermissionDialogType.media;
-      } else {
-        dialogType = PermissionDialogType.downloads;
-      }
-
-      // Show animated permission dialog
-      final wantsToDownload = await _showPermissionDialog(
-        dialogType,
-        fileName: fileName,
-      );
-
-      if (!wantsToDownload) {
-        // User declined the download
-        return;
-      }
-
-      // Now check and request actual system permissions
-      bool hasPermission = false;
+      // Check if we already have the necessary permissions without showing UI
+      bool hasPermission = await _checkExistingPermissions(sdkInt);
       
-      if (sdkInt >= 33) {
-        // For Android 13+, we need granular media permissions
-        List<Permission> mediaPermissions = [];
-        
-        if (sdkInt >= 34) {
-          // Android 14+ (API 34+) - Check for partial media access
-          mediaPermissions.addAll([
-            Permission.photos,
-            Permission.videos,
-            Permission.audio,
-          ]);
-          
-          // Check if we have partial access (Android 14 feature)
-          final photosStatus = await Permission.photos.status;
-          if (photosStatus == PermissionStatus.limited) {
-            // User granted partial access, this is acceptable
-            hasPermission = true;
-          } else {
-            // Request full access
-            final results = await mediaPermissions.request();
-            hasPermission = results.values.any((status) => 
-              status == PermissionStatus.granted || status == PermissionStatus.limited);
-          }
+      // Only show permission dialog if we don't already have permissions
+      if (!hasPermission) {
+        // Determine the type of file and show appropriate permission dialog
+        PermissionDialogType dialogType;
+        if (_isMediaFile(fileName)) {
+          dialogType = PermissionDialogType.media;
         } else {
-          // Android 13 (API 33)
-          mediaPermissions.addAll([
-            Permission.photos,
-            Permission.videos,
-            Permission.audio,
-          ]);
-          
-          final results = await mediaPermissions.request();
-          hasPermission = results.values.any((status) => status == PermissionStatus.granted);
+          dialogType = PermissionDialogType.downloads;
         }
-        
-        // Request notification permission for better UX
-        await Permission.notification.request();
-        
-        // For downloading non-media files, we might need MANAGE_EXTERNAL_STORAGE
-        if (!hasPermission) {
-          final manageStorageStatus = await Permission.manageExternalStorage.status;
-          if (manageStorageStatus != PermissionStatus.granted) {
-            final result = await Permission.manageExternalStorage.request();
-            hasPermission = result == PermissionStatus.granted;
-          } else {
-            hasPermission = true;
-          }
+
+        // Show animated permission dialog
+        final wantsToDownload = await _showPermissionDialog(
+          dialogType,
+          fileName: fileName,
+        );
+
+        if (!wantsToDownload) {
+          // User declined the download
+          return;
         }
-      } else {
-        // For older Android versions, we need storage permission
-        final status = await Permission.storage.request();
-        hasPermission = status.isGranted;
+
+        // Now request actual system permissions - only notification permission
+        hasPermission = await _requestDownloadPermissions(sdkInt);
       }
       
       if (!hasPermission) {
@@ -13090,16 +13274,10 @@ Future<void> _handlePageStarted(String url) async {
           icon: Icons.error_outline,
           iconColor: ThemeManager.errorColor(),
           duration: const Duration(seconds: 4),
-          action: SnackBarAction(
-            label: AppLocalizations.of(context)!.settings_action,
-            onPressed: () {
-              openAppSettings();
-            },
-          ),
         );
         return;
       }
-      
+
       // Set download state
       setState(() {
         isLoading = true;
@@ -13111,258 +13289,38 @@ Future<void> _handlePageStarted(String url) async {
 
       // Show download started notification
       _showCustomNotification(
-        message: fileName,
-        title: AppLocalizations.of(context)!.download_started,
-        icon: Icons.download_rounded,
+        message: AppLocalizations.of(context)!.download_started,
+        icon: Icons.download,
         iconColor: ThemeManager.primaryColor(),
-        duration: const Duration(seconds: 4),
-        isDownload: true,
-        action: SnackBarAction(
-          label: 'View',
-          onPressed: () {
-            setState(() {
-              isDownloadsVisible = true;
-              isTabsVisible = false;
-              isSettingsVisible = false;
-              isBookmarksVisible = false;
-              isHistoryVisible = false;
-            });
-          },
-        ),
+        duration: const Duration(seconds: 2),
       );
-      
-      // Get download directory
-      Directory downloadDir;
-      
-      // Check if user wants to be asked for download location
-      if (_askDownloadLocation) {
-        try {
-          String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
-          if (selectedDirectory != null) {
-            downloadDir = Directory(selectedDirectory);
-            
-            // Test write permissions to the selected directory
-            final testFilePath = '${downloadDir.path}/.test_write_${DateTime.now().millisecondsSinceEpoch}';
-            final testFile = File(testFilePath);
-            try {
-              await testFile.writeAsString('test');
-              await testFile.delete(); // Clean up test file
-            } catch (e) {
-              //print('Cannot write to selected directory: $e');
-              _showCustomNotification(
-                message: AppLocalizations.of(context)!.cannot_write_selected_folder,
-                icon: Icons.warning,
-                iconColor: Colors.orange,
-                duration: const Duration(seconds: 4),
-              );
-              downloadDir = await _getDefaultDownloadDirectory(sdkInt);
-            }
-          } else {
-            // User cancelled, use default location
-            downloadDir = await _getDefaultDownloadDirectory(sdkInt);
-          }
-        } catch (e) {
-          //print('Error asking for download location: $e');
-          _showCustomNotification(
-            message: AppLocalizations.of(context)!.error_selecting_folder_default,
-            icon: Icons.warning,
-            iconColor: Colors.orange,
-            duration: const Duration(seconds: 3),
-          );
-          // Fallback to default location
-          downloadDir = await _getDefaultDownloadDirectory(sdkInt);
-        }
-      } else {
-        // Use configured download location or default
-        final savedLocation = await _getDownloadLocation();
-        final defaultDir = await getApplicationDocumentsDirectory();
-        
-        // Check if saved location is the default app directory
-        if (savedLocation == defaultDir.path) {
-          // Use public Downloads folder for better accessibility
-          downloadDir = await _getDefaultDownloadDirectory(sdkInt);
-        } else {
-          // Use user's configured location but test write permissions first
-          downloadDir = Directory(savedLocation);
-          
-          // Test write permissions to the configured directory
-          if (await downloadDir.exists()) {
-            final testFilePath = '${downloadDir.path}/.test_write_${DateTime.now().millisecondsSinceEpoch}';
-            final testFile = File(testFilePath);
-            try {
-              await testFile.writeAsString('test');
-              await testFile.delete(); // Clean up test file
-              //print('Custom download location verified: ${downloadDir.path}');
-            } catch (e) {
-              //print('Cannot write to configured directory: $e');
-              _showCustomNotification(
-                message: AppLocalizations.of(context)!.cannot_write_configured_folder,
-                icon: Icons.warning,
-                iconColor: Colors.orange,
-                duration: const Duration(seconds: 4),
-              );
-              downloadDir = await _getDefaultDownloadDirectory(sdkInt);
-            }
-          } else {
-            // Directory doesn't exist, try to create it
-            try {
-              await downloadDir.create(recursive: true);
-              //print('Created custom download directory: ${downloadDir.path}');
-              
-              // Test write permissions after creation
-              final testFilePath = '${downloadDir.path}/.test_write_${DateTime.now().millisecondsSinceEpoch}';
-              final testFile = File(testFilePath);
-              try {
-                await testFile.writeAsString('test');
-                await testFile.delete(); // Clean up test file
-                //print('Custom download location verified after creation: ${downloadDir.path}');
-              } catch (e) {
-                //print('Cannot write to created directory: $e');
-                _showCustomNotification(
-                  message: AppLocalizations.of(context)!.cannot_write_configured_folder,
-                  icon: Icons.warning,
-                  iconColor: Colors.orange,
-                  duration: const Duration(seconds: 4),
-                );
-                downloadDir = await _getDefaultDownloadDirectory(sdkInt);
-              }
-            } catch (e) {
-              //print('Cannot create configured directory: $e');
-              // Directory doesn't exist and can't be created, use default
-              downloadDir = await _getDefaultDownloadDirectory(sdkInt);
-            }
-          }
-        }
-      }
-      
-      // Ensure download directory exists and is writable
-      if (!await downloadDir.exists()) {
-        try {
-          await downloadDir.create(recursive: true);
-        } catch (e) {
-          //print('Could not create download directory: $e');
-          // Fallback to default Downloads directory
-          downloadDir = await _getDefaultDownloadDirectory(sdkInt);
-          if (!await downloadDir.exists()) {
-            await downloadDir.create(recursive: true);
-          }
-        }
-      }
 
-      // Full path to the file
+      // Get appropriate download directory
+      final downloadDir = await _getDownloadDirectory();
       final filePath = '${downloadDir.path}/$fileName';
       final file = File(filePath);
-      
-      List<int> fileBytes;
-      String mimeType;
-      int fileSize;
-      
-      // Handle base64/data URLs
+
+      // Download the file
       if (url.startsWith('data:')) {
-        // Extract mime type and base64 data
-        final dataUrlInfo = _parseDataUrl(url);
-        mimeType = dataUrlInfo['mimeType'] ?? 'application/octet-stream';
-        fileBytes = dataUrlInfo['bytes'] ?? [];
-        fileSize = fileBytes.length;
-        
-        // Try to write the decoded bytes to file with error handling
-        try {
-          await file.writeAsBytes(fileBytes);
-        } catch (e) {
-          //print('Error writing to file path $filePath: $e');
-          // If writing fails, try using app's private storage as fallback
-          final appDir = await getApplicationDocumentsDirectory();
-          final fallbackDir = Directory('${appDir.path}/Downloads');
-          if (!await fallbackDir.exists()) {
-            await fallbackDir.create(recursive: true);
-          }
-          
-          final fallbackFilePath = '${fallbackDir.path}/$fileName';
-          final fallbackFile = File(fallbackFilePath);
-          
-          try {
-            await fallbackFile.writeAsBytes(fileBytes);
-            
-            _showCustomNotification(
-              message: AppLocalizations.of(context)!.file_saved_to_app_storage,
-              icon: Icons.info,
-              iconColor: Colors.blue,
-              duration: const Duration(seconds: 4),
-            );
-            
-            // Continue with the fallback file path - update the original filePath variable
-            final updatedFilePath = fallbackFilePath;
-            
-            // Continue processing with the successful fallback location
-            // The rest of the download logic will use updatedFilePath
-            await _completeDownloadProcess(url, fileName, updatedFilePath, fileSize, mimeType);
-            return; // Exit early since we handled the fallback successfully
-          } catch (e2) {
-            // If even the fallback fails, throw the original error
-            throw Exception('${AppLocalizations.of(context)!.failed_write_any_location}: $e');
-          }
-        }
+        // Handle base64 data URL
+        final base64Data = url.split(',')[1];
+        final bytes = base64Decode(base64Data);
+        await file.writeAsBytes(bytes);
       } else {
         // Regular HTTP download
-        final response = await http.get(Uri.parse(url), headers: {
-          'User-Agent': 'Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36'
-        });
+        final response = await http.get(Uri.parse(url));
         
         if (response.statusCode != 200) {
-          throw Exception('${AppLocalizations.of(context)!.failed_to_download_file}: ${response.statusCode}');
+          throw Exception('Failed to download file: ${response.statusCode}');
         }
         
-        // Get file size and mime type
-        fileSize = response.contentLength ?? 0;
-        mimeType = response.headers['content-type'] ?? 'application/octet-stream';
-        
-        // Try to write file to storage with error handling
-        try {
-          await file.writeAsBytes(response.bodyBytes);
-        } catch (e) {
-          //print('Error writing to file path $filePath: $e');
-          // If writing fails, try using app's private storage as fallback
-          final appDir = await getApplicationDocumentsDirectory();
-          final fallbackDir = Directory('${appDir.path}/Downloads');
-          if (!await fallbackDir.exists()) {
-            await fallbackDir.create(recursive: true);
-          }
-          
-          final fallbackFilePath = '${fallbackDir.path}/$fileName';
-          final fallbackFile = File(fallbackFilePath);
-          
-          try {
-            await fallbackFile.writeAsBytes(response.bodyBytes);
-            
-            _showCustomNotification(
-              message: AppLocalizations.of(context)!.file_saved_to_app_storage,
-              icon: Icons.info,
-              iconColor: Colors.blue,
-              duration: const Duration(seconds: 4),
-            );
-            
-            // Continue with the fallback file path
-            await _completeDownloadProcess(url, fileName, fallbackFilePath, fileSize, mimeType);
-            return; // Exit early since we handled the fallback successfully
-          } catch (e2) {
-            // If even the fallback fails, throw the original error
-            throw Exception('${AppLocalizations.of(context)!.failed_write_any_location}: $e');
-          }
-        }
+        await file.writeAsBytes(response.bodyBytes);
       }
 
-      // If we get here, the file was written successfully to the original location
-      await _completeDownloadProcess(url, fileName, filePath, fileSize, mimeType);
+      // Complete download process
+      await _completeDownloadProcess(url, fileName, filePath, file.lengthSync(), 'application/octet-stream');
 
     } catch (e) {
-      //print('Download error: $e');
-      _showCustomNotification(
-        message: "${AppLocalizations.of(context)!.download_failed}: ${e.toString()}",
-        icon: Icons.error_outline,
-        iconColor: ThemeManager.errorColor(),
-        duration: const Duration(seconds: 4),
-      );
-    } finally {
       setState(() {
         isLoading = false;
         isDownloading = false;
@@ -13370,6 +13328,90 @@ Future<void> _handlePageStarted(String url) async {
         _currentFileName = null;
         downloadProgress = 0.0;
       });
+
+      _showCustomNotification(
+        message: "Download failed: ${e.toString()}",
+        icon: Icons.error_outline,
+        iconColor: ThemeManager.errorColor(),
+        duration: const Duration(seconds: 4),
+      );
+    }
+  }
+
+  // Helper method to get download directory
+  Future<Directory> _getDownloadDirectory() async {
+    try {
+      // Get the Downloads directory
+      final directory = await getApplicationDocumentsDirectory();
+      final downloadsDir = Directory('${directory.path}/Downloads');
+      
+      if (!await downloadsDir.exists()) {
+        await downloadsDir.create(recursive: true);
+      }
+      
+      return downloadsDir;
+    } catch (e) {
+      // Fallback to app documents directory
+      return await getApplicationDocumentsDirectory();
+    }
+  }
+
+  // Helper method to complete download process
+  Future<void> _completeDownloadProcess(String url, String fileName, String filePath, int fileSize, String mimeType) async {
+    try {
+      setState(() {
+        isLoading = false;
+        isDownloading = false;
+        currentDownloadUrl = '';
+        _currentFileName = null;
+        downloadProgress = 1.0;
+      });
+
+      // Add to downloads list
+      final downloadData = {
+        'url': url,
+        'filename': fileName,
+        'path': filePath,
+        'size': _formatFileSize(fileSize),
+        'sizeBytes': fileSize,
+        'mimeType': mimeType,
+        'timestamp': DateTime.now().toIso8601String(),
+      };
+
+      setState(() {
+        downloads.insert(0, downloadData);
+      });
+
+      // Save downloads
+      await _saveDownloads();
+
+      // Show completion notification
+      _showCustomNotification(
+        message: AppLocalizations.of(context)!.download_completed,
+        icon: Icons.download_done,
+        iconColor: Colors.green,
+        duration: const Duration(seconds: 3),
+      );
+
+    } catch (e) {
+      // Handle completion error
+      _showCustomNotification(
+        message: "Download completed but error saving: ${e.toString()}",
+        icon: Icons.warning,
+        iconColor: Colors.orange,
+        duration: const Duration(seconds: 4),
+      );
+    }
+  }
+
+  // Save downloads to preferences
+  Future<void> _saveDownloads() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final downloadsJson = downloads.map((download) => json.encode(download)).toList();
+      await prefs.setStringList('downloads', downloadsJson);
+    } catch (e) {
+      //print('Error saving downloads: $e');
     }
   }
 
@@ -13380,135 +13422,6 @@ Future<void> _handlePageStarted(String url) async {
 
   void _showPermissionNotification() {
     // Removed permission notification
-  }
-
-  // Helper method to complete the download process (used for both successful writes and fallback)
-  Future<void> _completeDownloadProcess(String url, String fileName, String filePath, int fileSize, String mimeType) async {
-    try {
-      // Make the file visible to other apps and add to MediaStore
-      try {
-        // First, add to MediaStore for proper system visibility
-        await _addToMediaStore(filePath, fileName, mimeType);
-        
-        // Also use FileProvider for sharing capabilities
-        const methodChannel = MethodChannel('com.vertex.solar/browser');
-        await methodChannel.invokeMethod('shareDownloadedFile', {
-          'path': filePath,
-          'mimeType': mimeType,
-          'fileName': fileName
-        });
-      } catch (e) {
-        //print('Error registering file with system: $e');
-        // Fallback to older method if needed
-        try {
-          const methodChannel = MethodChannel('com.vertex.solar/app');
-          await methodChannel.invokeMethod('scanFile', {'path': filePath});
-        } catch (e2) {
-          //print('Error scanning file: $e2');
-          // Final fallback - just notify user that file might not be immediately visible
-          //print('File saved but might not be immediately visible in gallery/file manager');
-        }
-      }
-      
-      // For base64 URLs, use a cleaned URL for history
-      String historyUrl = url;
-      if (url.startsWith('data:')) {
-        // For data URLs, only store the mime type part to save space
-        historyUrl = url.split(',')[0] + ',<data>';
-      }
-      
-      // Save download to history with correct file size
-      final downloadInfo = {
-        'url': historyUrl,
-        'filename': fileName,
-        'path': filePath,
-        'size': fileSize,
-        'timestamp': DateTime.now().toIso8601String(),
-        'mimeType': mimeType,
-        'isBase64': url.startsWith('data:'),
-      };
-      
-      // Add to downloads list
-      setState(() {
-        downloads.add(downloadInfo);
-      });
-      
-      // Save to SharedPreferences
-      final prefs = await SharedPreferences.getInstance();
-      final downloadsList = prefs.getStringList('downloads') ?? [];
-      downloadsList.add(json.encode(downloadInfo));
-      await prefs.setStringList('downloads', downloadsList);
-      
-      // Auto-open file if enabled
-      if (_autoOpenDownloads) {
-        try {
-          await OpenFile.open(filePath);
-          
-          // Show download completed notification without action since file is auto-opened
-          _showCustomNotification(
-            message: fileName,
-            title: AppLocalizations.of(context)!.download_completed,
-            icon: Icons.check_circle,
-            iconColor: ThemeManager.successColor(),
-            duration: const Duration(seconds: 3),
-            isDownload: true,
-          );
-        } catch (e) {
-          // If auto-open fails, show notification with manual open action
-          _showCustomNotification(
-            message: fileName,
-            title: AppLocalizations.of(context)!.download_completed,
-            icon: Icons.check_circle,
-            iconColor: ThemeManager.successColor(),
-            duration: const Duration(seconds: 4),
-            isDownload: true,
-            action: SnackBarAction(
-              label: AppLocalizations.of(context)!.open,
-              onPressed: () async {
-                try {
-                  await OpenFile.open(filePath);
-                } catch (e) {
-                  _showCustomNotification(
-                    message: AppLocalizations.of(context)!.error_opening_file_install_app,
-                    icon: Icons.error,
-                    iconColor: ThemeManager.errorColor(),
-                    duration: const Duration(seconds: 4),
-                  );
-                }
-              },
-            ),
-          );
-        }
-      } else {
-        // Show download completed notification with manual open action
-        _showCustomNotification(
-          message: fileName,
-          title: AppLocalizations.of(context)!.download_completed,
-          icon: Icons.check_circle,
-          iconColor: ThemeManager.successColor(),
-          duration: const Duration(seconds: 4),
-          isDownload: true,
-          action: SnackBarAction(
-            label: AppLocalizations.of(context)!.open,
-            onPressed: () async {
-              try {
-                await OpenFile.open(filePath);
-              } catch (e) {
-                _showCustomNotification(
-                  message: AppLocalizations.of(context)!.error_opening_file_install_app,
-                  icon: Icons.error,
-                  iconColor: ThemeManager.errorColor(),
-                  duration: const Duration(seconds: 4),
-                );
-              }
-            },
-          ),
-        );
-      }
-    } catch (e) {
-      //print('Error completing download process: $e');
-      throw e;
-    }
   }
 
   Future<bool> _requestPermissions() async {
@@ -13525,20 +13438,6 @@ Future<void> _handlePageStarted(String url) async {
         // Add notification permission for better user experience
         Permission.notification,
       ]);
-      
-      // For Android 13+, also request all files access for non-media files
-      if (await Permission.manageExternalStorage.isGranted == false) {
-        final status = await Permission.manageExternalStorage.request();
-        if (!status.isGranted) {
-          _showNotification(
-            Text(AppLocalizations.of(context)!.full_storage_access_needed),
-            duration: const Duration(seconds: 6),            action: SnackBarAction(
-              label: AppLocalizations.of(context)!.settings,
-              onPressed: () => openAppSettings(),
-            ),
-          );
-        }
-      }
     } else {
       permissions.add(Permission.storage);
     }
@@ -16299,14 +16198,6 @@ Future<void> _handlePageStarted(String url) async {
   }
 
   // AI Action Bar Modal Methods
-  void _showErrorNotification(String message) {
-    showCustomNotification(
-      context: context,
-      message: message,
-      isDarkMode: ThemeManager.getCurrentTheme().isDark,
-    );
-  }
-  
   void _showSummaryModal(String url, [String? content]) {
     showModalBottomSheet(
       context: context,
