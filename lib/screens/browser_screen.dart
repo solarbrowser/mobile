@@ -5991,6 +5991,216 @@ Future<void> _setupScrollHandling() async {
     // Callback optimization
     widget.onSearchEngineChange?.call(engine);
   }
+
+  Widget _buildAnimatedTextSizeItem(String title, double scale, StateSetter setTextSizeState, StateSetter? setAppearanceState, {bool isFirst = false, bool isLast = false}) {
+    final isSelected = textScale == scale;
+    
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      margin: EdgeInsets.only(bottom: isLast ? 0 : 1),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _setTextSizeWithAnimation(scale, setTextSizeState, setAppearanceState),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: ThemeManager.textColor(),
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                ),
+                // Animated tick mark with expanding animation
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.elasticOut,
+                  width: isSelected ? 24 : 0,
+                  height: isSelected ? 24 : 0,
+                  child: isSelected 
+                    ? TweenAnimationBuilder<double>(
+                        duration: const Duration(milliseconds: 600),
+                        curve: Curves.elasticOut,
+                        tween: Tween<double>(begin: 0.0, end: 1.0),
+                        builder: (context, scaleAnim, child) {
+                          return Transform.scale(
+                            scale: scaleAnim,
+                            child: Icon(
+                              Icons.check_circle,
+                              color: ThemeManager.primaryColor(),
+                              size: 24,
+                            ),
+                          );
+                        },
+                      )
+                    : const SizedBox.shrink(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _setTextSizeWithAnimation(double scale, StateSetter setTextSizeState, StateSetter? setAppearanceState) {
+    // Update text size
+    _updateTextSize(scale);
+    
+    // Update local state with animation
+    setTextSizeState(() {});
+    
+    // Update appearance state if provided
+    if (setAppearanceState != null) {
+      setAppearanceState(() {});
+    }
+    
+    // Update main state
+    setState(() {});
+  }
+
+  Widget _buildAnimatedSummaryLengthItem(String title, SummaryLength length, StateSetter setSummaryLengthState, {bool isFirst = false, bool isLast = false}) {
+    final isSelected = AIManager.getCurrentSummaryLength() == length;
+    
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      margin: EdgeInsets.only(bottom: isLast ? 0 : 1),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _setSummaryLengthWithAnimation(length, setSummaryLengthState),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: ThemeManager.textColor(),
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                ),
+                // Animated tick mark with expanding animation
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.elasticOut,
+                  width: isSelected ? 24 : 0,
+                  height: isSelected ? 24 : 0,
+                  child: isSelected 
+                    ? TweenAnimationBuilder<double>(
+                        duration: const Duration(milliseconds: 600),
+                        curve: Curves.elasticOut,
+                        tween: Tween<double>(begin: 0.0, end: 1.0),
+                        builder: (context, scale, child) {
+                          return Transform.scale(
+                            scale: scale,
+                            child: Icon(
+                              Icons.check_circle,
+                              color: ThemeManager.primaryColor(),
+                              size: 24,
+                            ),
+                          );
+                        },
+                      )
+                    : const SizedBox.shrink(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _setSummaryLengthWithAnimation(SummaryLength length, StateSetter setSummaryLengthState) async {
+    // Update with animation
+    setSummaryLengthState(() {});
+    
+    // Save setting
+    await AIManager.setSummaryLength(length);
+    
+    // Update main state
+    setState(() {});
+  }
+
+  Widget _buildAnimatedSummaryLanguageItem(String title, SummaryLanguage language, StateSetter setSummaryLanguageState, {bool isFirst = false, bool isLast = false}) {
+    final isSelected = AIManager.getCurrentSummaryLanguage() == language;
+    
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      margin: EdgeInsets.only(bottom: isLast ? 0 : 1),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _setSummaryLanguageWithAnimation(language, setSummaryLanguageState),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: ThemeManager.textColor(),
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    ),
+                  ),
+                ),
+                // Animated tick mark with expanding animation
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.elasticOut,
+                  width: isSelected ? 24 : 0,
+                  height: isSelected ? 24 : 0,
+                  child: isSelected 
+                    ? TweenAnimationBuilder<double>(
+                        duration: const Duration(milliseconds: 600),
+                        curve: Curves.elasticOut,
+                        tween: Tween<double>(begin: 0.0, end: 1.0),
+                        builder: (context, scale, child) {
+                          return Transform.scale(
+                            scale: scale,
+                            child: Icon(
+                              Icons.check_circle,
+                              color: ThemeManager.primaryColor(),
+                              size: 24,
+                            ),
+                          );
+                        },
+                      )
+                    : const SizedBox.shrink(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _setSummaryLanguageWithAnimation(SummaryLanguage language, StateSetter setSummaryLanguageState) async {
+    // Update with animation
+    setSummaryLanguageState(() {});
+    
+    // Save setting
+    await AIManager.setSummaryLanguage(language);
+    
+    // Update main state
+    setState(() {});
+  }
+
   void _showAppearanceSettings() {
     Navigator.of(context).push(
       _createSettingsRoute(
@@ -6273,7 +6483,8 @@ Future<void> _setupScrollHandling() async {
         StatefulBuilder(
           builder: (BuildContext context, StateSetter setTextSizeState) {
             return Scaffold(
-              backgroundColor: ThemeManager.backgroundColor(),              appBar: AppBar(
+              backgroundColor: ThemeManager.backgroundColor(),
+              appBar: AppBar(
                 backgroundColor: ThemeManager.backgroundColor(),
                 elevation: 0,
                 centerTitle: true,
@@ -6300,68 +6511,30 @@ Future<void> _setupScrollHandling() async {
                   _buildSettingsSection(
                     title: AppLocalizations.of(context)!.text_size_description,
                     children: [
-                      _buildSettingsItem(
-                        title: AppLocalizations.of(context)!.text_size_small,
-                        trailing: textScale == 0.8 ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
-                        onTap: () {
-                          _updateTextSize(0.8);
-                          // Update both screens
-                          setTextSizeState(() {});
-                          if (setAppearanceState != null) {
-                            setAppearanceState(() {});
-                          }
-                          // Stay on screen to see the changes
-                          // Navigator.pop(context);
-                        },
+                      _buildAnimatedTextSizeItem(
+                        AppLocalizations.of(context)!.text_size_small,
+                        0.8,
+                        setTextSizeState,
+                        setAppearanceState,
                         isFirst: true,
-                        isLast: false,
                       ),
-                      _buildSettingsItem(
-                        title: AppLocalizations.of(context)!.text_size_medium,
-                        trailing: textScale == 1.0 ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
-                        onTap: () {
-                          _updateTextSize(1.0);
-                          // Update both screens
-                          setTextSizeState(() {});
-                          if (setAppearanceState != null) {
-                            setAppearanceState(() {});
-                          }
-                          // Stay on screen to see the changes
-                          // Navigator.pop(context);
-                        },
-                        isFirst: false,
-                        isLast: false,
+                      _buildAnimatedTextSizeItem(
+                        AppLocalizations.of(context)!.text_size_medium,
+                        1.0,
+                        setTextSizeState,
+                        setAppearanceState,
                       ),
-                      _buildSettingsItem(
-                        title: AppLocalizations.of(context)!.text_size_large,
-                        trailing: textScale == 1.2 ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
-                        onTap: () {
-                          _updateTextSize(1.2);
-                          // Update both screens
-                          setTextSizeState(() {});
-                          if (setAppearanceState != null) {
-                            setAppearanceState(() {});
-                          }
-                          // Stay on screen to see the changes
-                          // Navigator.pop(context);
-                        },
-                        isFirst: false,
-                        isLast: false,
+                      _buildAnimatedTextSizeItem(
+                        AppLocalizations.of(context)!.text_size_large,
+                        1.2,
+                        setTextSizeState,
+                        setAppearanceState,
                       ),
-                      _buildSettingsItem(
-                        title: AppLocalizations.of(context)!.text_size_very_large,
-                        trailing: textScale == 1.4 ? Icon(Icons.check, color: ThemeManager.primaryColor()) : null,
-                        onTap: () {
-                          _updateTextSize(1.4);
-                          // Update both screens
-                          setTextSizeState(() {});
-                          if (setAppearanceState != null) {
-                            setAppearanceState(() {});
-                          }
-                          // Stay on screen to see the changes
-                          // Navigator.pop(context);
-                        },
-                        isFirst: false,
+                      _buildAnimatedTextSizeItem(
+                        AppLocalizations.of(context)!.text_size_very_large,
+                        1.4,
+                        setTextSizeState,
+                        setAppearanceState,
                         isLast: true,
                       ),
                     ],
@@ -6370,7 +6543,8 @@ Future<void> _setupScrollHandling() async {
               ),
             );
           }
-        ),      ),
+        ),
+      ),
     );
   }
 
@@ -6762,71 +6936,57 @@ Future<void> _setupScrollHandling() async {
   void _showSummaryLengthSelection() {
     Navigator.of(context).push(
       _createSettingsRoute(
-        Scaffold(
-          backgroundColor: ThemeManager.backgroundColor(),
-          appBar: AppBar(
-            backgroundColor: ThemeManager.backgroundColor(),
-            elevation: 0,
-            leading: IconButton(
-              icon: Icon(
-                Icons.chevron_left,
-                color: ThemeManager.textColor(),
+        StatefulBuilder(
+          builder: (BuildContext context, StateSetter setSummaryLengthState) {
+            return Scaffold(
+              backgroundColor: ThemeManager.backgroundColor(),
+              appBar: AppBar(
+                backgroundColor: ThemeManager.backgroundColor(),
+                elevation: 0,
+                leading: IconButton(
+                  icon: Icon(
+                    Icons.chevron_left,
+                    color: ThemeManager.textColor(),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+                title: Text(
+                  AppLocalizations.of(context)!.summary_length,
+                  style: TextStyle(
+                    color: ThemeManager.textColor(),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              AppLocalizations.of(context)!.summary_length,
-              style: TextStyle(
-                color: ThemeManager.textColor(),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          body: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            children: [
-              _buildSettingsSection(
-                title: AppLocalizations.of(context)!.summary_length,
+              body: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 children: [
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.summary_length_short,
-                    onTap: () async {
-                      await AIManager.setSummaryLength(SummaryLength.short);
-                      if (!mounted) return;
-                      Navigator.pop(context);
-                    },
-                    trailing: AIManager.getCurrentSummaryLength() == SummaryLength.short
-                      ? Icon(Icons.check, color: ThemeManager.primaryColor())
-                      : null,
-                    isFirst: true,
-                  ),
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.summary_length_medium,
-                    onTap: () async {
-                      await AIManager.setSummaryLength(SummaryLength.medium);
-                      if (!mounted) return;
-                      Navigator.pop(context);
-                    },
-                    trailing: AIManager.getCurrentSummaryLength() == SummaryLength.medium
-                      ? Icon(Icons.check, color: ThemeManager.primaryColor())
-                      : null,
-                  ),
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.summary_length_long,
-                    onTap: () async {
-                      await AIManager.setSummaryLength(SummaryLength.long);
-                      if (!mounted) return;
-                      Navigator.pop(context);
-                    },
-                    trailing: AIManager.getCurrentSummaryLength() == SummaryLength.long
-                      ? Icon(Icons.check, color: ThemeManager.primaryColor())
-                      : null,
-                    isLast: true,
+                  _buildSettingsSection(
+                    title: AppLocalizations.of(context)!.summary_length,
+                    children: [
+                      _buildAnimatedSummaryLengthItem(
+                        AppLocalizations.of(context)!.summary_length_short,
+                        SummaryLength.short,
+                        setSummaryLengthState,
+                        isFirst: true,
+                      ),
+                      _buildAnimatedSummaryLengthItem(
+                        AppLocalizations.of(context)!.summary_length_medium,
+                        SummaryLength.medium,
+                        setSummaryLengthState,
+                      ),
+                      _buildAnimatedSummaryLengthItem(
+                        AppLocalizations.of(context)!.summary_length_long,
+                        SummaryLength.long,
+                        setSummaryLengthState,
+                        isLast: true,
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -6835,60 +6995,52 @@ Future<void> _setupScrollHandling() async {
   void _showSummaryLanguageSelection() {
     Navigator.of(context).push(
       _createSettingsRoute(
-        Scaffold(
-          backgroundColor: ThemeManager.backgroundColor(),
-          appBar: AppBar(
-            backgroundColor: ThemeManager.backgroundColor(),
-            elevation: 0,
-            leading: IconButton(
-              icon: Icon(
-                Icons.chevron_left,
-                color: ThemeManager.textColor(),
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            title: Text(
-              AppLocalizations.of(context)!.summary_language,
-              style: TextStyle(
-                color: ThemeManager.textColor(),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          body: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            children: [
-              _buildSettingsSection(
-                title: AppLocalizations.of(context)!.summary_language,
-                children: [
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.summary_language_english,
-                    onTap: () async {
-                      await AIManager.setSummaryLanguage(SummaryLanguage.english);
-                      if (!mounted) return;
-                      Navigator.pop(context);
-                    },
-                    trailing: AIManager.getCurrentSummaryLanguage() == SummaryLanguage.english
-                      ? Icon(Icons.check, color: ThemeManager.primaryColor())
-                      : null,
-                    isFirst: true,
+        StatefulBuilder(
+          builder: (BuildContext context, StateSetter setSummaryLanguageState) {
+            return Scaffold(
+              backgroundColor: ThemeManager.backgroundColor(),
+              appBar: AppBar(
+                backgroundColor: ThemeManager.backgroundColor(),
+                elevation: 0,
+                leading: IconButton(
+                  icon: Icon(
+                    Icons.chevron_left,
+                    color: ThemeManager.textColor(),
                   ),
-                  _buildSettingsItem(
-                    title: AppLocalizations.of(context)!.summary_language_turkish,
-                    onTap: () async {
-                      await AIManager.setSummaryLanguage(SummaryLanguage.turkish);
-                      if (!mounted) return;
-                      Navigator.pop(context);
-                    },
-                    trailing: AIManager.getCurrentSummaryLanguage() == SummaryLanguage.turkish
-                      ? Icon(Icons.check, color: ThemeManager.primaryColor())
-                      : null,
-                    isLast: true,
+                  onPressed: () => Navigator.pop(context),
+                ),
+                title: Text(
+                  AppLocalizations.of(context)!.summary_language,
+                  style: TextStyle(
+                    color: ThemeManager.textColor(),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              body: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                children: [
+                  _buildSettingsSection(
+                    title: AppLocalizations.of(context)!.summary_language,
+                    children: [
+                      _buildAnimatedSummaryLanguageItem(
+                        AppLocalizations.of(context)!.summary_language_english,
+                        SummaryLanguage.english,
+                        setSummaryLanguageState,
+                        isFirst: true,
+                      ),
+                      _buildAnimatedSummaryLanguageItem(
+                        AppLocalizations.of(context)!.summary_language_turkish,
+                        SummaryLanguage.turkish,
+                        setSummaryLanguageState,
+                        isLast: true,
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
