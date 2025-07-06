@@ -10,6 +10,16 @@
 -keep class io.flutter.embedding.engine.** { *; }
 -keep class io.flutter.shell.** { *; }
 
+# Flutter deferred components (specific rules for Play Store split install)
+-keep class io.flutter.embedding.engine.deferredcomponents.PlayStoreDeferredComponentManager { *; }
+-keep class io.flutter.embedding.engine.deferredcomponents.PlayStoreDeferredComponentManager$* { *; }
+-keep class io.flutter.embedding.android.FlutterPlayStoreSplitApplication { *; }
+
+# Ensure Play Core classes are not obfuscated/removed
+-dontwarn com.google.android.play.core.**
+-keep,allowobfuscation,allowshrinking interface com.google.android.play.core.splitcompat.SplitCompatApplication
+-keep,allowobfuscation,allowshrinking class * implements com.google.android.play.core.splitcompat.SplitCompatApplication
+
 # WebView related rules
 -keep class com.pichillilorenzo.flutter_inappwebview.** { *; }
 -keep class com.pichillilorenzo.flutter_inappwebview.in_app_browser.** { *; }

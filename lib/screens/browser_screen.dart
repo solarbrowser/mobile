@@ -6955,7 +6955,7 @@ Future<void> _setupScrollHandling() async {
                 children: [
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.app_name,
-                    subtitle: AppLocalizations.of(context)!.version('0.4.1'),
+                    subtitle: AppLocalizations.of(context)!.version('0.4.2'),
                     isFirst: true,
                     isLast: false,
                   ),
