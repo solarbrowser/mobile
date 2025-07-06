@@ -956,5 +956,19 @@
   
   "open_in_app_button": "In {appName} öffnen",
   "creating_shortcut": "Verknüpfung wird erstellt",
-  "check_home_screen_for_shortcut": "Überprüfe den Startbildschirm auf die Verknüpfung"
+  "check_home_screen_for_shortcut": "Überprüfe den Startbildschirm auf die Verknüpfung",
+  "advanced": "Erweitert",
+  "enable_javascript": "JavaScript aktivieren",
+  "disable_javascript_warning": "JavaScript deaktivieren",
+  "disable_javascript_message": "Das Deaktivieren von JavaScript kann dazu führen, dass viele Websites nicht richtig funktionieren. Sind Sie sicher?",
+  "disable": "Deaktivieren",
+  "keep_enabled": "Aktiviert lassen",
+  "other": "Andere",
+  "help": "Hilfe",
+  "rate_us": "Bewerten Sie uns",
+  "privacy_policy": "Datenschutzrichtlinie",
+  "terms_of_use": "Nutzungsbedingungen",
+  "about": "Über",
+  "javascript_enabled": "JavaScript aktiviert",
+  "javascript_disabled": "JavaScript deaktiviert"
 }

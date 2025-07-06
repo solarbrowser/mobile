@@ -833,5 +833,19 @@
     "description": "Error message when a link cannot be opened due to missing app"
   },
   "creating_shortcut": "शॉर्टकट बनाया जा रहा है",
-  "check_home_screen_for_shortcut": "शॉर्टकट के लिए होम स्क्रीन देखें"
+  "check_home_screen_for_shortcut": "शॉर्टकट के लिए होम स्क्रीन देखें",
+  "advanced": "उन्नत",
+  "enable_javascript": "JavaScript सक्षम करें",
+  "disable_javascript_warning": "JavaScript अक्षम करें",
+  "disable_javascript_message": "JavaScript को अक्षम करने से कई वेबसाइटें ठीक से काम नहीं कर सकती हैं। क्या आप सुनिश्चित हैं?",
+  "disable": "अक्षम करें",
+  "keep_enabled": "सक्षम रखें",
+  "other": "अन्य",
+  "help": "सहायता",
+  "rate_us": "हमें रेट करें",
+  "privacy_policy": "गोपनीयता नीति",
+  "terms_of_use": "उपयोग की शर्तें",
+  "about": "के बारे में",
+  "javascript_enabled": "JavaScript सक्षम किया गया",
+  "javascript_disabled": "JavaScript अक्षम किया गया"
 }

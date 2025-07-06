@@ -31,7 +31,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             padding: 20px;
             background: var(--bg-primary);
             color: var(--text-primary);
@@ -45,6 +45,8 @@
             flex-direction: column;
             align-items: center;
             gap: 40px;
+            margin-top: 20px;
+            flex-grow: 1;
         }        .logo {
             width: 80px; /* Increased from 64px */
             height: 80px; /* Increased from 64px */
@@ -298,19 +300,35 @@
             justify-content: center;
         }
         
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 3px solid var(--color-secondary);
-            border-top: 3px solid var(--color-primary);
-            border-radius: 50%;
-            margin-bottom: 16px;
-            animation: spin 1.5s linear infinite;
+        .loading-dots {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            justify-content: center;
+            align-items: center;
         }
         
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .loading-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--color-primary);
+            animation: jump 1.4s ease-in-out infinite;
+        }
+        
+        .loading-dot:nth-child(1) { animation-delay: 0s; }
+        .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+        .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes jump {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.6;
+            }
+            30% {
+                transform: translateY(-20px);
+                opacity: 1;
+            }
         }
 
         .news-error {
@@ -589,8 +607,12 @@
             </div>
             <div id="newsContainer">
                 <div class="news-loading" id="newsLoading">
-                    <div class="loading-spinner"></div>
-                    <div>Loading...</div>
+                    <div class="loading-dots">
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                        <div class="loading-dot"></div>
+                    </div>
+                    <div id="loadingText">Loading...</div>
                 </div>
             </div>
         </div>
@@ -689,6 +711,7 @@
                 news: 'أخبار فيرتكس',
                 loading: 'جاري تحميل الأخبار...',
                 error: 'فشل في تحميل الأخبار',
+                newsError: 'فشل في تحميل الأخبار',
                 searchPlaceholder: 'ابحث أو أدخل العنوان',
                 addSite: 'إضافة موقع',
                 readMore: 'اقرأ المزيد',
@@ -696,6 +719,10 @@
                 enterWebsiteUrl: 'أدخل عنوان الموقع (مثال: google.com):',
                 enterShortcutTitle: 'أدخل عنوان الاختصار:',
                 removeShortcutConfirm: 'إزالة "{title}" من الاختصارات؟',
+                invalidUrlError: 'عنوان URL غير صحيح. يرجى إدخال عنوان صحيح مثل google.com',
+                urlRequiredError: 'مطلوب عنوان URL',
+                titleRequiredError: 'مطلوب عنوان الاختصار',
+                newsServiceError: 'خدمة الأخبار غير متاحة',
                 downloadImage: 'تحميل الصورة',
                 copyImage: 'نسخ الصورة',
                 openImageNewTab: 'فتح الصورة في علامة تبويب جديدة',
@@ -704,12 +731,14 @@
                 cutText: 'قص',
                 quickAccess: 'الوصول السريع',
                 edit: 'تحرير',
-                done: 'تم'
+                done: 'تم',
+                ok: 'موافق'
             },
             'de': {
                 news: 'Vertex Nachrichten',
                 loading: 'Nachrichten laden...',
                 error: 'Nachrichten konnten nicht geladen werden',
+                newsError: 'Nachrichten konnten nicht geladen werden',
                 searchPlaceholder: 'Suchen oder Adresse eingeben',
                 addSite: 'Seite hinzufügen',
                 readMore: 'Mehr lesen',
@@ -717,6 +746,10 @@
                 enterWebsiteUrl: 'Website-URL eingeben (z.B. google.com):',
                 enterShortcutTitle: 'Verknüpfungstitel eingeben:',
                 removeShortcutConfirm: '"{title}" aus Verknüpfungen entfernen?',
+                invalidUrlError: 'Ungültige URL. Bitte geben Sie eine gültige Adresse wie google.com ein',
+                urlRequiredError: 'URL erforderlich',
+                titleRequiredError: 'Verknüpfungstitel erforderlich',
+                newsServiceError: 'Nachrichtendienst nicht verfügbar',
                 downloadImage: 'Bild herunterladen',
                 copyImage: 'Bild kopieren',
                 openImageNewTab: 'Bild in neuem Tab öffnen',
@@ -725,12 +758,14 @@
                 cutText: 'Ausschneiden',
                 quickAccess: 'Schnellzugriff',
                 edit: 'Bearbeiten',
-                done: 'Fertig'
+                done: 'Fertig',
+                ok: 'OK'
             },
             'en': {
                 news: 'Vertex News',
                 loading: 'Loading news...',
                 error: 'Failed to load news',
+                newsError: 'Failed to load news',
                 searchPlaceholder: 'Search or enter address',
                 addSite: 'Add Site',
                 readMore: 'Read More',
@@ -738,6 +773,10 @@
                 enterWebsiteUrl: 'Enter website URL (e.g., google.com):',
                 enterShortcutTitle: 'Enter shortcut title:',
                 removeShortcutConfirm: 'Remove "{title}" from shortcuts?',
+                invalidUrlError: 'Invalid URL. Please enter a valid address like google.com',
+                urlRequiredError: 'URL is required',
+                titleRequiredError: 'Shortcut title is required',
+                newsServiceError: 'News service not available',
                 downloadImage: 'Download Image',
                 copyImage: 'Copy Image',
                 openImageNewTab: 'Open Image in New Tab',
@@ -746,12 +785,14 @@
                 cutText: 'Cut',
                 quickAccess: 'Quick Access',
                 edit: 'Edit',
-                done: 'Done'
+                done: 'Done',
+                ok: 'OK'
             },
             'es': {
                 news: 'Noticias Vertex',
                 loading: 'Cargando noticias...',
                 error: 'Error al cargar noticias',
+                newsError: 'Error al cargar noticias',
                 searchPlaceholder: 'Buscar o ingresar dirección',
                 addSite: 'Agregar Sitio',
                 readMore: 'Leer Más',
@@ -759,6 +800,10 @@
                 enterWebsiteUrl: 'Ingrese URL del sitio web (ej: google.com):',
                 enterShortcutTitle: 'Ingrese título del acceso directo:',
                 removeShortcutConfirm: '¿Eliminar "{title}" de los accesos directos?',
+                invalidUrlError: 'URL inválida. Por favor ingrese una dirección válida como google.com',
+                urlRequiredError: 'URL es requerida',
+                titleRequiredError: 'Título del acceso directo es requerido',
+                newsServiceError: 'Servicio de noticias no disponible',
                 downloadImage: 'Descargar Imagen',
                 copyImage: 'Copiar Imagen',
                 openImageNewTab: 'Abrir Imagen en Nueva Pestaña',
@@ -767,12 +812,14 @@
                 cutText: 'Cortar',
                 quickAccess: 'Acceso Rápido',
                 edit: 'Editar',
-                done: 'Listo'
+                done: 'Listo',
+                ok: 'OK'
             },
             'fr': {
                 news: 'Actualités Vertex',
                 loading: 'Chargement des actualités...',
                 error: 'Échec du chargement des actualités',
+                newsError: 'Échec du chargement des actualités',
                 searchPlaceholder: 'Rechercher ou entrer une adresse',
                 addSite: 'Ajouter un Site',
                 readMore: 'Lire Plus',
@@ -780,6 +827,10 @@
                 enterWebsiteUrl: 'Entrez l\'URL du site web (ex: google.com):',
                 enterShortcutTitle: 'Entrez le titre du raccourci:',
                 removeShortcutConfirm: 'Supprimer "{title}" des raccourcis?',
+                invalidUrlError: 'URL invalide. Veuillez entrer une adresse valide comme google.com',
+                urlRequiredError: 'URL requise',
+                titleRequiredError: 'Titre du raccourci requis',
+                newsServiceError: 'Service d\'actualités non disponible',
                 downloadImage: 'Télécharger l\'Image',
                 copyImage: 'Copier l\'Image',
                 openImageNewTab: 'Ouvrir l\'Image dans un Nouvel Onglet',
@@ -788,12 +839,14 @@
                 cutText: 'Couper',
                 quickAccess: 'Accès Rapide',
                 edit: 'Modifier',
-                done: 'Terminé'
+                done: 'Terminé',
+                ok: 'OK'
             },
             'hi': {
                 news: 'वर्टेक्स समाचार',
                 loading: 'समाचार लोड हो रहे हैं...',
                 error: 'समाचार लोड करने में विफल',
+                newsError: 'समाचार लोड करने में विफल',
                 searchPlaceholder: 'खोजें या पता दर्ज करें',
                 addSite: 'साइट जोड़ें',
                 readMore: 'और पढ़ें',
@@ -801,6 +854,10 @@
                 enterWebsiteUrl: 'वेबसाइट URL दर्ज करें (जैसे: google.com):',
                 enterShortcutTitle: 'शॉर्टकट शीर्षक दर्ज करें:',
                 removeShortcutConfirm: 'शॉर्टकट से "{title}" हटाएं?',
+                invalidUrlError: 'अमान्य URL। कृपया google.com जैसा वैध पता दर्ज करें',
+                urlRequiredError: 'URL आवश्यक है',
+                titleRequiredError: 'शॉर्टकट शीर्षक आवश्यक है',
+                newsServiceError: 'समाचार सेवा उपलब्ध नहीं है',
                 downloadImage: 'चित्र डाउनलोड करें',
                 copyImage: 'चित्र कॉपी करें',
                 openImageNewTab: 'नए टैब में चित्र खोलें',
@@ -809,12 +866,14 @@
                 cutText: 'कट करें',
                 quickAccess: 'त्वरित पहुंच',
                 edit: 'संपादित करें',
-                done: 'हो गया'
+                done: 'हो गया',
+                ok: 'ठीक है'
             },
             'it': {
                 news: 'Notizie Vertex',
                 loading: 'Caricamento notizie...',
                 error: 'Caricamento notizie fallito',
+                newsError: 'Caricamento notizie fallito',
                 searchPlaceholder: 'Cerca o inserisci indirizzo',
                 addSite: 'Aggiungi Sito',
                 readMore: 'Leggi di Più',
@@ -822,6 +881,10 @@
                 enterWebsiteUrl: 'Inserisci URL del sito web (es: google.com):',
                 enterShortcutTitle: 'Inserisci titolo collegamento:',
                 removeShortcutConfirm: 'Rimuovere "{title}" dai collegamenti?',
+                invalidUrlError: 'URL non valido. Inserisci un indirizzo valido come google.com',
+                urlRequiredError: 'URL richiesto',
+                titleRequiredError: 'Titolo collegamento richiesto',
+                newsServiceError: 'Servizio notizie non disponibile',
                 downloadImage: 'Scarica Immagine',
                 copyImage: 'Copia Immagine',
                 openImageNewTab: 'Apri Immagine in Nuova Scheda',
@@ -830,12 +893,14 @@
                 cutText: 'Taglia',
                 quickAccess: 'Accesso Rapido',
                 edit: 'Modifica',
-                done: 'Fatto'
+                done: 'Fatto',
+                ok: 'OK'
             },
             'ja': {
                 news: 'Vertexニュース',
                 loading: 'ニュースを読み込み中...',
                 error: 'ニュースの読み込みに失敗しました',
+                newsError: 'ニュースの読み込みに失敗しました',
                 searchPlaceholder: '検索またはアドレスを入力',
                 addSite: 'サイトを追加',
                 readMore: '続きを読む',
@@ -843,6 +908,10 @@
                 enterWebsiteUrl: 'ウェブサイトのURLを入力 (例: google.com):',
                 enterShortcutTitle: 'ショートカットのタイトルを入力:',
                 removeShortcutConfirm: 'ショートカットから"{title}"を削除しますか？',
+                invalidUrlError: '無効なURLです。google.comのような有効なアドレスを入力してください',
+                urlRequiredError: 'URLが必要です',
+                titleRequiredError: 'ショートカットのタイトルが必要です',
+                newsServiceError: 'ニュースサービスが利用できません',
                 downloadImage: '画像をダウンロード',
                 copyImage: '画像をコピー',
                 openImageNewTab: '新しいタブで画像を開く',
@@ -851,12 +920,14 @@
                 cutText: '切り取り',
                 quickAccess: 'クイックアクセス',
                 edit: '編集',
-                done: '完了'
+                done: '完了',
+                ok: 'OK'
             },
             'ko': {
                 news: 'Vertex 뉴스',
                 loading: '뉴스 로딩 중...',
                 error: '뉴스 로드 실패',
+                newsError: '뉴스 로드 실패',
                 searchPlaceholder: '검색하거나 주소 입력',
                 addSite: '사이트 추가',
                 readMore: '더 읽기',
@@ -864,6 +935,10 @@
                 enterWebsiteUrl: '웹사이트 URL 입력 (예: google.com):',
                 enterShortcutTitle: '바로가기 제목 입력:',
                 removeShortcutConfirm: '바로가기에서 "{title}"을(를) 제거하시겠습니까?',
+                invalidUrlError: '유효하지 않은 URL입니다. google.com과 같은 유효한 주소를 입력하세요',
+                urlRequiredError: 'URL이 필요합니다',
+                titleRequiredError: '바로가기 제목이 필요합니다',
+                newsServiceError: '뉴스 서비스를 사용할 수 없습니다',
                 downloadImage: '이미지 다운로드',
                 copyImage: '이미지 복사',
                 openImageNewTab: '새 탭에서 이미지 열기',
@@ -872,12 +947,14 @@
                 cutText: '잘라내기',
                 quickAccess: '빠른 액세스',
                 edit: '편집',
-                done: '완료'
+                done: '완료',
+                ok: '확인'
             },
             'pt': {
                 news: 'Notícias Vertex',
                 loading: 'Carregando notícias...',
                 error: 'Falha ao carregar notícias',
+                newsError: 'Falha ao carregar notícias',
                 searchPlaceholder: 'Pesquisar ou inserir endereço',
                 addSite: 'Adicionar Site',
                 readMore: 'Ler Mais',
@@ -885,6 +962,10 @@
                 enterWebsiteUrl: 'Digite a URL do site (ex: google.com):',
                 enterShortcutTitle: 'Digite o título do atalho:',
                 removeShortcutConfirm: 'Remover "{title}" dos atalhos?',
+                invalidUrlError: 'URL inválida. Digite um endereço válido como google.com',
+                urlRequiredError: 'URL é obrigatória',
+                titleRequiredError: 'Título do atalho é obrigatório',
+                newsServiceError: 'Serviço de notícias não disponível',
                 downloadImage: 'Baixar Imagem',
                 copyImage: 'Copiar Imagem',
                 openImageNewTab: 'Abrir Imagem em Nova Aba',
@@ -893,12 +974,14 @@
                 cutText: 'Cortar',
                 quickAccess: 'Acesso Rápido',
                 edit: 'Editar',
-                done: 'Concluído'
+                done: 'Concluído',
+                ok: 'OK'
             },
             'ru': {
                 news: 'Новости Vertex',
                 loading: 'Загрузка новостей...',
                 error: 'Не удалось загрузить новости',
+                newsError: 'Не удалось загрузить новости',
                 searchPlaceholder: 'Поиск или введите адрес',
                 addSite: 'Добавить Сайт',
                 readMore: 'Читать Далее',
@@ -906,6 +989,10 @@
                 enterWebsiteUrl: 'Введите URL сайта (например: google.com):',
                 enterShortcutTitle: 'Введите название ярлыка:',
                 removeShortcutConfirm: 'Удалить "{title}" из ярлыков?',
+                invalidUrlError: 'Неверный URL. Введите действительный адрес, например google.com',
+                urlRequiredError: 'URL обязателен',
+                titleRequiredError: 'Название ярлыка обязательно',
+                newsServiceError: 'Служба новостей недоступна',
                 downloadImage: 'Скачать Изображение',
                 copyImage: 'Копировать Изображение',
                 openImageNewTab: 'Открыть Изображение в Новой Вкладке',
@@ -914,12 +1001,14 @@
                 cutText: 'Вырезать',
                 quickAccess: 'Быстрый доступ',
                 edit: 'Изменить',
-                done: 'Готово'
+                done: 'Готово',
+                ok: 'OK'
             },
             'tr': {
                 news: 'Vertex Haberleri',
                 loading: 'Haberler yükleniyor...',
                 error: 'Haberler yüklenemedi',
+                newsError: 'Haberler yüklenemedi',
                 searchPlaceholder: 'Ara veya adres gir',
                 addSite: 'Site Ekle',
                 readMore: 'Devamını Oku',
@@ -927,14 +1016,20 @@
                 enterWebsiteUrl: 'Website URL\'si girin (örn: google.com):',
                 enterShortcutTitle: 'Kısayol başlığı girin:',
                 removeShortcutConfirm: 'Kısayollardan "{title}" kaldırılsın mı?',
+                invalidUrlError: 'Geçersiz URL. google.com gibi geçerli bir adres girin',
+                urlRequiredError: 'URL gerekli',
+                titleRequiredError: 'Kısayol başlığı gerekli',
+                newsServiceError: 'Haber servisi mevcut değil',
                 quickAccess: 'Hızlı Erişim',
                 edit: 'Düzenle',
-                done: 'Tamam'
+                done: 'Tamam',
+                ok: 'Tamam'
             },
             'zh': {
                 news: 'Vertex 新闻',
                 loading: '正在加载新闻...',
                 error: '加载新闻失败',
+                newsError: '加载新闻失败',
                 searchPlaceholder: '搜索或输入地址',
                 addSite: '添加网站',
                 readMore: '阅读更多',
@@ -942,9 +1037,14 @@
                 enterWebsiteUrl: '输入网站URL (例如: google.com):',
                 enterShortcutTitle: '输入快捷方式标题:',
                 removeShortcutConfirm: '从快捷方式中删除"{title}"？',
+                invalidUrlError: '无效的URL。请输入有效地址，如google.com',
+                urlRequiredError: '需要URL',
+                titleRequiredError: '需要快捷方式标题',
+                newsServiceError: '新闻服务不可用',
                 quickAccess: '快速访问',
                 edit: '编辑',
-                done: '完成'
+                done: '完成',
+                ok: '确定'
             }
         };
 
@@ -972,6 +1072,61 @@
             return localizations[currentLanguage]?.[key] || localizations['en'][key] || key;
         }
 
+        // URL validation function
+        function isValidUrl(url) {
+            if (!url || typeof url !== 'string') return false;
+            
+            // Remove protocol if present
+            let cleanUrl = url.trim().toLowerCase();
+            if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
+                cleanUrl = cleanUrl.replace(/^https?:\/\//, '');
+            }
+            
+            // Check for basic domain structure (at least one dot and valid characters)
+            const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.[a-zA-Z]{2,}(?:\/.*)?$/;
+            return domainRegex.test(cleanUrl);
+        }
+
+        // Show localized error alert using custom dialog
+        function showLocalizedError(errorKey) {
+            const errorMessage = getLocalizedText(errorKey);
+            showAlertDialog(errorMessage);
+        }
+
+        // Custom alert dialog function using same dialog system
+        function showAlertDialog(message, onOk) {
+            try {
+                // Try to use the Flutter DialogHandler first
+                if (window.DialogHandler && window.DialogHandler.postMessage) {
+                    console.log('🔍 Using Flutter DialogHandler for alert');
+                    const dialogId = Date.now().toString();
+                    window.pendingDialogs = window.pendingDialogs || {};
+                    window.pendingDialogs[dialogId] = { onResult: onOk };
+                    
+                    window.DialogHandler.postMessage(JSON.stringify({
+                        type: 'alert',
+                        id: dialogId,
+                        message: message,
+                        okText: getLocalizedText('ok')
+                    }));
+                } else {
+                    // Fallback to browser's native alert
+                    console.log('🔍 Using browser native alert');
+                    alert(message);
+                    if (onOk && typeof onOk === 'function') {
+                        onOk();
+                    }
+                }
+            } catch (error) {
+                console.error('❌ Error in showAlertDialog:', error);
+                // Last resort fallback
+                alert(message);
+                if (onOk && typeof onOk === 'function') {
+                    onOk();
+                }
+            }
+        }
+
         function updateSearchEngineLogo() {
             const engine = searchEngines[currentSearchEngine] || searchEngines['Google'];
             const iconImg = document.getElementById('searchEngineIcon');
@@ -996,6 +1151,12 @@
             const searchBox = document.querySelector('.search-box');
             if (searchBox) {
                 searchBox.placeholder = getLocalizedText('searchPlaceholder');
+            }
+
+            // Update loading text
+            const loadingText = document.getElementById('loadingText');
+            if (loadingText) {
+                loadingText.textContent = getLocalizedText('loading');
             }
 
             // Update Quick Access header
@@ -1126,7 +1287,7 @@
                 newsTitle.style.display = 'block';
             }
 
-            const errorText = message || getLocalizedText('newsError') || 'Unable to load news';
+            const errorText = message || getLocalizedText('newsError') || getLocalizedText('error') || 'Unable to load news';
             newsContainer.innerHTML = `<div class="news-error">${errorText}</div>`;
         }
 
@@ -1135,11 +1296,15 @@
             const newsContainer = document.getElementById('newsContainer');
             if (!newsContainer) return;
             
-            // Show loading spinner with animation
+            // Show loading animation with jumping dots and localized text
             const loadingDiv = document.createElement('div');
             loadingDiv.className = 'news-loading';
             loadingDiv.innerHTML = `
-                <div class="loading-spinner"></div>
+                <div class="loading-dots">
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                    <div class="loading-dot"></div>
+                </div>
                 <div>${getLocalizedText('loading')}</div>
             `;
             newsContainer.innerHTML = '';
@@ -1151,7 +1316,7 @@
                 newsTitle.style.display = 'block'; // Ensure it's visible
             }
             
-            console.log('🔄 Showing news loading spinner animation while keeping news title visible');
+            console.log('🔄 Showing modern jumping dots loading animation with localized text:', getLocalizedText('loading'));
         }
 
         // Request news from Flutter
@@ -1165,7 +1330,7 @@
                 console.log('📰 📤 Sent fetchNews message to Flutter NewsHandler');
             } else {
                 console.log('📰 ❌ NewsHandler not available');
-                renderNewsError('News service not available');
+                renderNewsError(getLocalizedText('newsServiceError'));
             }
         }
 
@@ -1572,10 +1737,7 @@
 
         // Add new shortcut
         function addNewShortcut() {
-            console.log('🔍 Adding new shortcut - ENHANCED DEBUG');
-            
-            // First we'll try a direct browser prompt as a fallback
-            let promptUrl = '';
+            console.log('🔍 Adding new shortcut with URL validation - ENHANCED DEBUG');
             
             try {
                 // First show URL prompt
@@ -1585,6 +1747,13 @@
                     if (!url) {
                         console.log('🔍 URL Dialog canceled or empty');
                         return; // User canceled
+                    }
+                    
+                    // Validate URL
+                    if (!isValidUrl(url)) {
+                        console.log('🔍 Invalid URL provided:', url);
+                        showLocalizedError('invalidUrlError');
+                        return;
                     }
                     
                     // Clean up the URL
@@ -1601,12 +1770,13 @@
                     showPromptDialog(getLocalizedText('enterShortcutTitle'), defaultTitle, function(title) {
                         console.log('🔍 Title dialog result received:', title);
                         
-                        if (!title) {
+                        if (!title || !title.trim()) {
                             console.log('🔍 Title Dialog canceled or empty');
-                            return; // User canceled
+                            showLocalizedError('titleRequiredError');
+                            return; // Title is required
                         }
                         
-                        const finalTitle = title.trim() || defaultTitle;
+                        const finalTitle = title.trim();
                         
                         // Create and save the new shortcut
                         const newShortcut = {
@@ -1628,7 +1798,8 @@
                             console.log('✅ Persistence ensured with firstRunComplete flag');
                         } catch (storageError) {
                             console.error('❌ Error saving shortcuts:', storageError);
-                            alert('Error saving shortcut. Please try again.');
+                            showLocalizedError('error');
+                            return;
                         }
                         
                         // Turn off edit mode
@@ -1653,8 +1824,14 @@
                 console.error('❌ Error in addNewShortcut:', e);
                 
                 // Fallback to simple prompt if dialog mechanism fails
-                promptUrl = prompt(getLocalizedText('enterWebsiteUrl'), '');
+                const promptUrl = prompt(getLocalizedText('enterWebsiteUrl'), '');
                 if (promptUrl) {
+                    // Validate URL
+                    if (!isValidUrl(promptUrl)) {
+                        showAlertDialog(getLocalizedText('invalidUrlError'));
+                        return;
+                    }
+                    
                     let cleanUrl = promptUrl.trim();
                     if (!cleanUrl.startsWith('http://') && !cleanUrl.startsWith('https://')) {
                         cleanUrl = 'https://' + cleanUrl;
@@ -1663,18 +1840,21 @@
                     const defaultTitle = cleanUrl.replace(/^https?:\/\//, '').replace(/^www\./, '').split('/')[0];
                     const promptTitle = prompt(getLocalizedText('enterShortcutTitle'), defaultTitle);
                     
-                    if (promptTitle) {
-                        shortcuts.push({
-                            title: promptTitle.trim() || defaultTitle,
-                            url: cleanUrl
-                        });
-                        
-                        localStorage.setItem('solarShortcuts', JSON.stringify(shortcuts));
-                        // Also set firstRunComplete flag to ensure these shortcuts persist
-                        localStorage.setItem('firstRunComplete', 'true');
-                        console.log('✅ Shortcuts saved via fallback method:', shortcuts.length, 'shortcuts');
-                        renderShortcuts();
+                    if (!promptTitle || !promptTitle.trim()) {
+                        showAlertDialog(getLocalizedText('titleRequiredError'));
+                        return;
                     }
+                    
+                    shortcuts.push({
+                        title: promptTitle.trim(),
+                        url: cleanUrl
+                    });
+                    
+                    localStorage.setItem('solarShortcuts', JSON.stringify(shortcuts));
+                    // Also set firstRunComplete flag to ensure these shortcuts persist
+                    localStorage.setItem('firstRunComplete', 'true');
+                    console.log('✅ Shortcuts saved via fallback method:', shortcuts.length, 'shortcuts');
+                    renderShortcuts();
                 }
             }
         }        // Remove shortcut
@@ -1943,7 +2123,7 @@
 
                         if (pendingDialog) {
                             if (data.result !== undefined && pendingDialog.onResult) {
-                                // Handle prompt response
+                                // Handle prompt response or alert response
                                 pendingDialog.onResult(data.result);
                             } else if (data.confirmed !== undefined) {
                                 // Handle confirm response

@@ -147,7 +147,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get help => 'Помощь';
 
   @override
-  String get about => 'О приложении';
+  String get about => 'О программе';
 
   @override
   String get language => 'Язык';
@@ -171,7 +171,7 @@ class AppLocalizationsRu extends AppLocalizations {
   String get ask_download_location => 'Спрашивать папку для загрузки';
 
   @override
-  String get rate_us => 'Оценить приложение';
+  String get rate_us => 'Оцените нас';
 
   @override
   String get privacy_policy => 'Политика конфиденциальности';
@@ -1504,4 +1504,50 @@ class AppLocalizationsRu extends AppLocalizations {
   String open_in_app_button(String appName) {
     return 'Open in $appName';
   }
+
+  @override
+  String get advanced => 'Расширенные';
+
+  @override
+  String get disable_javascript_warning => 'Отключить JavaScript';
+
+  @override
+  String get disable_javascript_message =>
+      'Отключение JavaScript может привести к неправильной работе многих веб-сайтов. Вы уверены?';
+
+  @override
+  String get disable => 'Отключить';
+
+  @override
+  String get keep_enabled => 'Оставить включенным';
+
+  @override
+  String get javascript_enabled => 'JavaScript включен';
+
+  @override
+  String get javascript_disabled => 'JavaScript отключен';
+
+  @override
+  String get error_network => 'Network error';
+
+  @override
+  String get error_connection_failed => 'Connection failed';
+
+  @override
+  String get error_timeout => 'Request timeout';
+
+  @override
+  String get error_not_found => 'Page not found';
+
+  @override
+  String get error_server => 'Server error';
+
+  @override
+  String get error_unknown => 'Unknown error occurred';
+
+  @override
+  String get error_ssl => 'SSL connection error';
+
+  @override
+  String get error_dns => 'DNS resolution failed';
 }

@@ -1,8 +1,49 @@
 {
+  "ar": [
+    "error_network",
+    "error_connection_failed",
+    "error_timeout",
+    "error_not_found",
+    "error_server",
+    "error_unknown",
+    "error_ssl",
+    "error_dns"
+  ],
+
   "de": [
     "email_app_not_found",
     "phone_app_not_found",
-    "sms_app_not_found"
+    "sms_app_not_found",
+    "error_network",
+    "error_connection_failed",
+    "error_timeout",
+    "error_not_found",
+    "error_server",
+    "error_unknown",
+    "error_ssl",
+    "error_dns"
+  ],
+
+  "es": [
+    "error_network",
+    "error_connection_failed",
+    "error_timeout",
+    "error_not_found",
+    "error_server",
+    "error_unknown",
+    "error_ssl",
+    "error_dns"
+  ],
+
+  "fr": [
+    "error_network",
+    "error_connection_failed",
+    "error_timeout",
+    "error_not_found",
+    "error_server",
+    "error_unknown",
+    "error_ssl",
+    "error_dns"
   ],
 
   "hi": [
@@ -11,7 +52,15 @@
     "sms_app_not_found",
     "open_in_app_title",
     "open_in_app_message",
-    "open_in_app_button"
+    "open_in_app_button",
+    "error_network",
+    "error_connection_failed",
+    "error_timeout",
+    "error_not_found",
+    "error_server",
+    "error_unknown",
+    "error_ssl",
+    "error_dns"
   ],
 
   "it": [
@@ -20,7 +69,15 @@
     "sms_app_not_found",
     "open_in_app_title",
     "open_in_app_message",
-    "open_in_app_button"
+    "open_in_app_button",
+    "error_network",
+    "error_connection_failed",
+    "error_timeout",
+    "error_not_found",
+    "error_server",
+    "error_unknown",
+    "error_ssl",
+    "error_dns"
   ],
 
   "ja": [
@@ -29,7 +86,15 @@
     "sms_app_not_found",
     "open_in_app_title",
     "open_in_app_message",
-    "open_in_app_button"
+    "open_in_app_button",
+    "error_network",
+    "error_connection_failed",
+    "error_timeout",
+    "error_not_found",
+    "error_server",
+    "error_unknown",
+    "error_ssl",
+    "error_dns"
   ],
 
   "ko": [
@@ -38,7 +103,15 @@
     "sms_app_not_found",
     "open_in_app_title",
     "open_in_app_message",
-    "open_in_app_button"
+    "open_in_app_button",
+    "error_network",
+    "error_connection_failed",
+    "error_timeout",
+    "error_not_found",
+    "error_server",
+    "error_unknown",
+    "error_ssl",
+    "error_dns"
   ],
 
   "pt": [
@@ -47,7 +120,15 @@
     "sms_app_not_found",
     "open_in_app_title",
     "open_in_app_message",
-    "open_in_app_button"
+    "open_in_app_button",
+    "error_network",
+    "error_connection_failed",
+    "error_timeout",
+    "error_not_found",
+    "error_server",
+    "error_unknown",
+    "error_ssl",
+    "error_dns"
   ],
 
   "ru": [
@@ -56,7 +137,15 @@
     "sms_app_not_found",
     "open_in_app_title",
     "open_in_app_message",
-    "open_in_app_button"
+    "open_in_app_button",
+    "error_network",
+    "error_connection_failed",
+    "error_timeout",
+    "error_not_found",
+    "error_server",
+    "error_unknown",
+    "error_ssl",
+    "error_dns"
   ],
 
   "tr": [
@@ -71,6 +160,14 @@
     "sms_app_not_found",
     "open_in_app_title",
     "open_in_app_message",
-    "open_in_app_button"
+    "open_in_app_button",
+    "error_network",
+    "error_connection_failed",
+    "error_timeout",
+    "error_not_found",
+    "error_server",
+    "error_unknown",
+    "error_ssl",
+    "error_dns"
   ]
 }

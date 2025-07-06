@@ -981,5 +981,19 @@
     }
   },
   "creating_shortcut": "Creando acceso directo",
-  "check_home_screen_for_shortcut": "Comprueba el acceso directo en la pantalla de inicio"
+  "check_home_screen_for_shortcut": "Comprueba el acceso directo en la pantalla de inicio",
+  "advanced": "Avanzado",
+  "enable_javascript": "Habilitar JavaScript",
+  "disable_javascript_warning": "Deshabilitar JavaScript",
+  "disable_javascript_message": "Deshabilitar JavaScript puede hacer que muchos sitios web no funcionen correctamente. ¿Estás seguro?",
+  "disable": "Deshabilitar",
+  "keep_enabled": "Mantener Habilitado",
+  "other": "Otro",
+  "help": "Ayuda",
+  "rate_us": "Califícanos",
+  "privacy_policy": "Política de Privacidad",
+  "terms_of_use": "Términos de Uso",
+  "about": "Acerca de",
+  "javascript_enabled": "JavaScript habilitado",
+  "javascript_disabled": "JavaScript deshabilitado"
 }

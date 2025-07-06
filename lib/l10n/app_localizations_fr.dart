@@ -148,7 +148,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get help => 'Aide';
 
   @override
-  String get about => 'À propos';
+  String get about => 'À Propos';
 
   @override
   String get language => 'Langue';
@@ -175,10 +175,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get rate_us => 'Évaluez-nous';
 
   @override
-  String get privacy_policy => 'Politique de confidentialité';
+  String get privacy_policy => 'Politique de Confidentialité';
 
   @override
-  String get terms_of_use => 'Conditions d\'utilisation';
+  String get terms_of_use => 'Conditions d\'Utilisation';
 
   @override
   String get customize_browser => 'Personnaliser le navigateur';
@@ -1523,4 +1523,50 @@ class AppLocalizationsFr extends AppLocalizations {
   String open_in_app_button(String appName) {
     return 'Ouvrir dans $appName';
   }
+
+  @override
+  String get advanced => 'Avancé';
+
+  @override
+  String get disable_javascript_warning => 'Désactiver JavaScript';
+
+  @override
+  String get disable_javascript_message =>
+      'Désactiver JavaScript peut empêcher de nombreux sites web de fonctionner correctement. Êtes-vous sûr ?';
+
+  @override
+  String get disable => 'Désactiver';
+
+  @override
+  String get keep_enabled => 'Garder Activé';
+
+  @override
+  String get javascript_enabled => 'JavaScript activé';
+
+  @override
+  String get javascript_disabled => 'JavaScript désactivé';
+
+  @override
+  String get error_network => 'Network error';
+
+  @override
+  String get error_connection_failed => 'Connection failed';
+
+  @override
+  String get error_timeout => 'Request timeout';
+
+  @override
+  String get error_not_found => 'Page not found';
+
+  @override
+  String get error_server => 'Server error';
+
+  @override
+  String get error_unknown => 'Unknown error occurred';
+
+  @override
+  String get error_ssl => 'SSL connection error';
+
+  @override
+  String get error_dns => 'DNS resolution failed';
 }

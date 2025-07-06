@@ -1498,4 +1498,50 @@ class AppLocalizationsEn extends AppLocalizations {
   String open_in_app_button(String appName) {
     return 'Open in $appName';
   }
+
+  @override
+  String get advanced => 'Advanced';
+
+  @override
+  String get disable_javascript_warning => 'Disable JavaScript?';
+
+  @override
+  String get disable_javascript_message =>
+      'Disabling JavaScript may break many websites and features. Are you sure you want to continue?';
+
+  @override
+  String get disable => 'Disable';
+
+  @override
+  String get keep_enabled => 'Keep Enabled';
+
+  @override
+  String get javascript_enabled => 'JavaScript enabled';
+
+  @override
+  String get javascript_disabled => 'JavaScript disabled';
+
+  @override
+  String get error_network => 'Network error';
+
+  @override
+  String get error_connection_failed => 'Connection failed';
+
+  @override
+  String get error_timeout => 'Request timeout';
+
+  @override
+  String get error_not_found => 'Page not found';
+
+  @override
+  String get error_server => 'Server error';
+
+  @override
+  String get error_unknown => 'Unknown error occurred';
+
+  @override
+  String get error_ssl => 'SSL connection error';
+
+  @override
+  String get error_dns => 'DNS resolution failed';
 }

@@ -917,5 +917,19 @@
     }
   },
   "creating_shortcut": "Création du raccourci",
-  "check_home_screen_for_shortcut": "Vérifiez le raccourci sur l'écran d'accueil"
+  "check_home_screen_for_shortcut": "Vérifiez le raccourci sur l'écran d'accueil",
+  "advanced": "Avancé",
+  "enable_javascript": "Activer JavaScript",
+  "disable_javascript_warning": "Désactiver JavaScript",
+  "disable_javascript_message": "Désactiver JavaScript peut empêcher de nombreux sites web de fonctionner correctement. Êtes-vous sûr ?",
+  "disable": "Désactiver",
+  "keep_enabled": "Garder Activé",
+  "other": "Autre",
+  "help": "Aide",
+  "rate_us": "Évaluez-nous",
+  "privacy_policy": "Politique de Confidentialité",
+  "terms_of_use": "Conditions d'Utilisation",
+  "about": "À Propos",
+  "javascript_enabled": "JavaScript activé",
+  "javascript_disabled": "JavaScript désactivé"
 }

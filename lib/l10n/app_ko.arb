@@ -858,5 +858,19 @@
     "description": "Error message when a link cannot be opened due to missing app"
   },
   "creating_shortcut": "바로가기 만드는 중",
-  "check_home_screen_for_shortcut": "홈 화면에서 바로가기를 확인하세요"
+  "check_home_screen_for_shortcut": "홈 화면에서 바로가기를 확인하세요",
+  "advanced": "고급",
+  "enable_javascript": "JavaScript 사용",
+  "disable_javascript_warning": "JavaScript 비활성화",
+  "disable_javascript_message": "JavaScript를 비활성화하면 많은 웹사이트가 제대로 작동하지 않을 수 있습니다. 확실합니까?",
+  "disable": "비활성화",
+  "keep_enabled": "활성화 유지",
+  "other": "기타",
+  "help": "도움말",
+  "rate_us": "평가하기",
+  "privacy_policy": "개인정보 처리방침",
+  "terms_of_use": "이용약관",
+  "about": "정보",
+  "javascript_enabled": "JavaScript 활성화됨",
+  "javascript_disabled": "JavaScript 비활성화됨"
 }

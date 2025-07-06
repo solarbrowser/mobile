@@ -174,10 +174,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get rate_us => 'Califícanos';
 
   @override
-  String get privacy_policy => 'Política de privacidad';
+  String get privacy_policy => 'Política de Privacidad';
 
   @override
-  String get terms_of_use => 'Términos de uso';
+  String get terms_of_use => 'Términos de Uso';
 
   @override
   String get customize_browser => 'Personalizar navegador';
@@ -348,7 +348,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get enable_cookies => 'Activar cookies';
 
   @override
-  String get enable_javascript => 'Activar JavaScript';
+  String get enable_javascript => 'Habilitar JavaScript';
 
   @override
   String get hardware_acceleration => 'Aceleración por hardware';
@@ -1512,4 +1512,50 @@ class AppLocalizationsEs extends AppLocalizations {
   String open_in_app_button(String appName) {
     return 'Abrir en $appName';
   }
+
+  @override
+  String get advanced => 'Avanzado';
+
+  @override
+  String get disable_javascript_warning => 'Deshabilitar JavaScript';
+
+  @override
+  String get disable_javascript_message =>
+      'Deshabilitar JavaScript puede hacer que muchos sitios web no funcionen correctamente. ¿Estás seguro?';
+
+  @override
+  String get disable => 'Deshabilitar';
+
+  @override
+  String get keep_enabled => 'Mantener Habilitado';
+
+  @override
+  String get javascript_enabled => 'JavaScript habilitado';
+
+  @override
+  String get javascript_disabled => 'JavaScript deshabilitado';
+
+  @override
+  String get error_network => 'Network error';
+
+  @override
+  String get error_connection_failed => 'Connection failed';
+
+  @override
+  String get error_timeout => 'Request timeout';
+
+  @override
+  String get error_not_found => 'Page not found';
+
+  @override
+  String get error_server => 'Server error';
+
+  @override
+  String get error_unknown => 'Unknown error occurred';
+
+  @override
+  String get error_ssl => 'SSL connection error';
+
+  @override
+  String get error_dns => 'DNS resolution failed';
 }

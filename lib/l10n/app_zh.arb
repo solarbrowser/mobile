@@ -897,5 +897,19 @@
     "description": "Error message when a link cannot be opened due to missing app"
   },
   "creating_shortcut": "正在创建快捷方式",
-  "check_home_screen_for_shortcut": "请在主屏幕上检查快捷方式"
+  "check_home_screen_for_shortcut": "请在主屏幕上检查快捷方式",
+  "advanced": "高级",
+  "enable_javascript": "启用JavaScript",
+  "disable_javascript_warning": "禁用JavaScript",
+  "disable_javascript_message": "禁用JavaScript可能会导致许多网站无法正常工作。您确定吗？",
+  "disable": "禁用",
+  "keep_enabled": "保持启用",
+  "other": "其他",
+  "help": "帮助",
+  "rate_us": "评价我们",
+  "privacy_policy": "隐私政策",
+  "terms_of_use": "使用条款",
+  "about": "关于",
+  "javascript_enabled": "JavaScript已启用",
+  "javascript_disabled": "JavaScript已禁用"
 }

@@ -867,5 +867,27 @@
     }
   },
   "creating_shortcut": "Kısayol oluşturuluyor",
-  "check_home_screen_for_shortcut": "Kısayol için ana ekranı kontrol et"
+  "check_home_screen_for_shortcut": "Kısayol için ana ekranı kontrol et",
+  "advanced": "Gelişmiş",
+  "enable_javascript": "JavaScript'i Etkinleştir",
+  "disable_javascript_warning": "JavaScript'i Devre Dışı Bırak",
+  "disable_javascript_message": "JavaScript'i devre dışı bırakmak birçok web sitesinin düzgün çalışmamasına neden olabilir. Emin misiniz?",
+  "disable": "Devre Dışı Bırak",
+  "keep_enabled": "Etkin Tut",
+  "other": "Diğer",
+  "help": "Yardım",
+  "rate_us": "Bizi Değerlendirin",
+  "privacy_policy": "Gizlilik Politikası",
+  "terms_of_use": "Kullanım Koşulları",
+  "about": "Hakkında",
+  "javascript_enabled": "JavaScript etkinleştirildi",
+  "javascript_disabled": "JavaScript devre dışı bırakıldı",
+  "error_network": "Ağ hatası",
+  "error_connection_failed": "Bağlantı başarısız",
+  "error_timeout": "İstek zaman aşımı",
+  "error_not_found": "Sayfa bulunamadı",
+  "error_server": "Sunucu hatası",
+  "error_unknown": "Bilinmeyen hata oluştu",
+  "error_ssl": "SSL bağlantı hatası",
+  "error_dns": "DNS çözümleme başarısız"
 }

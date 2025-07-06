@@ -172,10 +172,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get rate_us => '평가하기';
 
   @override
-  String get privacy_policy => '개인정보 보호정책';
+  String get privacy_policy => '개인정보 처리방침';
 
   @override
-  String get terms_of_use => '이용 약관';
+  String get terms_of_use => '이용약관';
 
   @override
   String get customize_browser => '브라우저 사용자 지정';
@@ -345,7 +345,7 @@ class AppLocalizationsKo extends AppLocalizations {
   String get enable_cookies => '쿠키 활성화';
 
   @override
-  String get enable_javascript => 'JavaScript 활성화';
+  String get enable_javascript => 'JavaScript 사용';
 
   @override
   String get hardware_acceleration => '하드웨어 가속';
@@ -1458,4 +1458,50 @@ class AppLocalizationsKo extends AppLocalizations {
   String open_in_app_button(String appName) {
     return 'Open in $appName';
   }
+
+  @override
+  String get advanced => '고급';
+
+  @override
+  String get disable_javascript_warning => 'JavaScript 비활성화';
+
+  @override
+  String get disable_javascript_message =>
+      'JavaScript를 비활성화하면 많은 웹사이트가 제대로 작동하지 않을 수 있습니다. 확실합니까?';
+
+  @override
+  String get disable => '비활성화';
+
+  @override
+  String get keep_enabled => '활성화 유지';
+
+  @override
+  String get javascript_enabled => 'JavaScript 활성화됨';
+
+  @override
+  String get javascript_disabled => 'JavaScript 비활성화됨';
+
+  @override
+  String get error_network => 'Network error';
+
+  @override
+  String get error_connection_failed => 'Connection failed';
+
+  @override
+  String get error_timeout => 'Request timeout';
+
+  @override
+  String get error_not_found => 'Page not found';
+
+  @override
+  String get error_server => 'Server error';
+
+  @override
+  String get error_unknown => 'Unknown error occurred';
+
+  @override
+  String get error_ssl => 'SSL connection error';
+
+  @override
+  String get error_dns => 'DNS resolution failed';
 }

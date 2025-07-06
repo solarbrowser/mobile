@@ -144,7 +144,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get settings => 'الإعدادات';
 
   @override
-  String get help => 'المساعدة';
+  String get help => 'مساعدة';
 
   @override
   String get about => 'حول';
@@ -171,7 +171,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get ask_download_location => 'اسأل عن موقع التنزيل';
 
   @override
-  String get rate_us => 'قيمنا';
+  String get rate_us => 'قيم التطبيق';
 
   @override
   String get privacy_policy => 'سياسة الخصوصية';
@@ -1494,4 +1494,50 @@ class AppLocalizationsAr extends AppLocalizations {
   String open_in_app_button(String appName) {
     return 'فتح في $appName';
   }
+
+  @override
+  String get advanced => 'متقدم';
+
+  @override
+  String get disable_javascript_warning => 'تعطيل JavaScript';
+
+  @override
+  String get disable_javascript_message =>
+      'قد يؤدي تعطيل JavaScript إلى عدم عمل العديد من المواقع بشكل صحيح. هل أنت متأكد؟';
+
+  @override
+  String get disable => 'تعطيل';
+
+  @override
+  String get keep_enabled => 'إبقاء مُفعل';
+
+  @override
+  String get javascript_enabled => 'تم تمكين JavaScript';
+
+  @override
+  String get javascript_disabled => 'تم تعطيل JavaScript';
+
+  @override
+  String get error_network => 'Network error';
+
+  @override
+  String get error_connection_failed => 'Connection failed';
+
+  @override
+  String get error_timeout => 'Request timeout';
+
+  @override
+  String get error_not_found => 'Page not found';
+
+  @override
+  String get error_server => 'Server error';
+
+  @override
+  String get error_unknown => 'Unknown error occurred';
+
+  @override
+  String get error_ssl => 'SSL connection error';
+
+  @override
+  String get error_dns => 'DNS resolution failed';
 }

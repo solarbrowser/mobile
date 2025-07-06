@@ -1572,5 +1572,94 @@
         "example": "YouTube"
       }
     }
+  },
+  
+  "advanced": "Advanced",
+  "@advanced": {
+    "description": "Advanced settings section title"
+  },
+  "enable_javascript": "Enable JavaScript",
+  "@enable_javascript": {
+    "description": "JavaScript toggle setting"
+  },
+  "disable_javascript_warning": "Disable JavaScript?",
+  "@disable_javascript_warning": {
+    "description": "Warning dialog title when disabling JavaScript"
+  },
+  "disable_javascript_message": "Disabling JavaScript may break many websites and features. Are you sure you want to continue?",
+  "@disable_javascript_message": {
+    "description": "Warning message when disabling JavaScript"
+  },
+  "disable": "Disable",
+  "@disable": {
+    "description": "Disable button text"
+  },
+  "keep_enabled": "Keep Enabled",
+  "@keep_enabled": {
+    "description": "Keep enabled button text"
+  },
+  "other": "Other",
+  "@other": {
+    "description": "Other section title"
+  },
+  "help": "Help",
+  "@help": {
+    "description": "Help menu item"
+  },
+  "rate_us": "Rate Us",
+  "@rate_us": {
+    "description": "Rate us menu item"
+  },
+  "privacy_policy": "Privacy Policy",
+  "@privacy_policy": {
+    "description": "Privacy policy menu item"
+  },
+  "terms_of_use": "Terms of Use",
+  "@terms_of_use": {
+    "description": "Terms of use menu item"
+  },
+  "about": "About",
+  "@about": {
+    "description": "About menu item"
+  },
+  "javascript_enabled": "JavaScript enabled",
+  "@javascript_enabled": {
+    "description": "JavaScript enabled notification"
+  },
+  "javascript_disabled": "JavaScript disabled",
+  "@javascript_disabled": {
+    "description": "JavaScript disabled notification"
+  },
+  "error_network": "Network error",
+  "@error_network": {
+    "description": "Network error message"
+  },
+  "error_connection_failed": "Connection failed",
+  "@error_connection_failed": {
+    "description": "Connection failed error"
+  },
+  "error_timeout": "Request timeout",
+  "@error_timeout": {
+    "description": "Timeout error message"
+  },
+  "error_not_found": "Page not found",
+  "@error_not_found": {
+    "description": "404 error message"
+  },
+  "error_server": "Server error",
+  "@error_server": {
+    "description": "Server error message"
+  },
+  "error_unknown": "Unknown error occurred",
+  "@error_unknown": {
+    "description": "Unknown error message"
+  },
+  "error_ssl": "SSL connection error",
+  "@error_ssl": {
+    "description": "SSL error message"
+  },
+  "error_dns": "DNS resolution failed",
+  "@error_dns": {
+    "description": "DNS error message"
   }
 }

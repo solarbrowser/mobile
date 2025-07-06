@@ -372,13 +372,13 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get settings;
 
-  /// No description provided for @help.
+  /// Help menu item
   ///
   /// In en, this message translates to:
   /// **'Help'**
   String get help;
 
-  /// No description provided for @about.
+  /// About menu item
   ///
   /// In en, this message translates to:
   /// **'About'**
@@ -426,19 +426,19 @@ abstract class AppLocalizations {
   /// **'Ask Download Location'**
   String get ask_download_location;
 
-  /// No description provided for @rate_us.
+  /// Rate us menu item
   ///
   /// In en, this message translates to:
   /// **'Rate Us'**
   String get rate_us;
 
-  /// No description provided for @privacy_policy.
+  /// Privacy policy menu item
   ///
   /// In en, this message translates to:
   /// **'Privacy Policy'**
   String get privacy_policy;
 
-  /// No description provided for @terms_of_use.
+  /// Terms of use menu item
   ///
   /// In en, this message translates to:
   /// **'Terms of Use'**
@@ -774,7 +774,7 @@ abstract class AppLocalizations {
   /// **'Enable Cookies'**
   String get enable_cookies;
 
-  /// No description provided for @enable_javascript.
+  /// JavaScript toggle setting
   ///
   /// In en, this message translates to:
   /// **'Enable JavaScript'**
@@ -1950,7 +1950,7 @@ abstract class AppLocalizations {
   /// **'Close all tabs in \"{groupName}\"? This action cannot be undone.'**
   String close_all_tabs_in_group(String groupName);
 
-  /// Settings group title for other options
+  /// Other section title
   ///
   /// In en, this message translates to:
   /// **'Other'**
@@ -2885,6 +2885,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open in {appName}'**
   String open_in_app_button(String appName);
+
+  /// Advanced settings section title
+  ///
+  /// In en, this message translates to:
+  /// **'Advanced'**
+  String get advanced;
+
+  /// Warning dialog title when disabling JavaScript
+  ///
+  /// In en, this message translates to:
+  /// **'Disable JavaScript?'**
+  String get disable_javascript_warning;
+
+  /// Warning message when disabling JavaScript
+  ///
+  /// In en, this message translates to:
+  /// **'Disabling JavaScript may break many websites and features. Are you sure you want to continue?'**
+  String get disable_javascript_message;
+
+  /// Disable button text
+  ///
+  /// In en, this message translates to:
+  /// **'Disable'**
+  String get disable;
+
+  /// Keep enabled button text
+  ///
+  /// In en, this message translates to:
+  /// **'Keep Enabled'**
+  String get keep_enabled;
+
+  /// JavaScript enabled notification
+  ///
+  /// In en, this message translates to:
+  /// **'JavaScript enabled'**
+  String get javascript_enabled;
+
+  /// JavaScript disabled notification
+  ///
+  /// In en, this message translates to:
+  /// **'JavaScript disabled'**
+  String get javascript_disabled;
+
+  /// Network error message
+  ///
+  /// In en, this message translates to:
+  /// **'Network error'**
+  String get error_network;
+
+  /// Connection failed error
+  ///
+  /// In en, this message translates to:
+  /// **'Connection failed'**
+  String get error_connection_failed;
+
+  /// Timeout error message
+  ///
+  /// In en, this message translates to:
+  /// **'Request timeout'**
+  String get error_timeout;
+
+  /// 404 error message
+  ///
+  /// In en, this message translates to:
+  /// **'Page not found'**
+  String get error_not_found;
+
+  /// Server error message
+  ///
+  /// In en, this message translates to:
+  /// **'Server error'**
+  String get error_server;
+
+  /// Unknown error message
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown error occurred'**
+  String get error_unknown;
+
+  /// SSL error message
+  ///
+  /// In en, this message translates to:
+  /// **'SSL connection error'**
+  String get error_ssl;
+
+  /// DNS error message
+  ///
+  /// In en, this message translates to:
+  /// **'DNS resolution failed'**
+  String get error_dns;
 }
 
 class _AppLocalizationsDelegate

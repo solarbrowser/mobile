@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart' as webview_flutter_android;
-import 'package:webview_flutter_android/webview_flutter_android.dart' show FileSelectorParams;
+import 'package:webview_flutter_android/webview_flutter_android.dart' show FileSelectorParams, AndroidWebViewController;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:ui';
 import '../l10n/app_localizations.dart';
@@ -399,6 +399,9 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   String? _currentFileName;
   int? _currentDownloadSize;
   List<Map<String, dynamic>> downloads = [];
+
+  // <-----------JAVASCRIPT STATE----------->
+  bool _isJavaScriptEnabled = true;
 
   // <-----------DOWNLOAD SORTING----------->
   String _downloadSortBy = 'date'; // 'date', 'name', 'size'
@@ -1688,10 +1691,7 @@ void _handleTouchEnd() {
           options: DefaultFirebaseOptions.currentPlatform,
         );
       }
-      await FirebaseAppCheck.instance.activate(
-        androidProvider: AndroidProvider.playIntegrity,
-      );
-      print('✅ Firebase App Check activated successfully'); // Test için
+      
 
       // --- DEĞİŞİKLİK BURADA ---
       // Cloud Functions'ın doğru bölgedeki sunuculara bağlanmasını sağla.
@@ -1699,9 +1699,9 @@ void _handleTouchEnd() {
       _firebaseFunctions = FirebaseFunctions.instanceFor(region: 'europe-west1');
       // --------------------------
       
-      print('✅ Firebase, App Check, and Functions (region: europe-west1) initialized successfully');
+      //print('✅ Firebase, App Check, and Functions (region: europe-west1) initialized successfully');
     } catch (e) {
-      print('❌ Firebase initialization, App Check, or Functions configuration failed: $e');
+      //print('❌ Firebase initialization, App Check, or Functions configuration failed: $e');
       // Don't throw error - app should still work without Firebase
     }
   }
@@ -1795,6 +1795,7 @@ void _handleTouchEnd() {
       Future.microtask(() => _loadUrlBarPosition());
       Future.microtask(() => _loadSettings());
       Future.microtask(() => _loadSearchEngines());
+      Future.microtask(() => _loadJavaScriptSetting());
       Future.microtask(() => _loadNavigationBarSettings());
       
       // Cleanup old PWA caches in background
@@ -5229,7 +5230,9 @@ Future<void> _setupScrollHandling() async {
     
     _setLoadingState(true);
     
-    // Optimized panel hiding for M12
+    // Optimized panel hiding for M12 - Remove opacity animation to prevent blur
+    // Commented out to fix blur issue during navigation
+    /*
     if (_isClassicMode && mounted) {
       setState(() {
         _hideUrlBar = true;
@@ -5243,6 +5246,7 @@ Future<void> _setupScrollHandling() async {
         }
       });
     }
+    */
     
     // Efficient URL processing
     String urlToLoad;
@@ -6370,41 +6374,35 @@ Future<void> _setupScrollHandling() async {
     );
   }
 
-  // Helper method for creating slide transitions for settings pages
+  // Helper method for creating slide transitions for settings pages (NO BLUR/OPACITY)
   PageRouteBuilder<dynamic> _createSettingsRoute2(Widget page) {
     return PageRouteBuilder(
       pageBuilder: (context, animation, secondaryAnimation) => page,
       transitionDuration: const Duration(milliseconds: 50),
       reverseTransitionDuration: const Duration(milliseconds: 50),
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        // Forward animation (right to left) - consistent with requirement
+        // Forward animation (right to left) - NO opacity effects to prevent blur
         const begin = Offset(1.0, 0.0);
         const end = Offset.zero;
         const curve = Curves.easeOutCubic;
-          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
         var offsetAnimation = animation.drive(tween);
-          // Reverse animation (slide to right) with fade effect
+          
+        // Reverse animation (slide to right) - NO fade effects
         if (secondaryAnimation.status == AnimationStatus.forward) {
-          return FadeTransition(
-            opacity: Tween<double>(begin: 1.0, end: 0.8).animate(
-              CurvedAnimation(parent: secondaryAnimation, curve: curve)
-            ),
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: Offset.zero,
-                end: const Offset(0.3, 0.0), // Slide right
-              ).animate(CurvedAnimation(parent: secondaryAnimation, curve: curve)),
-              child: child,
-            ),
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: Offset.zero,
+              end: const Offset(0.3, 0.0), // Slide right
+            ).animate(CurvedAnimation(parent: secondaryAnimation, curve: curve)),
+            child: child, // No FadeTransition wrapper - removes blur
           );
         }
         
+        // Pure slide transition without fade - no blur effect
         return SlideTransition(
           position: offsetAnimation, 
-          child: FadeTransition(
-            opacity: animation,
-            child: child,
-          ),
+          child: child, // Removed FadeTransition - no more opacity blur
         );
       },
     );
@@ -6462,7 +6460,11 @@ Future<void> _setupScrollHandling() async {
   }
 
   // <-----------NAVIGATION BAR CUSTOMIZATION DIALOG----------->
-  void _showNavigationCustomization() {    showCustomDialog(
+  void _showNavigationCustomization() {
+    // Create a copy of the current buttons to work with
+    List<String> tempCustomNavButtons = List.from(_customNavButtons);
+    
+    showCustomDialog(
       context: context,
       title: AppLocalizations.of(context)!.customize_navigation,
       isDarkMode: isDarkMode,
@@ -6506,7 +6508,7 @@ Future<void> _setupScrollHandling() async {
                     ),
                   ),                  child: ReorderableListView.builder(
                     scrollDirection: Axis.horizontal,
-                    itemCount: _customNavButtons.length,
+                    itemCount: tempCustomNavButtons.length,
                     buildDefaultDragHandles: false, // We'll add custom drag handles
                     proxyDecorator: (child, index, animation) {
                       return AnimatedBuilder(
@@ -6530,30 +6532,30 @@ Future<void> _setupScrollHandling() async {
                       setState(() {
                         if (newIndex > oldIndex) newIndex--;
                         
-                        final movedItem = _customNavButtons[oldIndex];
+                        final movedItem = tempCustomNavButtons[oldIndex];
                         
                         // Special handling for menu button - it moves the entire bar as a block
                         if (movedItem == 'menu') {
                           // Remove menu button from current position
-                          _customNavButtons.removeAt(oldIndex);
+                          tempCustomNavButtons.removeAt(oldIndex);
                           
                           // If moving to the first half, put menu at start
                           // If moving to the second half, put menu at end
-                          final midPoint = _customNavButtons.length / 2;
+                          final midPoint = tempCustomNavButtons.length / 2;
                           if (newIndex <= midPoint) {
                             // Put menu at the beginning
-                            _customNavButtons.insert(0, 'menu');
+                            tempCustomNavButtons.insert(0, 'menu');
                           } else {
                             // Put menu at the end
-                            _customNavButtons.add('menu');
+                            tempCustomNavButtons.add('menu');
                           }
                         } else {
                           // Normal reordering for non-menu buttons
                           // But ensure we don't displace the menu button
-                          final menuIndex = _customNavButtons.indexOf('menu');
+                          final menuIndex = tempCustomNavButtons.indexOf('menu');
                           
                           // Remove the item being moved
-                          _customNavButtons.removeAt(oldIndex);
+                          tempCustomNavButtons.removeAt(oldIndex);
                           
                           // Adjust newIndex if menu button affects positioning
                           int adjustedNewIndex = newIndex;
@@ -6567,11 +6569,11 @@ Future<void> _setupScrollHandling() async {
                             }
                           }
                           
-                          _customNavButtons.insert(adjustedNewIndex, movedItem);
+                          tempCustomNavButtons.insert(adjustedNewIndex, movedItem);
                         }
                       });
                     },                    itemBuilder: (context, index) {
-                      final buttonType = _customNavButtons[index];
+                      final buttonType = tempCustomNavButtons[index];
                       final buttonInfo = availableButtons[buttonType];
                       return Container(
                         key: ValueKey(buttonType),
@@ -6622,7 +6624,7 @@ Future<void> _setupScrollHandling() async {
                     itemCount: availableButtons.length,
                     itemBuilder: (context, index) {                      final buttonType = availableButtons.keys.elementAt(index);
                       final buttonInfo = availableButtons[buttonType]!;
-                      final isInNavBar = _customNavButtons.contains(buttonType);
+                      final isInNavBar = tempCustomNavButtons.contains(buttonType);
                       final isMenuButton = buttonType == 'menu';
                       final canRemove = isInNavBar && !isMenuButton;
                       
@@ -6632,10 +6634,10 @@ Future<void> _setupScrollHandling() async {
                           borderRadius: BorderRadius.circular(8),                          onTap: () {
                             setState(() {
                               if (canRemove) {
-                                _customNavButtons.remove(buttonType);
+                                tempCustomNavButtons.remove(buttonType);
                               } else if (!isInNavBar) {
-                                if (_customNavButtons.length < 6) {
-                                  _customNavButtons.add(buttonType);
+                                if (tempCustomNavButtons.length < 6) {
+                                  tempCustomNavButtons.add(buttonType);
                                 }
                               }
                             });
@@ -6701,17 +6703,17 @@ Future<void> _setupScrollHandling() async {
       ),
       actions: [
         TextButton(
-          onPressed: () {
-            setState(() {
-              _customNavButtons = ['back', 'forward', 'bookmark', 'share', 'menu'];
-            });
+          onPressed: () async {
+            // Reset to default and save immediately
+            const defaultButtons = ['back', 'forward', 'bookmark', 'share', 'menu'];
+            await _saveCustomNavButtons(defaultButtons);
             Navigator.pop(context);
           },          child: Text(
             AppLocalizations.of(context)!.reset,
             style: TextStyle(color: ThemeManager.textSecondaryColor()),
           ),
         ),        TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => Navigator.pop(context), // Cancel - no changes are saved
           child: Text(
             AppLocalizations.of(context)!.cancel,
             style: TextStyle(color: ThemeManager.textSecondaryColor()),
@@ -6719,7 +6721,7 @@ Future<void> _setupScrollHandling() async {
         ),
         TextButton(
           onPressed: () async {
-            await _saveCustomNavButtons(_customNavButtons);
+            await _saveCustomNavButtons(tempCustomNavButtons);
             Navigator.pop(context);
           },
           child: Text(
@@ -6955,7 +6957,7 @@ Future<void> _setupScrollHandling() async {
                 children: [
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.app_name,
-                    subtitle: AppLocalizations.of(context)!.version('0.4.2'),
+                    subtitle: AppLocalizations.of(context)!.version('0.4.3'),
                     isFirst: true,
                     isLast: false,
                   ),
@@ -8138,7 +8140,7 @@ Future<void> _setupScrollHandling() async {
             // Close panel when tapping on backdrop
             _hidePanelWithAnimation();          },
           child: Container(
-            color: ThemeManager.backgroundColor().withOpacity(0.85),
+            color: Colors.transparent,
             child: SlideTransition(
               position: _panelSlideAnimation,
               child: GestureDetector(
@@ -8959,17 +8961,59 @@ Future<void> _setupScrollHandling() async {
                   ],
                 ),
 
+                // Advanced Section
+                _buildSettingsSection(
+                  title: AppLocalizations.of(context)!.advanced,
+                  children: [
+                    _buildSettingsItem(
+                      title: AppLocalizations.of(context)!.enable_javascript,
+                      subtitle: AppLocalizations.of(context)!.enable_javascript,
+                      trailing: Switch(
+                        value: _isJavaScriptEnabled,
+                        onChanged: (value) async {
+                          if (!value) {
+                            // Show warning dialog when disabling JavaScript
+                            await _showJavaScriptDisableWarning(value);
+                          } else {
+                            await _setJavaScriptEnabled(value);
+                          }
+                        },
+                        activeColor: ThemeManager.primaryColor(),
+                      ),
+                      isFirst: true,
+                      isLast: true,
+                    ),
+                  ],
+                ),
+
                 // Other Section
                 _buildSettingsSection(
                   title: AppLocalizations.of(context)!.other,
                   children: [
-                    _buildSettingsButton('help', () => _showHelpPage()),
-                    _buildSettingsButton('rate_us', () => _showRateUs()),
-                    _buildSettingsButton('privacy_policy', () => _showPrivacyPolicy()),
-                    _buildSettingsButton('terms_of_use', () => _showTermsOfUse()),
-                    _buildSettingsButton('about', () => _showAboutPage(), isLast: true),
+                    _buildSettingsItem(
+                      title: AppLocalizations.of(context)!.help,
+                      onTap: () => _showHelpPage(),
+                    ),
+                    _buildSettingsItem(
+                      title: AppLocalizations.of(context)!.rate_us,
+                      onTap: () => _showRateUs(),
+                    ),
+                    _buildSettingsItem(
+                      title: AppLocalizations.of(context)!.privacy_policy,
+                      onTap: () => _showPrivacyPolicy(),
+                    ),
+                    _buildSettingsItem(
+                      title: AppLocalizations.of(context)!.terms_of_use,
+                      onTap: () => _showTermsOfUse(),
+                    ),
+                    _buildSettingsItem(
+                      title: AppLocalizations.of(context)!.about,
+                      onTap: () => _showAboutPage(),
+                      isLast: true,
+                    ),
                   ],
                 ),
+
                 const SizedBox(height: 16),
               ],
             ),
@@ -11642,6 +11686,91 @@ Future<void> _handlePageStarted(String url) async {
         _isSlideUpPanelVisible = false;
         _slideUpController.reverse();
       }
+    });
+  }
+
+  // <-----------JAVASCRIPT MANAGEMENT----------->
+  
+  /// Shows warning dialog when user tries to disable JavaScript
+  Future<void> _showJavaScriptDisableWarning(bool value) async {
+    showCustomDialog(
+      context: context,
+      title: AppLocalizations.of(context)!.disable_javascript_warning,
+      content: AppLocalizations.of(context)!.disable_javascript_message,
+      isDarkMode: ThemeManager.getCurrentTheme().isDark,
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            // Don't change the JavaScript setting - user cancelled
+          },
+          child: Text(
+            AppLocalizations.of(context)!.keep_enabled,
+            style: TextStyle(color: ThemeManager.textSecondaryColor()),
+          ),
+        ),
+        TextButton(
+          onPressed: () async {
+            Navigator.pop(context);
+            // User confirmed to disable JavaScript
+            await _setJavaScriptEnabled(value);
+          },
+          child: Text(
+            AppLocalizations.of(context)!.disable,
+            style: TextStyle(color: ThemeManager.errorColor()),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Sets JavaScript enabled/disabled state and saves to preferences
+  Future<void> _setJavaScriptEnabled(bool enabled) async {
+    setState(() {
+      _isJavaScriptEnabled = enabled;
+    });
+    
+    // Save to SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('javascriptEnabled', enabled);
+    
+    // Apply JavaScript setting to current WebView controller
+    try {
+      // For Android WebView, apply the JavaScript setting
+      if (Platform.isAndroid) {
+        final androidController = controller.platform as AndroidWebViewController;
+        await androidController.setJavaScriptMode(
+          enabled ? JavaScriptMode.unrestricted : JavaScriptMode.disabled
+        );
+        
+        // Reload current page to apply JavaScript settings
+        final currentUrl = await controller.currentUrl();
+        if (currentUrl != null && currentUrl.isNotEmpty) {
+          await controller.reload();
+        }
+      }
+    } catch (e) {
+      // Handle errors silently
+    }
+    
+    // Show notification about the change
+    showCustomNotification(
+      context: context,
+      message: enabled 
+        ? AppLocalizations.of(context)!.javascript_enabled
+        : AppLocalizations.of(context)!.javascript_disabled,
+      icon: enabled ? Icons.check_circle : Icons.warning,
+      iconColor: enabled ? ThemeManager.successColor() : ThemeManager.warningColor(),
+      isDarkMode: ThemeManager.getCurrentTheme().isDark,
+    );
+  }
+
+  /// Loads JavaScript setting from SharedPreferences
+  Future<void> _loadJavaScriptSetting() async {
+    final prefs = await SharedPreferences.getInstance();
+    final enabled = prefs.getBool('javascriptEnabled') ?? true; // Default to true
+    setState(() {
+      _isJavaScriptEnabled = enabled;
     });
   }
 
@@ -16014,6 +16143,53 @@ Future<void> _handlePageStarted(String url) async {
     }
   }
 
+  // Helper method to get localized error message based on WebResourceError
+  String _getLocalizedErrorMessage(WebResourceError error) {
+    final description = error.description.toLowerCase();
+    
+    // Check for specific error patterns in the description
+    if (description.contains('timeout') || description.contains('timed out')) {
+      return AppLocalizations.of(context)!.error_timeout;
+    } else if (description.contains('404') || description.contains('not found')) {
+      return AppLocalizations.of(context)!.error_not_found;
+    } else if (description.contains('dns') || description.contains('name_not_resolved') || 
+               description.contains('host_lookup')) {
+      return AppLocalizations.of(context)!.error_dns;
+    } else if (description.contains('ssl') || description.contains('tls') || 
+               description.contains('certificate')) {
+      return AppLocalizations.of(context)!.error_ssl;
+    } else if (description.contains('500') || description.contains('502') || 
+               description.contains('503') || description.contains('504') || 
+               description.contains('server')) {
+      return AppLocalizations.of(context)!.error_server;
+    } else if (description.contains('connection') && 
+               (description.contains('failed') || description.contains('refused') || 
+                description.contains('reset'))) {
+      return AppLocalizations.of(context)!.error_connection_failed;
+    } else if (description.contains('network') || description.contains('internet')) {
+      return AppLocalizations.of(context)!.error_network;
+    }
+    
+    // Map WebResourceErrorType to localized strings as fallback
+    switch (error.errorType) {
+      case WebResourceErrorType.hostLookup:
+        return AppLocalizations.of(context)!.error_dns;
+      case WebResourceErrorType.connect:
+        return AppLocalizations.of(context)!.error_connection_failed;
+      case WebResourceErrorType.timeout:
+        return AppLocalizations.of(context)!.error_timeout;
+      case WebResourceErrorType.io:
+        return AppLocalizations.of(context)!.error_network;
+      case WebResourceErrorType.unsafeResource:
+        return AppLocalizations.of(context)!.error_ssl;
+      case WebResourceErrorType.fileNotFound:
+        return AppLocalizations.of(context)!.error_not_found;
+      case WebResourceErrorType.unknown:
+      default:
+        return AppLocalizations.of(context)!.error_unknown;
+    }
+  }
+
   Future<void> _handleWebResourceError(WebResourceError error, String url) async {
     if (!mounted) return;
     
@@ -16058,6 +16234,17 @@ Future<void> _handlePageStarted(String url) async {
         return;
       }
     }
+
+    // Get localized error message based on error type and description
+    String localizedErrorMessage = _getLocalizedErrorMessage(error);
+    
+    // Show localized error notification
+    _showCustomNotification(
+      message: localizedErrorMessage,
+      icon: Icons.error_outline,
+      iconColor: ThemeManager.errorColor(),
+      duration: const Duration(seconds: 4),
+    );
     
     // Log the error details for debugging
     //print('Web resource error: ${error.description}');

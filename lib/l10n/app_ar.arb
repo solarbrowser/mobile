@@ -926,5 +926,19 @@
     }
   },
   "creating_shortcut": "يتم إنشاء الاختصار",
-  "check_home_screen_for_shortcut": "تحقق من الشاشة الرئيسية بحثًا عن الاختصار"
+  "check_home_screen_for_shortcut": "تحقق من الشاشة الرئيسية بحثًا عن الاختصار",
+  "advanced": "متقدم",
+  "enable_javascript": "تمكين JavaScript",
+  "disable_javascript_warning": "تعطيل JavaScript",
+  "disable_javascript_message": "قد يؤدي تعطيل JavaScript إلى عدم عمل العديد من المواقع بشكل صحيح. هل أنت متأكد؟",
+  "disable": "تعطيل",
+  "keep_enabled": "إبقاء مُفعل",
+  "other": "أخرى",
+  "help": "مساعدة",
+  "rate_us": "قيم التطبيق",
+  "privacy_policy": "سياسة الخصوصية",
+  "terms_of_use": "شروط الاستخدام",
+  "about": "حول",
+  "javascript_enabled": "تم تمكين JavaScript",
+  "javascript_disabled": "تم تعطيل JavaScript"
 }

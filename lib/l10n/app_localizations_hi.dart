@@ -144,10 +144,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get settings => 'सेटिंग्स';
 
   @override
-  String get help => 'मदद';
+  String get help => 'सहायता';
 
   @override
-  String get about => 'जानकारी';
+  String get about => 'के बारे में';
 
   @override
   String get language => 'भाषा';
@@ -1499,4 +1499,50 @@ class AppLocalizationsHi extends AppLocalizations {
   String open_in_app_button(String appName) {
     return 'Open in $appName';
   }
+
+  @override
+  String get advanced => 'उन्नत';
+
+  @override
+  String get disable_javascript_warning => 'JavaScript अक्षम करें';
+
+  @override
+  String get disable_javascript_message =>
+      'JavaScript को अक्षम करने से कई वेबसाइटें ठीक से काम नहीं कर सकती हैं। क्या आप सुनिश्चित हैं?';
+
+  @override
+  String get disable => 'अक्षम करें';
+
+  @override
+  String get keep_enabled => 'सक्षम रखें';
+
+  @override
+  String get javascript_enabled => 'JavaScript सक्षम किया गया';
+
+  @override
+  String get javascript_disabled => 'JavaScript अक्षम किया गया';
+
+  @override
+  String get error_network => 'Network error';
+
+  @override
+  String get error_connection_failed => 'Connection failed';
+
+  @override
+  String get error_timeout => 'Request timeout';
+
+  @override
+  String get error_not_found => 'Page not found';
+
+  @override
+  String get error_server => 'Server error';
+
+  @override
+  String get error_unknown => 'Unknown error occurred';
+
+  @override
+  String get error_ssl => 'SSL connection error';
+
+  @override
+  String get error_dns => 'DNS resolution failed';
 }

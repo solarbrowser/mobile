@@ -871,5 +871,19 @@
     "description": "Error message when a link cannot be opened due to missing app"
   },
   "creating_shortcut": "ショートカットを作成中",
-  "check_home_screen_for_shortcut": "ホーム画面でショートカットを確認してください"
+  "check_home_screen_for_shortcut": "ホーム画面でショートカットを確認してください",
+  "advanced": "詳細設定",
+  "enable_javascript": "JavaScriptを有効にする",
+  "disable_javascript_warning": "JavaScriptを無効にする",
+  "disable_javascript_message": "JavaScriptを無効にすると、多くのウェブサイトが正常に動作しなくなる可能性があります。よろしいですか？",
+  "disable": "無効にする",
+  "keep_enabled": "有効のまま",
+  "other": "その他",
+  "help": "ヘルプ",
+  "rate_us": "アプリを評価",
+  "privacy_policy": "プライバシーポリシー",
+  "terms_of_use": "利用規約",
+  "about": "アプリについて",
+  "javascript_enabled": "JavaScriptが有効になりました",
+  "javascript_disabled": "JavaScriptが無効になりました"
 }

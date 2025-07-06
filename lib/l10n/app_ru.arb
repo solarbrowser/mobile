@@ -899,5 +899,19 @@
     "description": "Error message when a link cannot be opened due to missing app"
   },
   "creating_shortcut": "Создание ярлыка",
-  "check_home_screen_for_shortcut": "Проверьте ярлык на главном экране"
+  "check_home_screen_for_shortcut": "Проверьте ярлык на главном экране",
+  "advanced": "Расширенные",
+  "enable_javascript": "Включить JavaScript",
+  "disable_javascript_warning": "Отключить JavaScript",
+  "disable_javascript_message": "Отключение JavaScript может привести к неправильной работе многих веб-сайтов. Вы уверены?",
+  "disable": "Отключить",
+  "keep_enabled": "Оставить включенным",
+  "other": "Другое",
+  "help": "Помощь",
+  "rate_us": "Оцените нас",
+  "privacy_policy": "Политика конфиденциальности",
+  "terms_of_use": "Условия использования",
+  "about": "О программе",
+  "javascript_enabled": "JavaScript включен",
+  "javascript_disabled": "JavaScript отключен"
 }

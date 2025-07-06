@@ -142,7 +142,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settings => '设置';
 
   @override
-  String get help => '帮助中心';
+  String get help => '帮助';
 
   @override
   String get about => '关于';
@@ -169,7 +169,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get ask_download_location => '每次下载前询问位置';
 
   @override
-  String get rate_us => '为我们评分';
+  String get rate_us => '评价我们';
 
   @override
   String get privacy_policy => '隐私政策';
@@ -343,7 +343,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get enable_cookies => '启用 Cookie';
 
   @override
-  String get enable_javascript => '启用 JavaScript';
+  String get enable_javascript => '启用JavaScript';
 
   @override
   String get hardware_acceleration => '硬件加速';
@@ -1438,4 +1438,49 @@ class AppLocalizationsZh extends AppLocalizations {
   String open_in_app_button(String appName) {
     return 'Open in $appName';
   }
+
+  @override
+  String get advanced => '高级';
+
+  @override
+  String get disable_javascript_warning => '禁用JavaScript';
+
+  @override
+  String get disable_javascript_message => '禁用JavaScript可能会导致许多网站无法正常工作。您确定吗？';
+
+  @override
+  String get disable => '禁用';
+
+  @override
+  String get keep_enabled => '保持启用';
+
+  @override
+  String get javascript_enabled => 'JavaScript已启用';
+
+  @override
+  String get javascript_disabled => 'JavaScript已禁用';
+
+  @override
+  String get error_network => 'Network error';
+
+  @override
+  String get error_connection_failed => 'Connection failed';
+
+  @override
+  String get error_timeout => 'Request timeout';
+
+  @override
+  String get error_not_found => 'Page not found';
+
+  @override
+  String get error_server => 'Server error';
+
+  @override
+  String get error_unknown => 'Unknown error occurred';
+
+  @override
+  String get error_ssl => 'SSL connection error';
+
+  @override
+  String get error_dns => 'DNS resolution failed';
 }

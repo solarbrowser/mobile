@@ -876,5 +876,19 @@
     "description": "Error message when a link cannot be opened due to missing app"
   },
   "creating_shortcut": "Creazione del collegamento",
-  "check_home_screen_for_shortcut": "Controlla la schermata principale per il collegamento"
+  "check_home_screen_for_shortcut": "Controlla la schermata principale per il collegamento",
+  "advanced": "Avanzate",
+  "enable_javascript": "Abilita JavaScript",
+  "disable_javascript_warning": "Disabilita JavaScript",
+  "disable_javascript_message": "Disabilitare JavaScript potrebbe causare il malfunzionamento di molti siti web. Sei sicuro?",
+  "disable": "Disabilita",
+  "keep_enabled": "Mantieni Abilitato",
+  "other": "Altro",
+  "help": "Aiuto",
+  "rate_us": "Valutaci",
+  "privacy_policy": "Informativa sulla Privacy",
+  "terms_of_use": "Termini di Utilizzo",
+  "about": "Informazioni",
+  "javascript_enabled": "JavaScript abilitato",
+  "javascript_disabled": "JavaScript disabilitato"
 }

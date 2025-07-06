@@ -145,7 +145,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get help => 'ヘルプ';
 
   @override
-  String get about => '情報';
+  String get about => 'アプリについて';
 
   @override
   String get language => '言語';
@@ -169,7 +169,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get ask_download_location => '保存先を確認';
 
   @override
-  String get rate_us => '評価する';
+  String get rate_us => 'アプリを評価';
 
   @override
   String get privacy_policy => 'プライバシーポリシー';
@@ -344,7 +344,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get enable_cookies => 'Cookie を有効にする';
 
   @override
-  String get enable_javascript => 'JavaScript を有効にする';
+  String get enable_javascript => 'JavaScriptを有効にする';
 
   @override
   String get hardware_acceleration => 'ハードウェアアクセラレーション';
@@ -1459,4 +1459,50 @@ class AppLocalizationsJa extends AppLocalizations {
   String open_in_app_button(String appName) {
     return 'Open in $appName';
   }
+
+  @override
+  String get advanced => '詳細設定';
+
+  @override
+  String get disable_javascript_warning => 'JavaScriptを無効にする';
+
+  @override
+  String get disable_javascript_message =>
+      'JavaScriptを無効にすると、多くのウェブサイトが正常に動作しなくなる可能性があります。よろしいですか？';
+
+  @override
+  String get disable => '無効にする';
+
+  @override
+  String get keep_enabled => '有効のまま';
+
+  @override
+  String get javascript_enabled => 'JavaScriptが有効になりました';
+
+  @override
+  String get javascript_disabled => 'JavaScriptが無効になりました';
+
+  @override
+  String get error_network => 'Network error';
+
+  @override
+  String get error_connection_failed => 'Connection failed';
+
+  @override
+  String get error_timeout => 'Request timeout';
+
+  @override
+  String get error_not_found => 'Page not found';
+
+  @override
+  String get error_server => 'Server error';
+
+  @override
+  String get error_unknown => 'Unknown error occurred';
+
+  @override
+  String get error_ssl => 'SSL connection error';
+
+  @override
+  String get error_dns => 'DNS resolution failed';
 }

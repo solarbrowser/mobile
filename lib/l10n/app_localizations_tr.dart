@@ -1504,4 +1504,50 @@ class AppLocalizationsTr extends AppLocalizations {
   String open_in_app_button(String appName) {
     return '$appName ile aç';
   }
+
+  @override
+  String get advanced => 'Gelişmiş';
+
+  @override
+  String get disable_javascript_warning => 'JavaScript\'i Devre Dışı Bırak';
+
+  @override
+  String get disable_javascript_message =>
+      'JavaScript\'i devre dışı bırakmak birçok web sitesinin düzgün çalışmamasına neden olabilir. Emin misiniz?';
+
+  @override
+  String get disable => 'Devre Dışı Bırak';
+
+  @override
+  String get keep_enabled => 'Etkin Tut';
+
+  @override
+  String get javascript_enabled => 'JavaScript etkinleştirildi';
+
+  @override
+  String get javascript_disabled => 'JavaScript devre dışı bırakıldı';
+
+  @override
+  String get error_network => 'Ağ hatası';
+
+  @override
+  String get error_connection_failed => 'Bağlantı başarısız';
+
+  @override
+  String get error_timeout => 'İstek zaman aşımı';
+
+  @override
+  String get error_not_found => 'Sayfa bulunamadı';
+
+  @override
+  String get error_server => 'Sunucu hatası';
+
+  @override
+  String get error_unknown => 'Bilinmeyen hata oluştu';
+
+  @override
+  String get error_ssl => 'SSL bağlantı hatası';
+
+  @override
+  String get error_dns => 'DNS çözümleme başarısız';
 }
