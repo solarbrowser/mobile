@@ -56,17 +56,17 @@
             transition: all 0.3s ease;
             background: none !important;
             box-shadow: 
-                0 0 20px rgba(33, 150, 243, 0.4),
-                0 0 40px rgba(33, 150, 243, 0.2),
-                0 0 60px rgba(33, 150, 243, 0.1);
+                0 0 20px color-mix(in srgb, var(--color-accent) 40%, transparent),
+                0 0 40px color-mix(in srgb, var(--color-accent) 20%, transparent),
+                0 0 60px color-mix(in srgb, var(--color-accent) 10%, transparent);
         }
 
         .logo:hover {
             transform: scale(1.05);
             box-shadow: 
-                0 0 30px rgba(33, 150, 243, 0.6),
-                0 0 50px rgba(33, 150, 243, 0.4),
-                0 0 80px rgba(33, 150, 243, 0.2);
+                0 0 30px color-mix(in srgb, var(--color-accent) 60%, transparent),
+                0 0 50px color-mix(in srgb, var(--color-accent) 40%, transparent),
+                0 0 80px color-mix(in srgb, var(--color-accent) 20%, transparent);
         }
 
         .solar-label {
