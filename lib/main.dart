@@ -6,7 +6,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'l10n/app_localizations.dart';
 import 'screens/browser_screen.dart';
 import 'screens/onboarding_screen.dart';
-
 import 'screens/pwa_screen.dart';
 import 'utils/theme_manager.dart';
 import 'utils/performance_optimizer.dart';
@@ -279,12 +278,15 @@ class _MyAppState extends State<MyApp> {
       themeMode: _isDarkMode ? ThemeMode.dark : ThemeMode.light,
       // Performance optimizations
       builder: (context, child) {
-        // Apply text scaling optimization
+        // Apply text scaling optimization and force LTR direction
         return MediaQuery(
           data: MediaQuery.of(context).copyWith(
             textScaleFactor: 1.0, // Fixed text scale for consistent UI
           ),
-          child: child!,
+          child: Directionality(
+            textDirection: TextDirection.ltr, // Force LTR direction even for RTL languages like Arabic
+            child: child!,
+          ),
         );
       },
       localizationsDelegates: AppLocalizations.localizationsDelegates,

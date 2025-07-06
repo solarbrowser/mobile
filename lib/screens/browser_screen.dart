@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart' as webview_flutter_android;
 import 'package:webview_flutter_android/webview_flutter_android.dart' show FileSelectorParams;
@@ -33,6 +34,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import '../firebase_options.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/app_launcher_service.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 
 class Debouncer {
   final int milliseconds;
@@ -963,6 +965,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   // <-----------NEWS FAILURE TRACKING----------->
   int _newsFailureCount = 0;
   static const int _maxNewsFailures = 3; // Stop trying after 3 failures
+  bool _isNewsLoading = false; // Prevent multiple simultaneous news fetches
 
   // <-----------UI STATE----------->
   bool isDarkMode = false;
@@ -1496,9 +1499,11 @@ void _handleTouchEnd() {
             //print('Restored tab with URL: $savedUrl');
             
             // Send theme to main.html if it's the home page
-            if (savedUrl == _homeUrl || savedUrl.contains('main.html')) {
-              Future.delayed(const Duration(milliseconds: 500), () {
-                _sendThemeToMainHtml();
+            if (_isHomePage(savedUrl)) {
+              Future.delayed(const Duration(milliseconds: 500), () async {
+                await _sendThemeToMainHtml();
+                await _sendSearchEngineToMainHtml();
+                await _sendLanguageToMainHtml();
               });
             }
           }
@@ -1674,7 +1679,7 @@ void _handleTouchEnd() {
       ],
     );
   }
-  // <-----------FIREBASE INITIALIZATION----------->
+ // <-----------FIREBASE INITIALIZATION----------->
   Future<void> _initializeFirebase() async {
     try {
       // Initialize Firebase if not already initialized
@@ -1683,13 +1688,20 @@ void _handleTouchEnd() {
           options: DefaultFirebaseOptions.currentPlatform,
         );
       }
+      await FirebaseAppCheck.instance.activate(
+        androidProvider: AndroidProvider.playIntegrity,
+      );
+      print('✅ Firebase App Check activated successfully'); // Test için
+
+      // --- DEĞİŞİKLİK BURADA ---
+      // Cloud Functions'ın doğru bölgedeki sunuculara bağlanmasını sağla.
+      // Bu, "permission-denied" hatalarını önlemek için çok önemlidir.
+      _firebaseFunctions = FirebaseFunctions.instanceFor(region: 'europe-west1');
+      // --------------------------
       
-      // Initialize Firebase Functions
-      _firebaseFunctions = FirebaseFunctions.instance;
-      
-      //print('✅ Firebase initialized successfully');
+      print('✅ Firebase, App Check, and Functions (region: europe-west1) initialized successfully');
     } catch (e) {
-      //print('❌ Firebase initialization failed: $e');
+      print('❌ Firebase initialization, App Check, or Functions configuration failed: $e');
       // Don't throw error - app should still work without Firebase
     }
   }
@@ -3648,6 +3660,12 @@ Future<void> _setupScrollHandling() async {
         if (mounted && message.message == 'fetchNews') {
           //print('📰 Received fetchNews request from main.html');
           
+          // Prevent multiple simultaneous news fetches
+          if (_isNewsLoading) {
+            //print('📰 News already loading, skipping duplicate request');
+            return;
+          }
+          
           // Check if we've exceeded failure limit
           if (_newsFailureCount >= _maxNewsFailures) {
             //print('📰 ❌ News failure limit reached ($_newsFailureCount/$_maxNewsFailures), skipping fetch');
@@ -3655,7 +3673,8 @@ Future<void> _setupScrollHandling() async {
             return;
           }
           
-          await _fetchNewsFromFirebase();
+          // Fetch news in background to prevent UI lag
+          _fetchNewsFromFirebaseOptimized();
         }
       },
     );
@@ -4061,6 +4080,274 @@ Future<void> _setupScrollHandling() async {
       await _sendLanguageToMainHtml();
         } catch (e) {
       //print('Error sending theme to main.html: $e');
+    }
+  }
+
+  // Optimized version of _fetchNewsFromFirebase that prevents UI lag
+  Future<void> _fetchNewsFromFirebaseOptimized() async {
+    if (!mounted) return;
+    
+    // Set loading flag to prevent duplicate requests
+    _isNewsLoading = true;
+    
+    try {
+      // Run the heavy work in a background microtask to prevent UI blocking
+      await Future.microtask(() async {
+        await _fetchNewsFromFirebaseBackground();
+      });
+    } finally {
+      // Always reset loading flag
+      _isNewsLoading = false;
+    }
+  }
+  
+  // Background news fetching that won't block the UI
+  Future<void> _fetchNewsFromFirebaseBackground() async {
+    if (!mounted) return;
+    
+    try {
+      //print('📰 Fetching news using Firebase Cloud Functions (optimized)...');
+      
+      // Check if Firebase Functions is initialized
+      if (_firebaseFunctions == null) {
+        //print('❌ Firebase Functions not initialized');
+        _newsFailureCount++; // Increment failure counter
+        await _sendNewsErrorToWebView(AppLocalizations.of(context)!.firebase_not_initialized);
+        return;
+      }
+      
+      // Get current language (align with Unity: 1 = Turkish, 0 = English)
+      final prefs = await SharedPreferences.getInstance();
+      final currentLang = prefs.getString('language') ?? 'en';
+      final languageIndex = currentLang == 'tr' ? 1 : 0;
+      
+      // Check cache first
+      if (_cachedArticles != null && _cachedLanguage == languageIndex) {
+        //print('📰 Using cached news data');
+        await _sendNewsToWebViewOptimized(_cachedArticles!);
+        return;
+      }
+      
+      // Step 1: Get signed URL for news.json from Cloud Function
+      final HttpsCallable callable = _firebaseFunctions!.httpsCallable('getNewsCacheUrl');
+      final HttpsCallableResult result = await callable.call();
+      
+      final Map<String, dynamic> data = Map<String, dynamic>.from(result.data);
+      final String? signedUrl = data['signedUrl'] as String?;
+      
+      if (signedUrl == null || signedUrl.isEmpty) {
+        //print('❌ Failed to get signed URL for news cache');
+        _newsFailureCount++; // Increment failure counter
+        await _sendNewsErrorToWebView(AppLocalizations.of(context)!.failed_to_get_news_data);
+        return;
+      }
+      
+      //print('📰 Got signed URL for news cache: $signedUrl');
+      
+      // Step 2: Fetch news from the signed URL
+      final response = await http.get(Uri.parse(signedUrl));
+      
+      if (response.statusCode == 200) {
+        // Parse the JSON response in a background isolate to prevent UI lag
+        final List<Map<String, dynamic>> articles = await compute(_parseNewsJson, response.body);
+        
+        //print('📰 Successfully fetched ${articles.length} news articles');
+        
+        // Reset failure counter on success
+        _newsFailureCount = 0;
+        
+        // Cache the articles
+        _cachedArticles = articles;
+        _cachedLanguage = languageIndex;
+        
+        // Send to WebView using optimized method
+        await _sendNewsToWebViewOptimized(articles);
+        
+      } else {
+        //print('❌ Failed to fetch news from signed URL: ${response.statusCode}');
+        _newsFailureCount++; // Increment failure counter
+        await _sendNewsErrorToWebView(AppLocalizations.of(context)!.failed_to_load_news_server);
+      }
+      
+    } catch (e) {
+      //print('❌ Error fetching news: $e');
+      _newsFailureCount++; // Increment failure counter
+      await _sendNewsErrorToWebView(AppLocalizations.of(context)!.network_error_loading_news);
+    }
+  }
+  
+  // Static function for parsing JSON in an isolate (prevents UI lag)
+  static List<Map<String, dynamic>> _parseNewsJson(String jsonString) {
+    try {
+      final List<dynamic> articlesJson = json.decode(jsonString);
+      return articlesJson.cast<Map<String, dynamic>>();
+    } catch (e) {
+      //print('❌ Error parsing news JSON in isolate: $e');
+      return [];
+    }
+  }
+  
+  // Optimized version of _sendNewsToWebView that processes data in background
+  Future<void> _sendNewsToWebViewOptimized(List<Map<String, dynamic>> articles) async {
+    if (!mounted) return;
+    
+    try {
+      // Get localized strings
+      final latestNewsText = AppLocalizations.of(context)!.latestNews;
+      
+      // Get current language for proper article selection
+      final prefs = await SharedPreferences.getInstance();
+      final currentLang = prefs.getString('language') ?? 'en';
+      final isCurrentlyTurkish = currentLang == 'tr';
+      
+      // Process articles in a background isolate to prevent UI lag
+      final processedData = await compute(_processNewsArticles, {
+        'articles': articles,
+        'isCurrentlyTurkish': isCurrentlyTurkish,
+        'cachedCoverImages': _cachedCoverImages,
+      });
+      
+      // Get the processed articles list
+      final processedArticles = processedData['articles'] as List<Map<String, dynamic>>;
+      
+      // Second pass: Fetch cover images for articles that need them (on main thread)
+      // This is done asynchronously to avoid blocking the UI
+      await _fetchMissingCoverImages(articles, isCurrentlyTurkish, processedArticles);
+      
+      //print('📰 Calling renderNews with ${processedArticles.length} news items (optimized)');
+      
+      // JSON encoding in background to prevent UI lag
+      final jsonArticles = await compute(_encodeNewsJson, processedArticles);
+      
+      // Call the existing renderNews function in main.html with our processed articles
+      await controller.runJavaScript('''
+        (function() {
+          try {
+            //console.log('📰 Calling renderNews with articles: ${processedArticles.length}');
+            if (typeof renderNews === 'function') {
+              renderNews($jsonArticles);
+              //console.log('✅ renderNews function called successfully');
+            } else {
+              console.error('❌ renderNews function not found in page');
+            }
+          } catch (e) {
+            console.error('❌ Error calling renderNews:', e);
+          }
+        })();
+      ''');
+      
+    } catch (e) {
+      //print('❌ Error sending news to WebView (optimized): $e');
+      await _sendNewsErrorToWebView('Error displaying news');
+    }
+  }
+  
+  // Fetch missing cover images in background to avoid blocking UI
+  Future<void> _fetchMissingCoverImages(
+    List<Map<String, dynamic>> originalArticles, 
+    bool isCurrentlyTurkish, 
+    List<Map<String, dynamic>> processedArticles
+  ) async {
+    // Process in background microtask to avoid blocking UI
+    await Future.microtask(() async {
+      for (int i = 0; i < originalArticles.length && i < processedArticles.length; i++) {
+        try {
+          final article = originalArticles[i];
+          final processedArticle = processedArticles[i];
+          
+          // Skip if already has image
+          if (processedArticle['image'] != null && processedArticle['image'].toString().isNotEmpty) {
+            continue;
+          }
+          
+          // Extract cover image path
+          final cover = article['cover'] as Map<String, dynamic>?;
+          final coverPath = cover != null 
+              ? (isCurrentlyTurkish ? cover['tr'] : cover['en']) as String?
+              : null;
+          
+          if (coverPath != null && coverPath.isNotEmpty) {
+            // Check cache first
+            if (_cachedCoverImages.containsKey(coverPath)) {
+              processedArticle['image'] = _cachedCoverImages[coverPath];
+            } else {
+              // Fetch signed URL for cover image
+              final coverUrl = await _getSignedUrlForCover(coverPath);
+              if (coverUrl != null) {
+                _cachedCoverImages[coverPath] = coverUrl;
+                processedArticle['image'] = coverUrl;
+              }
+            }
+          }
+        } catch (e) {
+          //print('❌ Error fetching cover image: $e');
+        }
+      }
+    });
+  }
+  
+  // Static function for processing articles in an isolate (prevents UI lag)
+  static Future<Map<String, dynamic>> _processNewsArticles(Map<String, dynamic> params) async {
+    final articles = params['articles'] as List<Map<String, dynamic>>;
+    final isCurrentlyTurkish = params['isCurrentlyTurkish'] as bool;
+    final cachedCoverImages = Map<String, String>.from(params['cachedCoverImages'] as Map);
+    
+    final processedArticles = <Map<String, dynamic>>[];
+    
+    for (final article in articles) {
+      try {
+        // Extract translations
+        final translations = article['translations'] as Map<String, dynamic>?;
+        if (translations == null) continue;
+        
+        final currentTranslation = isCurrentlyTurkish 
+            ? translations['tr'] as Map<String, dynamic>?
+            : translations['en'] as Map<String, dynamic>?;
+        
+        if (currentTranslation == null) continue;
+        
+        // Extract cover image path
+        final cover = article['cover'] as Map<String, dynamic>?;
+        final coverPath = cover != null 
+            ? (isCurrentlyTurkish ? cover['tr'] : cover['en']) as String?
+            : null;
+        
+        // Use cached cover URL if available (new URLs will be fetched separately)
+        String? coverUrl;
+        if (coverPath != null && coverPath.isNotEmpty && cachedCoverImages.containsKey(coverPath)) {
+          coverUrl = cachedCoverImages[coverPath];
+        }
+        
+        // Create processed article with full content
+        final processedArticle = {
+          'id': article['id'] ?? '',
+          'title': currentTranslation['title'] ?? '',
+          'summary': currentTranslation['summary'] ?? '',
+          'content': currentTranslation['content'] ?? currentTranslation['summary'] ?? '',
+          'image': coverUrl, // This is the field name expected in createNewsItem
+          'references': article['references'] ?? [],
+          'publishedAt': article['publishedAt'] ?? '',
+          'url': 'news://${article['id'] ?? ''}', // Add custom URL scheme
+        };
+        
+        processedArticles.add(processedArticle);
+      } catch (e) {
+        //print('❌ Error processing article in isolate: $e');
+      }
+    }
+    
+    return {
+      'articles': processedArticles,
+    };
+  }
+  
+  // Static function for JSON encoding in an isolate (prevents UI lag)
+  static String _encodeNewsJson(List<Map<String, dynamic>> articles) {
+    try {
+      return jsonEncode(articles);
+    } catch (e) {
+      //print('❌ Error encoding news JSON in isolate: $e');
+      return '[]';
     }
   }
 
@@ -9621,9 +9908,11 @@ Future<void> _setupScrollHandling() async {
         //print('New tab loaded with URL: $targetUrl');
         
         // Send theme to main.html if it's the home page
-        if (targetUrl == _homeUrl || targetUrl.contains('main.html')) {
+        if (_isHomePage(targetUrl)) {
           await Future.delayed(const Duration(milliseconds: 500));
           await _sendThemeToMainHtml();
+          await _sendSearchEngineToMainHtml();
+          await _sendLanguageToMainHtml();
         }
       } catch (e) {
         //print('Error loading URL in new tab: $e');
@@ -14026,7 +14315,7 @@ Future<void> _handlePageStarted(String url) async {
         onMessageReceived: (JavaScriptMessage message) async {
           if (mounted && message.message == 'getTheme') {
             final tabUrl = tab['url'] as String;
-            if (tabUrl == _homeUrl || tabUrl.contains('main.html')) {
+            if (_isHomePage(tabUrl)) {
               await _sendThemeToMainHtml();
             } else {
               await _sendThemeToRestoredTab();
@@ -14040,7 +14329,7 @@ Future<void> _handlePageStarted(String url) async {
         onMessageReceived: (JavaScriptMessage message) async {
           if (mounted && message.message == 'getLanguage') {
             final tabUrl = tab['url'] as String;
-            if (tabUrl == _homeUrl || tabUrl.contains('main.html')) {
+            if (_isHomePage(tabUrl)) {
               await _sendLanguageToMainHtml();
             }
           }
@@ -14070,10 +14359,40 @@ Future<void> _handlePageStarted(String url) async {
         onMessageReceived: (JavaScriptMessage message) async {
           if (mounted && message.message == 'getSearchEngine') {
             final tabUrl = tab['url'] as String;
-            if (tabUrl == _homeUrl || tabUrl.contains('main.html')) {
+            if (_isHomePage(tabUrl)) {
               await _sendSearchEngineToMainHtml();
             }
           }
+        },
+      );
+
+      // NewsHandler channel
+      await webViewController.addJavaScriptChannel(
+        'NewsHandler',
+        onMessageReceived: (JavaScriptMessage message) async {
+          if (mounted && message.message == 'fetchNews') {
+            // Prevent multiple simultaneous news fetches
+            if (_isNewsLoading) {
+              return;
+            }
+            
+            // Check if we've exceeded failure limit
+            if (_newsFailureCount >= _maxNewsFailures) {
+              await _sendNewsErrorToWebView(AppLocalizations.of(context)!.network_error_loading_news);
+              return;
+            }
+            
+            // Fetch news in background to prevent UI lag
+            _fetchNewsFromFirebaseOptimized();
+          }
+        },
+      );
+
+      // DebugHandler channel
+      await webViewController.addJavaScriptChannel(
+        'DebugHandler',
+        onMessageReceived: (JavaScriptMessage message) {
+          //print('🐛 JS Debug: ${message.message}');
         },
       );
       
