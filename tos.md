@@ -110,6 +110,6 @@ Solar is provided **"as is"** without warranties of any kind. We are not liable 
 ## 📧 Contact Information
 
 - **Email:** [support@browser.solar](mailto:support@browser.solar)  
-- **Website:** [https://browser.solar](https://browser.solar)
+- **Website:** [Under development!](#)
 
 ---
