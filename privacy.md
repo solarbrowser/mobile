@@ -3,7 +3,7 @@
 **Effective Date:** July 1, 2025  
 **Last Updated:** July 7, 2025
 
-These Terms govern your use of the Solar Browser ("Solar", "Browser", "we", "us"). By downloading, installing, or using Solar, you agree to the following terms and conditions.
+These Terms govern your use of the Solar Browser ("Solar", "Solar Browser", "we", "us"). By downloading, installing, or using Solar, you agree to the following terms and conditions.
 
 ---
 
