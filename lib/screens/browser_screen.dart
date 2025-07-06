@@ -4902,6 +4902,9 @@ Future<void> _setupScrollHandling() async {
     final trimmedQuery = query.trim();
     if (trimmedQuery.isEmpty) return;
     
+    // Hide all panels when loading a new URL
+    _hideAllPanels();
+    
     // Prevent custom schemes from being loaded in WebView
     if (_isCustomAppScheme(trimmedQuery)) {
       try {
@@ -4932,7 +4935,7 @@ Future<void> _setupScrollHandling() async {
         await controller.goBack();
       } else {
         // If can't go back, go to home page
-        _loadUrl(_homeUrl);
+        _loadUrl(_getHomeUrl());
       }
       return;
     }
@@ -9913,7 +9916,11 @@ Future<void> _setupScrollHandling() async {
                         contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                       ),
                       onTap: () {
-                        if (!_urlFocusNode.hasFocus) {                          setState(() {
+                        if (!_urlFocusNode.hasFocus) {
+                          // Hide all panels when URL bar is focused
+                          _hideAllPanels();
+                          
+                          setState(() {
                             if (_isHomePage(_displayUrl)) {
                               _urlController.text = '';
                             } else {
@@ -11311,8 +11318,45 @@ Future<void> _handlePageStarted(String url) async {
 
   // FIXED: Helper method to check if URL is the homepage
   bool _isHomePage(String url) {
-    return url.startsWith('file:///android_asset/main.html') || url == _homeUrl;
+    // Check if it's the default home page
+    if (url.startsWith('file:///android_asset/main.html') || url == _homeUrl) {
+      return true;
+    }
+    
+    // Check if it's the custom home page (if enabled)
+    if (useCustomHomePage && customHomeUrl.isNotEmpty && url == customHomeUrl) {
+      return true;
+    }
+    
+    return false;
   }
+
+  // Helper method to get the correct home URL based on settings
+  String _getHomeUrl() {
+    if (useCustomHomePage && customHomeUrl.isNotEmpty) {
+      return customHomeUrl;
+    }
+    return _homeUrl;
+  }
+
+  // Helper method to hide all panels
+  void _hideAllPanels() {
+    setState(() {
+      isTabsVisible = false;
+      isSettingsVisible = false;
+      isBookmarksVisible = false;
+      isDownloadsVisible = false;
+      isHistoryVisible = false;
+      
+      // Also hide slide-up panel in non-classic mode
+      if (!_isClassicMode && _isSlideUpPanelVisible) {
+        _isSlideUpPanelVisible = false;
+        _slideUpController.reverse();
+      }
+    });
+  }
+
+  // ...existing code...
 
   // FIXED: Get appropriate status indicator for URL bar
   String _getUrlBarStatus(String url) {
@@ -12841,8 +12885,21 @@ Future<void> _handlePageStarted(String url) async {
               color: _isHomePage(_displayUrl) ? ThemeManager.primaryColor() : ThemeManager.textColor(),
               onPressed: () async {
                 try {
-                  await controller.loadRequest(Uri.parse(_homeUrl));
-                  _handleUrlUpdate(_homeUrl);
+                  // Hide all panels first
+                  _hideAllPanels();
+                  
+                  // Get the correct home URL
+                  final homeUrl = _getHomeUrl();
+                  await controller.loadRequest(Uri.parse(homeUrl));
+                  _handleUrlUpdate(homeUrl);
+                  
+                  // Update current tab
+                  if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+                    setState(() {
+                      tabs[currentTabIndex]['url'] = homeUrl;
+                      tabs[currentTabIndex]['title'] = _isHomePage(homeUrl) ? 'Home' : 'Home Page';
+                    });
+                  }
                 } catch (e) {
                   //print('Error navigating to home: $e');
                 }
@@ -13156,6 +13213,9 @@ Future<void> _handlePageStarted(String url) async {
     );  }  Future<void> _goBack() async {
     if (!canGoBack) return;
     
+    // Close all panels on navigation
+    _hideAllPanels();
+    
     // Close summary panel on navigation
     _closeSummaryPanel();
     
@@ -13187,6 +13247,9 @@ Future<void> _handlePageStarted(String url) async {
   }
   Future<void> _goForward() async {
     if (!canGoForward) return;
+    
+    // Close all panels on navigation
+    _hideAllPanels();
     
     // Close summary panel on navigation
     _closeSummaryPanel();
@@ -15211,7 +15274,24 @@ Future<void> _handlePageStarted(String url) async {
         isEnabled = true;
         break;      case 'home':
         icon = Icons.home;
-        onPressed = () => _loadUrl(_homeUrl);
+        onPressed = () async {
+          try {
+            final homeUrl = _getHomeUrl();
+            // Use direct controller method like non-classic mode to avoid _loadUrl() logic
+            await controller.loadRequest(Uri.parse(homeUrl));
+            _handleUrlUpdate(homeUrl);
+            
+            // Update current tab
+            if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+              setState(() {
+                tabs[currentTabIndex]['url'] = homeUrl;
+                tabs[currentTabIndex]['title'] = _isHomePage(homeUrl) ? 'Home' : 'Home Page';
+              });
+            }
+          } catch (e) {
+            //print('Error navigating to home in classic mode: $e');
+          }
+        };
         isEnabled = true;
         break;
       case 'new_tab':
@@ -15633,7 +15713,7 @@ Future<void> _handlePageStarted(String url) async {
               await controller.goBack();
             } else {
               // If can't go back, go to home page
-              _loadUrl(_homeUrl);
+              _loadUrl(_getHomeUrl());
             }
             return;
           }
@@ -15654,7 +15734,7 @@ Future<void> _handlePageStarted(String url) async {
           await controller.goBack();
         } else {
           // If can't go back, go to home page
-          _loadUrl(_homeUrl);
+          _loadUrl(_getHomeUrl());
         }
         return;
       }
@@ -15981,8 +16061,8 @@ Future<void> _handlePageStarted(String url) async {
                   //print('Error navigating to home: $e');
                   // Fallback: try to load the main.html file
                   try {
-                    await controller.loadRequest(Uri.parse(_homeUrl));
-                    _handleUrlUpdate(_homeUrl);
+                    await controller.loadRequest(Uri.parse(_getHomeUrl()));
+                    _handleUrlUpdate(_getHomeUrl());
                   } catch (fallbackError) {
                     //print('Fallback home navigation failed: $fallbackError');
                   }
