@@ -47,6 +47,8 @@
   ],
 
   "hi": [
+    "disable_classic_navigation_warning",
+    "disable_classic_navigation_message",
     "email_app_not_found",
     "phone_app_not_found",
     "sms_app_not_found",
@@ -155,6 +157,8 @@
   ],
 
   "zh": [
+    "disable_classic_navigation_warning",
+    "disable_classic_navigation_message",
     "email_app_not_found",
     "phone_app_not_found",
     "sms_app_not_found",

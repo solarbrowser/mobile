@@ -83,6 +83,14 @@ class AppLocalizationsDe extends AppLocalizations {
   String get skip => 'Überspringen';
 
   @override
+  String get disable_classic_navigation_warning =>
+      'Klassische Navigation deaktivieren';
+
+  @override
+  String get disable_classic_navigation_message =>
+      'Wenn Sie die klassische Navigation deaktivieren, wechseln Sie zu einem wischbasierten Navigationssystem. In diesem System können Sie die Adressleiste nach oben wischen, um auf viele Funktionen zuzugreifen, und die Adressleiste nach links oder rechts wischen, um vorwärts oder rückwärts zu navigieren.';
+
+  @override
   String get getStarted => 'Loslegen';
 
   @override

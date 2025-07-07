@@ -82,6 +82,14 @@ class AppLocalizationsPt extends AppLocalizations {
   String get skip => 'Pular';
 
   @override
+  String get disable_classic_navigation_warning =>
+      'Desativar navegação clássica';
+
+  @override
+  String get disable_classic_navigation_message =>
+      'Ao desativar a navegação clássica, você mudará para um sistema de navegação baseado em gestos. Nesse sistema, deslize para cima na barra de endereços para acessar vários recursos e deslize a barra de endereços para a esquerda ou direita para avançar ou voltar.';
+
+  @override
   String get getStarted => 'ComeÃ§ar';
 
   @override

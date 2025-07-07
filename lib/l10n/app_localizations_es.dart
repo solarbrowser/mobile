@@ -82,6 +82,14 @@ class AppLocalizationsEs extends AppLocalizations {
   String get skip => 'Omitir';
 
   @override
+  String get disable_classic_navigation_warning =>
+      'Desactivar la navegación clásica';
+
+  @override
+  String get disable_classic_navigation_message =>
+      'Al desactivar la navegación clásica, cambiarás a un sistema de navegación basado en gestos. En este sistema, puedes deslizar hacia arriba la barra de direcciones para acceder a muchas funciones y deslizar la barra de direcciones hacia la izquierda o derecha para avanzar o retroceder.';
+
+  @override
   String get getStarted => 'Comenzar';
 
   @override

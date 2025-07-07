@@ -83,6 +83,14 @@ class AppLocalizationsIt extends AppLocalizations {
   String get skip => 'Salta';
 
   @override
+  String get disable_classic_navigation_warning =>
+      'Disattiva navigazione classica';
+
+  @override
+  String get disable_classic_navigation_message =>
+      'Quando la navigazione classica è disattivata, passerai a un sistema di navigazione basato sullo swipe. In questo sistema, puoi scorrere verso l\'alto la barra degli indirizzi per accedere a molte funzioni e scorrere la barra degli indirizzi a sinistra o a destra per andare avanti o indietro.';
+
+  @override
   String get getStarted => 'Inizia';
 
   @override

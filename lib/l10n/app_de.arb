@@ -11,6 +11,9 @@
   "lightTheme": "Hell",
   "darkTheme": "Dunkel",
   "systemTheme": "System",
+   "disable_classic_navigation_warning": "Klassische Navigation deaktivieren",
+  "disable_classic_navigation_message": "Wenn die klassische Navigation deaktiviert ist, wechseln Sie zu einem wischbasierten Navigationssystem. In diesem System können Sie die Adressleiste nach oben wischen, um auf viele Funktionen zuzugreifen, und die Adressleiste nach links oder rechts wischen, um vorwärts oder rückwärts zu navigieren.",
+ 
   "tokyoNightTheme": "Tokyo Night",
   "solarizedLightTheme": "Solarized Light",
   "draculaTheme": "Dracula",
@@ -22,6 +25,8 @@
   "gruvboxLightTheme": "Gruvbox Light",
   "next": "Weiter",
   "back": "Zurück",
+   "disable_classic_navigation_warning": "Klassische Navigation deaktivieren",
+  "disable_classic_navigation_message": "Wenn Sie die klassische Navigation deaktivieren, wechseln Sie zu einem wischbasierten Navigationssystem. In diesem System können Sie die Adressleiste nach oben wischen, um auf viele Funktionen zuzugreifen, und die Adressleiste nach links oder rechts wischen, um vorwärts oder rückwärts zu navigieren.",
   "getStarted": "Loslegen",
   "continueText": "Fortfahren",
   "notifications": "Benachrichtigungen",

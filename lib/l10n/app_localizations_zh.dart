@@ -81,6 +81,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get skip => '跳过';
 
   @override
+  String get disable_classic_navigation_warning => 'Disable Classic Navigation';
+
+  @override
+  String get disable_classic_navigation_message =>
+      'When classic navigation is disabled, you will switch to a swipe-based navigation system. In this system, you can swipe up the address bar to access many features, and swipe the address bar left or right to navigate forward or backward.';
+
+  @override
   String get getStarted => '开始使用';
 
   @override

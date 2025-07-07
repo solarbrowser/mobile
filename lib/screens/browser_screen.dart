@@ -2690,14 +2690,20 @@ void _handleTouchEnd() {
     }
   }
   
-  void _toggleClassicMode(bool classicMode) async {
+  Future<void> _toggleClassicMode(bool classicMode) async {
+    // If classic mode is being turned off, show warning dialog
+    if (!classicMode) {
+      final confirmed = await _showClassicNavigationDisableWarning();
+      if (confirmed != true) {
+        return;
+      }
+    }
     // Close AI action bar with animation when entering classic mode FIRST
     if (classicMode && _isAiActionBarVisible) {
       _closeAiActionBar();
       // Wait for animation to complete
       await Future.delayed(const Duration(milliseconds: 250));
     }
-    
     // Then update state
     setState(() {
       _isClassicMode = classicMode;
@@ -2705,7 +2711,6 @@ void _handleTouchEnd() {
       _hideUrlBar = false;
       _hideUrlBarController.reverse();
     });
-    
     // If classic mode is being turned off, additional steps to ensure complete cleanup
     if (!classicMode) {
       // Force a rebuild by setting state and ensure slide panel is reset
@@ -2715,7 +2720,6 @@ void _handleTouchEnd() {
         _hideUrlBar = false;
         _hideUrlBarController.value = 0.0;
       });
-      
       // Add a small delay to ensure the UI fully refreshes and the background is hidden
       Future.delayed(const Duration(milliseconds: 200), () {
         if (mounted) {
@@ -2725,8 +2729,110 @@ void _handleTouchEnd() {
         }
       });
     }
-    
     await _savePreferences();
+  }
+
+  Future<bool?> _showClassicNavigationDisableWarning() async {
+    final isDark = ThemeManager.getCurrentTheme().isDark;
+    return await showGeneralDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: Colors.black.withOpacity(0.45),
+      transitionDuration: const Duration(milliseconds: 280),
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 280),
+              curve: Curves.easeOutCubic,
+              padding: const EdgeInsets.all(0),
+              child: Container(
+                width: MediaQuery.of(context).size.width * 0.88,
+                decoration: BoxDecoration(
+                  color: isDark ? ThemeManager.backgroundColor() : Colors.white,
+                  borderRadius: BorderRadius.circular(22),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.10),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.swipe, color: ThemeManager.primaryColor(), size: 28),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              AppLocalizations.of(context)!.disable_classic_navigation_warning,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 18,
+                                color: ThemeManager.textColor(),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      Text(
+                        AppLocalizations.of(context)!.disable_classic_navigation_message,
+                        style: TextStyle(
+                          fontSize: 15.5,
+                          color: ThemeManager.textSecondaryColor(),
+                        ),
+                      ),
+                      const SizedBox(height: 28),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: Text(AppLocalizations.of(context)!.cancel),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: ThemeManager.primaryColor(),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                            ),
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: Text(AppLocalizations.of(context)!.disable),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+        return FadeTransition(
+          opacity: curved,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.96, end: 1.0).animate(curved),
+            child: child,
+          ),
+        );
+      },
+    );
   }
 
   // Summary panel methods (disabled - do nothing)
@@ -5066,11 +5172,16 @@ Future<void> _setupScrollHandling() async {
   }
   Future<void> _saveToHistory(String url, String title) async {
     // Skip saving history for special cases - optimized checks for M12
-    if (url.isEmpty || 
+    if (tabs.isEmpty ||
+        currentTabIndex < 0 ||
+        currentTabIndex >= tabs.length ||
+        (tabs[currentTabIndex]['isIncognito'] == true) ||
+        url.isEmpty ||
         url == 'about:blank' ||
         url.startsWith('file://') ||
         url.contains('ERR_') ||
         !url.startsWith('http')) {
+      // Do not save history if incognito or invalid
       return;
     }
 
@@ -7109,7 +7220,7 @@ Future<void> _setupScrollHandling() async {
                 children: [
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.app_name,
-                    subtitle: AppLocalizations.of(context)!.version('0.4.3'),
+                    subtitle: AppLocalizations.of(context)!.version('0.4.5'),
                     isFirst: true,
                     isLast: false,
                   ),

@@ -1,3 +1,4 @@
+
 {
   "@@locale": "ja",
   "welcomeToSolar": "Solar へようこそ",
@@ -18,7 +19,9 @@
   },
   "getStarted": "始める",
   "continueText": "続行",
-  "notifications": "通知",
+    "disable_classic_navigation_warning": "クラシックナビゲーションを無効化",
+  "disable_classic_navigation_message": "クラシックナビゲーションを無効にすると、スワイプ操作中心の新しいナビゲーションシステムに切り替わります。このシステムでは、多くの機能にアクセスするにはアドレスバーを上にスワイプし、進む・戻るにはアドレスバーを左右にスワイプしてください。",
+   "notifications": "通知",
   "notificationDescription": "デバイスにファイルがダウンロードされたときに通知を受け取る",
   "allowNotifications": "通知を許可",
   "skipForNow": "今はスキップ",

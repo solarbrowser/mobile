@@ -81,6 +81,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get skip => '건너뛰기';
 
   @override
+  String get disable_classic_navigation_warning => '클래식 내비게이션 비활성화';
+
+  @override
+  String get disable_classic_navigation_message =>
+      '클래식 내비게이션이 비활성화되면 스와이프 기반의 새로운 내비게이션 시스템으로 전환됩니다. 이 시스템에서는 주소 표시줄을 위로 스와이프하여 다양한 기능에 접근하고, 앞으로/뒤로 이동하려면 주소 표시줄을 좌우로 스와이프하세요.';
+
+  @override
   String get getStarted => '시작하기';
 
   @override

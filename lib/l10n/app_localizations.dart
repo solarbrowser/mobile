@@ -264,6 +264,18 @@ abstract class AppLocalizations {
   /// **'Skip'**
   String get skip;
 
+  /// No description provided for @disable_classic_navigation_warning.
+  ///
+  /// In en, this message translates to:
+  /// **'Disable Classic Navigation'**
+  String get disable_classic_navigation_warning;
+
+  /// No description provided for @disable_classic_navigation_message.
+  ///
+  /// In en, this message translates to:
+  /// **'When classic navigation is disabled, you will switch to a swipe-based navigation system. In this system, you can swipe up the address bar to access many features, and swipe the address bar left or right to navigate forward or backward.'**
+  String get disable_classic_navigation_message;
+
   /// No description provided for @getStarted.
   ///
   /// In en, this message translates to:

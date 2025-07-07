@@ -82,6 +82,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get skip => 'تخطي';
 
   @override
+  String get disable_classic_navigation_warning => 'تعطيل التنقل الكلاسيكي';
+
+  @override
+  String get disable_classic_navigation_message =>
+      'عند تعطيل التنقل الكلاسيكي، سيتم الانتقال إلى نظام تنقل جديد يعتمد على السحب. في هذا النظام، يمكنك سحب شريط العنوان للأعلى للوصول إلى العديد من الميزات، وللتنقل للأمام أو للخلف يمكنك سحب شريط العنوان إلى اليمين أو اليسار.';
+
+  @override
   String get getStarted => 'ابدأ';
 
   @override

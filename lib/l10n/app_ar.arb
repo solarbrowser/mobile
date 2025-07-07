@@ -1,3 +1,4 @@
+ 
 {
   "@@locale": "ar",
   "welcomeToSolar": "مرحباً بك في Solar",
@@ -15,6 +16,8 @@
   "getStarted": "ابدأ",
   "continueText": "متابعة",
   "notifications": "الإشعارات",
+   "disable_classic_navigation_warning": "تعطيل التنقل الكلاسيكي",
+  "disable_classic_navigation_message": "عند تعطيل التنقل الكلاسيكي، سيتم الانتقال إلى نظام تنقل جديد يعتمد على السحب. في هذا النظام، يمكنك سحب شريط العنوان للأعلى للوصول إلى العديد من الميزات، وللتنقل للأمام أو للخلف يمكنك سحب شريط العنوان إلى اليمين أو اليسار.",
   "notificationDescription": "احصل على إشعارات عند تنزيل الملفات على جهازك",
   "allowNotifications": "السماح بالإشعارات",
   "skipForNow": "تخطي الآن",

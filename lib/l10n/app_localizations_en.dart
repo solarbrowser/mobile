@@ -82,6 +82,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get skip => 'Skip';
 
   @override
+  String get disable_classic_navigation_warning => 'Disable Classic Navigation';
+
+  @override
+  String get disable_classic_navigation_message =>
+      'When classic navigation is disabled, you will switch to a swipe-based navigation system. In this system, you can swipe up the address bar to access many features, and swipe the address bar left or right to navigate forward or backward.';
+
+  @override
   String get getStarted => 'Get Started';
 
   @override

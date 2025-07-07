@@ -82,6 +82,14 @@ class AppLocalizationsRu extends AppLocalizations {
   String get skip => 'Пропустить';
 
   @override
+  String get disable_classic_navigation_warning =>
+      'Отключить классическую навигацию';
+
+  @override
+  String get disable_classic_navigation_message =>
+      'Когда классическая навигация отключена, вы переходите к новой системе навигации на основе свайпов. В этой системе вы можете провести вверх по адресной строке для доступа к функциям, а для перехода вперед или назад — провести по адресной строке влево или вправо.';
+
+  @override
   String get getStarted => 'Начать';
 
   @override

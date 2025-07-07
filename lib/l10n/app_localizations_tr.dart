@@ -83,6 +83,14 @@ class AppLocalizationsTr extends AppLocalizations {
   String get skip => 'Atla';
 
   @override
+  String get disable_classic_navigation_warning =>
+      'Klasik navigasyonu devre dışı bırak';
+
+  @override
+  String get disable_classic_navigation_message =>
+      'Klasik navigasyon devre dışı bırakıldığında, kaydırma tabanlı yeni bir navigasyon sistemine geçiş yapılır. Bu sistemde, birçok özelliğe erişmek için adres çubuğunu yukarı kaydırabilir, ileri ve geri gitmek için adres çubuğunu sağa veya sola kaydırabilirsiniz.';
+
+  @override
   String get getStarted => 'Başlayın';
 
   @override

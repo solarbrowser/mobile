@@ -25,6 +25,8 @@
   "next": "Next",
   "back": "Back",
   "skip": "Skip",
+  "disable_classic_navigation_warning": "Disable Classic Navigation",
+  "disable_classic_navigation_message": "When classic navigation is disabled, you will switch to a swipe-based navigation system. In this system, you can swipe up the address bar to access many features, and swipe the address bar left or right to navigate forward or backward.",
   "@skip": {
     "description": "Skip button text"
   },

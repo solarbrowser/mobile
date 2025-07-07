@@ -146,6 +146,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   void _saveLocalePreference(Locale locale) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('locale', locale.languageCode);
+    // Also save as 'language' for consistency with BrowserScreen and app
+    await prefs.setString('language', locale.languageCode);
   }
 
   void _saveThemePreference(theme_utils.ThemeType theme) async {

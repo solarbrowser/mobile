@@ -872,6 +872,8 @@
   "enable_javascript": "JavaScript'i Etkinleştir",
   "disable_javascript_warning": "JavaScript'i Devre Dışı Bırak",
   "disable_javascript_message": "JavaScript'i devre dışı bırakmak birçok web sitesinin düzgün çalışmamasına neden olabilir. Emin misiniz?",
+  "disable_classic_navigation_warning": "Klasik navigasyonu devre dışı bırak",
+  "disable_classic_navigation_message": "Klasik navigasyon devre dışı bırakıldığında, kaydırma tabanlı yeni bir navigasyon sistemine geçiş yapılır. Bu sistemde, birçok özelliğe erişmek için adres çubuğunu yukarı kaydırabilir, ileri ve geri gitmek için adres çubuğunu sağa veya sola kaydırabilirsiniz.",
   "disable": "Devre Dışı Bırak",
   "keep_enabled": "Etkin Tut",
   "other": "Diğer",

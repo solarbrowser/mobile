@@ -1,3 +1,4 @@
+ 
 {
   "@@locale": "pt",
   "welcomeToSolar": "Bem-vindo ao Solar",
@@ -20,6 +21,9 @@
   "catppuccinTheme": "Catppuccin",
   "nordLightTheme": "Nord Light",
   "gruvboxLightTheme": "Gruvbox Light",
+   "disable_classic_navigation_warning": "Desativar navegação clássica",
+  "disable_classic_navigation_message": "Ao desativar a navegação clássica, você mudará para um sistema de navegação baseado em gestos. Nesse sistema, deslize para cima na barra de endereços para acessar vários recursos e deslize a barra de endereços para a esquerda ou direita para avançar ou voltar.",
+ 
   "next": "PrÃ³ximo",
   "back": "Voltar",
   "skip": "Pular",

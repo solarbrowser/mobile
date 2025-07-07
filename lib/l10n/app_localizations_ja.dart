@@ -81,6 +81,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get skip => 'スキップ';
 
   @override
+  String get disable_classic_navigation_warning => 'クラシックナビゲーションを無効化';
+
+  @override
+  String get disable_classic_navigation_message =>
+      'クラシックナビゲーションを無効にすると、スワイプ操作中心の新しいナビゲーションシステムに切り替わります。このシステムでは、多くの機能にアクセスするにはアドレスバーを上にスワイプし、進む・戻るにはアドレスバーを左右にスワイプしてください。';
+
+  @override
   String get getStarted => '始める';
 
   @override
