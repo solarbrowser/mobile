@@ -1075,15 +1075,18 @@
         // URL validation function
         function isValidUrl(url) {
             if (!url || typeof url !== 'string') return false;
-            
             // Remove protocol if present
             let cleanUrl = url.trim().toLowerCase();
-            if (cleanUrl.startsWith('http://') || cleanUrl.startsWith('https://')) {
-                cleanUrl = cleanUrl.replace(/^https?:\/\//, '');
+            if (cleanUrl.startsWith('http://')) {
+                cleanUrl = cleanUrl.substring(7);
+            } else if (cleanUrl.startsWith('https://')) {
+                cleanUrl = cleanUrl.substring(8);
             }
-            
-            // Check for basic domain structure (at least one dot and valid characters)
-            const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9]*\.[a-zA-Z]{2,}(?:\/.*)?$/;
+            if (cleanUrl.startsWith('www.')) {
+                cleanUrl = cleanUrl.substring(4);
+            }
+            // Check for at least one dot and valid domain characters
+            const domainRegex = /^[a-zA-Z0-9][a-zA-Z0-9-\.]*\.[a-zA-Z]{2,}(?:\/.*)?$/;
             return domainRegex.test(cleanUrl);
         }
 
@@ -1635,12 +1638,13 @@
                         shortcutElement.style.cursor = 'default';
                     }
                     
-                    const faviconUrl = getFaviconUrl(shortcut.url);
+                    const faviconUrls = getFaviconUrl(shortcut.url).split('||');
+                    // Custom favicon fallback logic: try site favicon, then Google favicon if site fails
                     shortcutElement.innerHTML = `
                         ${isEditMode ? `<div class="shortcut-remove" onclick="event.stopPropagation(); event.preventDefault(); removeShortcut(${index}); return false;" title="Remove shortcut">×</div>` : ''}
                         <div class="shortcut-icon">
-                            ${faviconUrl ? `<img src="${faviconUrl}" alt="" style="width: 100%; height: 100%; border-radius: 8px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">` : ''}
-                            <span style="display: ${faviconUrl ? 'none' : 'block'};">${shortcut.title.charAt(0).toUpperCase()}</span>
+                            <img src="${faviconUrls[0]}" alt="" style="width: 100%; height: 100%; border-radius: 8px;" onerror="if (this.src !== faviconUrls[1]) { this.src = faviconUrls[1]; } else { this.onerror=null; this.style.display='none'; this.nextElementSibling.style.display='block'; }">
+                            <span style="display: none;">${shortcut.title.charAt(0).toUpperCase()}</span>
                         </div>
                         <div class="shortcut-title">${shortcut.title}</div>
                     `;
