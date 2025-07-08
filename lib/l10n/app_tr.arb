@@ -891,5 +891,9 @@
   "error_server": "Sunucu hatası",
   "error_unknown": "Bilinmeyen hata oluştu",
   "error_ssl": "SSL bağlantı hatası",
-  "error_dns": "DNS çözümleme başarısız"
+  "error_dns": "DNS çözümleme başarısız",
+  "warning": "Uyarı",
+  "custom_home_url_unreachable": "URL'ye ulaşılamadı. Devam etmek istediğinize emin misiniz?",
+  "yes": "Evet",
+  "no": "Hayır"
 }

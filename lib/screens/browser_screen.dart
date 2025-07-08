@@ -3118,59 +3118,90 @@ void _handleTouchEnd() {
         TextButton(
           onPressed: () async {
             String url = _urlController.text.trim();
-            
             // Ensure URL has proper protocol and www if needed
             if (!url.startsWith('http://') && !url.startsWith('https://')) {
               url = 'https://$url';
             }
-            
             // Add www if domain doesn't have it and doesn't have a subdomain
             if (url.startsWith('https://') && !url.startsWith('https://www.')) {
-              // Check if it's a simple domain without subdomain
               final domainPart = url.substring(8); // after https://
               if (!domainPart.contains('/') && !domainPart.contains('.', domainPart.indexOf('.')+1)) {
                 url = url.replaceFirst('https://', 'https://www.');
               }
             }
-            
-            setState(() {
-              customHomeUrl = url;
-              // Enable custom home page if URL is set
-              if (customHomeUrl.isNotEmpty) {
-                useCustomHomePage = true;
+
+            // Check if the URL is reachable
+            bool urlReachable = false;
+            try {
+              final uri = Uri.parse(url);
+              final client = HttpClient();
+              client.connectionTimeout = const Duration(seconds: 4);
+              final request = await client.headUrl(uri);
+              final response = await request.close();
+              if (response.statusCode >= 200 && response.statusCode < 400) {
+                urlReachable = true;
               }
-            });
-            
-            await _savePreferences();
-            Navigator.pop(context);
-            
-            // Apply the custom home page immediately if we're on the home page
-            if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-              final currentUrl = tabs[currentTabIndex]['url'];
-              if (currentUrl == _homeUrl || currentUrl == 'file:///android_asset/main.html') {
-                // Update tab data
-                tabs[currentTabIndex]['url'] = customHomeUrl;
-                
-                // Update UI
-                setState(() {
-                  _displayUrl = customHomeUrl;
-                  _urlController.text = _formatUrl(customHomeUrl);
-                  isSecure = customHomeUrl.startsWith('https://');
-                });
-                
-                // Load the custom home page
-                try {
-                  //print('Loading custom homepage: $customHomeUrl');
-                  await controller.loadRequest(Uri.parse(customHomeUrl));
-                } catch (e) {
-                  //print('Error loading custom homepage: $e');
-                  _showCustomNotification(
-                              message: '${AppLocalizations.of(context)!.error_loading_page}: $e',
-          icon: Icons.error,
-          iconColor: Colors.red,
-                  );
+              client.close();
+            } catch (e) {
+              urlReachable = false;
+            }
+
+            Future<void> saveAndClose() async {
+              setState(() {
+                customHomeUrl = url;
+                if (customHomeUrl.isNotEmpty) {
+                  useCustomHomePage = true;
+                }
+              });
+              await _savePreferences();
+              Navigator.pop(context);
+              if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
+                final currentUrl = tabs[currentTabIndex]['url'];
+                if (currentUrl == _homeUrl || currentUrl == 'file:///android_asset/main.html') {
+                  tabs[currentTabIndex]['url'] = customHomeUrl;
+                  setState(() {
+                    _displayUrl = customHomeUrl;
+                    _urlController.text = _formatUrl(customHomeUrl);
+                    isSecure = customHomeUrl.startsWith('https://');
+                  });
+                  try {
+                    await controller.loadRequest(Uri.parse(customHomeUrl));
+                  } catch (e) {
+                    _showCustomNotification(
+                      message: '${AppLocalizations.of(context)!.error_loading_page}: $e',
+                      icon: Icons.error,
+                      iconColor: Colors.red,
+                    );
+                  }
                 }
               }
+            }
+
+            if (urlReachable) {
+              await saveAndClose();
+            } else {
+              // Show custom animated dialog (matching app style)
+              showCustomDialog(
+                context: context,
+                title: AppLocalizations.of(context)!.warning,
+                content: AppLocalizations.of(context)!.custom_home_url_unreachable,
+                isDarkMode: isDarkMode,
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Text(AppLocalizations.of(context)!.no,
+                        style: TextStyle(color: ThemeManager.textSecondaryColor())),
+                  ),
+                  TextButton(
+                    onPressed: () async {
+                      Navigator.pop(context); // Close dialog
+                      await saveAndClose();
+                    },
+                    child: Text(AppLocalizations.of(context)!.yes,
+                        style: TextStyle(color: ThemeManager.primaryColor())),
+                  ),
+                ],
+              );
             }
           },
           child: Text(
@@ -16455,22 +16486,18 @@ Future<void> _handlePageStarted(String url) async {
 
   Future<void> _handleWebResourceError(WebResourceError error, String url) async {
     if (!mounted) return;
-    
-    // Handle ERR_UNKNOWN_URL_SCHEME specifically
-    if (error.description.toLowerCase().contains('err_unknown_url_scheme') || 
+
+    // Handle ERR_UNKNOWN_URL_SCHEME specifically (keep this logic, but remove notification)
+    if (error.description.toLowerCase().contains('err_unknown_url_scheme') ||
         error.description.toLowerCase().contains('unknown url scheme')) {
-      
-      // Check if this is a custom app scheme that we can handle
       if (_isCustomAppScheme(url)) {
         try {
           final uri = Uri.parse(url);
           if (await canLaunchUrl(uri)) {
             await launchUrl(uri, mode: LaunchMode.externalApplication);
-            // Navigate back or to home page instead of showing error
             if (await controller.canGoBack()) {
               await controller.goBack();
             } else {
-              // If can't go back, go to home page
               _loadUrl(_getHomeUrl());
             }
             return;
@@ -16478,94 +16505,20 @@ Future<void> _handlePageStarted(String url) async {
         } catch (e) {
           // Silently handle error
         }
-        
-        // Show user-friendly message instead of browser error
-        _showCustomNotification(
-          message: 'This link requires an app that is not installed.',
-          icon: Icons.info_outline,
-          iconColor: Colors.blue,
-          duration: const Duration(seconds: 3),
-        );
-        
-        // Navigate back instead of to blank page
+        // No notification shown
         if (await controller.canGoBack()) {
           await controller.goBack();
         } else {
-          // If can't go back, go to home page
           _loadUrl(_getHomeUrl());
         }
         return;
       }
     }
 
-    // Get localized error message based on error type and description
-    String localizedErrorMessage = _getLocalizedErrorMessage(error);
-    
-    // Show localized error notification
-    _showCustomNotification(
-      message: localizedErrorMessage,
-      icon: Icons.error_outline,
-      iconColor: ThemeManager.errorColor(),
-      duration: const Duration(seconds: 4),
-    );
-    
-    // Log the error details for debugging
-    //print('Web resource error: ${error.description}');
-    //print('Error code: ${error.errorCode}');
-    //print('Error type: ${error.errorType}');
-    //print('Failed URL: $url');
-    
-    // Get current page URL to determine if this is the main page or a sub-resource
-    final currentPageUrl = await controller.currentUrl();
-    final isMainPageError = currentPageUrl == null || currentPageUrl == url;
-    
-    // Only handle errors for the main page navigation, not sub-resources
-    if (!isMainPageError) {
-      //print('Ignoring sub-resource error for: $url');
-      return;
-    }
-    
-    // Check if this is a critical error that should stop loading
-    final isCriticalError = _isCriticalError(error);
-    if (!isCriticalError) {
-      //print('Ignoring non-critical error: ${error.description}');
-      return;
-    }
-    
-    _setLoadingState(false);
-    
-    // Update the tab info with error state only for main page errors
-    if (tabs.isNotEmpty && currentTabIndex >= 0 && currentTabIndex < tabs.length) {
-      setState(() {
-        tabs[currentTabIndex]['title'] = 'Error Loading Page';
-      });
-    }
-    
-    // Add delay before showing error dialog to give page time to load
-    // This prevents premature error dialogs on slow connections
-    await Future.delayed(const Duration(milliseconds: 2000));
-    
-    // Check if page is still mounted and loading hasn't completed successfully
-    if (!mounted) return;
-    
-    // Double-check if the page has loaded successfully in the meantime
-    try {
-      final finalUrl = await controller.currentUrl();
-      final pageTitle = await controller.getTitle();
-      
-      // If we have a valid URL and title, the page likely loaded successfully
-      if (finalUrl != null && finalUrl.isNotEmpty && 
-          pageTitle != null && pageTitle.isNotEmpty && 
-          !pageTitle.toLowerCase().contains('error')) {
-        //print('Page appears to have loaded successfully, skipping error dialog');
-        return;
-      }
-    } catch (e) {
-      //print('Error checking page status: $e');
-    }
-    
-    // Show error dialog based on error type
-    _showWebPageErrorDialog(error, url);
+    // Only show HTTP warning dialogs (e.g. insecure HTTP), suppress all other error notifications/dialogs
+    // If you want to keep HTTP warning, you can add logic here. Otherwise, do nothing for network/DNS errors.
+    // All other error notifications and dialogs are suppressed as requested.
+    return;
   }
   
   // Helper method to determine if an error is critical enough to show a dialog

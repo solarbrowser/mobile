@@ -1511,4 +1511,16 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get error_dns => 'DNS resolution failed';
+
+  @override
+  String get warning => '경고';
+
+  @override
+  String get custom_home_url_unreachable => 'URL에 연결할 수 없습니다. 계속하시겠습니까?';
+
+  @override
+  String get yes => '예';
+
+  @override
+  String get no => '아니요';
 }

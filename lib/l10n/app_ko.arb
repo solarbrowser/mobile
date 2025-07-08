@@ -1,4 +1,3 @@
-
 {
   "@@locale": "ko",
   "welcomeToSolar": "Solar에 오신 것을 환영합니다",
@@ -876,5 +875,9 @@
   "terms_of_use": "이용약관",
   "about": "정보",
   "javascript_enabled": "JavaScript 활성화됨",
-  "javascript_disabled": "JavaScript 비활성화됨"
+  "javascript_disabled": "JavaScript 비활성화됨",
+  "warning": "경고",
+  "custom_home_url_unreachable": "URL에 연결할 수 없습니다. 계속하시겠습니까?",
+  "yes": "예",
+  "no": "아니요"
 }

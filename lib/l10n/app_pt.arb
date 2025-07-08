@@ -1,4 +1,3 @@
- 
 {
   "@@locale": "pt",
   "welcomeToSolar": "Bem-vindo ao Solar",
@@ -891,5 +890,9 @@
   "terms_of_use": "Termos de Uso",
   "about": "Sobre",
   "javascript_enabled": "JavaScript ativado",
-  "javascript_disabled": "JavaScript desativado"
+  "javascript_disabled": "JavaScript desativado",
+  "warning": "Aviso",
+  "custom_home_url_unreachable": "Não foi possível acessar a URL. Tem certeza de que deseja continuar?",
+  "yes": "Sim",
+  "no": "Não"
 }

@@ -1558,4 +1558,17 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get error_dns => 'DNS resolution failed';
+
+  @override
+  String get warning => 'Предупреждение';
+
+  @override
+  String get custom_home_url_unreachable =>
+      'Не удалось получить доступ к URL. Продолжить?';
+
+  @override
+  String get yes => 'Да';
+
+  @override
+  String get no => 'Нет';
 }

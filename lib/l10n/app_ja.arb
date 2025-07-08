@@ -1,4 +1,3 @@
-
 {
   "@@locale": "ja",
   "welcomeToSolar": "Solar へようこそ",
@@ -888,5 +887,9 @@
   "terms_of_use": "利用規約",
   "about": "アプリについて",
   "javascript_enabled": "JavaScriptが有効になりました",
-  "javascript_disabled": "JavaScriptが無効になりました"
+  "javascript_disabled": "JavaScriptが無効になりました",
+  "warning": "警告",
+  "custom_home_url_unreachable": "URLにアクセスできませんでした。続行しますか？",
+  "yes": "はい",
+  "no": "いいえ"
 }

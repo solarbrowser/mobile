@@ -911,5 +911,9 @@
   "terms_of_use": "使用条款",
   "about": "关于",
   "javascript_enabled": "JavaScript已启用",
-  "javascript_disabled": "JavaScript已禁用"
+  "javascript_disabled": "JavaScript已禁用",
+  "warning": "警告",
+  "custom_home_url_unreachable": "无法访问该网址。确定要继续吗？",
+  "yes": "是",
+  "no": "否"
 }

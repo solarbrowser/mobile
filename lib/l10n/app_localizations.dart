@@ -2987,6 +2987,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'DNS resolution failed'**
   String get error_dns;
+
+  /// No description provided for @warning.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning'**
+  String get warning;
+
+  /// No description provided for @custom_home_url_unreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'The URL could not be reached. Are you sure you want to continue?'**
+  String get custom_home_url_unreachable;
+
+  /// No description provided for @yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get yes;
+
+  /// No description provided for @no.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get no;
 }
 
 class _AppLocalizationsDelegate

@@ -847,5 +847,9 @@
   "terms_of_use": "उपयोग की शर्तें",
   "about": "के बारे में",
   "javascript_enabled": "JavaScript सक्षम किया गया",
-  "javascript_disabled": "JavaScript अक्षम किया गया"
+  "javascript_disabled": "JavaScript अक्षम किया गया",
+  "warning": "चेतावनी",
+  "custom_home_url_unreachable": "URL तक नहीं पहुंचा जा सका। क्या आप वाकई जारी रखना चाहते हैं?",
+  "yes": "हाँ",
+  "no": "नहीं"
 }

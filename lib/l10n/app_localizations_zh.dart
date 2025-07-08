@@ -1490,4 +1490,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get error_dns => 'DNS resolution failed';
+
+  @override
+  String get warning => '警告';
+
+  @override
+  String get custom_home_url_unreachable => '无法访问该网址。确定要继续吗？';
+
+  @override
+  String get yes => '是';
+
+  @override
+  String get no => '否';
 }

@@ -1,4 +1,3 @@
-
 {
   "@@locale": "ru",
   "welcomeToSolar": "Добро пожаловать в Solar",
@@ -916,5 +915,9 @@
   "terms_of_use": "Условия использования",
   "about": "О программе",
   "javascript_enabled": "JavaScript включен",
-  "javascript_disabled": "JavaScript отключен"
+  "javascript_disabled": "JavaScript отключен",
+  "warning": "Предупреждение",
+  "custom_home_url_unreachable": "Не удалось получить доступ к URL. Продолжить?",
+  "yes": "Да",
+  "no": "Нет"
 }

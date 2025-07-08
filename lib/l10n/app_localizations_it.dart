@@ -1565,4 +1565,17 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get error_dns => 'DNS resolution failed';
+
+  @override
+  String get warning => 'Avviso';
+
+  @override
+  String get custom_home_url_unreachable =>
+      'Impossibile raggiungere l\'URL. Vuoi continuare comunque?';
+
+  @override
+  String get yes => 'Sì';
+
+  @override
+  String get no => 'No';
 }

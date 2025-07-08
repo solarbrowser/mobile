@@ -917,7 +917,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get rename => 'إعادة تسمية';
 
   @override
-  String get pwa_renamed => 'تم إعادة تسمية PWA';
+  String get pwa_renamed => 'تمت إعادة تسمية PWA';
 
   @override
   String get remove => 'إزالة';
@@ -1547,4 +1547,17 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get error_dns => 'DNS resolution failed';
+
+  @override
+  String get warning => 'تحذير';
+
+  @override
+  String get custom_home_url_unreachable =>
+      'لم يتم الوصول إلى عنوان URL. هل تريد المتابعة؟';
+
+  @override
+  String get yes => 'نعم';
+
+  @override
+  String get no => 'لا';
 }

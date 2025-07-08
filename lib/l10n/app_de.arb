@@ -975,5 +975,9 @@
   "terms_of_use": "Nutzungsbedingungen",
   "about": "Über",
   "javascript_enabled": "JavaScript aktiviert",
-  "javascript_disabled": "JavaScript deaktiviert"
+  "javascript_disabled": "JavaScript deaktiviert",
+  "warning": "Warnung",
+  "custom_home_url_unreachable": "Die URL konnte nicht erreicht werden. Möchten Sie trotzdem fortfahren?",
+  "yes": "Ja",
+  "no": "Nein"
 }

@@ -1558,4 +1558,17 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get error_dns => 'DNS çözümleme başarısız';
+
+  @override
+  String get warning => 'Uyarı';
+
+  @override
+  String get custom_home_url_unreachable =>
+      'URL\'ye ulaşılamadı. Devam etmek istediğinize emin misiniz?';
+
+  @override
+  String get yes => 'Evet';
+
+  @override
+  String get no => 'Hayır';
 }

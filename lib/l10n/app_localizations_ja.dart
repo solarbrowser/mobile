@@ -1512,4 +1512,16 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get error_dns => 'DNS resolution failed';
+
+  @override
+  String get warning => '警告';
+
+  @override
+  String get custom_home_url_unreachable => 'URLにアクセスできませんでした。続行しますか？';
+
+  @override
+  String get yes => 'はい';
+
+  @override
+  String get no => 'いいえ';
 }

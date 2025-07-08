@@ -1663,5 +1663,9 @@
   "error_dns": "DNS resolution failed",
   "@error_dns": {
     "description": "DNS error message"
-  }
+  },
+  "warning": "Warning",
+  "custom_home_url_unreachable": "The URL could not be reached. Are you sure you want to continue?",
+  "yes": "Yes",
+  "no": "No"
 }
