@@ -55,6 +55,7 @@ class BrowserScreen extends StatefulWidget {
   final Function(String)? onLocaleChange;
   final Function(bool)? onThemeChange;
   final Function(String)? onSearchEngineChange;
+  final String? initialSearchEngine;
   final bool initialClassicMode;
 
   const BrowserScreen({
@@ -62,6 +63,7 @@ class BrowserScreen extends StatefulWidget {
     this.onLocaleChange,
     this.onThemeChange,
     this.onSearchEngineChange,
+    this.initialSearchEngine,
     this.initialClassicMode = true,
   }) : super(key: key);
 
@@ -1060,6 +1062,7 @@ class _BrowserScreenState extends State<BrowserScreen> with SingleTickerProvider
   bool showImages = true;
   String currentLanguage = 'en';
   String currentSearchEngine = 'Google';
+  // (Removed duplicate initState)
   String customHomeUrl = ''; // Custom home page URL
   bool useCustomHomePage = false; // Whether to use custom home page
   
@@ -1427,7 +1430,6 @@ void _handleTouchEnd() {
     'Brave': 'https://search.brave.com/search?q={query}',
     'Yahoo': 'https://search.yahoo.com/search?p={query}',
     'Yandex': 'https://yandex.com/search/?text={query}',
-    'Solar Search': 'https://search.browser.solar/search?q={query}',
   };
   // <-----------TAB PERSISTENCE METHODS----------->
   Future<void> _saveTabs() async {
@@ -3010,50 +3012,47 @@ void _handleTouchEnd() {
   }
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    
     // Load theme settings
     final savedThemeName = prefs.getString('selectedTheme');
     ThemeType theme;
-    
     if (savedThemeName != null) {
       try {
         theme = ThemeType.values.firstWhere((t) => t.name == savedThemeName);
-        //print('Loaded saved theme: ${theme.name}');
       } catch (_) {
         theme = ThemeType.light;
-        //print('Failed to load saved theme, using light theme');
       }
     } else {
-      // Fallback to darkMode preference if no theme is saved
       final isDark = prefs.getBool('darkMode') ?? false;
       theme = isDark ? ThemeType.dark : ThemeType.light;
-      //print('No saved theme, using fallback: ${theme.name}');
     }
-    
-    // Apply theme
     await ThemeManager.setTheme(theme);
-    //print('Applied theme: ${theme.name}, isDark: ${theme.isDark}');
-    
     setState(() {
       isDarkMode = theme.isDark;
       textScale = prefs.getDouble('textScale') ?? 1.0;
       showImages = prefs.getBool('showImages') ?? true;
-      currentSearchEngine = prefs.getString('searchEngine') ?? 'Google';
+      // Prefer widget.initialSearchEngine if provided (from onboarding)
+      String? onboardingEngine = widget.initialSearchEngine;
+      String? prefsEngine = prefs.getString('searchEngine');
+      if (onboardingEngine != null && onboardingEngine.isNotEmpty) {
+        currentSearchEngine = onboardingEngine;
+        // Persist immediately so future launches use this
+        prefs.setString('searchEngine', onboardingEngine);
+      } else if (prefsEngine != null && prefsEngine.isNotEmpty) {
+        currentSearchEngine = prefsEngine;
+      } else {
+        // Fallback to first available search engine if present, else empty string
+        currentSearchEngine = searchEngines.isNotEmpty ? searchEngines.keys.first : '';
+      }
       currentLanguage = prefs.getString('language') ?? 'en';
       _keepTabsOpen = prefs.getBool('keepTabsOpen') ?? false;
       useCustomHomePage = prefs.getBool('useCustomHomePage') ?? false;
       customHomeUrl = prefs.getString('customHomeUrl') ?? '';
-      
-      // Use widget parameter for classic mode or fall back to preference
       if (widget.initialClassicMode) {
         _isClassicMode = true;
       } else {
         _isClassicMode = prefs.getBool('isClassicMode') ?? false;
       }
-      
-      // Update initial tab URL if custom homepage is enabled
       if (tabs.isNotEmpty && useCustomHomePage && customHomeUrl.isNotEmpty) {
-        // Only update if we're on the home page
         if (tabs[0]['url'] == _homeUrl || tabs[0]['url'] == 'file:///android_asset/main.html') {
           tabs[0]['url'] = customHomeUrl;
           _displayUrl = customHomeUrl;
@@ -3063,13 +3062,7 @@ void _handleTouchEnd() {
         }
       }
     });
-    
-    //print('Set isDarkMode to: $isDarkMode for theme: ${theme.name}');
-    
-    // Save updated classic mode preference
     await prefs.setBool('isClassicMode', _isClassicMode);
-    
-    // Update UI to reflect theme
     _updateSystemBars();
   }
 
@@ -3640,7 +3633,7 @@ Future<void> _setupScrollHandling() async {
         if (mounted) {
           setState(() {
             _syncHomePageSearchEngine = prefs.getBool('syncHomePageSearchEngine') ?? true;
-            _homePageSearchEngine = prefs.getString('homePageSearchEngine') ?? 'google';
+            _homePageSearchEngine = prefs.getString('homePageSearchEngine') ?? 'Google';
             final shortcutsList = prefs.getStringList('homePageShortcuts') ?? [];
             _homePageShortcuts = shortcutsList.map((e) => 
               Map<String, String>.from(json.decode(e))
@@ -5962,7 +5955,9 @@ Future<void> _setupScrollHandling() async {
               body: FutureBuilder<String>(
                 future: _getCurrentSearchEngine(),
                 builder: (context, snapshot) {
-                  final currentSearchEngine = snapshot.data ?? 'Google';
+                  final currentSearchEngine = (snapshot.data != null && searchEngines.containsKey(snapshot.data))
+                      ? snapshot.data!
+                      : (searchEngines.isNotEmpty ? searchEngines.keys.first : '');
                   
                   return ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -7220,7 +7215,7 @@ Future<void> _setupScrollHandling() async {
                 children: [
                   _buildSettingsItem(
                     title: AppLocalizations.of(context)!.app_name,
-                    subtitle: AppLocalizations.of(context)!.version('0.4.5'),
+                    subtitle: AppLocalizations.of(context)!.version('0.4.6'),
                     isFirst: true,
                     isLast: false,
                   ),
@@ -14041,7 +14036,7 @@ Future<void> _handlePageStarted(String url) async {
 
   // Add these variables
   String _currentLocale = 'en';
-  String _currentSearchEngine = 'google';
+  String _currentSearchEngine = 'Google';
   bool _showImages = true;
   double _textSize = 1.0;  // Add this line for text size
   
@@ -15241,7 +15236,12 @@ Future<void> _handlePageStarted(String url) async {
   Future<void> _loadSearchEngines() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      currentSearchEngine = prefs.getString('searchEngine') ?? 'Google';
+      String? prefEngine = prefs.getString('searchEngine');
+      if (prefEngine != null && searchEngines.containsKey(prefEngine)) {
+        currentSearchEngine = prefEngine;
+      } else {
+        currentSearchEngine = searchEngines.isNotEmpty ? searchEngines.keys.first : '';
+      }
     });
   }
 

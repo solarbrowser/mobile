@@ -37,7 +37,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   // Settings
   Locale _selectedLocale = const Locale('en');
   theme_utils.ThemeType _selectedTheme = theme_utils.ThemeType.system;
-  String _selectedSearchEngine = 'Google';
+  String _currentSearchEngine = 'Google';
   bool _notificationPermissionHandled = false;
 
   final List<Map<String, String>> _supportedLocales = [
@@ -78,7 +78,6 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     {'name': 'Brave', 'icon': Icons.shield},
     {'name': 'Yahoo', 'icon': Icons.search},
     {'name': 'Yandex', 'icon': Icons.search},
-    {'name': 'Solar Search', 'icon': Icons.wb_sunny},
   ];
 
   @override
@@ -139,7 +138,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         _selectedTheme = theme_utils.ThemeType.system;
       }
       
-      _selectedSearchEngine = prefs.getString('search_engine') ?? 'Google';
+      _currentSearchEngine = prefs.getString('search_engine') ?? 'Google';
     });
   }
 
@@ -234,22 +233,17 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     
     // Apply settings
     widget.onLocaleChange(_selectedLocale);
-    
+
     // Convert ThemeType to ThemeMode for the callback
-    // NOTE: This logic might be flawed. It maps all custom themes (like Dracula, Nord, etc.)
-    // to ThemeMode.system, which is likely not the desired behavior.
-    // You may want to expand this to check if a theme is light or dark.
     ThemeMode themeMode;
     switch (_selectedTheme) {
       case theme_utils.ThemeType.light:
-      // Add other light themes here
       case theme_utils.ThemeType.solarizedLight:
       case theme_utils.ThemeType.nordLight:
       case theme_utils.ThemeType.gruvboxLight:
         themeMode = ThemeMode.light;
         break;
       case theme_utils.ThemeType.dark:
-      // Add other dark themes here
       case theme_utils.ThemeType.tokyoNight:
       case theme_utils.ThemeType.dracula:
       case theme_utils.ThemeType.nord:
@@ -263,9 +257,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         break;
     }
     widget.onThemeChange(themeMode);
-    widget.onSearchEngineChange(_selectedSearchEngine);
-    
-    // Navigate to browser screen
+    widget.onSearchEngineChange(_currentSearchEngine);
+
+    // Navigate to browser screen, pass selected search engine
     if (mounted) {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
@@ -278,6 +272,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               widget.onThemeChange(isDarkMode ? ThemeMode.dark : ThemeMode.light);
             },
             onSearchEngineChange: widget.onSearchEngineChange,
+            initialSearchEngine: _currentSearchEngine,
           ),
         ),
       );
@@ -817,10 +812,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           _buildComboBox<String>(
             title: AppLocalizations.of(context)!.search_engine,
             items: _searchEngines,
-            selectedValue: _selectedSearchEngine,
+            selectedValue: _currentSearchEngine,
             onChanged: (engine) {
               setState(() {
-                _selectedSearchEngine = engine;
+                _currentSearchEngine = engine;
               });
               // Apply the search engine change immediately  
               widget.onSearchEngineChange(engine);

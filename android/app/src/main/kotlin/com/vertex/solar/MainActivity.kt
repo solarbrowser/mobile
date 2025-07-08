@@ -348,6 +348,24 @@ class MainActivity: FlutterActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.i(TAG, "MainActivity onCreate called")
+        // Enable edge-to-edge for Android 10+ (API 29+) and above
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            try {
+                // Use AndroidX WindowCompat for edge-to-edge
+                val window = window
+                val decorView = window.decorView
+                // This requires androidx.core:core-ktx dependency
+                // WindowCompat.setDecorFitsSystemWindows(window, false)
+                @Suppress("DEPRECATION")
+                decorView.systemUiVisibility = (
+                    android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+                    android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+                    android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                )
+            } catch (e: Exception) {
+                Log.e(TAG, "Edge-to-edge setup failed: ${e.message}", e)
+            }
+        }
         handleIntent(intent)
     }
 
