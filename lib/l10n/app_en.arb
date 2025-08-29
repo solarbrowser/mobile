@@ -1667,5 +1667,9 @@
   "warning": "Warning",
   "custom_home_url_unreachable": "The URL could not be reached. Are you sure you want to continue?",
   "yes": "Yes",
-  "no": "No"
+  "no": "No",
+  "solarWarningTitle": "Important Notice",
+  "solarWarningMessage": "Solar is an independent browser project developed by Vertex Corporation. The version you are currently using is a project made to introduce Solar. Solar does not use its own engine in this version. It works with WebView. This version may not include some of the mentioned features or may work problematically. Solar will switch to its own engine in the second half of 2026 and will provide you with a web experience you have never experienced before, eliminating all these issues. Thank you for your support. We apologize in advance for any possible issues you may experience.",
+  "dontShowAgain": "Don't show again",
+  "continueButton": "Continue"
 }

@@ -1523,4 +1523,17 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get no => '아니요';
+
+  @override
+  String get solarWarningTitle => 'Important Notice';
+
+  @override
+  String get solarWarningMessage =>
+      'Solar is an independent browser project developed by Vertex Corporation. The version you are currently using is a project made to introduce Solar. Solar does not use its own engine in this version. It works with WebView. This version may not include some of the mentioned features or may work problematically. Solar will switch to its own engine in the second half of 2026 and will provide you with a web experience you have never experienced before, eliminating all these issues. Thank you for your support. We apologize in advance for any possible issues you may experience.';
+
+  @override
+  String get dontShowAgain => 'Don\'t show again';
+
+  @override
+  String get continueButton => 'Continue';
 }

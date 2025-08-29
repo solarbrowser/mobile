@@ -3011,6 +3011,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No'**
   String get no;
+
+  /// No description provided for @solarWarningTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Important Notice'**
+  String get solarWarningTitle;
+
+  /// No description provided for @solarWarningMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Solar is an independent browser project developed by Vertex Corporation. The version you are currently using is a project made to introduce Solar. Solar does not use its own engine in this version. It works with WebView. This version may not include some of the mentioned features or may work problematically. Solar will switch to its own engine in the second half of 2026 and will provide you with a web experience you have never experienced before, eliminating all these issues. Thank you for your support. We apologize in advance for any possible issues you may experience.'**
+  String get solarWarningMessage;
+
+  /// No description provided for @dontShowAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t show again'**
+  String get dontShowAgain;
+
+  /// No description provided for @continueButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueButton;
 }
 
 class _AppLocalizationsDelegate

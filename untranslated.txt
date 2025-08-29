@@ -7,7 +7,11 @@
     "error_server",
     "error_unknown",
     "error_ssl",
-    "error_dns"
+    "error_dns",
+    "solarWarningTitle",
+    "solarWarningMessage",
+    "dontShowAgain",
+    "continueButton"
   ],
 
   "de": [
@@ -21,7 +25,11 @@
     "error_server",
     "error_unknown",
     "error_ssl",
-    "error_dns"
+    "error_dns",
+    "solarWarningTitle",
+    "solarWarningMessage",
+    "dontShowAgain",
+    "continueButton"
   ],
 
   "es": [
@@ -32,7 +40,11 @@
     "error_server",
     "error_unknown",
     "error_ssl",
-    "error_dns"
+    "error_dns",
+    "solarWarningTitle",
+    "solarWarningMessage",
+    "dontShowAgain",
+    "continueButton"
   ],
 
   "fr": [
@@ -43,7 +55,11 @@
     "error_server",
     "error_unknown",
     "error_ssl",
-    "error_dns"
+    "error_dns",
+    "solarWarningTitle",
+    "solarWarningMessage",
+    "dontShowAgain",
+    "continueButton"
   ],
 
   "hi": [
@@ -62,7 +78,11 @@
     "error_server",
     "error_unknown",
     "error_ssl",
-    "error_dns"
+    "error_dns",
+    "solarWarningTitle",
+    "solarWarningMessage",
+    "dontShowAgain",
+    "continueButton"
   ],
 
   "it": [
@@ -79,7 +99,11 @@
     "error_server",
     "error_unknown",
     "error_ssl",
-    "error_dns"
+    "error_dns",
+    "solarWarningTitle",
+    "solarWarningMessage",
+    "dontShowAgain",
+    "continueButton"
   ],
 
   "ja": [
@@ -96,7 +120,11 @@
     "error_server",
     "error_unknown",
     "error_ssl",
-    "error_dns"
+    "error_dns",
+    "solarWarningTitle",
+    "solarWarningMessage",
+    "dontShowAgain",
+    "continueButton"
   ],
 
   "ko": [
@@ -113,7 +141,11 @@
     "error_server",
     "error_unknown",
     "error_ssl",
-    "error_dns"
+    "error_dns",
+    "solarWarningTitle",
+    "solarWarningMessage",
+    "dontShowAgain",
+    "continueButton"
   ],
 
   "pt": [
@@ -130,7 +162,11 @@
     "error_server",
     "error_unknown",
     "error_ssl",
-    "error_dns"
+    "error_dns",
+    "solarWarningTitle",
+    "solarWarningMessage",
+    "dontShowAgain",
+    "continueButton"
   ],
 
   "ru": [
@@ -147,7 +183,11 @@
     "error_server",
     "error_unknown",
     "error_ssl",
-    "error_dns"
+    "error_dns",
+    "solarWarningTitle",
+    "solarWarningMessage",
+    "dontShowAgain",
+    "continueButton"
   ],
 
   "tr": [
@@ -172,6 +212,10 @@
     "error_server",
     "error_unknown",
     "error_ssl",
-    "error_dns"
+    "error_dns",
+    "solarWarningTitle",
+    "solarWarningMessage",
+    "dontShowAgain",
+    "continueButton"
   ]
 }

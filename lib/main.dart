@@ -7,6 +7,7 @@ import 'l10n/app_localizations.dart';
 import 'screens/browser_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/pwa_screen.dart';
+import 'screens/warning_screen.dart';
 import 'utils/theme_manager.dart';
 import 'utils/performance_optimizer.dart';
 import 'services/ai_manager.dart';
@@ -62,6 +63,7 @@ void main() async {
   binding.allowFirstFrame();
   final isFirstStart = prefs.getBool('first_start') ?? true;
   final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
+  final warningScreenShown = prefs.getBool('warning_screen_shown') ?? false;
   final packageInfo = await PackageInfo.fromPlatform();
   final currentVersion = packageInfo.version;
   
@@ -88,6 +90,7 @@ void main() async {
   runApp(MyApp(
     isFirstStart: isFirstStart,
     onboardingCompleted: onboardingCompleted,
+    warningScreenShown: warningScreenShown,
     currentVersion: currentVersion,
     initialLocale: prefs.getString('language') ?? systemLocale,
     initialDarkMode: prefs.getBool('darkMode') ?? systemDarkMode,
@@ -98,6 +101,7 @@ void main() async {
 class MyApp extends StatefulWidget {
   final bool isFirstStart;
   final bool onboardingCompleted;
+  final bool warningScreenShown;
   final String currentVersion;
   final String initialLocale;
   final bool initialDarkMode;
@@ -107,6 +111,7 @@ class MyApp extends StatefulWidget {
     Key? key,
     required this.isFirstStart,
     required this.onboardingCompleted,
+    required this.warningScreenShown,
     required this.currentVersion,
     required this.initialLocale,
     required this.initialDarkMode,
@@ -309,6 +314,21 @@ class _MyAppState extends State<MyApp> {
               onLocaleChange: _handleLocaleChange,
               onThemeChange: _handleThemeChange,
               onSearchEngineChange: _handleSearchEngineChange,
+            );
+          } else if (!widget.warningScreenShown) {
+            return WarningScreen(
+              onContinue: () {
+                // Navigate to browser screen after warning
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => BrowserScreen(
+                      onLocaleChange: _handleLocaleChangeString,
+                      onThemeChange: _handleThemeChangeBool,
+                      onSearchEngineChange: _handleSearchEngineChange,
+                    ),
+                  ),
+                );
+              },
             );
           } else {
             return BrowserScreen(

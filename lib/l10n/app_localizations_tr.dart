@@ -1571,4 +1571,17 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get no => 'Hayır';
+
+  @override
+  String get solarWarningTitle => 'Önemli Uyarı';
+
+  @override
+  String get solarWarningMessage =>
+      'Solar, Vertex Corporation tarafından geliştirilen bağımsız bir tarayıcı projesidir. Şu an kullandığınız sürüm ise Solar\'ı tanıtmak amaçlı yapılmış bir projedir. Solar, bu sürümde kendi motorunu kullanmamaktadır. WebView ile çalışmaktadır. Bu sürüm, bahsedilen özelliklerin bazılarını içermeyebilir veya sorunlu çalışabilirler. Solar, 2026\'nın ikinci yarısında kendi motoruna geçerek tüm bu sorunların önüne geçecektir ve size hiç yaşamadığınız bir web deneyimi sunacaktır. Desteğiniz için teşekkürler. Yaşayabileceğiniz olası sorunlardan dolayı şimdiden özür dileriz.';
+
+  @override
+  String get dontShowAgain => 'Bir daha gösterme';
+
+  @override
+  String get continueButton => 'Devam Et';
 }
